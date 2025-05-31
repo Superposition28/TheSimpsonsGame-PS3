@@ -1,0 +1,23 @@
+{
+	"The Simpsons Game Tools": [
+		{
+			"Name": "Download Blender 4.0.2",
+			"Type": "download",
+			"Instructions": "This will download Blender 4.0.2 and unpack it to Tools/unpack_TEST.",
+			"url": "https://download.blender.org/release/Blender4.0/blender-4.0.2-windows-x64.zip",
+			"destination": "./TMP/Downloads",
+			"unpack": true,
+			"unpack_destination": "./Tools/Blender"
+		},
+		{
+			"Name": "Download QuickBMS 0.12.0",
+			"Type": "download",
+			"Instructions": "This will download QuickBMS and unpack it to Tools/unpack_TEST.",
+			"url": "https://github.com/LittleBigBug/QuickBMS/releases/download/0.12.0/quickbms_win.zip",
+			"destination": "./TMP/Downloads",
+			"unpack": true,
+			"unpack_destination": "./Tools/QuickBMS/exe"
+		}
+
+	]
+}

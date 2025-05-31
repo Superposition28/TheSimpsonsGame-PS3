@@ -1,0 +1,17 @@
+{
+	"uv_maps": [
+		{
+			"uuid": "2ce01b00870c6456_",
+			"uv_map_dir": "RemakeRegistry\\Games\\TheSimpsonsGame\\Patches\\Maps\\uv_maps\\SimpsonsHouseInterior",
+			"metadata_file": "RemakeRegistry\\Games\\TheSimpsonsGame\\Patches\\Maps\\uv_maps\\SimpsonsHouseInterior\\blend_metadata.json",
+			"metadata_file_hash": "2ce01b00870c64567e311908fabb6bce70cbc2e66e09314727002a175342c16d",
+			"metadata_path_hash": "",
+			"buvd": {
+				"path": "RemakeRegistry\\Games\\TheSimpsonsGame\\Patches\\Maps\\uv_maps\\SimpsonsHouseInterior\\uv_export.buvd",
+				"fileHashSHA256": "bc2215caa95a657e14ec6a43e33b5b4b83d96dcfcec59aeb2d2612da5fc9a5a1",
+				"pathNameHashMD5": "2cc64efa5a23795a41a80013fe4c9dff"
+			},
+			"asset_uuid": "1c432fdf89583eaa_51ccbf55905056ac"
+		}
+	]
+}

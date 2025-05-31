@@ -1,0 +1,52 @@
+[
+    {
+        "pattern": "build\\+\\+PS3\\+\\+pal_en",
+        "replacement": "EU_EN",
+        "is_regex": true
+    },
+    {
+        "pattern": "story_mode\\+\\+story_mode_design\\.str\\+\\+story_mode_design_str",
+        "replacement": "story_mode_design_STR",
+        "is_regex": true
+    },
+    {
+        "pattern": "^texture_dictionary\\+\\+.*?\\+\\+chars$",
+        "replacement": "Textures",
+        "is_regex": true
+    },
+    {
+        "pattern": "^texture_dictionary\\+\\+(.*?)\\+\\+design$",
+        "replacement": "\\1_Textures",
+        "is_regex": true
+    },
+    {
+        "pattern": "^ASSET_RWS\\\\texture_dictionary\\+\\+gamehub$",
+        "replacement": "ASSET_RWS\\\\texture_dictionary",
+        "is_regex": true
+    },
+    {
+        "pattern": "^.*?_Textures\\+\\+Act_.*_folderstream$",
+        "replacement": "Textures",
+        "is_regex": true
+    },
+    {
+        "pattern": "^(.*)\\.str\\+\\+(.*)_str$",
+        "replacement": "\\1STR",
+        "is_regex": true
+    },
+    {
+        "pattern": "^assets_rws\\+\\+(.*?)\\+\\+\\1$",
+        "replacement": "ASSET_RWS",
+        "is_regex": true
+    },
+    {
+        "pattern": "^audio\\+\\+",
+        "replacement": "",
+        "is_regex": true
+    },
+    {
+        "pattern": "streams\\+\\+[^\\\\]+\\+\\+[^\\\\]+",
+        "replacement": "streams",
+        "is_regex": true
+    }
+]

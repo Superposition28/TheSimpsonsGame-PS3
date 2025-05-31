@@ -1,0 +1,17 @@
+{
+	"texture_links": [
+		{
+			"uuid": "360a330c286fae80_",
+			"texture_map_dir": "RemakeRegistry\\Games\\TheSimpsonsGame\\Patches\\Maps\\texture_map_extract\\SimpsonsHouseInterior",
+			"metadata_file": "RemakeRegistry\\Games\\TheSimpsonsGame\\Patches\\Maps\\texture_map_extract\\SimpsonsHouseInterior\\blend_metadata.json",
+			"metadata_file_hash": "360a330c286fae80004bccb37ed092bf8a9b8cc41e19c2af6c5f1b11d5bfc960",
+			"metadata_path_hash": "",
+			"json": {
+				"path": "RemakeRegistry\\Games\\TheSimpsonsGame\\Patches\\Maps\\texture_map_extract\\SimpsonsHouseInterior\\texture_export.json",
+				"fileHashSHA256": "93535f7df87887405bcbcbcf000a19305d16c5a41af180a8a5e4f55c8d3f571f",
+				"pathNameHashMD5": "8b3d9e96d87211098ed4bc533a673733"
+			},
+			"asset_uuid": "1c432fdf89583eaa_51ccbf55905056ac"
+		}
+	]
+}

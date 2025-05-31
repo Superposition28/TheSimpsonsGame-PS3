@@ -1,0 +1,13 @@
+{
+	"blend_filepath": "A:\\Dev\\Games\\TheSimpsonsGame\\PAL\\investigation_tools\\blank.blend",
+	"blend_filename": "blank.blend",
+	"blend_file_hash": "30bbb84f54bb68ce69851ef6491b71de5e0738a0bdc9004f2c2662895013660e",
+	"blender_version": "4.0.2",
+	"python_version": "3.10.13 (main, Sep 20 2023, 07:33:17) [MSC v.1928 64 bit (AMD64)]",
+	"scene_name": "Scene",
+	"object_count": 1,
+	"uv_data_exported_binary": true,
+	"uv_data_exported_json": true,
+	"uv_data_exported_csv": true,
+	"binary_format_version": 1
+}

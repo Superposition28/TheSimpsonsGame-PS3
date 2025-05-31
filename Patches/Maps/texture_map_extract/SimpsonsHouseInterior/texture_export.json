@@ -1,0 +1,791 @@
+{
+  "mesh_material_texture_map": {
+    "Mesh_0_0": {
+      "Material.001": [
+        {
+          "texture_filename": "simpsons_palette.png",
+          "texture_filepath_relative": "//simpsons_palette.png",
+          "texture_filepath_absolute": "A:\\Dev\\Games\\TheSimpsonsGame\\PAL\\.test\\simpsons_palette.png",
+          "texture_file_hash_disk": "6233b19060fb58671ed6e64a3d316f770e786634bcbcc8e40fd893bae6bf4342",
+          "texture_file_hash_packed": "unpacked",
+          "collections": [
+            "New Mesh"
+          ]
+        }
+      ]
+    },
+    "Mesh_0_1": {
+      "Material.002": [
+        {
+          "texture_filename": "simpsons_palette.png",
+          "texture_filepath_relative": "//simpsons_palette.png",
+          "texture_filepath_absolute": "A:\\Dev\\Games\\TheSimpsonsGame\\PAL\\.test\\simpsons_palette.png",
+          "texture_file_hash_disk": "6233b19060fb58671ed6e64a3d316f770e786634bcbcc8e40fd893bae6bf4342",
+          "texture_file_hash_packed": "unpacked",
+          "collections": [
+            "New Mesh"
+          ]
+        }
+      ]
+    },
+    "Mesh_0_2": {
+      "Material.003": [
+        {
+          "texture_filename": "simpsons_palette.png",
+          "texture_filepath_relative": "//simpsons_palette.png",
+          "texture_filepath_absolute": "A:\\Dev\\Games\\TheSimpsonsGame\\PAL\\.test\\simpsons_palette.png",
+          "texture_file_hash_disk": "6233b19060fb58671ed6e64a3d316f770e786634bcbcc8e40fd893bae6bf4342",
+          "texture_file_hash_packed": "unpacked",
+          "collections": [
+            "New Mesh"
+          ]
+        }
+      ]
+    },
+    "Mesh_0_3": {
+      "Material.004": [
+        {
+          "texture_filename": "simpsons_palette.png",
+          "texture_filepath_relative": "//simpsons_palette.png",
+          "texture_filepath_absolute": "A:\\Dev\\Games\\TheSimpsonsGame\\PAL\\.test\\simpsons_palette.png",
+          "texture_file_hash_disk": "6233b19060fb58671ed6e64a3d316f770e786634bcbcc8e40fd893bae6bf4342",
+          "texture_file_hash_packed": "unpacked",
+          "collections": [
+            "New Mesh"
+          ]
+        }
+      ]
+    },
+    "Mesh_0_4": {
+      "Material.005": [
+        {
+          "texture_filename": "simpsons_palette.png",
+          "texture_filepath_relative": "//simpsons_palette.png",
+          "texture_filepath_absolute": "A:\\Dev\\Games\\TheSimpsonsGame\\PAL\\.test\\simpsons_palette.png",
+          "texture_file_hash_disk": "6233b19060fb58671ed6e64a3d316f770e786634bcbcc8e40fd893bae6bf4342",
+          "texture_file_hash_packed": "unpacked",
+          "collections": [
+            "New Mesh"
+          ]
+        }
+      ]
+    },
+    "Mesh_1_0": {
+      "Material.006": [
+        {
+          "texture_filename": "sim_rug_pink.png.001",
+          "texture_filepath_relative": "E:\\Users\\Simpsons Game PS3\\SimpsonsHouse\\sim_rug_pink.png",
+          "texture_filepath_absolute": "E:\\Users\\Simpsons Game PS3\\SimpsonsHouse\\sim_rug_pink.png",
+          "texture_file_hash_disk": null,
+          "texture_file_hash_packed": "unpacked",
+          "collections": [
+            "New Mesh"
+          ]
+        }
+      ]
+    },
+    "Mesh_2_0": {
+      "Material.007": [
+        {
+          "texture_filename": "sim_rug_pink.png",
+          "texture_filepath_relative": "E:\\Users\\Simpsons Game PS3\\SimpsonsHouse\\sim_rug_pink.png",
+          "texture_filepath_absolute": "E:\\Users\\Simpsons Game PS3\\SimpsonsHouse\\sim_rug_pink.png",
+          "texture_file_hash_disk": null,
+          "texture_file_hash_packed": "unpacked",
+          "collections": [
+            "New Mesh"
+          ]
+        }
+      ]
+    },
+    "Mesh_3_0": {
+      "Material.008": [
+        {
+          "texture_filename": "glass_whiteline.png.001",
+          "texture_filepath_relative": "//..\\..\\US\\GameFiles\\Main\\PS3_GAME\\Flattened_OUTPUT\\Map_3-00_GameHub\\gamehub\\zone13STR\\US_AU\\ASSET_RWS\\texture_dictionary++gamehub\\glass_whiteline.png",
+          "texture_filepath_absolute": "A:\\Dev\\Games\\TheSimpsonsGame\\PAL\\.test\\..\\..\\US\\GameFiles\\Main\\PS3_GAME\\Flattened_OUTPUT\\Map_3-00_GameHub\\gamehub\\zone13STR\\US_AU\\ASSET_RWS\\texture_dictionary++gamehub\\glass_whiteline.png",
+          "texture_file_hash_disk": "ab9f07bcba078291fc8628b216110f488cdef4c6cdb0e23a9698dd540713c7ab",
+          "texture_file_hash_packed": "unpacked",
+          "collections": [
+            "New Mesh"
+          ]
+        }
+      ]
+    },
+    "Mesh_3_1": {
+      "Material.009": [
+        {
+          "texture_filename": "house_prop_plant.png.001",
+          "texture_filepath_relative": "//..\\..\\US\\GameFiles\\Main\\PS3_GAME\\Flattened_OUTPUT\\Map_3-00_GameHub\\gamehub\\zone13STR\\US_AU\\ASSET_RWS\\texture_dictionary++gamehub\\house_prop_plant.png",
+          "texture_filepath_absolute": "A:\\Dev\\Games\\TheSimpsonsGame\\PAL\\.test\\..\\..\\US\\GameFiles\\Main\\PS3_GAME\\Flattened_OUTPUT\\Map_3-00_GameHub\\gamehub\\zone13STR\\US_AU\\ASSET_RWS\\texture_dictionary++gamehub\\house_prop_plant.png",
+          "texture_file_hash_disk": "61faec2216a5824e0c4465de678090cbc0390448ff44ef03c4e5e94b94bcb4db",
+          "texture_file_hash_packed": "unpacked",
+          "collections": [
+            "New Mesh"
+          ]
+        }
+      ]
+    },
+    "Mesh_5_0": {
+      "Material.010": [
+        {
+          "texture_filename": "sim_toolwallorga.png.001",
+          "texture_filepath_relative": "//..\\..\\US\\GameFiles\\Main\\PS3_GAME\\Flattened_OUTPUT\\Map_3-00_GameHub\\gamehub\\zone13STR\\US_AU\\ASSET_RWS\\texture_dictionary++gamehub\\sim_toolwallorga.png",
+          "texture_filepath_absolute": "A:\\Dev\\Games\\TheSimpsonsGame\\PAL\\.test\\..\\..\\US\\GameFiles\\Main\\PS3_GAME\\Flattened_OUTPUT\\Map_3-00_GameHub\\gamehub\\zone13STR\\US_AU\\ASSET_RWS\\texture_dictionary++gamehub\\sim_toolwallorga.png",
+          "texture_file_hash_disk": "e4cd9ef173b0fe0096926e6fcda7bb67d4e3efb3d2e4912ae663f392a11fe418",
+          "texture_file_hash_packed": "unpacked",
+          "collections": [
+            "New Mesh"
+          ]
+        }
+      ]
+    },
+    "Mesh_5_1": {
+      "Material.011": [
+        {
+          "texture_filename": "sim_rug_pink.png",
+          "texture_filepath_relative": "E:\\Users\\Simpsons Game PS3\\SimpsonsHouse\\sim_rug_pink.png",
+          "texture_filepath_absolute": "E:\\Users\\Simpsons Game PS3\\SimpsonsHouse\\sim_rug_pink.png",
+          "texture_file_hash_disk": null,
+          "texture_file_hash_packed": "unpacked",
+          "collections": [
+            "New Mesh"
+          ]
+        }
+      ]
+    },
+    "Mesh_5_2": {
+      "Material.012": [
+        {
+          "texture_filename": "glass_whiteline.png",
+          "texture_filepath_relative": "E:\\Users\\Simpsons Game PS3\\SimpsonsHouse\\glass_whiteline.png",
+          "texture_filepath_absolute": "E:\\Users\\Simpsons Game PS3\\SimpsonsHouse\\glass_whiteline.png",
+          "texture_file_hash_disk": null,
+          "texture_file_hash_packed": "unpacked",
+          "collections": [
+            "New Mesh"
+          ]
+        }
+      ]
+    },
+    "Mesh_6_0": {
+      "Material.013": [
+        {
+          "texture_filename": "simpsons_palette.png",
+          "texture_filepath_relative": "//simpsons_palette.png",
+          "texture_filepath_absolute": "A:\\Dev\\Games\\TheSimpsonsGame\\PAL\\.test\\simpsons_palette.png",
+          "texture_file_hash_disk": "6233b19060fb58671ed6e64a3d316f770e786634bcbcc8e40fd893bae6bf4342",
+          "texture_file_hash_packed": "unpacked",
+          "collections": [
+            "New Mesh"
+          ]
+        }
+      ]
+    },
+    "Mesh_6_1": {
+      "Material.014": [
+        {
+          "texture_filename": "simpsons_palette.png",
+          "texture_filepath_relative": "//simpsons_palette.png",
+          "texture_filepath_absolute": "A:\\Dev\\Games\\TheSimpsonsGame\\PAL\\.test\\simpsons_palette.png",
+          "texture_file_hash_disk": "6233b19060fb58671ed6e64a3d316f770e786634bcbcc8e40fd893bae6bf4342",
+          "texture_file_hash_packed": "unpacked",
+          "collections": [
+            "New Mesh"
+          ]
+        }
+      ]
+    },
+    "Mesh_6_2": {
+      "Material.015": [
+        {
+          "texture_filename": "simpsons_palette.png",
+          "texture_filepath_relative": "//simpsons_palette.png",
+          "texture_filepath_absolute": "A:\\Dev\\Games\\TheSimpsonsGame\\PAL\\.test\\simpsons_palette.png",
+          "texture_file_hash_disk": "6233b19060fb58671ed6e64a3d316f770e786634bcbcc8e40fd893bae6bf4342",
+          "texture_file_hash_packed": "unpacked",
+          "collections": [
+            "New Mesh"
+          ]
+        }
+      ]
+    },
+    "Mesh_6_3": {
+      "Material.016": [
+        {
+          "texture_filename": "simpsons_palette.png",
+          "texture_filepath_relative": "//simpsons_palette.png",
+          "texture_filepath_absolute": "A:\\Dev\\Games\\TheSimpsonsGame\\PAL\\.test\\simpsons_palette.png",
+          "texture_file_hash_disk": "6233b19060fb58671ed6e64a3d316f770e786634bcbcc8e40fd893bae6bf4342",
+          "texture_file_hash_packed": "unpacked",
+          "collections": [
+            "New Mesh"
+          ]
+        }
+      ]
+    },
+    "Mesh_6_4": {
+      "Material.017": [
+        {
+          "texture_filename": "glass_whiteline.png.001",
+          "texture_filepath_relative": "//..\\..\\US\\GameFiles\\Main\\PS3_GAME\\Flattened_OUTPUT\\Map_3-00_GameHub\\gamehub\\zone13STR\\US_AU\\ASSET_RWS\\texture_dictionary++gamehub\\glass_whiteline.png",
+          "texture_filepath_absolute": "A:\\Dev\\Games\\TheSimpsonsGame\\PAL\\.test\\..\\..\\US\\GameFiles\\Main\\PS3_GAME\\Flattened_OUTPUT\\Map_3-00_GameHub\\gamehub\\zone13STR\\US_AU\\ASSET_RWS\\texture_dictionary++gamehub\\glass_whiteline.png",
+          "texture_file_hash_disk": "ab9f07bcba078291fc8628b216110f488cdef4c6cdb0e23a9698dd540713c7ab",
+          "texture_file_hash_packed": "unpacked",
+          "collections": [
+            "New Mesh"
+          ]
+        }
+      ]
+    },
+    "Mesh_7_0": {
+      "Material.018": [
+        {
+          "texture_filename": "simpsons_palette.png",
+          "texture_filepath_relative": "//simpsons_palette.png",
+          "texture_filepath_absolute": "A:\\Dev\\Games\\TheSimpsonsGame\\PAL\\.test\\simpsons_palette.png",
+          "texture_file_hash_disk": "6233b19060fb58671ed6e64a3d316f770e786634bcbcc8e40fd893bae6bf4342",
+          "texture_file_hash_packed": "unpacked",
+          "collections": [
+            "New Mesh"
+          ]
+        }
+      ]
+    },
+    "Mesh_7_1": {
+      "Material.019": [
+        {
+          "texture_filename": "sim_toolwallorga.png.001",
+          "texture_filepath_relative": "//..\\..\\US\\GameFiles\\Main\\PS3_GAME\\Flattened_OUTPUT\\Map_3-00_GameHub\\gamehub\\zone13STR\\US_AU\\ASSET_RWS\\texture_dictionary++gamehub\\sim_toolwallorga.png",
+          "texture_filepath_absolute": "A:\\Dev\\Games\\TheSimpsonsGame\\PAL\\.test\\..\\..\\US\\GameFiles\\Main\\PS3_GAME\\Flattened_OUTPUT\\Map_3-00_GameHub\\gamehub\\zone13STR\\US_AU\\ASSET_RWS\\texture_dictionary++gamehub\\sim_toolwallorga.png",
+          "texture_file_hash_disk": "e4cd9ef173b0fe0096926e6fcda7bb67d4e3efb3d2e4912ae663f392a11fe418",
+          "texture_file_hash_packed": "unpacked",
+          "collections": [
+            "New Mesh"
+          ]
+        }
+      ]
+    },
+    "Mesh_8_0": {
+      "Material.020": [
+        {
+          "texture_filename": "simpsons_palette.png",
+          "texture_filepath_relative": "//simpsons_palette.png",
+          "texture_filepath_absolute": "A:\\Dev\\Games\\TheSimpsonsGame\\PAL\\.test\\simpsons_palette.png",
+          "texture_file_hash_disk": "6233b19060fb58671ed6e64a3d316f770e786634bcbcc8e40fd893bae6bf4342",
+          "texture_file_hash_packed": "unpacked",
+          "collections": [
+            "New Mesh"
+          ]
+        }
+      ]
+    },
+    "Mesh_8_1": {
+      "Material.021": []
+    },
+    "Mesh_8_3": {
+      "Material.022": [
+        {
+          "texture_filename": "gts_maggie_duct.png.001",
+          "texture_filepath_relative": "//..\\..\\US\\GameFiles\\Main\\PS3_GAME\\Flattened_OUTPUT\\Map_3-00_GameHub\\gamehub\\zone13STR\\US_AU\\ASSET_RWS\\texture_dictionary++gamehub\\gts_maggie_duct.png",
+          "texture_filepath_absolute": "A:\\Dev\\Games\\TheSimpsonsGame\\PAL\\.test\\..\\..\\US\\GameFiles\\Main\\PS3_GAME\\Flattened_OUTPUT\\Map_3-00_GameHub\\gamehub\\zone13STR\\US_AU\\ASSET_RWS\\texture_dictionary++gamehub\\gts_maggie_duct.png",
+          "texture_file_hash_disk": "279a8d05ab6184432efcd7840c1001ca08414db650db6615c08ad8c8923021f4",
+          "texture_file_hash_packed": "unpacked",
+          "collections": [
+            "New Mesh"
+          ]
+        }
+      ]
+    },
+    "Mesh_9_0": {
+      "Material.023": [
+        {
+          "texture_filename": "simpsons_palette.png",
+          "texture_filepath_relative": "//simpsons_palette.png",
+          "texture_filepath_absolute": "A:\\Dev\\Games\\TheSimpsonsGame\\PAL\\.test\\simpsons_palette.png",
+          "texture_file_hash_disk": "6233b19060fb58671ed6e64a3d316f770e786634bcbcc8e40fd893bae6bf4342",
+          "texture_file_hash_packed": "unpacked",
+          "collections": [
+            "New Mesh"
+          ]
+        }
+      ]
+    },
+    "Mesh_9_2": {
+      "Material.024": [
+        {
+          "texture_filename": "carpet_dualtone.png.001",
+          "texture_filepath_relative": "//..\\..\\US\\GameFiles\\Main\\PS3_GAME\\Flattened_OUTPUT\\Map_3-00_GameHub\\gamehub\\zone13STR\\US_AU\\ASSET_RWS\\texture_dictionary++gamehub\\carpet_dualtone.png",
+          "texture_filepath_absolute": "A:\\Dev\\Games\\TheSimpsonsGame\\PAL\\.test\\..\\..\\US\\GameFiles\\Main\\PS3_GAME\\Flattened_OUTPUT\\Map_3-00_GameHub\\gamehub\\zone13STR\\US_AU\\ASSET_RWS\\texture_dictionary++gamehub\\carpet_dualtone.png",
+          "texture_file_hash_disk": "fdb8fa67b768c3c3488a103673e3df8e3f52a22afd6d7e4fe77530ac4e6be82b",
+          "texture_file_hash_packed": "unpacked",
+          "collections": [
+            "New Mesh"
+          ]
+        }
+      ]
+    },
+    "Mesh_9_3": {
+      "Material.025": [
+        {
+          "texture_filename": "simpsons_palette.png",
+          "texture_filepath_relative": "//simpsons_palette.png",
+          "texture_filepath_absolute": "A:\\Dev\\Games\\TheSimpsonsGame\\PAL\\.test\\simpsons_palette.png",
+          "texture_file_hash_disk": "6233b19060fb58671ed6e64a3d316f770e786634bcbcc8e40fd893bae6bf4342",
+          "texture_file_hash_packed": "unpacked",
+          "collections": [
+            "New Mesh"
+          ]
+        }
+      ]
+    },
+    "Mesh_10_0": {
+      "Material.026": [
+        {
+          "texture_filename": "simpsons_palette.png",
+          "texture_filepath_relative": "//simpsons_palette.png",
+          "texture_filepath_absolute": "A:\\Dev\\Games\\TheSimpsonsGame\\PAL\\.test\\simpsons_palette.png",
+          "texture_file_hash_disk": "6233b19060fb58671ed6e64a3d316f770e786634bcbcc8e40fd893bae6bf4342",
+          "texture_file_hash_packed": "unpacked",
+          "collections": [
+            "New Mesh"
+          ]
+        }
+      ]
+    },
+    "Mesh_10_1": {
+      "Material.027": [
+        {
+          "texture_filename": "simpsons_palette.png",
+          "texture_filepath_relative": "//simpsons_palette.png",
+          "texture_filepath_absolute": "A:\\Dev\\Games\\TheSimpsonsGame\\PAL\\.test\\simpsons_palette.png",
+          "texture_file_hash_disk": "6233b19060fb58671ed6e64a3d316f770e786634bcbcc8e40fd893bae6bf4342",
+          "texture_file_hash_packed": "unpacked",
+          "collections": [
+            "New Mesh"
+          ]
+        }
+      ]
+    },
+    "Mesh_10_2": {
+      "Material.028": [
+        {
+          "texture_filename": "simpsons_palette.png",
+          "texture_filepath_relative": "//simpsons_palette.png",
+          "texture_filepath_absolute": "A:\\Dev\\Games\\TheSimpsonsGame\\PAL\\.test\\simpsons_palette.png",
+          "texture_file_hash_disk": "6233b19060fb58671ed6e64a3d316f770e786634bcbcc8e40fd893bae6bf4342",
+          "texture_file_hash_packed": "unpacked",
+          "collections": [
+            "New Mesh"
+          ]
+        }
+      ]
+    },
+    "Mesh_10_3": {
+      "Material.029": [
+        {
+          "texture_filename": "glass_whiteline.png",
+          "texture_filepath_relative": "E:\\Users\\Simpsons Game PS3\\SimpsonsHouse\\glass_whiteline.png",
+          "texture_filepath_absolute": "E:\\Users\\Simpsons Game PS3\\SimpsonsHouse\\glass_whiteline.png",
+          "texture_file_hash_disk": null,
+          "texture_file_hash_packed": "unpacked",
+          "collections": [
+            "New Mesh"
+          ]
+        }
+      ]
+    },
+    "Mesh_11_0": {
+      "Material.030": [
+        {
+          "texture_filename": "simpsons_palette.png",
+          "texture_filepath_relative": "//simpsons_palette.png",
+          "texture_filepath_absolute": "A:\\Dev\\Games\\TheSimpsonsGame\\PAL\\.test\\simpsons_palette.png",
+          "texture_file_hash_disk": "6233b19060fb58671ed6e64a3d316f770e786634bcbcc8e40fd893bae6bf4342",
+          "texture_file_hash_packed": "unpacked",
+          "collections": [
+            "New Mesh"
+          ]
+        }
+      ]
+    },
+    "Mesh_11_1": {
+      "FirePlace": [
+        {
+          "texture_filename": "fireplace_simpso.png.001",
+          "texture_filepath_relative": "//..\\..\\US\\GameFiles\\Main\\PS3_GAME\\Flattened_OUTPUT\\Map_3-00_GameHub\\gamehub\\zone13STR\\US_AU\\ASSET_RWS\\texture_dictionary++gamehub\\fireplace_simpso.png",
+          "texture_filepath_absolute": "A:\\Dev\\Games\\TheSimpsonsGame\\PAL\\.test\\..\\..\\US\\GameFiles\\Main\\PS3_GAME\\Flattened_OUTPUT\\Map_3-00_GameHub\\gamehub\\zone13STR\\US_AU\\ASSET_RWS\\texture_dictionary++gamehub\\fireplace_simpso.png",
+          "texture_file_hash_disk": "05fa6c37aab3a529ff1757c79eaffd3c9ca67f53eeabc05b5aebcba0adfb1f66",
+          "texture_file_hash_packed": "unpacked",
+          "collections": [
+            "New Mesh"
+          ]
+        }
+      ]
+    },
+    "Mesh_12_0": {
+      "Material.032": [
+        {
+          "texture_filename": "simpsons_palette.png",
+          "texture_filepath_relative": "//simpsons_palette.png",
+          "texture_filepath_absolute": "A:\\Dev\\Games\\TheSimpsonsGame\\PAL\\.test\\simpsons_palette.png",
+          "texture_file_hash_disk": "6233b19060fb58671ed6e64a3d316f770e786634bcbcc8e40fd893bae6bf4342",
+          "texture_file_hash_packed": "unpacked",
+          "collections": [
+            "New Mesh"
+          ]
+        }
+      ]
+    },
+    "Mesh_12_1": {
+      "Material.031": [
+        {
+          "texture_filename": "simpsons_palette.png",
+          "texture_filepath_relative": "//simpsons_palette.png",
+          "texture_filepath_absolute": "A:\\Dev\\Games\\TheSimpsonsGame\\PAL\\.test\\simpsons_palette.png",
+          "texture_file_hash_disk": "6233b19060fb58671ed6e64a3d316f770e786634bcbcc8e40fd893bae6bf4342",
+          "texture_file_hash_packed": "unpacked",
+          "collections": [
+            "New Mesh"
+          ]
+        }
+      ]
+    },
+    "Mesh_12_3": {
+      "Material.033": [
+        {
+          "texture_filename": "gts_maggie_duct.png.001",
+          "texture_filepath_relative": "//..\\..\\US\\GameFiles\\Main\\PS3_GAME\\Flattened_OUTPUT\\Map_3-00_GameHub\\gamehub\\zone13STR\\US_AU\\ASSET_RWS\\texture_dictionary++gamehub\\gts_maggie_duct.png",
+          "texture_filepath_absolute": "A:\\Dev\\Games\\TheSimpsonsGame\\PAL\\.test\\..\\..\\US\\GameFiles\\Main\\PS3_GAME\\Flattened_OUTPUT\\Map_3-00_GameHub\\gamehub\\zone13STR\\US_AU\\ASSET_RWS\\texture_dictionary++gamehub\\gts_maggie_duct.png",
+          "texture_file_hash_disk": "279a8d05ab6184432efcd7840c1001ca08414db650db6615c08ad8c8923021f4",
+          "texture_file_hash_packed": "unpacked",
+          "collections": [
+            "New Mesh"
+          ]
+        }
+      ]
+    }
+  },
+  "unused_materials": [
+    "Dots Stroke"
+  ],
+  "unused_textures": [
+    {
+      "texture_filename": "alpha_simpsons_p.png",
+      "texture_filepath_relative": "E:\\Users\\Simpsons Game PS3\\SimpsonsHouse\\alpha_simpsons_p.png",
+      "texture_filepath_absolute": "E:\\Users\\Simpsons Game PS3\\SimpsonsHouse\\alpha_simpsons_p.png",
+      "texture_file_hash_disk": null,
+      "texture_file_hash_packed": "unpacked"
+    },
+    {
+      "texture_filename": "gts_maggie_duct.png",
+      "texture_filepath_relative": "E:\\Users\\Simpsons Game PS3\\SimpsonsHouse\\gts_maggie_duct.png",
+      "texture_filepath_absolute": "E:\\Users\\Simpsons Game PS3\\SimpsonsHouse\\gts_maggie_duct.png",
+      "texture_file_hash_disk": null,
+      "texture_file_hash_packed": "unpacked"
+    },
+    {
+      "texture_filename": "Render Result",
+      "texture_filepath_relative": "",
+      "texture_filepath_absolute": "",
+      "texture_file_hash_disk": null,
+      "texture_file_hash_packed": "unpacked"
+    }
+  ],
+  "all_materials": [
+    {
+      "material_name": "Dots Stroke",
+      "use_nodes": false,
+      "users": 2
+    },
+    {
+      "material_name": "FirePlace",
+      "use_nodes": true,
+      "users": 1
+    },
+    {
+      "material_name": "Material.001",
+      "use_nodes": true,
+      "users": 1
+    },
+    {
+      "material_name": "Material.002",
+      "use_nodes": true,
+      "users": 1
+    },
+    {
+      "material_name": "Material.003",
+      "use_nodes": true,
+      "users": 1
+    },
+    {
+      "material_name": "Material.004",
+      "use_nodes": true,
+      "users": 1
+    },
+    {
+      "material_name": "Material.005",
+      "use_nodes": true,
+      "users": 1
+    },
+    {
+      "material_name": "Material.006",
+      "use_nodes": true,
+      "users": 1
+    },
+    {
+      "material_name": "Material.007",
+      "use_nodes": true,
+      "users": 1
+    },
+    {
+      "material_name": "Material.008",
+      "use_nodes": true,
+      "users": 1
+    },
+    {
+      "material_name": "Material.009",
+      "use_nodes": true,
+      "users": 1
+    },
+    {
+      "material_name": "Material.010",
+      "use_nodes": true,
+      "users": 1
+    },
+    {
+      "material_name": "Material.011",
+      "use_nodes": true,
+      "users": 1
+    },
+    {
+      "material_name": "Material.012",
+      "use_nodes": true,
+      "users": 1
+    },
+    {
+      "material_name": "Material.013",
+      "use_nodes": true,
+      "users": 1
+    },
+    {
+      "material_name": "Material.014",
+      "use_nodes": true,
+      "users": 1
+    },
+    {
+      "material_name": "Material.015",
+      "use_nodes": true,
+      "users": 1
+    },
+    {
+      "material_name": "Material.016",
+      "use_nodes": true,
+      "users": 1
+    },
+    {
+      "material_name": "Material.017",
+      "use_nodes": true,
+      "users": 1
+    },
+    {
+      "material_name": "Material.018",
+      "use_nodes": true,
+      "users": 1
+    },
+    {
+      "material_name": "Material.019",
+      "use_nodes": true,
+      "users": 1
+    },
+    {
+      "material_name": "Material.020",
+      "use_nodes": true,
+      "users": 1
+    },
+    {
+      "material_name": "Material.021",
+      "use_nodes": true,
+      "users": 1
+    },
+    {
+      "material_name": "Material.022",
+      "use_nodes": true,
+      "users": 1
+    },
+    {
+      "material_name": "Material.023",
+      "use_nodes": true,
+      "users": 1
+    },
+    {
+      "material_name": "Material.024",
+      "use_nodes": true,
+      "users": 1
+    },
+    {
+      "material_name": "Material.025",
+      "use_nodes": true,
+      "users": 1
+    },
+    {
+      "material_name": "Material.026",
+      "use_nodes": true,
+      "users": 1
+    },
+    {
+      "material_name": "Material.027",
+      "use_nodes": true,
+      "users": 1
+    },
+    {
+      "material_name": "Material.028",
+      "use_nodes": true,
+      "users": 1
+    },
+    {
+      "material_name": "Material.029",
+      "use_nodes": true,
+      "users": 1
+    },
+    {
+      "material_name": "Material.030",
+      "use_nodes": true,
+      "users": 1
+    },
+    {
+      "material_name": "Material.031",
+      "use_nodes": true,
+      "users": 1
+    },
+    {
+      "material_name": "Material.032",
+      "use_nodes": true,
+      "users": 1
+    },
+    {
+      "material_name": "Material.033",
+      "use_nodes": true,
+      "users": 1
+    }
+  ],
+  "all_images": [
+    {
+      "image_name": "alpha_simpsons_p.png",
+      "is_packed": false,
+      "filepath_relative": "E:\\Users\\Simpsons Game PS3\\SimpsonsHouse\\alpha_simpsons_p.png",
+      "filepath_absolute": "E:\\Users\\Simpsons Game PS3\\SimpsonsHouse\\alpha_simpsons_p.png",
+      "file_hash_disk": null,
+      "file_hash_packed": "unpacked",
+      "users": 1
+    },
+    {
+      "image_name": "carpet_dualtone.png.001",
+      "is_packed": false,
+      "filepath_relative": "//..\\..\\US\\GameFiles\\Main\\PS3_GAME\\Flattened_OUTPUT\\Map_3-00_GameHub\\gamehub\\zone13STR\\US_AU\\ASSET_RWS\\texture_dictionary++gamehub\\carpet_dualtone.png",
+      "filepath_absolute": "A:\\Dev\\Games\\TheSimpsonsGame\\PAL\\.test\\..\\..\\US\\GameFiles\\Main\\PS3_GAME\\Flattened_OUTPUT\\Map_3-00_GameHub\\gamehub\\zone13STR\\US_AU\\ASSET_RWS\\texture_dictionary++gamehub\\carpet_dualtone.png",
+      "file_hash_disk": "fdb8fa67b768c3c3488a103673e3df8e3f52a22afd6d7e4fe77530ac4e6be82b",
+      "file_hash_packed": "unpacked",
+      "users": 1
+    },
+    {
+      "image_name": "fireplace_simpso.png.001",
+      "is_packed": false,
+      "filepath_relative": "//..\\..\\US\\GameFiles\\Main\\PS3_GAME\\Flattened_OUTPUT\\Map_3-00_GameHub\\gamehub\\zone13STR\\US_AU\\ASSET_RWS\\texture_dictionary++gamehub\\fireplace_simpso.png",
+      "filepath_absolute": "A:\\Dev\\Games\\TheSimpsonsGame\\PAL\\.test\\..\\..\\US\\GameFiles\\Main\\PS3_GAME\\Flattened_OUTPUT\\Map_3-00_GameHub\\gamehub\\zone13STR\\US_AU\\ASSET_RWS\\texture_dictionary++gamehub\\fireplace_simpso.png",
+      "file_hash_disk": "05fa6c37aab3a529ff1757c79eaffd3c9ca67f53eeabc05b5aebcba0adfb1f66",
+      "file_hash_packed": "unpacked",
+      "users": 1
+    },
+    {
+      "image_name": "glass_whiteline.png",
+      "is_packed": false,
+      "filepath_relative": "E:\\Users\\Simpsons Game PS3\\SimpsonsHouse\\glass_whiteline.png",
+      "filepath_absolute": "E:\\Users\\Simpsons Game PS3\\SimpsonsHouse\\glass_whiteline.png",
+      "file_hash_disk": null,
+      "file_hash_packed": "unpacked",
+      "users": 2
+    },
+    {
+      "image_name": "glass_whiteline.png.001",
+      "is_packed": false,
+      "filepath_relative": "//..\\..\\US\\GameFiles\\Main\\PS3_GAME\\Flattened_OUTPUT\\Map_3-00_GameHub\\gamehub\\zone13STR\\US_AU\\ASSET_RWS\\texture_dictionary++gamehub\\glass_whiteline.png",
+      "filepath_absolute": "A:\\Dev\\Games\\TheSimpsonsGame\\PAL\\.test\\..\\..\\US\\GameFiles\\Main\\PS3_GAME\\Flattened_OUTPUT\\Map_3-00_GameHub\\gamehub\\zone13STR\\US_AU\\ASSET_RWS\\texture_dictionary++gamehub\\glass_whiteline.png",
+      "file_hash_disk": "ab9f07bcba078291fc8628b216110f488cdef4c6cdb0e23a9698dd540713c7ab",
+      "file_hash_packed": "unpacked",
+      "users": 2
+    },
+    {
+      "image_name": "gts_maggie_duct.png",
+      "is_packed": false,
+      "filepath_relative": "E:\\Users\\Simpsons Game PS3\\SimpsonsHouse\\gts_maggie_duct.png",
+      "filepath_absolute": "E:\\Users\\Simpsons Game PS3\\SimpsonsHouse\\gts_maggie_duct.png",
+      "file_hash_disk": null,
+      "file_hash_packed": "unpacked",
+      "users": 0
+    },
+    {
+      "image_name": "gts_maggie_duct.png.001",
+      "is_packed": false,
+      "filepath_relative": "//..\\..\\US\\GameFiles\\Main\\PS3_GAME\\Flattened_OUTPUT\\Map_3-00_GameHub\\gamehub\\zone13STR\\US_AU\\ASSET_RWS\\texture_dictionary++gamehub\\gts_maggie_duct.png",
+      "filepath_absolute": "A:\\Dev\\Games\\TheSimpsonsGame\\PAL\\.test\\..\\..\\US\\GameFiles\\Main\\PS3_GAME\\Flattened_OUTPUT\\Map_3-00_GameHub\\gamehub\\zone13STR\\US_AU\\ASSET_RWS\\texture_dictionary++gamehub\\gts_maggie_duct.png",
+      "file_hash_disk": "279a8d05ab6184432efcd7840c1001ca08414db650db6615c08ad8c8923021f4",
+      "file_hash_packed": "unpacked",
+      "users": 2
+    },
+    {
+      "image_name": "house_prop_plant.png.001",
+      "is_packed": false,
+      "filepath_relative": "//..\\..\\US\\GameFiles\\Main\\PS3_GAME\\Flattened_OUTPUT\\Map_3-00_GameHub\\gamehub\\zone13STR\\US_AU\\ASSET_RWS\\texture_dictionary++gamehub\\house_prop_plant.png",
+      "filepath_absolute": "A:\\Dev\\Games\\TheSimpsonsGame\\PAL\\.test\\..\\..\\US\\GameFiles\\Main\\PS3_GAME\\Flattened_OUTPUT\\Map_3-00_GameHub\\gamehub\\zone13STR\\US_AU\\ASSET_RWS\\texture_dictionary++gamehub\\house_prop_plant.png",
+      "file_hash_disk": "61faec2216a5824e0c4465de678090cbc0390448ff44ef03c4e5e94b94bcb4db",
+      "file_hash_packed": "unpacked",
+      "users": 1
+    },
+    {
+      "image_name": "Render Result",
+      "is_packed": false,
+      "filepath_relative": "",
+      "filepath_absolute": "",
+      "file_hash_disk": null,
+      "file_hash_packed": "unpacked",
+      "users": 1
+    },
+    {
+      "image_name": "sim_rug_pink.png",
+      "is_packed": false,
+      "filepath_relative": "E:\\Users\\Simpsons Game PS3\\SimpsonsHouse\\sim_rug_pink.png",
+      "filepath_absolute": "E:\\Users\\Simpsons Game PS3\\SimpsonsHouse\\sim_rug_pink.png",
+      "file_hash_disk": null,
+      "file_hash_packed": "unpacked",
+      "users": 2
+    },
+    {
+      "image_name": "sim_rug_pink.png.001",
+      "is_packed": false,
+      "filepath_relative": "E:\\Users\\Simpsons Game PS3\\SimpsonsHouse\\sim_rug_pink.png",
+      "filepath_absolute": "E:\\Users\\Simpsons Game PS3\\SimpsonsHouse\\sim_rug_pink.png",
+      "file_hash_disk": null,
+      "file_hash_packed": "unpacked",
+      "users": 1
+    },
+    {
+      "image_name": "sim_toolwallorga.png.001",
+      "is_packed": false,
+      "filepath_relative": "//..\\..\\US\\GameFiles\\Main\\PS3_GAME\\Flattened_OUTPUT\\Map_3-00_GameHub\\gamehub\\zone13STR\\US_AU\\ASSET_RWS\\texture_dictionary++gamehub\\sim_toolwallorga.png",
+      "filepath_absolute": "A:\\Dev\\Games\\TheSimpsonsGame\\PAL\\.test\\..\\..\\US\\GameFiles\\Main\\PS3_GAME\\Flattened_OUTPUT\\Map_3-00_GameHub\\gamehub\\zone13STR\\US_AU\\ASSET_RWS\\texture_dictionary++gamehub\\sim_toolwallorga.png",
+      "file_hash_disk": "e4cd9ef173b0fe0096926e6fcda7bb67d4e3efb3d2e4912ae663f392a11fe418",
+      "file_hash_packed": "unpacked",
+      "users": 2
+    },
+    {
+      "image_name": "simpsons_palette.png",
+      "is_packed": false,
+      "filepath_relative": "//simpsons_palette.png",
+      "filepath_absolute": "A:\\Dev\\Games\\TheSimpsonsGame\\PAL\\.test\\simpsons_palette.png",
+      "file_hash_disk": "6233b19060fb58671ed6e64a3d316f770e786634bcbcc8e40fd893bae6bf4342",
+      "file_hash_packed": "unpacked",
+      "users": 19
+    }
+  ]
+}

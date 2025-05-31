@@ -1,0 +1,103 @@
+# Build/Game artifacts
+GameFiles/
+Game/
+
+# Configuration/History
+.history
+config.ini
+project.json
+
+
+# IDE/Editor specific
+.vscode/
+.VSCodeCounter/
+
+# Logs
+*.log
+main.log
+
+/OldModules/
+/OldRemakeRegistry/
+
+# Tools executables/scripts/temp
+Tools/QuickBMS/*.exe
+Tools/QuickBMS/*.bat
+Tools/QuickBMS/*.ps1
+Tools/QuickBMS/*.txt
+Tools/QuickBMS/exe
+
+Tools/Blender/blender-4.0.2-windows-x64
+
+# Temporary/Backup
+#old/
+
+.*/
+
+# Asset/Texture mapping
+texture_mapping.json
+asset_mapping.json
+asset_map.sqlite
+
+# Python cache
+__pycache__
+/__pycache__/
+__pycache__/
+*.pyc
+.pyc
+**/__pycache__/init.cpython-313.pyc
+
+/TMP/
+/TMP/Downloads/
+
+# no no files
+/Godot/
+
+localereftableD4815ED6.txt
+LightTOC
+StreamSetConfig
+*.preinstanced
+*.ps3
+*.ps3
+*.snu
+*.vp6
+*.mus
+/Source/
+/SourceData/
+*.vfb
+*.xml
+*.dat
+*.txd
+*.lh2
+*.alb
+*.ctb
+*.graph
+*.rcm_b
+*.sbk
+*.bsp
+*.smb
+*.mib
+*.amb
+*.uix
+*.imb
+*.toc
+*.msb
+*.inf
+*.bin
+*.aub
+*.xml
+*.str
+*.lua
+
+.test/
+test/
+
+#uv_map_extract/
+
+investigation_tools/blank.blend
+investigation_tools/blank.blend1
+
+*.blend1
+*.blend1
+
+remake-engine-docs/
+
