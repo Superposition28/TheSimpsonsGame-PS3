@@ -9,6 +9,7 @@
 		},
 		{
 			"Name": "Rename base folders",
+			"run-all": true,
 			"Instructions": "run rename script",
 			"python_executable": "python",
 			"script": "Tools/Process/Rename/RenameFolders.py",
@@ -16,6 +17,7 @@
 		},
 		{
 			"Name": "validate game files",
+			"run-all": true,
 			"Instructions": "run validate against the `RemakeRegistry/Games/TheSimpsonsGame PS3/PrimaryIndex.db`, specifically the root files in the source folder",
 			"python_executable": "python",
 			"script": "RemakeRegistry/Games/TheSimpsonsGame PS3/Scripts/ValidateSource-1.py",
@@ -23,6 +25,7 @@
 		},
 		{
 			"Name": "Extract Archives (.STR)",
+			"run-all": true,
 			"Instructions": "run quickbms script using RemakeRegistry/Games/TheSimpsonsGame PS3/Scripts/simpsons_str.bms",
 			"python_executable": "python",
 			"script": "Tools/QuickBMS/bms_extract.py",
@@ -30,12 +33,14 @@
 		},
 		{
 			"Name": "Extract Textures (.txd -> .dds)",
+			"run-all": true,
 			"python_executable": "python",
 			"script": "RemakeRegistry/Games/TheSimpsonsGame PS3/Scripts/Texture/Export_txd.py",
 			"args": ["GameFiles/STROUT"]
 		},
 		{
 			"Name": "validate extracted game files",
+			"run-all": true,
 			"Instructions": "run validate against the `RemakeRegistry/Games/TheSimpsonsGame PS3/PrimaryIndex.db`",
 			"python_executable": "python",
 			"script": "RemakeRegistry/Games/TheSimpsonsGame PS3/Scripts/ValidateExtracted-1.py",
@@ -43,6 +48,7 @@
 		},
 		{
 			"Name": "Convert Models (.preinstanced -> .blend)",
+			"run-all": true,
 			"python_executable": "python",
 			"script": "RemakeRegistry/Games/TheSimpsonsGame PS3/Scripts/Blender/Main/run.py",
 			"args": [],
@@ -65,12 +71,13 @@
 					"type": "confirm",
 					"Name": "enable_export",
 					"message": "Model Conversion: Export additional formats (FBX/GLTF)?",
-					"default": false
+					"default": true
 				},
 				{
 					"type": "checkbox",
 					"Name": "export_formats",
 					"message": "Select export formats:",
+					"default": ["glb"],
 					"choices": ["fbx", "glb"],
 					"cli_prefix": "--export",
 					"condition": "enable_export",
@@ -80,18 +87,21 @@
 		},
 		{
 			"Name": "Convert Videos (.vp6 -> .ogv)",
+			"run-all": true,
 			"python_executable": "python",
 			"script": "Tools/ffmpeg-vgmstream/convert.py",
 			"args": ["-m", "ffmpeg", "-s", "{{RemakeEngine.Directories.SourcePath}}\\Assets_1_Video_Movies", "-t", "GameFiles\\STROUT\\Assets_1_Video_Movies", "-f", "ffmpeg.exe", "-i", ".vp6", "-o", ".ogv", "--overwrite"]
 		},
 		{
 			"Name": "Reorganise Audio Files",
+			"run-all": true,
 			"python_executable": "python",
 			"script": "RemakeRegistry/Games/TheSimpsonsGame PS3/Scripts/SetupAudioDir.py",
 			"args": ["{{RemakeEngine.Directories.SourcePath}}\\Assets_1_Audio_Streams"]
 		},
 		{
 			"Name": "Convert Audio (.snu -> .wav)",
+			"run-all": true,
 			"python_executable": "python",
 			"script": "Tools/ffmpeg-vgmstream/convert.py",
 			"args": ["-m", "vgmstream", "-s", "{{RemakeEngine.Directories.SourcePath}}\\Assets_1_Audio_Streams", "-t", "GameFiles\\STROUT\\Assets_1_Audio_Streams", "--vgmstream-cli", "vgmstream-cli.exe", "-i", ".snu", "-o", ".wav"]
@@ -99,6 +109,7 @@
 		{
 			"Name": "flatten folder structure",
 			"Instructions": "run flatten script",
+			"run-all": true,
 			"python_executable": "python",
 			"script": "Tools/Process/Flat/flat.py",
 			"args": ["GameFiles/STROUT", "GameFiles/ExtractedOut", "--rules", "RemakeRegistry/Games/TheSimpsonsGame PS3/PathRules.json", "--separator", "++", "--verbose"]
