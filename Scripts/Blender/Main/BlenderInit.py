@@ -259,7 +259,7 @@ def create_symbolic_links(conn, root_drive, debug_sleep_enabled=False): # Change
                 if verify_symlink(link_folder, src_folder, identifier, "blend"):
                     symlinks_to_update_in_db["blend_symlink"] = link_folder
             elif VERBOSE: # create_symlink_entry failed
-                 print(colour="YELLOW", prefix="BlendInit", msg=f"Failed to create blend symlink for {identifier} (function returned false).")
+                print(colour="YELLOW", prefix="BlendInit", msg=f"Failed to create blend symlink for {identifier} (function returned false).")
 
 
         if glb_path_from_db: # glb_path_from_db is a full path to a file
@@ -276,9 +276,9 @@ def create_symbolic_links(conn, root_drive, debug_sleep_enabled=False): # Change
             elif VERBOSE: # src_folder for GLB does not exist
                 # This condition was already present, just ensuring it's clear
                 if os.path.exists(glb_path_from_db): # If the GLB file exists but its parent dir somehow doesn't (unlikely with dirname)
-                     print(colour="YELLOW", prefix="BlendInit", msg=f"GLB source folder {src_folder} for asset {identifier} does not exist, but GLB file {glb_path_from_db} does. Symlink not created.")
+                    print(colour="YELLOW", prefix="BlendInit", msg=f"GLB source folder {src_folder} for asset {identifier} does not exist, but GLB file {glb_path_from_db} does. Symlink not created.")
                 else: # GLB file itself also doesn't exist (implies src_folder based on it also wouldn't)
-                     print(colour="YELLOW", prefix="BlendInit", msg=f"GLB file {glb_path_from_db} and its source folder {src_folder} do not exist for asset {identifier}. GLB symlink not created.")
+                    print(colour="YELLOW", prefix="BlendInit", msg=f"GLB file {glb_path_from_db} and its source folder {src_folder} do not exist for asset {identifier}. GLB symlink not created.")
 
 
         if symlinks_to_update_in_db:

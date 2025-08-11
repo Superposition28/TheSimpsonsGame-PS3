@@ -1,11 +1,14 @@
 """
 This module orchestrates the execution of init and blend CLI commands.
+RemakeRegistry\Games\TheSimpsonsGame PS3\Scripts\Blender\Main\run.py
 """
 
 import subprocess
 import sys
 from pathlib import Path
 import argparse
+
+import time
 
 import os
 import sys
@@ -57,7 +60,12 @@ def main(working_dir, preinstanced_dir, blend_dir, glb_dir, output_dir, root_dri
         blend_args.extend(["--db-file-path", "Tools\\Blender\\asset_map.sqlite"])
 
         print(Colours.CYAN, f"running command: {blend_args}")
-        #subprocess.run(blend_args, check=True)
+        if debug_sleep == "True":
+            print(Colours.CYAN, "debug sleep is true")
+            for name, value in locals().items():
+                print(Colours.DARK_GREEN, f"{name}: {value}")
+            time.sleep(15)
+        subprocess.run(blend_args, check=True)
     except subprocess.CalledProcessError as e:
         print(Colours.RED, f"An error occurred while executing the command: {e}")
         sys.exit(1)
@@ -75,7 +83,7 @@ if __name__ == "__main__":
 
     verbose = args.verbose
     print(Colours.BLUE, f"Verbose: {verbose}")
-    debug_sleep = args.debug_sleep
+    debug_sleep = str(args.debug_sleep)
     print(Colours.BLUE, f"Debug sleep: {debug_sleep}")
     export = args.export
 

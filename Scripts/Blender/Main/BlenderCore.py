@@ -1,3 +1,5 @@
+## RemakeRegistry\Games\TheSimpsonsGame PS3\Scripts\Blender\Main\BlenderCore.py
+
 import json
 import subprocess
 import configparser # This import is not used, consider removing if not needed elsewhere
@@ -79,6 +81,8 @@ def blender_processing():
                     print(Colours.YELLOW, f"  GLB Symlink Path: {glb_symlink_path}")
                     print(Colours.YELLOW, f"  Preinstanced Symlink Path: {preinstanced_symlink_path}")
                 continue
+            else:
+                print(Colours.CYAN, f"All required paths are present for asset ID: {asset_row['identifier']}")
 
             blend_symlink_file = os.path.join(blend_symlink_path, filename + ".blend")
             glb_symlink_file = os.path.join(glb_symlink_path, filename + ".glb")
@@ -88,6 +92,7 @@ def blender_processing():
             preinstanced_symlink_file = os.path.join(preinstanced_symlink_path, filename + ".preinstanced")
 
             if os.path.isfile(blend_symlink_file):
+                run_blender = False
                 try:
                     # Determine if export is needed based on existence of target files and --export flags
                     needs_export = False
@@ -95,14 +100,19 @@ def blender_processing():
                         needs_export = True
                     if 'fbx' in export and not os.path.isfile(fbx_symlink_file):
                         needs_export = True
-                    
+
+                    print(Colours.CYAN, f"Processing asset: {filename} (ID: {asset_row['identifier']})")
+                    print(Colours.CYAN, f"Blend file: {blend_symlink_file}")
+                    print(Colours.CYAN, f"GLB file: {glb_symlink_file}")
+                    print(Colours.CYAN, f"FBX file: {fbx_symlink_file}")
+                    print(Colours.CYAN, f"Preinstanced file: {preinstanced_symlink_file}")
+
                     # If no specific format in --export needs generating, skip Blender if both exist (or if not requested)
                     # This logic might need refinement based on exact requirements.
                     # The original script checked `if not os.path.isfile(glb_symlink_file) or not os.path.isfile(fbx_symlink_file):`
                     # which means it would run if EITHER was missing, regardless of --export contents.
                     # Let's refine to: run if any requested export format file is missing.
-                    
-                    run_blender = False
+
                     if not export: # If --export is empty, maybe default to checking/creating both? Or skip?
                         # For now, let's assume if --export is empty, we don't run Blender.
                         # Or, if we want to maintain original behavior of creating if missing:
@@ -114,75 +124,79 @@ def blender_processing():
                         run_blender = True
                     if 'fbx' in export and not os.path.isfile(fbx_symlink_file):
                         run_blender = True
-                    
+
                     # If no export types are specified, but we want to process if files are missing (original implicit behavior)
                     if not export and (not os.path.isfile(glb_symlink_file) or not os.path.isfile(fbx_symlink_file)):
-                         # This case needs clarification: if --export is empty, should it still process?
-                         # For now, let's assume --export must specify what to do.
-                         # If you want it to run if files are missing even without --export, uncomment next line.
-                         # run_blender = True
-                         print(Colours.YELLOW, f"Skipping Blender for {filename}: No export formats specified in --export and files might be missing.")
+                        # This case needs clarification: if --export is empty, should it still process?
+                        # For now, let's assume --export must specify what to do.
+                        # If you want it to run if files are missing even without --export, uncomment next line.
+                        # run_blender = True
+                        print(Colours.YELLOW, f"Skipping Blender for {filename}: No export formats specified in --export and files might be missing.")
+                except Exception as ex:
+                    print(Colours.RED, f"1Error processing asset {filename} (ID: {asset_row['identifier']}): {ex}")
+                    # Consider if this should be sys.exit(1) or just skip the asset
+                try:
+                    if run_blender and os.path.isfile(preinstanced_symlink_file):
+                        verbose_str = "true" if verbose else "false"
+                        debug_sleep_str = "true" if debug_sleep else "false"
+                        export_str = ",".join(sorted(list(export))) # Pass the requested export formats, ensure consistent order
 
+                        print(Colours.GRAY, "# Start Blender Output")
+                        args = [
+                            blender_exe_path,
+                            "-b", blend_symlink_file,
+                            "--python", python_script_path,
+                            "--",
+                            blend_symlink_file,
+                            preinstanced_symlink_file,
+                            glb_symlink_file, # MainPreinstancedConvert.py might still expect this path for .glb
+                            python_extension_file,
+                            verbose_str,
+                            debug_sleep_str,
+                            export_str, # Pass the set of exports
+                            current_dir,
+                            fbx_symlink_file # Pass FBX path too, if your script supports it
+                        ]
+                        print(Colours.MAGENTA, f"Blender args: {args}")
+                        blender_command = ' '.join(
+                            f'"{a}"' if ' ' in str(a) else str(a)
+                            for a in args
+                        )
+                        print(Colours.MAGENTA, f"Blender command --> {blender_command}")
 
-                    if run_blender:
-                        if os.path.isfile(preinstanced_symlink_file):
-                            verbose_str = "true" if verbose else "false"
-                            debug_sleep_str = "true" if debug_sleep else "false"
-                            export_str = ",".join(sorted(list(export))) # Pass the requested export formats, ensure consistent order
-                            
-                            print(Colours.GRAY, "# Start Blender Output")
-                            args = [
-                                blender_exe_path,
-                                "-b", blend_symlink_file,
-                                "--python", python_script_path,
-                                "--",
-                                blend_symlink_file,
-                                preinstanced_symlink_file,
-                                glb_symlink_file, # MainPreinstancedConvert.py might still expect this path for .glb
-                                python_extension_file,
-                                verbose_str,
-                                debug_sleep_str,
-                                export_str, # Pass the set of exports
-                                current_dir,
-                                fbx_symlink_file # Pass FBX path too, if your script supports it
-                            ]
-                            blender_command = ' '.join(f'"{a}"' if ' ' in a else a for a in args)
-                            print(Colours.MAGENTA, f"Blender command --> {blender_command}")
+                        proc = subprocess.Popen(
+                            args,
+                            stdout=subprocess.PIPE,
+                            stderr=subprocess.PIPE,
+                            text=True
+                        )
+                        output, error = proc.communicate()
+                        print(Colours.RESET, output)
+                        if error:
+                            print(Colours.RED, error)
+                        print(Colours.GRAY, "# End Blender Output")
 
-                            proc = subprocess.Popen(
-                                args,
-                                stdout=subprocess.PIPE,
-                                stderr=subprocess.PIPE,
-                                text=True
-                            )
-                            output, error = proc.communicate()
-                            print(Colours.RESET, output)
-                            if error:
-                                print(Colours.RED, error)
-                            print(Colours.GRAY, "# End Blender Output")
-
-                            # Post-processing check (original logic had 'if export == True:')
-                            # This check should be more specific, e.g., if 'glb' was requested
-                            if 'glb' in export: # Check if GLB export was attempted
-                                if os.path.isfile(glb_symlink_file):
-                                    # Check for errors within the GLB file content (if it's text, like an error message)
-                                    try:
-                                        with open(glb_symlink_file, "r", encoding="utf-8", errors="ignore") as f_glb:
-                                            glb_content_sample = f_glb.read(512) # Read a sample
-                                        if "Error:" in glb_content_sample or "Exception:" in glb_content_sample or proc.returncode != 0:
-                                            print(Colours.RED, f"Blender execution for {filename} might have failed or GLB contains errors (check Blender output above).")
-                                        else:
-                                            print(Colours.GREEN, f"GLB file processed/verified for: {glb_symlink_file}")
-                                    except Exception as e_read:
-                                        print(Colours.YELLOW, f"Could not read GLB {glb_symlink_file} for error checking: {e_read}")
-                                else:
-                                    print(Colours.RED, f"Failed to create GLB output file: {glb_symlink_file}")
-                            if 'fbx' in export: # Check if FBX export was attempted
-                                if os.path.isfile(fbx_symlink_file):
-                                     print(Colours.GREEN, f"FBX file processed/verified for: {fbx_symlink_file}")
-                                else:
-                                    print(Colours.RED, f"Failed to create FBX output file: {fbx_symlink_file}")
-
+                        # Post-processing check (original logic had 'if export == True:')
+                        # This check should be more specific, e.g., if 'glb' was requested
+                        if 'glb' in export: # Check if GLB export was attempted
+                            if os.path.isfile(glb_symlink_file):
+                                # Check for errors within the GLB file content (if it's text, like an error message)
+                                try:
+                                    with open(glb_symlink_file, "r", encoding="utf-8", errors="ignore") as f_glb:
+                                        glb_content_sample = f_glb.read(512) # Read a sample
+                                    if "Error:" in glb_content_sample or "Exception:" in glb_content_sample or proc.returncode != 0:
+                                        print(Colours.RED, f"Blender execution for {filename} might have failed or GLB contains errors (check Blender output above).")
+                                    else:
+                                        print(Colours.GREEN, f"GLB file processed/verified for: {glb_symlink_file}")
+                                except Exception as e_read:
+                                    print(Colours.YELLOW, f"Could not read GLB {glb_symlink_file} for error checking: {e_read}")
+                            else:
+                                print(Colours.RED, f"Failed to create GLB output file: {glb_symlink_file}")
+                        if 'fbx' in export: # Check if FBX export was attempted
+                            if os.path.isfile(fbx_symlink_file):
+                                print(Colours.GREEN, f"FBX file processed/verified for: {fbx_symlink_file}")
+                            else:
+                                print(Colours.RED, f"Failed to create FBX output file: {fbx_symlink_file}")
                         else:
                             print(Colours.RED, f"Error: No corresponding .preinstanced symlink found for: {preinstanced_symlink_file} (linked from {blend_symlink_path})")
                             # Consider if this should be sys.exit(1) or just skip the asset
@@ -192,7 +206,6 @@ def blender_processing():
                             print(Colours.GREEN, f"GLB file already exists: {glb_symlink_file}")
                         if 'fbx' in export and os.path.isfile(fbx_symlink_file):
                             print(Colours.GREEN, f"FBX file already exists: {fbx_symlink_file}")
-
                 except Exception as ex:
                     print(Colours.RED, f"Error processing asset {filename} (ID: {asset_row['identifier']}): {ex}")
                     # Consider if this should be sys.exit(1) or just skip the asset
