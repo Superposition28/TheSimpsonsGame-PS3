@@ -33,7 +33,52 @@
         "class": "Node3D",
         "type": "scene",
         "children": [
-            {"name": "TheLandOfChocolate", "path": "Node4D/Node3D/Levels/TheLandOfChocolate.tscn"}
+            {"name": "GameHub", "path": "Node4D/Node3D/Levels/GameHub.tscn"},
+            {"name": "SprHub", "path": "Node4D/Node3D/Levels/SprHub.tscn"},
+            {"name": "TheLandOfChocolate", "path": "Node4D/Node3D/Levels/TheLandOfChocolate.tscn"},
+            {"name": "BartmanBegins", "path": "Node4D/Node3D/Levels/BartmanBegins.tscn"},
+            {"name": "HungryHungryHomer", "path": "Node4D/Node3D/Levels/HungryHungryHomer.tscn"},
+            {"name": "TreeHugger", "path": "Node4D/Node3D/Levels/TreeHugger.tscn"},
+            {"name": "MobRules", "path": "Node4D/Node3D/Levels/MobRules.tscn"},
+            {"name": "EnterTheCheatrix", "path": "Node4D/Node3D/Levels/EnterTheCheatrix.tscn"},
+            {"name": "DayOfTheDolphin", "path": "Node4D/Node3D/Levels/DayOfTheDolphin.tscn"},
+            {"name": "TheColossalDonut", "path": "Node4D/Node3D/Levels/TheColossalDonut.tscn"},
+            {"name": "Invasion", "path": "Node4D/Node3D/Levels/Invasion.tscn"},
+            {"name": "BargainBin", "path": "Node4D/Node3D/Levels/BargainBin.tscn"},
+            {"name": "NeverQuest", "path": "Node4D/Node3D/Levels/NeverQuest.tscn"},
+            {"name": "GrandTheftScratchy", "path": "Node4D/Node3D/Levels/GrandTheftScratchy.tscn"},
+            {"name": "MedalOfHomer", "path": "Node4D/Node3D/Levels/MedalOfHomer.tscn"},
+            {"name": "BigSuperHappy", "path": "Node4D/Node3D/Levels/BigSuperHappy.tscn"},
+            {"name": "Rhymes", "path": "Node4D/Node3D/Levels/Rhymes.tscn"},
+            {"name": "MeetThyPlayer", "path": "Node4D/Node3D/Levels/MeetThyPlayer.tscn"}
+        ]
+    },
+    {
+        "name": "GameHub",
+        "path": "Node4D/Node3D/Levels/GameHub.tscn",
+        "class": "Node3D",
+        "type": "scene",
+        "children": [
+            {
+                "name": "Zone01_Terrain",
+                "path": "assets/Map_3-00_GameHub/gamehub/zone01_str/EU_EN/assets/environs++gamehub++gamehub++zone01/export/terrain/lodmodel1.rws.PS3.glb"
+            }
+        ]
+    },
+    {
+        "name": "SprHub",
+        "path": "Node4D/Node3D/Levels/SprHub.tscn",
+        "class": "Node3D",
+        "type": "scene",
+        "children": [
+			{
+				"name": "Zone01_Terrain",
+				"path": "assets/Map_3-00_SprHub/spr_hub/zone01_str/EU_EN/assets/environs++spr_hub++spr_hub++zone01/export/terrain/lodmodel1.rws.PS3.glb"
+			},
+			{
+				"name": "Zone01_opt",
+				"path": "assets/Map_3-00_SprHub/spr_hub/zone01_str/EU_EN/assets/environs++spr_hub++spr_hub++zone01/opt/export++zone01/opt_model1.rws.PS3.glb"
+			}
         ]
     },
     {
@@ -75,6 +120,111 @@
                 "path": "assets/Map_3-01_LandOfChocolate/loc/zone06_str/EU_EN/assets++environs++loc++loc++zone06/export/terrain/lodmodel1.rws.PS3.glb"
             }
         ]
+    },
+    {
+        "name": "BartmanBegins",
+        "path": "Node4D/Node3D/Levels/BartmanBegins.tscn",
+        "class": "Node3D",
+        "type": "scene",
+        "children": []
+    },
+    {
+        "name": "HungryHungryHomer",
+        "path": "Node4D/Node3D/Levels/HungryHungryHomer.tscn",
+        "class": "Node3D",
+        "type": "scene",
+        "children": []
+    },
+    {
+        "name": "TreeHugger",
+        "path": "Node4D/Node3D/Levels/TreeHugger.tscn",
+        "class": "Node3D",
+        "type": "scene",
+        "children": []
+    },
+    {
+        "name": "MobRules",
+        "path": "Node4D/Node3D/Levels/MobRules.tscn",
+        "class": "Node3D",
+        "type": "scene",
+        "children": []
+    },
+    {
+        "name": "EnterTheCheatrix",
+        "path": "Node4D/Node3D/Levels/EnterTheCheatrix.tscn",
+        "class": "Node3D",
+        "type": "scene",
+        "children": []
+    },
+    {
+        "name": "DayOfTheDolphin",
+        "path": "Node4D/Node3D/Levels/DayOfTheDolphin.tscn",
+        "class": "Node3D",
+        "type": "scene",
+        "children": []
+    },
+    {
+        "name": "TheColossalDonut",
+        "path": "Node4D/Node3D/Levels/TheColossalDonut.tscn",
+        "class": "Node3D",
+        "type": "scene",
+        "children": []
+    },
+    {
+        "name": "Invasion",
+        "path": "Node4D/Node3D/Levels/Invasion.tscn",
+        "class": "Node3D",
+        "type": "scene",
+        "children": []
+    },
+    {
+        "name": "BargainBin",
+        "path": "Node4D/Node3D/Levels/BargainBin.tscn",
+        "class": "Node3D",
+        "type": "scene",
+        "children": []
+    },
+    {
+        "name": "NeverQuest",
+        "path": "Node4D/Node3D/Levels/NeverQuest.tscn",
+        "class": "Node3D",
+        "type": "scene",
+        "children": []
+    },
+    {
+        "name": "GrandTheftScratchy",
+        "path": "Node4D/Node3D/Levels/GrandTheftScratchy.tscn",
+        "class": "Node3D",
+        "type": "scene",
+        "children": []
+    },
+    {
+        "name": "MedalOfHomer",
+        "path": "Node4D/Node3D/Levels/MedalOfHomer.tscn",
+        "class": "Node3D",
+        "type": "scene",
+        "children": []
+    },
+    {
+        "name": "BigSuperHappy",
+        "path": "Node4D/Node3D/Levels/BigSuperHappy.tscn",
+        "class": "Node3D",
+        "type": "scene",
+        "children": []
+    },
+    {
+        "name": "Rhymes",
+        "path": "Node4D/Node3D/Levels/Rhymes.tscn",
+        "class": "Node3D",
+        "type": "scene",
+        "children": []
+    },
+    {
+        "name": "MeetThyPlayer",
+        "path": "Node4D/Node3D/Levels/MeetThyPlayer.tscn",
+        "class": "Node3D",
+        "type": "scene",
+        "children": []
     },
     {
         "name": "Control",

@@ -217,6 +217,6 @@ if __name__ == "__main__":
         folders_to_copy=folders_to_copy,
         script_path=os.path.join(current_dir, "Scripts\\_InitScript.gd"),
         json_path=json_path,
-        asset_extensions=[".gd", ".png", ".glb"],
+        asset_extensions=[".gd", ".png", ".glb", ".fbx", ".blend"],
         godot_executable="A:\\Godot_v4.4.1-stable_mono_win64\\Godot_v4.4.1-stable_mono_win64_console.exe"
     )
