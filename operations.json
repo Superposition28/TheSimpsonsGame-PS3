@@ -113,6 +113,13 @@
 			"python_executable": "python",
 			"script": "Tools/Process/Flat/flat.py",
 			"args": ["GameFiles/STROUT", "GameFiles/ExtractedOut", "--rules", "RemakeRegistry/Games/TheSimpsonsGame PS3/PathRules.json", "--separator", "++", "--verbose"]
+		},
+		{
+			"Name": "generate Godot Game (EXPERIMENTAL)",
+			"Instructions": "(New), this is a very early implementation that generates the first level of the game from the extracted files.",
+			"run-all": false,
+			"python_executable": "python",
+			"script": "RemakeRegistry/Games/TheSimpsonsGame PS3/Godot/init.py"
 		}
 	]
 }

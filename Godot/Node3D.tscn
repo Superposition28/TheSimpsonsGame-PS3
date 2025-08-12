@@ -1,0 +1,33 @@
+[gd_scene load_steps=9 format=3 uid="uid://cpje57lj7jngj"]
+
+[ext_resource type="PackedScene" uid="uid://ynn1ywckfjrs" path="res://assets/Map_3-01_LandOfChocolate/loc/zone01_str/EU_EN/assets++environs++loc++loc++zone01/export/terrain/lodmodel1.rws.PS3.blend" id="2_3xbwd"]
+
+[ext_resource type="PackedScene" uid="uid://d4jc0phdhhjtv" path="res://assets/Map_3-01_LandOfChocolate/loc/zone02_str/EU_EN/assets/environs++loc++loc++zone02/export/terrain/lodmodel1.rws.PS3.blend" id="3_2jw8f"]
+[ext_resource type="PackedScene" uid="uid://otbyg6biqf1n" path="res://assets/Map_3-01_LandOfChocolate/loc/zone02_str/EU_EN/assets/environs++loc++loc++zone02/opt/export++zone02/opt_model1.rws.PS3.blend" id="4_vhyui"]
+
+[ext_resource type="PackedScene" uid="uid://dr5ug3sulhq" path="res://assets/Map_3-01_LandOfChocolate/loc/zone03_str/EU_EN/assets++environs++loc++loc++zone03/export/terrain/lodmodel1.rws.PS3.blend" id="5_ptmdj"]
+
+[ext_resource type="PackedScene" uid="uid://ct1wfqlpvqaia" path="res://assets/Map_3-01_LandOfChocolate/loc/zone04_str/EU_EN/assets/environs++loc++loc++zone04/opt/export++zone04/opt_model1.rws.PS3.blend" id="1_xdbsf"]
+[ext_resource type="PackedScene" uid="uid://cggkys26uoq1v" path="res://assets/Map_3-01_LandOfChocolate/loc/zone04_str/EU_EN/assets/environs++loc++loc++zone04/export/terrain/lodmodel1.rws.PS3.blend" id="6_i4b7l"]
+
+[ext_resource type="PackedScene" uid="uid://dbhqourhnw7fn" path="res://assets/Map_3-01_LandOfChocolate/loc/zone05_str/EU_EN/assets++environs++loc++loc++zone05/export/terrain/lodmodel1.rws.PS3.blend" id="7_btkt3"]
+
+[ext_resource type="PackedScene" uid="uid://dkj5kwvun5ylk" path="res://assets/Map_3-01_LandOfChocolate/loc/zone06_str/EU_EN/assets++environs++loc++loc++zone06/export/terrain/lodmodel1.rws.PS3.blend" id="8_6njjt"]
+
+[node name="Node3D" type="Node"]
+
+[node name="opt_model1_rws_PS4" parent="." instance=ExtResource("1_xdbsf")]
+
+[node name="lodmodel1_rws_PS3" parent="." instance=ExtResource("2_3xbwd")]
+
+[node name="lodmodel1_rws_PS4" parent="." instance=ExtResource("3_2jw8f")]
+
+[node name="opt_model1_rws_PS3" parent="." instance=ExtResource("4_vhyui")]
+
+[node name="lodmodel1_rws_PS5" parent="." instance=ExtResource("5_ptmdj")]
+
+[node name="lodmodel1_rws_PS6" parent="." instance=ExtResource("6_i4b7l")]
+
+[node name="lodmodel1_rws_PS7" parent="." instance=ExtResource("7_btkt3")]
+
+[node name="lodmodel1_rws_PS8" parent="." instance=ExtResource("8_6njjt")]

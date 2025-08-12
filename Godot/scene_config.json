@@ -1,0 +1,85 @@
+[
+    {
+        "name": "Node4D",
+        "path": "Node4D.tscn",
+        "class": "Node",
+        "type": "scene",
+        "children": [
+            {"name": "Node2D", "path": "Node4D/Node2D.tscn"},
+            {"name": "Node3D", "path": "Node4D/Node3D.tscn"}
+        ]
+    },
+    {
+        "name": "Node2D",
+        "path": "Node4D/Node2D.tscn",
+        "class": "Node2D",
+        "type": "scene",
+        "children": [
+            {"name": "Control", "path": "Node4D/Node2D/Control.tscn"}
+        ]
+    },
+    {
+        "name": "Node3D",
+        "path": "Node4D/Node3D.tscn",
+        "class": "Node3D",
+        "type": "scene",
+        "children": [
+            {"name": "Levels", "path": "Node4D/Node3D/Levels.tscn"}
+        ]
+    },
+    {
+        "name": "Levels",
+        "path": "Node4D/Node3D/Levels.tscn",
+        "class": "Node3D",
+        "type": "scene",
+        "children": [
+            {"name": "TheLandOfChocolate", "path": "Node4D/Node3D/Levels/TheLandOfChocolate.tscn"}
+        ]
+    },
+    {
+        "name": "TheLandOfChocolate",
+        "path": "Node4D/Node3D/Levels/TheLandOfChocolate.tscn",
+        "class": "Node3D",
+        "type": "scene",
+        "children": [
+            {
+                "name": "Zone01_Terrain",
+                "path": "assets/Map_3-01_LandOfChocolate/loc/zone01_str/EU_EN/assets++environs++loc++loc++zone01/export/terrain/lodmodel1.rws.PS3.glb"
+            },
+            {
+                "name": "Zone02_Terrain",
+                "path": "assets/Map_3-01_LandOfChocolate/loc/zone02_str/EU_EN/assets/environs++loc++loc++zone02/export/terrain/lodmodel1.rws.PS3.glb"
+            },
+            {
+                "name": "Zone02_opt",
+                "path": "assets/Map_3-01_LandOfChocolate/loc/zone02_str/EU_EN/assets/environs++loc++loc++zone02/opt/export++zone02/opt_model1.rws.PS3.glb"
+            },
+            {
+                "name": "Zone03_Terrain",
+                "path": "assets/Map_3-01_LandOfChocolate/loc/zone03_str/EU_EN/assets++environs++loc++loc++zone03/export/terrain/lodmodel1.rws.PS3.glb"
+            },
+            {
+                "name": "Zone04_opt",
+                "path": "assets/Map_3-01_LandOfChocolate/loc/zone04_str/EU_EN/assets/environs++loc++loc++zone04/opt/export++zone04/opt_model1.rws.PS3.glb"
+            },
+            {
+                "name": "Zone04_Terrain",
+                "path": "assets/Map_3-01_LandOfChocolate/loc/zone04_str/EU_EN/assets/environs++loc++loc++zone04/export/terrain/lodmodel1.rws.PS3.glb"
+            },
+            {
+                "name": "Zone05_Terrain",
+                "path": "assets/Map_3-01_LandOfChocolate/loc/zone05_str/EU_EN/assets++environs++loc++loc++zone05/export/terrain/lodmodel1.rws.PS3.glb"
+            },
+            {
+                "name": "Zone06_Terrain",
+                "path": "assets/Map_3-01_LandOfChocolate/loc/zone06_str/EU_EN/assets++environs++loc++loc++zone06/export/terrain/lodmodel1.rws.PS3.glb"
+            }
+        ]
+    },
+    {
+        "name": "Control",
+        "path": "Node4D/Node2D/Control.tscn",
+        "class": "Control",
+        "type": "scene"
+    }
+]

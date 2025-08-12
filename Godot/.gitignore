@@ -3,10 +3,9 @@ GameFiles/
 Game/
 
 # Configuration/History
+*.ini
 .history
 config.ini
-project.json
-
 
 # IDE/Editor specific
 .vscode/
@@ -16,27 +15,19 @@ project.json
 *.log
 main.log
 
-/OldModules/
-/OldRemakeRegistry/
-
 # Tools executables/scripts/temp
-Tools/QuickBMS/*.exe
-Tools/QuickBMS/*.bat
-Tools/QuickBMS/*.ps1
-Tools/QuickBMS/*.txt
-Tools/QuickBMS/exe
-
-Tools/Blender/blender-4.0.2-windows-x64
+Tools/quickbms/*.exe
+Tools/quickbms/*.bat
+Tools/quickbms/*.ps1
+Tools/quickbms/*.txt
+Tools/blender/exe/
 
 # Temporary/Backup
 old/
 
-.*/
-
 # Asset/Texture mapping
 texture_mapping.json
 asset_mapping.json
-asset_map.sqlite
 
 # Python cache
 __pycache__
@@ -46,12 +37,7 @@ __pycache__/
 .pyc
 **/__pycache__/init.cpython-313.pyc
 
-/TMP/
-/TMP/Downloads/
-
-/GameFiles/
-/game/
-
+# no no files
 localereftableD4815ED6.txt
 LightTOC
 StreamSetConfig
@@ -62,7 +48,6 @@ StreamSetConfig
 *.vp6
 *.mus
 /Source/
-/SourceData/
 *.vfb
 *.xml
 *.dat
@@ -85,8 +70,6 @@ StreamSetConfig
 *.bin
 *.aub
 *.xml
-*.str
-*.lua
 
 .test/
 test/
@@ -99,5 +82,4 @@ investigation_tools/blank.blend1
 *.blend1
 *.blend1
 
-remake-engine-docs/
 
