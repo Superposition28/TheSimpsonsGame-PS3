@@ -1,0 +1,64 @@
+[gd_scene load_steps=7 format=3 uid="uid://bxy1qa0s46nff"]
+
+[ext_resource type="Material" uid="uid://5ywq8eeal8et" path="res://addons/srcoder_thirdperson_controller/assets/Textures/grid_orange_1.material" id="1_duh8c"]
+[ext_resource type="PackedScene" uid="uid://bqq0svy5fwdin" path="res://addons/srcoder_thirdperson_controller/mouse_lock.tscn" id="2_y54pt"]
+[ext_resource type="PackedScene" uid="uid://dgaexk2mqn6j8" path="res://addons/srcoder_thirdperson_controller/player.tscn" id="3_o3kev"]
+
+[sub_resource type="ProceduralSkyMaterial" id="ProceduralSkyMaterial_g8xqu"]
+sky_horizon_color = Color(0.64625, 0.65575, 0.67075, 1)
+ground_horizon_color = Color(0.64625, 0.65575, 0.67075, 1)
+
+[sub_resource type="Sky" id="Sky_sicrs"]
+sky_material = SubResource("ProceduralSkyMaterial_g8xqu")
+
+[sub_resource type="Environment" id="Environment_pojuq"]
+background_mode = 2
+sky = SubResource("Sky_sicrs")
+tonemap_mode = 2
+ssao_enabled = true
+glow_enabled = true
+
+[node name="TestLevel" type="Node3D"]
+
+[node name="WorldEnvironment" type="WorldEnvironment" parent="."]
+environment = SubResource("Environment_pojuq")
+
+[node name="DirectionalLight3D" type="DirectionalLight3D" parent="."]
+transform = Transform3D(-0.866025, -0.433013, 0.25, 0, 0.5, 0.866025, -0.5, 0.75, -0.433013, 0, 0, 0)
+shadow_enabled = true
+
+[node name="geometry" type="Node3D" parent="."]
+
+[node name="CSGBox3D" type="CSGBox3D" parent="geometry"]
+material_override = ExtResource("1_duh8c")
+use_collision = true
+size = Vector3(11, 1, 9)
+
+[node name="CSGBox3D2" type="CSGBox3D" parent="geometry"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.5, -5)
+material_override = ExtResource("1_duh8c")
+use_collision = true
+size = Vector3(11, 2, 1)
+
+[node name="CSGBox3D3" type="CSGBox3D" parent="geometry"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.5, 5)
+material_override = ExtResource("1_duh8c")
+use_collision = true
+size = Vector3(11, 2, 1)
+
+[node name="CSGBox3D4" type="CSGBox3D" parent="geometry"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -6, 0.5, 0)
+material_override = ExtResource("1_duh8c")
+use_collision = true
+size = Vector3(1, 2, 11)
+
+[node name="CSGBox3D5" type="CSGBox3D" parent="geometry"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 6, 0.5, 0)
+material_override = ExtResource("1_duh8c")
+use_collision = true
+size = Vector3(1, 2, 11)
+
+[node name="MouseLock" parent="." instance=ExtResource("2_y54pt")]
+
+[node name="Player" parent="." instance=ExtResource("3_o3kev")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1, 0)

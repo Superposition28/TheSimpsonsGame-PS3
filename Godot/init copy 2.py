@@ -60,7 +60,7 @@ def run_godot_command(command: list, step_name: str):
         print("!!! Please ensure the path in the script is correct and it's a console-enabled version.")
         exit(1)
 
-def create_godot_project(project_name: str, project_path: str, asset_folders: list, scripts_folder: str, addons_folder: str, json_path: str, asset_extensions: list, godot_executable: str="godot") -> None:
+def create_godot_project(project_name: str, project_path: str, asset_folders: list, scripts_folder: str, json_path: str, asset_extensions: list, godot_executable: str="godot") -> None:
     """Creates a Godot project with the given name and assets."""
     project_dir = os.path.join(project_path, project_name)
     if not os.path.exists(project_dir):
@@ -71,47 +71,12 @@ def create_godot_project(project_name: str, project_path: str, asset_folders: li
     project_godot_path = os.path.join(project_dir, "project.godot")
     if not os.path.exists(project_godot_path):
         main_scene_path = "res://Node4D.tscn"
-        project_file_content = f"""
-			config_version=5
-
-			[application]
-
-			config/name="Game"
-			run/main_scene="res://Node4D.tscn"
-			config/features=PackedStringArray("4.4", "Forward Plus")
-			config/icon="res://icon.svg"
-
-			[dotnet]
-
-			project/assembly_name="Game"
-
-			[gd_engine]
-
-			config_version=5
-
-			[input]
-
-			up={
-			"deadzone": 0.2,
-			"events": [Object(InputEventKey,"resource_local_to_scene":false,"resource_name":"","device":-1,"window_id":0,"alt_pressed":false,"shift_pressed":false,"ctrl_pressed":false,"meta_pressed":false,"pressed":false,"keycode":0,"physical_keycode":87,"key_label":0,"unicode":119,"location":0,"echo":false,"script":null)
-			]
-			}
-			down={
-			"deadzone": 0.2,
-			"events": [Object(InputEventKey,"resource_local_to_scene":false,"resource_name":"","device":-1,"window_id":0,"alt_pressed":false,"shift_pressed":false,"ctrl_pressed":false,"meta_pressed":false,"pressed":false,"keycode":0,"physical_keycode":83,"key_label":0,"unicode":115,"location":0,"echo":false,"script":null)
-			]
-			}
-			left={
-			"deadzone": 0.2,
-			"events": [Object(InputEventKey,"resource_local_to_scene":false,"resource_name":"","device":-1,"window_id":0,"alt_pressed":false,"shift_pressed":false,"ctrl_pressed":false,"meta_pressed":false,"pressed":false,"keycode":0,"physical_keycode":65,"key_label":0,"unicode":97,"location":0,"echo":false,"script":null)
-			]
-			}
-			right={
-			"deadzone": 0.2,
-			"events": [Object(InputEventKey,"resource_local_to_scene":false,"resource_name":"","device":-1,"window_id":0,"alt_pressed":false,"shift_pressed":false,"ctrl_pressed":false,"meta_pressed":false,"pressed":false,"keycode":0,"physical_keycode":68,"key_label":0,"unicode":100,"location":0,"echo":false,"script":null)
-			]
-			}
-
+        project_file_content = f"""config_version=5
+            [application]
+            config/name="{project_name}"
+            run/main_scene="{main_scene_path}"
+            config/features=PackedStringArray("4.3", "Forward Plus")
+            config/icon="res://icon.svg"
             """
         with open(project_godot_path, "w") as f:
             f.write(project_file_content)
@@ -134,9 +99,6 @@ def create_godot_project(project_name: str, project_path: str, asset_folders: li
     print("\nAssets directory is ready. Preparing to run tool scripts.")
     countdown(5)
 
-	# copy addons
-    shutil.copytree(addons_folder, os.path.join(project_dir, "addons"), dirs_exist_ok=True)
-
     # 2. Copy config and script files needed for scene generation
     shutil.copy2(json_path, os.path.join(project_dir, "scene_config.json"))
 
@@ -155,14 +117,19 @@ def create_godot_project(project_name: str, project_path: str, asset_folders: li
             godot_executable,
             "--editor",
             "--path", project_dir,
-            "--script", "res://Scripts/_BuildScenes.gd"
+            "--script", "res://Scripts/_InitScript.gd"
         ], "Pass 1: Scene Creation")
+
+    # 4. Run Pass 2 (Child Population)
+    print("You may need to manually close the Godot GUI after this step.")
+    countdown(5)
+    run_godot_command([godot_executable, "--editor", "--path", project_dir, "--script", "res://Scripts/_Pass2.gd"], "Pass 2: Populate Scenes")
 
     print("\n✅✅✅ Godot project setup and scene generation complete! ✅✅✅")
     countdown(5)
 
 
-def main() -> None:
+def main():
     # --- Configuration ---
     GODOT_EXECUTABLE = "A:\\Godot_v4.4.1-stable_mono_win64\\Godot_v4.4.1-stable_mono_win64_console.exe"
     GAME_ASSET_EXTENSIONS = [".dds", ".glb", ".fbx", ".blend"]
@@ -195,7 +162,6 @@ def main() -> None:
     # Source paths for assets, scripts, and configs
     asset_source_folders = [os.path.join(repo_root, "GameFiles", "ExtractedOut")]
     tool_scripts_source_folder = os.path.join(module_root, "Scripts")
-    addons_source_folder = os.path.join(module_root, "addons")
     scene_config_json_path = os.path.join(module_root, 'scene_config.json')
 
     # Destination path for the generated Godot project, relative to the module root.
@@ -207,7 +173,6 @@ def main() -> None:
         project_path=godot_project_parent_dir,
         asset_folders=asset_source_folders,
         scripts_folder=tool_scripts_source_folder,
-        addons_folder=addons_source_folder,
         json_path=scene_config_json_path,
         asset_extensions=GAME_ASSET_EXTENSIONS,
         godot_executable=GODOT_EXECUTABLE
