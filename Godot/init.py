@@ -71,7 +71,7 @@ def create_godot_project(project_name: str, project_path: str, asset_folders: li
     project_godot_path = os.path.join(project_dir, "project.godot")
     if not os.path.exists(project_godot_path):
         main_scene_path = "res://Node4D.tscn"
-        project_file_content = f"""
+        project_file_content = """
 			config_version=5
 
 			[application]
@@ -111,7 +111,6 @@ def create_godot_project(project_name: str, project_path: str, asset_folders: li
 			"events": [Object(InputEventKey,"resource_local_to_scene":false,"resource_name":"","device":-1,"window_id":0,"alt_pressed":false,"shift_pressed":false,"ctrl_pressed":false,"meta_pressed":false,"pressed":false,"keycode":0,"physical_keycode":68,"key_label":0,"unicode":100,"location":0,"echo":false,"script":null)
 			]
 			}
-
             """
         with open(project_godot_path, "w") as f:
             f.write(project_file_content)

@@ -3,6 +3,11 @@
 ## Overview
 
 
+## just implemented Godot Experimentally for full game generation
+https://github.com/Superposition28/TheSimpsonsGame-PS3/tree/main/Godot
+
+
+
 ## Features
 
 *   **Automated Initialization:** Attempts to Sets up the necessary environment and tools for the extraction processes.
