@@ -7,15 +7,15 @@
         "children": [
             {"name": "Node2D", "path": "Node4D/Node2D.tscn"},
             {"name": "Node3D", "path": "Node4D/Node3D.tscn"},
-			{"name": "WorldEnvironment", "type": "Node", "class": "WorldEnvironment"},
-			{"name": "DirectionalLight3D", "type": "Node", "class": "DirectionalLight3D", "config": {
-					"transform": {
-						"position": {"x": 0, "y": 2000, "z": 0},
-						"rotation_degrees": {"x": 0, "y": 0, "z": 0},
-						"scale": {"x": 1, "y": 1, "z": 1}
-					}
-				}
-			}
+            {"name": "WorldEnvironment", "type": "Node", "class": "WorldEnvironment"},
+            {"name": "DirectionalLight3D", "type": "Node", "class": "DirectionalLight3D", "config": {
+                    "transform": {
+                        "position": {"x": 0, "y": 2000, "z": 0},
+                        "rotation_degrees": {"x": 0, "y": 0, "z": 0},
+                        "scale": {"x": 1, "y": 1, "z": 1}
+                    }
+                }
+            }
         ]
     },
     {
@@ -34,7 +34,7 @@
         "type": "scene",
         "children": [
             {"name": "Levels", "path": "Node4D/Node3D/Levels.tscn"},
-			{"name": "Player", "path": "addons/srcoder_thirdperson_controller/player.tscn"}
+            {"name": "Player", "path": "addons/srcoder_thirdperson_controller/player.tscn"}
         ]
     },
     {
@@ -68,12 +68,24 @@
         "path": "Node4D/Node3D/Levels/GameHub.tscn",
         "class": "Node3D",
         "type": "scene",
-        "children": [
-            {
-                "name": "Zone01_Terrain",
-                "path": "assets/Map_3-00_GameHub/gamehub/zone01_str/EU_EN/assets/environs++gamehub++gamehub++zone01/export/terrain/lodmodel1.rws.PS3.glb"
-            }
-        ]
+        "children": [{
+            "name": "LOC3D",
+            "Type": "Node",
+            "class": "Node3D",
+            "config": {
+                "transform": {
+                    "position": {"x": -400, "y": 100.111, "z": 0},
+                    "rotation_degrees": {"x": 0, "y": 0, "z": 0},
+                    "scale": {"x": 1, "y": 1, "z": 1}
+                }
+            },
+            "children": [
+                {
+                    "name": "Zone01_Terrain",
+                    "path": "assets/Map_3-00_GameHub/gamehub/zone01_str/EU_EN/assets/environs++gamehub++gamehub++zone01/export/terrain/lodmodel1.rws.PS3.glb"
+                }
+            ]
+        }]
     },
     {
         "name": "SprHub",
@@ -81,27 +93,147 @@
         "class": "Node3D",
         "type": "scene",
         "children": [{
-			"name": "LOC3D",
-			"Type": "Node",
-			"class": "Node3D",
-			"config": {
-				"transform": {
-					"position": {"x": 0, "y": -100.111, "z": 0},
-					"rotation_degrees": {"x": 0, "y": 0, "z": 0},
-					"scale": {"x": 1, "y": 1, "z": 1}
-				}
-			},
-			"children": [
-				{
-					"name": "Zone01_Terrain",
-					"path": "assets/Map_3-00_SprHub/spr_hub/zone01_str/EU_EN/assets/environs++spr_hub++spr_hub++zone01/export/terrain/lodmodel1.rws.PS3.glb"
-				},
-				{
-					"name": "Zone01_opt",
-					"path": "assets/Map_3-00_SprHub/spr_hub/zone01_str/EU_EN/assets/environs++spr_hub++spr_hub++zone01/opt/export++zone01/opt_model1.rws.PS3.glb"
-				}
-			]
-		}]
+            "name": "LOC3D",
+            "Type": "Node",
+            "class": "Node3D",
+            "config": {
+                "transform": {
+                    "position": {"x": 0, "y": -100.111, "z": 0},
+                    "rotation_degrees": {"x": 0, "y": 0, "z": 0},
+                    "scale": {"x": 1, "y": 1, "z": 1}
+                }
+            },
+            "children": [
+                {
+                    "name": "Zone01_Terrain",
+                    "path": "assets/Map_3-00_SprHub/spr_hub/zone01_str/EU_EN/assets/environs++spr_hub++spr_hub++zone01/export/terrain/lodmodel1.rws.PS3.glb"
+                },
+                {
+                    "name": "Zone01_opt",
+                    "path": "assets/Map_3-00_SprHub/spr_hub/zone01_str/EU_EN/assets/environs++spr_hub++spr_hub++zone01/opt/export++zone01/opt_model1.rws.PS3.glb"
+                },
+                {
+                    "name": "Zone02_Terrain",
+                    "path": "assets/Map_3-00_SprHub/spr_hub/zone02_str/EU_EN/assets/environs/spr_hub++spr_hub++zone02/export/terrain/lodmodel1.rws.PS3.glb"
+                },
+                {
+                    "name": "Zone02_opt",
+                    "path": "assets/Map_3-00_SprHub/spr_hub/zone02_str/EU_EN/assets/environs/spr_hub++spr_hub++zone02/opt/export++zone02/opt_model1.rws.PS3.glb"
+                },
+                {
+                    "name": "Zone03_Terrain",
+                    "path": "assets/Map_3-00_SprHub/spr_hub/zone03_str/EU_EN/assets/environs/spr_hub++spr_hub++zone03/export/terrain/lodmodel1.rws.PS3.glb"
+                },
+                {
+                    "name": "Zone03_opt",
+                    "path": "assets/Map_3-00_SprHub/spr_hub/zone03_str/EU_EN/assets/environs/spr_hub++spr_hub++zone03/opt/export++zone03/opt_model1.rws.PS3.glb"
+                },
+                {
+                    "name": "bldg_school",
+                    "path": "assets/Map_3-00_SprHub/spr_hub/zone04_str/EU_EN/assets/environs/spr_downtown++bldg_school++geo++export++bldg_school/lodmodel1.rws.PS3.glb"
+                },
+                {
+                    "name": "Zone04_Terrain",
+                    "path": "assets/Map_3-00_SprHub/spr_hub/zone04_str/EU_EN/assets/environs/spr_hub++spr_hub++zone04/export/terrain/lodmodel1.rws.PS3.glb"
+                },
+                {
+                    "name": "Zone04_opt",
+                    "path": "assets/Map_3-00_SprHub/spr_hub/zone04_str/EU_EN/assets/environs/spr_hub++spr_hub++zone04/opt/export++zone04/opt_model1.rws.PS3.glb"
+                },
+                {
+                    "name": "Zone05_Terrain",
+                    "path": "assets/Map_3-00_SprHub/spr_hub/zone05_str/EU_EN/assets/environs++spr_hub++spr_hub++zone05/export/terrain/lodmodel1.rws.PS3.glb"
+                },
+                {
+                    "name": "Zone05_opt",
+                    "path": "assets/Map_3-00_SprHub/spr_hub/zone05_str/EU_EN/assets/environs++spr_hub++spr_hub++zone05/opt/export++zone05/opt_model1.rws.PS3.glb"
+                },
+                {
+                    "name": "bowlarama",
+                    "path": "assets/Map_3-00_SprHub/spr_hub/zone06_str/EU_EN/assets/environs/spr_commercial++bldg_bowlarama++export++bowlarama/lodmodel1.rws.PS3.fbx"
+                },
+                {
+                    "name": "Zone06_Terrain",
+                    "path": "assets/Map_3-00_SprHub/spr_hub/zone06_str/EU_EN/assets/environs/spr_hub++spr_hub++zone06/export/terrain/lodmodel1.rws.PS3.glb"
+                },
+                {
+                    "name": "Zone07_Terrain",
+                    "path": "assets/Map_3-00_SprHub/spr_hub/zone07_str/EU_EN/assets/environs++spr_hub++spr_hub++zone07/export/terrain/lodmodel1.rws.PS3.fbx"
+                },
+                {
+                    "name": "Zone07_opt",
+                    "path": "assets/Map_3-00_SprHub/spr_hub/zone07_str/EU_EN/assets/environs++spr_hub++spr_hub++zone07/opt/export++zone07/opt_model1.rws.PS3.glb"
+                },
+                {
+                    "name": "Zone08_Terrain",
+                    "path": "assets/Map_3-00_SprHub/spr_hub/zone08_str/EU_EN/assets/environs/spr_hub++spr_hub++zone08/export/terrain/lodmodel1.rws.PS3.fbx"
+                },
+                {
+                    "name": "bldg_duff_brewery",
+                    "path": "assets/Map_3-00_SprHub/spr_hub/zone08_str/EU_EN/assets/environs/spr_industrial++bldg_duff_brewery++geo++export++bldg_duff_brewery/lodmodel1.rws.PS3.glb"
+                },
+                {
+                    "name": "Zone09_Terrain",
+                    "path": "assets/Map_3-00_SprHub/spr_hub/zone09_str/EU_EN/assets/environs++spr_hub++spr_hub++zone09/export/terrain/lodmodel1.rws.PS3.fbx"
+                },
+                {
+                    "name": "Zone10_Terrain",
+                    "path": "assets/Map_3-00_SprHub/spr_hub/zone10_str/EU_EN/assets/environs++spr_hub++spr_hub++zone10/export/terrain/lodmodel1.rws.PS3.fbx"
+                },
+                {
+                    "name": "Zone11_Terrain",
+                    "path": "assets/Map_3-00_SprHub/spr_hub/zone11_str/EU_EN/assets++environs++spr_hub++spr_hub++zone11/export/terrain/lodmodel1.rws.PS3.glb"
+                },
+                {
+                    "name": "Zone12_Terrain",
+                    "path": "assets/Map_3-00_SprHub/spr_hub/zone12_str/EU_EN/assets++environs++spr_hub++spr_hub++zone12/export/terrain/lodmodel1.rws.PS3.glb"
+                },
+                {
+                    "name": "Zone13_Terrain",
+                    "path": "assets/Map_3-00_SprHub/spr_hub/zone13_str/EU_EN/assets/environs++spr_hub++spr_hub++zone13/export/terrain/lodmodel1.rws.PS3.glb"
+                },
+                {
+                    "name": "Zone14_Terrain",
+                    "path": "assets/Map_3-00_SprHub/spr_hub/zone14_str/EU_EN/assets/environs++spr_hub++spr_hub++zone14/export/terrain/lodmodel1.rws.PS3.fbx"
+                },
+                {
+                    "name": "Zone15_Terrain",
+                    "path": "assets/Map_3-00_SprHub/spr_hub/zone15_str/EU_EN/assets/environs++spr_hub++spr_hub++zone15/export/terrain/lodmodel1.rws.PS3.fbx"
+                },
+                {
+                    "name": "Zone15_opt",
+                    "path": "assets/Map_3-00_SprHub/spr_hub/zone15_str/EU_EN/assets/environs++spr_hub++spr_hub++zone15/opt/export++zone15/opt_model1.rws.PS3.fbx"
+                },
+                {
+                    "name": "Zone16_Terrain",
+                    "path": "assets/Map_3-00_SprHub/spr_hub/zone16_str/EU_EN/assets/environs++spr_hub++spr_hub++zone16/export/terrain/lodmodel1.rws.PS3.glb"
+                },
+                {
+                    "name": "Zone17_Terrain",
+                    "path": "assets/Map_3-00_SprHub/spr_hub/zone17_str/EU_EN/assets/environs++spr_hub++spr_hub++zone17/export/terrain/lodmodel1.rws.PS3.glb"
+                },
+                {
+                    "name": "Zone18_Terrain",
+                    "path": "assets/Map_3-00_SprHub/spr_hub/zone18_str/EU_EN++assets++environs++spr_hub++spr_hub++zone18/export/terrain/lodmodel1.rws.PS3.glb"
+                },
+                {
+                    "name": "Zone19_Terrain",
+                    "path": "assets/Map_3-00_SprHub/spr_hub/zone19_str/EU_EN/assets/environs++spr_hub++spr_hub++zone19/export/terrain/lodmodel1.rws.PS3.glb"
+                },
+                {
+                    "name": "Zone20_Terrain",
+                    "path": "assets/Map_3-00_SprHub/spr_hub/zone20_str/EU_EN/assets/environs++spr_hub++spr_hub++zone20/export/terrain/lodmodel1.rws.PS3.fbx"
+                },
+                {
+                    "name": "Zone21_Terrain",
+                    "path": "assets/Map_3-00_SprHub/spr_hub/zone21_str/EU_EN/assets/environs++spr_hub++spr_hub++zone21/export/terrain/lodmodel1.rws.PS3.glb"
+                },
+                {
+                    "name": "Zone21_opt",
+                    "path": "assets/Map_3-00_SprHub/spr_hub/zone21_str/EU_EN/assets/environs++spr_hub++spr_hub++zone21/opt/export/zone21/opt_model1.rws.PS3.glb"
+                }
+            ]
+        }]
     },
     {
         "name": "TheLandOfChocolate",
@@ -109,361 +241,361 @@
         "class": "Node3D",
         "type": "scene",
         "children": [{
-			"name": "LOC3D",
-			"Type": "Node",
-			"class": "Node3D",
-			"config": {
-				"transform": {
-					"position": {"x": 0, "y": -200.111, "z": 0},
-					"rotation_degrees": {"x": 0, "y": 0, "z": 0},
-					"scale": {"x": 1, "y": 1, "z": 1}
-				}
-			},
-			"children": [
-				{
-					"name": "Zone01_Terrain",
-					"path": "assets/Map_3-01_LandOfChocolate/loc/zone01_str/EU_EN/assets++environs++loc++loc++zone01/export/terrain/lodmodel1.rws.PS3.glb",
-					"collision": {
-						"enabled": true,
-						"shapePlacement": "StaticBodyChild",
-						"ShapeType": "Trimesh"
-					}
-				},
-				{
-					"name": "Zone02_Terrain",
-					"path": "assets/Map_3-01_LandOfChocolate/loc/zone02_str/EU_EN/assets/environs++loc++loc++zone02/export/terrain/lodmodel1.rws.PS3.glb",
-					"collision": {
-						"enabled": true,
-						"shapePlacement": "StaticBodyChild",
-						"ShapeType": "Trimesh"
-					}
-				},
-				{
-					"name": "Zone02_opt",
-					"path": "assets/Map_3-01_LandOfChocolate/loc/zone02_str/EU_EN/assets/environs++loc++loc++zone02/opt/export++zone02/opt_model1.rws.PS3.glb",
-					"collision": {
-						"enabled": true,
-						"shapePlacement": "StaticBodyChild",
-						"ShapeType": "Trimesh"
-					}
-				},
-				{
-					"name": "Zone03_Terrain",
-					"path": "assets/Map_3-01_LandOfChocolate/loc/zone03_str/EU_EN/assets++environs++loc++loc++zone03/export/terrain/lodmodel1.rws.PS3.glb",
-					"collision": {
-						"enabled": true,
-						"shapePlacement": "StaticBodyChild",
-						"ShapeType": "Trimesh"
-					}
-				},
-				{
-					"name": "Zone04_opt",
-					"path": "assets/Map_3-01_LandOfChocolate/loc/zone04_str/EU_EN/assets/environs++loc++loc++zone04/opt/export++zone04/opt_model1.rws.PS3.glb",
-					"collision": {
-						"enabled": true,
-						"shapePlacement": "StaticBodyChild",
-						"ShapeType": "Trimesh"
-					}
-				},
-				{
-					"name": "Zone04_Terrain",
-					"path": "assets/Map_3-01_LandOfChocolate/loc/zone04_str/EU_EN/assets/environs++loc++loc++zone04/export/terrain/lodmodel1.rws.PS3.glb",
-					"collision": {
-						"enabled": true,
-						"shapePlacement": "StaticBodyChild",
-						"ShapeType": "Trimesh"
-					}
-				},
-				{
-					"name": "Zone05_Terrain",
-					"path": "assets/Map_3-01_LandOfChocolate/loc/zone05_str/EU_EN/assets++environs++loc++loc++zone05/export/terrain/lodmodel1.rws.PS3.glb",
-					"collision": {
-						"enabled": true,
-						"shapePlacement": "StaticBodyChild",
-						"ShapeType": "Trimesh"
-					}
-				},
-				{
-					"name": "Zone06_Terrain",
-					"path": "assets/Map_3-01_LandOfChocolate/loc/zone06_str/EU_EN/assets++environs++loc++loc++zone06/export/terrain/lodmodel1.rws.PS3.glb",
-					"collision": {
-						"enabled": true,
-						"shapePlacement": "StaticBodyChild",
-						"ShapeType": "Trimesh"
-					}
-				}
-			]
-		}]
+            "name": "LOC3D",
+            "Type": "Node",
+            "class": "Node3D",
+            "config": {
+                "transform": {
+                    "position": {"x": 1000, "y": -200.111, "z": 0},
+                    "rotation_degrees": {"x": 0, "y": 0, "z": 0},
+                    "scale": {"x": 1, "y": 1, "z": 1}
+                }
+            },
+            "children": [
+                {
+                    "name": "Zone01_Terrain",
+                    "path": "assets/Map_3-01_LandOfChocolate/loc/zone01_str/EU_EN/assets++environs++loc++loc++zone01/export/terrain/lodmodel1.rws.PS3.glb",
+                    "collision": {
+                        "enabled": true,
+                        "shapePlacement": "StaticBodyChild",
+                        "ShapeType": "Trimesh"
+                    }
+                },
+                {
+                    "name": "Zone02_Terrain",
+                    "path": "assets/Map_3-01_LandOfChocolate/loc/zone02_str/EU_EN/assets/environs++loc++loc++zone02/export/terrain/lodmodel1.rws.PS3.glb",
+                    "collision": {
+                        "enabled": true,
+                        "shapePlacement": "StaticBodyChild",
+                        "ShapeType": "Trimesh"
+                    }
+                },
+                {
+                    "name": "Zone02_opt",
+                    "path": "assets/Map_3-01_LandOfChocolate/loc/zone02_str/EU_EN/assets/environs++loc++loc++zone02/opt/export++zone02/opt_model1.rws.PS3.glb",
+                    "collision": {
+                        "enabled": true,
+                        "shapePlacement": "StaticBodyChild",
+                        "ShapeType": "Trimesh"
+                    }
+                },
+                {
+                    "name": "Zone03_Terrain",
+                    "path": "assets/Map_3-01_LandOfChocolate/loc/zone03_str/EU_EN/assets++environs++loc++loc++zone03/export/terrain/lodmodel1.rws.PS3.glb",
+                    "collision": {
+                        "enabled": true,
+                        "shapePlacement": "StaticBodyChild",
+                        "ShapeType": "Trimesh"
+                    }
+                },
+                {
+                    "name": "Zone04_opt",
+                    "path": "assets/Map_3-01_LandOfChocolate/loc/zone04_str/EU_EN/assets/environs++loc++loc++zone04/opt/export++zone04/opt_model1.rws.PS3.glb",
+                    "collision": {
+                        "enabled": true,
+                        "shapePlacement": "StaticBodyChild",
+                        "ShapeType": "Trimesh"
+                    }
+                },
+                {
+                    "name": "Zone04_Terrain",
+                    "path": "assets/Map_3-01_LandOfChocolate/loc/zone04_str/EU_EN/assets/environs++loc++loc++zone04/export/terrain/lodmodel1.rws.PS3.glb",
+                    "collision": {
+                        "enabled": true,
+                        "shapePlacement": "StaticBodyChild",
+                        "ShapeType": "Trimesh"
+                    }
+                },
+                {
+                    "name": "Zone05_Terrain",
+                    "path": "assets/Map_3-01_LandOfChocolate/loc/zone05_str/EU_EN/assets++environs++loc++loc++zone05/export/terrain/lodmodel1.rws.PS3.glb",
+                    "collision": {
+                        "enabled": true,
+                        "shapePlacement": "StaticBodyChild",
+                        "ShapeType": "Trimesh"
+                    }
+                },
+                {
+                    "name": "Zone06_Terrain",
+                    "path": "assets/Map_3-01_LandOfChocolate/loc/zone06_str/EU_EN/assets++environs++loc++loc++zone06/export/terrain/lodmodel1.rws.PS3.glb",
+                    "collision": {
+                        "enabled": true,
+                        "shapePlacement": "StaticBodyChild",
+                        "ShapeType": "Trimesh"
+                    }
+                }
+            ]
+        }]
     },
     {
         "name": "BartmanBegins",
         "path": "Node4D/Node3D/Levels/BartmanBegins.tscn",
         "class": "Node3D",
         "type": "scene",
-		"children": [{
-			"name": "brt3D",
-			"Type": "Node",
-			"class": "Node3D",
-			"config": {
-				"transform": {
-					"position": {"x": 0, "y": -300.111, "z": 0},
-					"rotation_degrees": {"x": 0, "y": 0, "z": 0},
-					"scale": {"x": 1, "y": 1, "z": 1}
-				}
-			}
-		}]
+        "children": [{
+            "name": "brt3D",
+            "Type": "Node",
+            "class": "Node3D",
+            "config": {
+                "transform": {
+                    "position": {"x": -1000, "y": -300.111, "z": 0},
+                    "rotation_degrees": {"x": 0, "y": 0, "z": 0},
+                    "scale": {"x": 1, "y": 1, "z": 1}
+                }
+            }
+        }]
     },
     {
         "name": "HungryHungryHomer",
         "path": "Node4D/Node3D/Levels/HungryHungryHomer.tscn",
         "class": "Node3D",
         "type": "scene",
-		"children": [{
-			"name": "eighty_bites3D",
-			"Type": "Node",
-			"class": "Node3D",
-			"config": {
-				"transform": {
-					"position": {"x": 0, "y": -400.111, "z": 0},
-					"rotation_degrees": {"x": 0, "y": 0, "z": 0},
-					"scale": {"x": 1, "y": 1, "z": 1}
-				}
-			}
-		}]
+        "children": [{
+            "name": "eighty_bites3D",
+            "Type": "Node",
+            "class": "Node3D",
+            "config": {
+                "transform": {
+                    "position": {"x": 1000, "y": -400.111, "z": 0},
+                    "rotation_degrees": {"x": 0, "y": 0, "z": 0},
+                    "scale": {"x": 1, "y": 1, "z": 1}
+                }
+            }
+        }]
     },
     {
         "name": "TreeHugger",
         "path": "Node4D/Node3D/Levels/TreeHugger.tscn",
         "class": "Node3D",
         "type": "scene",
-		"children": [{
-			"name": "tree_hugger3D",
-			"Type": "Node",
-			"class": "Node3D",
-			"config": {
-				"transform": {
-					"position": {"x": 0, "y": -500.111, "z": 0},
-					"rotation_degrees": {"x": 0, "y": 0, "z": 0},
-					"scale": {"x": 1, "y": 1, "z": 1}
-				}
-			}
-		}]
+        "children": [{
+            "name": "tree_hugger3D",
+            "Type": "Node",
+            "class": "Node3D",
+            "config": {
+                "transform": {
+                    "position": {"x": -1000, "y": -500.111, "z": 0},
+                    "rotation_degrees": {"x": 0, "y": 0, "z": 0},
+                    "scale": {"x": 1, "y": 1, "z": 1}
+                }
+            }
+        }]
     },
     {
         "name": "MobRules",
         "path": "Node4D/Node3D/Levels/MobRules.tscn",
         "class": "Node3D",
         "type": "scene",
-		"children": [{
-			"name": "mob_rules3D",
-			"Type": "Node",
-			"class": "Node3D",
-			"config": {
-				"transform": {
-					"position": {"x": 0, "y": -600.111, "z": 0},
-					"rotation_degrees": {"x": 0, "y": 0, "z": 0},
-					"scale": {"x": 1, "y": 1, "z": 1}
-				}
-			}
-		}]
+        "children": [{
+            "name": "mob_rules3D",
+            "Type": "Node",
+            "class": "Node3D",
+            "config": {
+                "transform": {
+                    "position": {"x": 1000, "y": -600.111, "z": 0},
+                    "rotation_degrees": {"x": 0, "y": 0, "z": 0},
+                    "scale": {"x": 1, "y": 1, "z": 1}
+                }
+            }
+        }]
     },
     {
         "name": "EnterTheCheatrix",
         "path": "Node4D/Node3D/Levels/EnterTheCheatrix.tscn",
         "class": "Node3D",
         "type": "scene",
-		"children": [{
-			"name": "cheater3D",
-			"Type": "Node",
-			"class": "Node3D",
-			"config": {
-				"transform": {
-					"position": {"x": 0, "y": -700.111, "z": 0},
-					"rotation_degrees": {"x": 0, "y": 0, "z": 0},
-					"scale": {"x": 1, "y": 1, "z": 1}
-				}
-			}
-		}]
+        "children": [{
+            "name": "cheater3D",
+            "Type": "Node",
+            "class": "Node3D",
+            "config": {
+                "transform": {
+                    "position": {"x": -1000, "y": -700.111, "z": 0},
+                    "rotation_degrees": {"x": 0, "y": 0, "z": 0},
+                    "scale": {"x": 1, "y": 1, "z": 1}
+                }
+            }
+        }]
     },
     {
         "name": "DayOfTheDolphin",
         "path": "Node4D/Node3D/Levels/DayOfTheDolphin.tscn",
         "class": "Node3D",
         "type": "scene",
-		"children": [{
-			"name": "dayofthedolphins3D",
-			"Type": "Node",
-			"class": "Node3D",
-			"config": {
-				"transform": {
-					"position": {"x": 0, "y": -800.111, "z": 0},
-					"rotation_degrees": {"x": 0, "y": 0, "z": 0},
-					"scale": {"x": 1, "y": 1, "z": 1}
-				}
-			}
-		}]
+        "children": [{
+            "name": "dayofthedolphins3D",
+            "Type": "Node",
+            "class": "Node3D",
+            "config": {
+                "transform": {
+                    "position": {"x": 1000, "y": -800.111, "z": 0},
+                    "rotation_degrees": {"x": 0, "y": 0, "z": 0},
+                    "scale": {"x": 1, "y": 1, "z": 1}
+                }
+            }
+        }]
     },
     {
         "name": "TheColossalDonut",
         "path": "Node4D/Node3D/Levels/TheColossalDonut.tscn",
         "class": "Node3D",
         "type": "scene",
-		"children": [{
-			"name": "colossaldonut3D",
-			"Type": "Node",
-			"class": "Node3D",
-			"config": {
-				"transform": {
-					"position": {"x": 0, "y": -900.111, "z": 0},
-					"rotation_degrees": {"x": 0, "y": 0, "z": 0},
-					"scale": {"x": 1, "y": 1, "z": 1}
-				}
-			}
-		}]
+        "children": [{
+            "name": "colossaldonut3D",
+            "Type": "Node",
+            "class": "Node3D",
+            "config": {
+                "transform": {
+                    "position": {"x": -1000, "y": -900.111, "z": 0},
+                    "rotation_degrees": {"x": 0, "y": 0, "z": 0},
+                    "scale": {"x": 1, "y": 1, "z": 1}
+                }
+            }
+        }]
     },
     {
         "name": "Invasion",
         "path": "Node4D/Node3D/Levels/Invasion.tscn",
         "class": "Node3D",
         "type": "scene",
-		"children": [{
-			"name": "dayspringfieldstoodstill3D",
-			"Type": "Node",
-			"class": "Node3D",
-			"config": {
-				"transform": {
-					"position": {"x": 0, "y": -1000.111, "z": 0},
-					"rotation_degrees": {"x": 0, "y": 0, "z": 0},
-					"scale": {"x": 1, "y": 1, "z": 1}
-				}
-			}
-		}]
+        "children": [{
+            "name": "dayspringfieldstoodstill3D",
+            "Type": "Node",
+            "class": "Node3D",
+            "config": {
+                "transform": {
+                    "position": {"x": 1000, "y": -1000.111, "z": 0},
+                    "rotation_degrees": {"x": 0, "y": 0, "z": 0},
+                    "scale": {"x": 1, "y": 1, "z": 1}
+                }
+            }
+        }]
     },
     {
         "name": "BargainBin",
         "path": "Node4D/Node3D/Levels/BargainBin.tscn",
         "class": "Node3D",
         "type": "scene",
-		"children": [{
-			"name": "bargainbin3D",
-			"Type": "Node",
-			"class": "Node3D",
-			"config": {
-				"transform": {
-					"position": {"x": 0, "y": -1100.111, "z": 0},
-					"rotation_degrees": {"x": 0, "y": 0, "z": 0},
-					"scale": {"x": 1, "y": 1, "z": 1}
-				}
-			}
-		}]
+        "children": [{
+            "name": "bargainbin3D",
+            "Type": "Node",
+            "class": "Node3D",
+            "config": {
+                "transform": {
+                    "position": {"x": -1000, "y": -1100.111, "z": 0},
+                    "rotation_degrees": {"x": 0, "y": 0, "z": 0},
+                    "scale": {"x": 1, "y": 1, "z": 1}
+                }
+            }
+        }]
     },
     {
         "name": "NeverQuest",
         "path": "Node4D/Node3D/Levels/NeverQuest.tscn",
         "class": "Node3D",
         "type": "scene",
-		"children": [{
-			"name": "neverquest3D",
-			"Type": "Node",
-			"class": "Node3D",
-			"config": {
-				"transform": {
-					"position": {"x": 0, "y": -1200.111, "z": 0},
-					"rotation_degrees": {"x": 0, "y": 0, "z": 0},
-					"scale": {"x": 1, "y": 1, "z": 1}
-				}
-			}
-		}]
+        "children": [{
+            "name": "neverquest3D",
+            "Type": "Node",
+            "class": "Node3D",
+            "config": {
+                "transform": {
+                    "position": {"x": 0, "y": -1200.111, "z": 0},
+                    "rotation_degrees": {"x": 0, "y": 0, "z": 0},
+                    "scale": {"x": 1, "y": 1, "z": 1}
+                }
+            }
+        }]
     },
     {
         "name": "GrandTheftScratchy",
         "path": "Node4D/Node3D/Levels/GrandTheftScratchy.tscn",
         "class": "Node3D",
         "type": "scene",
-		"children": [{
-			"name": "grand_theft_scratchy3D",
-			"Type": "Node",
-			"class": "Node3D",
-			"config": {
-				"transform": {
-					"position": {"x": 0, "y": -1300.111, "z": 0},
-					"rotation_degrees": {"x": 0, "y": 0, "z": 0},
-					"scale": {"x": 1, "y": 1, "z": 1}
-				}
-			}
-		}]
+        "children": [{
+            "name": "grand_theft_scratchy3D",
+            "Type": "Node",
+            "class": "Node3D",
+            "config": {
+                "transform": {
+                    "position": {"x": 0, "y": -1300.111, "z": 0},
+                    "rotation_degrees": {"x": 0, "y": 0, "z": 0},
+                    "scale": {"x": 1, "y": 1, "z": 1}
+                }
+            }
+        }]
     },
     {
         "name": "MedalOfHomer",
         "path": "Node4D/Node3D/Levels/MedalOfHomer.tscn",
         "class": "Node3D",
         "type": "scene",
-		"children": [{
-			"name": "medal_of_homer3D",
-			"Type": "Node",
-			"class": "Node3D",
-			"config": {
-				"transform": {
-					"position": {"x": 0, "y": -1400.111, "z": 0},
-					"rotation_degrees": {"x": 0, "y": 0, "z": 0},
-					"scale": {"x": 1, "y": 1, "z": 1}
-				}
-			}
-		}]
+        "children": [{
+            "name": "medal_of_homer3D",
+            "Type": "Node",
+            "class": "Node3D",
+            "config": {
+                "transform": {
+                    "position": {"x": 0, "y": -1400.111, "z": 0},
+                    "rotation_degrees": {"x": 0, "y": 0, "z": 0},
+                    "scale": {"x": 1, "y": 1, "z": 1}
+                }
+            }
+        }]
     },
     {
         "name": "BigSuperHappy",
         "path": "Node4D/Node3D/Levels/BigSuperHappy.tscn",
         "class": "Node3D",
         "type": "scene",
-		"children": [{
-			"name": "bigsuperhappy3D",
-			"Type": "Node",
-			"class": "Node3D",
-			"config": {
-				"transform": {
-					"position": {"x": 0, "y": -1500.111, "z": 0},
-					"rotation_degrees": {"x": 0, "y": 0, "z": 0},
-					"scale": {"x": 1, "y": 1, "z": 1}
-				}
-			}
-		}]
+        "children": [{
+            "name": "bigsuperhappy3D",
+            "Type": "Node",
+            "class": "Node3D",
+            "config": {
+                "transform": {
+                    "position": {"x": 0, "y": -1500.111, "z": 0},
+                    "rotation_degrees": {"x": 0, "y": 0, "z": 0},
+                    "scale": {"x": 1, "y": 1, "z": 1}
+                }
+            }
+        }]
     },
     {
         "name": "Rhymes",
         "path": "Node4D/Node3D/Levels/Rhymes.tscn",
         "class": "Node3D",
         "type": "scene",
-		"children": [{
-			"name": "rhymes3D",
-			"Type": "Node",
-			"class": "Node3D",
-			"config": {
-				"transform": {
-					"position": {"x": 0, "y": -1600.111, "z": 0},
-					"rotation_degrees": {"x": 0, "y": 0, "z": 0},
-					"scale": {"x": 1, "y": 1, "z": 1}
-				}
-			}
-		}]
+        "children": [{
+            "name": "rhymes3D",
+            "Type": "Node",
+            "class": "Node3D",
+            "config": {
+                "transform": {
+                    "position": {"x": 0, "y": -1600.111, "z": 0},
+                    "rotation_degrees": {"x": 0, "y": 0, "z": 0},
+                    "scale": {"x": 1, "y": 1, "z": 1}
+                }
+            }
+        }]
     },
     {
         "name": "MeetThyPlayer",
         "path": "Node4D/Node3D/Levels/MeetThyPlayer.tscn",
         "class": "Node3D",
         "type": "scene",
-		"children": [{
-			"name": "meetthyplayer3D",
-			"Type": "Node",
-			"class": "Node3D",
-			"config": {
-				"transform": {
-					"position": {"x": 0, "y": -1700.111, "z": 0},
-					"rotation_degrees": {"x": 0, "y": 0, "z": 0},
-					"scale": {"x": 1, "y": 1, "z": 1}
-				}
-			}
-		}]
+        "children": [{
+            "name": "meetthyplayer3D",
+            "Type": "Node",
+            "class": "Node3D",
+            "config": {
+                "transform": {
+                    "position": {"x": 0, "y": -1700.111, "z": 0},
+                    "rotation_degrees": {"x": 0, "y": 0, "z": 0},
+                    "scale": {"x": 1, "y": 1, "z": 1}
+                }
+            }
+        }]
     },
     {
         "name": "Control",
