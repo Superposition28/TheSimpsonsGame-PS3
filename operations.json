@@ -13,7 +13,16 @@
 			"Instructions": "download all tools, locally",
 			"python_executable": "python",
 			"script": "Tools/Download/main.py",
-			"args": ["RemakeRegistry/Games/TheSimpsonsGame PS3/Tools.json"]
+			"args": ["RemakeRegistry/Games/TheSimpsonsGame PS3/Tools.json"],
+			"prompts": [
+				{
+					"type": "confirm",
+					"Name": "force download",
+					"message": "Force override existing downloads?",
+					"default": false,
+					"cli_arg": "--force"
+				}
+			]
 		},
 		{
 			"Name": "Rename base folders",
@@ -101,7 +110,7 @@
 			"args": ["-m", "ffmpeg", "-s", "{{RemakeEngine.Directories.SourcePath}}\\Assets_1_Video_Movies", "-t", "GameFiles\\STROUT\\Assets_1_Video_Movies", "-f", "ffmpeg.exe", "-i", ".vp6", "-o", ".ogv", "--overwrite"]
 		},
 		{
-			"Name": "Reorganise Audio Files",
+			"Name": "Reorganize Audio Files",
 			"run-all": true,
 			"python_executable": "python",
 			"script": "RemakeRegistry/Games/TheSimpsonsGame PS3/Scripts/SetupAudioDir.py",
