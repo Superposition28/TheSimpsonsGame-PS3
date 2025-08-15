@@ -8,6 +8,14 @@
 			"args": []
 		},
 		{
+			"Name": "Download Tools",
+			"run-all": false,
+			"Instructions": "download all tools, locally",
+			"python_executable": "python",
+			"script": "Tools/Download/main.py",
+			"args": ["RemakeRegistry/Games/TheSimpsonsGame PS3/Tools.json"]
+		},
+		{
 			"Name": "Rename base folders",
 			"run-all": true,
 			"Instructions": "run rename script",

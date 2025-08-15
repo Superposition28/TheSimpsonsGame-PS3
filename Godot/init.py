@@ -162,10 +162,6 @@ def create_godot_project(project_name: str, project_path: str, asset_folders: li
 
 
 def main() -> None:
-    # --- Configuration ---
-    GODOT_EXECUTABLE = "A:\\Godot_v4.4.1-stable_mono_win64\\Godot_v4.4.1-stable_mono_win64_console.exe"
-    GAME_ASSET_EXTENSIONS = [".dds", ".glb", ".fbx", ".blend"]
-
     # --- Path Discovery ---
 
     # The "Module Root" is the directory where this script is located. All generated
@@ -199,6 +195,10 @@ def main() -> None:
 
     # Destination path for the generated Godot project, relative to the module root.
     godot_project_parent_dir = os.path.join(module_root, 'GameFiles', 'GodotGame')
+
+    # --- Configuration ---
+    GODOT_EXECUTABLE = os.path.join(repo_root, "Tools", "Godot", "Godot_v4.4.1-stable_mono_win64", "Godot_v4.4.1-stable_mono_win64.exe")
+    GAME_ASSET_EXTENSIONS = [".dds", ".glb", ".fbx", ".blend"]
 
     # --- Execution ---
     create_godot_project(
