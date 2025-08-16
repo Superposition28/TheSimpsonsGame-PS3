@@ -4,7 +4,7 @@
 			"init": true,
 			"Instructions": "run main init",
 			"python_executable": "python",
-			"script": "RemakeRegistry/Games/TheSimpsonsGame-PS3/Scripts/init.py",
+			"script": "{{RemakeEngine.Config.module_path}}\\Scripts\\init.py",
 			"args": []
 		},
 		{
@@ -12,8 +12,8 @@
 			"run-all": false,
 			"Instructions": "download all tools, locally",
 			"python_executable": "python",
-			"script": "Tools/Download/main.py",
-			"args": ["RemakeRegistry/Games/TheSimpsonsGame-PS3/Tools.json"],
+			"script": "Tools\\Download\\main.py",
+			"args": ["{{RemakeEngine.Config.module_path}}\\Tools.json"],
 			"prompts": [
 				{
 					"type": "confirm",
@@ -29,45 +29,45 @@
 			"run-all": true,
 			"Instructions": "run rename script",
 			"python_executable": "python",
-			"script": "Tools/Process/Rename/RenameFolders.py",
-			"args": ["{{RemakeEngine.Directories.SourcePath}}", "--map-db-file", "RemakeRegistry/Games/TheSimpsonsGame-PS3/RenameMap.db"]
+			"script": "Tools\\Process\\Rename\\RenameFolders.py",
+			"args": ["{{RemakeEngine.Directories.SourcePath}}", "--map-db-file", "{{RemakeEngine.Config.module_path}}\\RenameMap.db"]
 		},
 		{
 			"Name": "validate game files",
 			"run-all": true,
-			"Instructions": "run validate against the `RemakeRegistry/Games/TheSimpsonsGame-PS3/PrimaryIndex.db`, specifically the root files in the source folder",
+			"Instructions": "run validate against the `{{RemakeEngine.Config.module_path}}\\PrimaryIndex.db`, specifically the root files in the source folder",
 			"python_executable": "python",
-			"script": "RemakeRegistry/Games/TheSimpsonsGame-PS3/Scripts/ValidateSource-1.py",
-			"args": ["RemakeRegistry/Games/TheSimpsonsGame-PS3/PrimaryIndex.db", "{{RemakeEngine.Directories.SourcePath}}"]
+			"script": "{{RemakeEngine.Config.module_path}}\\Scripts\\ValidateSource-1.py",
+			"args": ["{{RemakeEngine.Config.module_path}}\\PrimaryIndex.db", "{{RemakeEngine.Directories.SourcePath}}"]
 		},
 		{
 			"Name": "Extract Archives (.STR)",
 			"run-all": true,
-			"Instructions": "run quickbms script using RemakeRegistry/Games/TheSimpsonsGame-PS3/Scripts/simpsons_str.bms",
+			"Instructions": "run quickbms script using {{RemakeEngine.Config.module_path}}\\Scripts\\simpsons_str.bms",
 			"python_executable": "python",
-			"script": "Tools/QuickBMS/bms_extract.py",
-			"args": ["--quickbms", "Tools/QuickBMS/exe/quickbms.exe", "--script", "RemakeRegistry/Games/TheSimpsonsGame-PS3/Scripts/simpsons_str.bms", "--input", "{{RemakeEngine.Directories.SourcePath}}", "--output", "GameFiles/STROUT", "--extension", ".str"]
+			"script": "Tools\\QuickBMS\\bms_extract.py",
+			"args": ["--quickbms", "Tools\\QuickBMS\\exe\\quickbms.exe", "--script", "{{RemakeEngine.Config.module_path}}\\Scripts\\simpsons_str.bms", "--input", "{{RemakeEngine.Directories.SourcePath}}", "--output", "GameFiles\\STROUT", "--extension", ".str"]
 		},
 		{
 			"Name": "Extract Textures (.txd -> .dds)",
 			"run-all": true,
 			"python_executable": "python",
-			"script": "RemakeRegistry/Games/TheSimpsonsGame-PS3/Scripts/Texture/Export_txd.py",
-			"args": ["GameFiles/STROUT"]
+			"script": "{{RemakeEngine.Config.module_path}}\\Scripts\\Texture\\Export_txd.py",
+			"args": ["GameFiles\\STROUT"]
 		},
 		{
 			"Name": "validate extracted game files",
 			"run-all": true,
-			"Instructions": "run validate against the `RemakeRegistry/Games/TheSimpsonsGame-PS3/PrimaryIndex.db`",
+			"Instructions": "run validate against the `{{RemakeEngine.Config.module_path}}\\PrimaryIndex.db`",
 			"python_executable": "python",
-			"script": "RemakeRegistry/Games/TheSimpsonsGame-PS3/Scripts/ValidateExtracted-1.py",
-			"args": ["RemakeRegistry/Games/TheSimpsonsGame-PS3/PrimaryIndex.db", "GameFiles/STROUT"]
+			"script": "{{RemakeEngine.Config.module_path}}\\Scripts\\ValidateExtracted-1.py",
+			"args": ["{{RemakeEngine.Config.module_path}}\\PrimaryIndex.db", "GameFiles\\STROUT"]
 		},
 		{
 			"Name": "Convert Models (.preinstanced -> .blend)",
 			"run-all": true,
 			"python_executable": "python",
-			"script": "RemakeRegistry/Games/TheSimpsonsGame-PS3/Scripts/Blender/Main/run.py",
+			"script": "{{RemakeEngine.Config.module_path}}\\Scripts\\Blender\\Main\\run.py",
 			"args": [],
 			"prompts": [
 				{
@@ -106,21 +106,21 @@
 			"Name": "Convert Videos (.vp6 -> .ogv)",
 			"run-all": true,
 			"python_executable": "python",
-			"script": "Tools/ffmpeg-vgmstream/convert.py",
+			"script": "Tools\\ffmpeg-vgmstream\\convert.py",
 			"args": ["-m", "ffmpeg", "-s", "{{RemakeEngine.Directories.SourcePath}}\\Assets_1_Video_Movies", "-t", "GameFiles\\STROUT\\Assets_1_Video_Movies", "-f", "ffmpeg.exe", "-i", ".vp6", "-o", ".ogv", "--overwrite"]
 		},
 		{
 			"Name": "Reorganize Audio Files",
 			"run-all": true,
 			"python_executable": "python",
-			"script": "RemakeRegistry/Games/TheSimpsonsGame-PS3/Scripts/SetupAudioDir.py",
+			"script": "{{RemakeEngine.Config.module_path}}\\Scripts\\SetupAudioDir.py",
 			"args": ["{{RemakeEngine.Directories.SourcePath}}\\Assets_1_Audio_Streams"]
 		},
 		{
 			"Name": "Convert Audio (.snu -> .wav)",
 			"run-all": true,
 			"python_executable": "python",
-			"script": "Tools/ffmpeg-vgmstream/convert.py",
+			"script": "Tools\\ffmpeg-vgmstream\\convert.py",
 			"args": ["-m", "vgmstream", "-s", "{{RemakeEngine.Directories.SourcePath}}\\Assets_1_Audio_Streams", "-t", "GameFiles\\STROUT\\Assets_1_Audio_Streams", "--vgmstream-cli", "vgmstream-cli.exe", "-i", ".snu", "-o", ".wav"]
 		},
 		{
@@ -128,15 +128,15 @@
 			"Instructions": "run flatten script",
 			"run-all": true,
 			"python_executable": "python",
-			"script": "Tools/Process/Flat/flat.py",
-			"args": ["GameFiles/STROUT", "GameFiles/ExtractedOut", "--rules", "RemakeRegistry/Games/TheSimpsonsGame-PS3/PathRules.json", "--separator", "++", "--no-hash-check", "--action", "move"]
+			"script": "Tools\\Process\\Flat\\flat.py",
+			"args": ["GameFiles\\STROUT", "GameFiles\\ExtractedOut", "--rules", "{{RemakeEngine.Config.module_path}}\\PathRules.json", "--separator", "++", "--no-hash-check", "--action", "move"]
 		},
 		{
 			"Name": "generate Godot Game (EXPERIMENTAL)",
 			"Instructions": "(New), this is a very early implementation that generates the first level of the game from the extracted files.",
 			"run-all": true,
 			"python_executable": "python",
-			"script": "RemakeRegistry/Games/TheSimpsonsGame-PS3/Godot/init.py"
+			"script": "{{RemakeEngine.Config.module_path}}\\Godot\\init.py"
 		}
 	]
 }
