@@ -12,7 +12,7 @@ import sys
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..', '..', '..', '..', '..', '..', 'Utils')))
 from printer import print, Colours, print_error, print_verbose, print_debug, printc
 
-def main(working_dir, preinstanced_dir, blend_dir, glb_dir, output_dir, root_drive, blank_blend_source, verbose, debug_sleep, export_fbx, export_glb, export_single, marker) -> None:
+def main(working_dir, preinstanced_dir, glb_dir, output_dir, root_drive, blank_blend_source, verbose, debug_sleep, export_fbx, export_glb, export_single, marker) -> None:
     """Main function to execute init and blend processes as CLI commands."""
     try:
 
@@ -113,8 +113,8 @@ if __name__ == "__main__":
     glb_dir = Path(working_dir, "GameFiles", "STROUT")
     output_dir = Path(working_dir, "Tools", "Blender")
     root_drive = Path(os.path.splitdrive(working_dir)[0] + os.sep, "TMP_TSG_LNKS")
-    blank_blend_source = Path(working_dir, "blank.blend")
+    blank_blend_source = Path(working_dir, "RemakeRegistry", "Games", "TheSimpsonsGame PS3", "blank.blend")
     marker = os.path.join("GameFiles", "STROUT") + os.sep
 
 
-    main(working_dir, preinstanced_dir, blend_dir, glb_dir, output_dir, root_drive, blank_blend_source, verbose, debug_sleep, export_fbx, export_glb, export_single, marker)
+    main(working_dir, preinstanced_dir,  glb_dir, output_dir, root_drive, blank_blend_source, verbose, debug_sleep, export_fbx, export_glb, export_single, marker)

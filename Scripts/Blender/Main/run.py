@@ -124,7 +124,7 @@ if __name__ == "__main__":
     glb_dir = Path(working_dir, "GameFiles", "STROUT")
     output_dir = Path(working_dir, "Tools", "Blender")
     root_drive = Path(os.path.splitdrive(working_dir)[0] + os.sep, "TMP_TSG_LNKS")
-    blank_blend_source = Path(working_dir, "blank.blend")
+    blank_blend_source = Path(working_dir, "RemakeRegistry", "Games", "TheSimpsonsGame PS3", "blank.blend")
     marker = os.path.join("GameFiles", "STROUT") + os.sep
 
 
