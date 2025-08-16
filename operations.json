@@ -137,6 +137,12 @@
 			"run-all": true,
 			"python_executable": "python",
 			"script": "{{RemakeEngine.Config.module_path}}\\Godot\\init.py"
+		},
+		{
+			"Name": "test",
+			"Instructions": "",
+			"run-all": true,
+			"python_executable": "python"
 		}
 	]
 }
