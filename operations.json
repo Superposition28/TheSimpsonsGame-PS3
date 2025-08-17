@@ -129,7 +129,7 @@
 			"run-all": true,
 			"python_executable": "python",
 			"script": "Tools\\Process\\Flat\\flat.py",
-			"args": ["GameFiles\\STROUT", "GameFiles\\ExtractedOut", "--rules", "{{RemakeEngine.Config.module_path}}\\PathRules.json", "--separator", "++", "--no-hash-check", "--action", "move"]
+			"args": ["GameFiles\\STROUT", "GameFiles\\ExtractedOut", "--rules", "{{RemakeEngine.Config.module_path}}\\PathRules.json", "--separator", "++", "--action", "move"]
 		},
 		{
 			"Name": "generate Godot Game (EXPERIMENTAL)",
@@ -137,12 +137,6 @@
 			"run-all": true,
 			"python_executable": "python",
 			"script": "{{RemakeEngine.Config.module_path}}\\Godot\\init.py"
-		},
-		{
-			"Name": "test",
-			"Instructions": "",
-			"run-all": true,
-			"python_executable": "python"
 		}
 	]
 }
