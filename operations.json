@@ -4,7 +4,7 @@
 			"init": true,
 			"Instructions": "run main init",
 			"python_executable": "python",
-			"script": "{{RemakeEngine.Config.module_path}}\\Scripts\\init.py",
+			"script": "Games\\TheSimpsonsGame-PS3\\Scripts\\init.py",
 			"args": []
 		},
 		{
