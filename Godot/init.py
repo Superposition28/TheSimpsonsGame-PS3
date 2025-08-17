@@ -194,11 +194,13 @@ def main() -> None:
     scene_config_json_path = os.path.join(module_root, 'scene_config.json')
 
     # Destination path for the generated Godot project, relative to the module root.
-    godot_project_parent_dir = os.path.join(module_root, 'GameFiles', 'GodotGame')
+    godot_project_parent_dir = os.path.join(module_root, 'GodotGame')
 
     # --- Configuration ---
     GODOT_EXECUTABLE = os.path.join(repo_root, "Tools", "Godot", "Godot_v4.4.1-stable_mono_win64", "Godot_v4.4.1-stable_mono_win64.exe")
-    GAME_ASSET_EXTENSIONS = [".dds", ".glb", ".fbx", ".blend"]
+    
+	# dds - textures, glb - 3d assets, wav - audio, ogv - video
+    GAME_ASSET_EXTENSIONS = [".dds", ".glb", ".wav", ".ogv"]
 
     # --- Execution ---
     create_godot_project(

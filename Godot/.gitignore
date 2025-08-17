@@ -1,6 +1,7 @@
 # Build/Game artifacts
 GameFiles/
 Game/
+GodotGame/
 
 # Configuration/History
 *.ini

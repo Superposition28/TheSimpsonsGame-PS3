@@ -4,7 +4,7 @@
 			"init": true,
 			"Instructions": "run main init",
 			"python_executable": "python",
-			"script": "Games\\TheSimpsonsGame-PS3\\Scripts\\init.py",
+			"script": "RemakeRegistry\\Games\\TheSimpsonsGame-PS3\\Scripts\\init.py",
 			"args": []
 		},
 		{
@@ -94,7 +94,7 @@
 					"type": "checkbox",
 					"Name": "export_formats",
 					"message": "Select export formats:",
-					"default": ["fbx", "glb"],
+					"default": ["", "glb"],
 					"choices": ["fbx", "glb"],
 					"cli_prefix": "--export",
 					"condition": "enable_export",
