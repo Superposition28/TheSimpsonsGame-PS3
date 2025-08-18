@@ -1,7 +1,7 @@
 {
 	"The Simpsons Game (PS3)": [
 		{
-			"init": true,
+			"init": false,
 			"Instructions": "run main init",
 			"python_executable": "python",
 			"script": "RemakeRegistry\\Games\\TheSimpsonsGame-PS3\\Scripts\\init.py",
@@ -94,7 +94,7 @@
 					"type": "checkbox",
 					"Name": "export_formats",
 					"message": "Select export formats:",
-					"default": ["", "glb"],
+					"default": ["glb"],
 					"choices": ["fbx", "glb"],
 					"cli_prefix": "--export",
 					"condition": "enable_export",
@@ -107,7 +107,7 @@
 			"run-all": true,
 			"python_executable": "python",
 			"script": "Tools\\ffmpeg-vgmstream\\convert.py",
-			"args": ["-m", "ffmpeg", "-s", "{{RemakeEngine.Directories.SourcePath}}\\Assets_1_Video_Movies", "-t", "GameFiles\\STROUT\\Assets_1_Video_Movies", "-f", "ffmpeg.exe", "-i", ".vp6", "-o", ".ogv", "--overwrite"]
+			"args": ["-m", "ffmpeg", "--type", "video", "-s", "{{RemakeEngine.Directories.SourcePath}}\\Assets_1_Video_Movies", "-t", "GameFiles\\STROUT\\Assets_1_Video_Movies", "-f", "ffmpeg.exe", "-i", ".vp6", "-o", ".ogv", "--overwrite"]
 		},
 		{
 			"Name": "Reorganize Audio Files",
@@ -121,7 +121,7 @@
 			"run-all": true,
 			"python_executable": "python",
 			"script": "Tools\\ffmpeg-vgmstream\\convert.py",
-			"args": ["-m", "vgmstream", "-s", "{{RemakeEngine.Directories.SourcePath}}\\Assets_1_Audio_Streams", "-t", "GameFiles\\STROUT\\Assets_1_Audio_Streams", "--vgmstream-cli", "vgmstream-cli.exe", "-i", ".snu", "-o", ".wav"]
+			"args": ["-m", "vgmstream", "--type", "audio", "-s", "{{RemakeEngine.Directories.SourcePath}}\\Assets_1_Audio_Streams", "-t", "GameFiles\\STROUT\\Assets_1_Audio_Streams", "--vgmstream-cli", "vgmstream-cli.exe", "-i", ".snu", "-o", ".wav", "--godot-compatible"]
 		},
 		{
 			"Name": "flatten folder structure",
@@ -136,7 +136,8 @@
 			"Instructions": "(New), this is a very early implementation that generates the first level of the game from the extracted files.",
 			"run-all": true,
 			"python_executable": "python",
-			"script": "{{RemakeEngine.Config.module_path}}\\Godot\\init.py"
+			"script": "{{RemakeEngine.Config.module_path}}\\Godot\\init.py",
+			"args": ["--project-name", "TheSimpsonsGame", "--repo-root", "{{RemakeEngine.Config.project_path}}", "--no-exit"]
 		}
 	]
 }

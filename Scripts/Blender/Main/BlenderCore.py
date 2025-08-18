@@ -1,4 +1,4 @@
-## RemakeRegistry\Games\TheSimpsonsGame PS3\Scripts\Blender\Main\BlenderCore.py
+## RemakeRegistry\Games\TheSimpsonsGame-PS3\Scripts\Blender\Main\BlenderCore.py
 
 import json
 import subprocess

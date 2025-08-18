@@ -2,6 +2,7 @@ import os
 import shutil
 import subprocess
 import time
+import argparse
 
 def countdown(count: int) -> None:
     """
@@ -60,7 +61,8 @@ def run_godot_command(command: list, step_name: str):
         print("!!! Please ensure the path in the script is correct and it's a console-enabled version.")
         exit(1)
 
-def create_godot_project(project_name: str, project_path: str, asset_folders: list, scripts_folder: str, addons_folder: str, json_path: str, asset_extensions: list, godot_executable: str="godot") -> None:
+# MODIFIED: Added `no_exit` parameter
+def create_godot_project(project_name: str, project_path: str, asset_folders: list, scripts_folder: str, addons_folder: str, json_path: str, asset_extensions: list, godot_executable: str, no_exit: bool) -> None:
     """Creates a Godot project with the given name and assets."""
     project_dir = os.path.join(project_path, project_name)
     if not os.path.exists(project_dir):
@@ -70,47 +72,15 @@ def create_godot_project(project_name: str, project_path: str, asset_folders: li
     # Create project.godot file if it doesn't exist
     project_godot_path = os.path.join(project_dir, "project.godot")
     if not os.path.exists(project_godot_path):
-        main_scene_path = "res://Node4D.tscn"
         project_file_content = """
 			config_version=5
-
 			[application]
-
 			config/name="Game"
 			run/main_scene="res://Node4D.tscn"
 			config/features=PackedStringArray("4.4", "Forward Plus")
 			config/icon="res://icon.svg"
-
 			[dotnet]
-
 			project/assembly_name="Game"
-
-			[gd_engine]
-
-			config_version=5
-
-			[input]
-
-			up={
-			"deadzone": 0.2,
-			"events": [Object(InputEventKey,"resource_local_to_scene":false,"resource_name":"","device":-1,"window_id":0,"alt_pressed":false,"shift_pressed":false,"ctrl_pressed":false,"meta_pressed":false,"pressed":false,"keycode":0,"physical_keycode":87,"key_label":0,"unicode":119,"location":0,"echo":false,"script":null)
-			]
-			}
-			down={
-			"deadzone": 0.2,
-			"events": [Object(InputEventKey,"resource_local_to_scene":false,"resource_name":"","device":-1,"window_id":0,"alt_pressed":false,"shift_pressed":false,"ctrl_pressed":false,"meta_pressed":false,"pressed":false,"keycode":0,"physical_keycode":83,"key_label":0,"unicode":115,"location":0,"echo":false,"script":null)
-			]
-			}
-			left={
-			"deadzone": 0.2,
-			"events": [Object(InputEventKey,"resource_local_to_scene":false,"resource_name":"","device":-1,"window_id":0,"alt_pressed":false,"shift_pressed":false,"ctrl_pressed":false,"meta_pressed":false,"pressed":false,"keycode":0,"physical_keycode":65,"key_label":0,"unicode":97,"location":0,"echo":false,"script":null)
-			]
-			}
-			right={
-			"deadzone": 0.2,
-			"events": [Object(InputEventKey,"resource_local_to_scene":false,"resource_name":"","device":-1,"window_id":0,"alt_pressed":false,"shift_pressed":false,"ctrl_pressed":false,"meta_pressed":false,"pressed":false,"keycode":0,"physical_keycode":68,"key_label":0,"unicode":100,"location":0,"echo":false,"script":null)
-			]
-			}
             """
         with open(project_godot_path, "w") as f:
             f.write(project_file_content)
@@ -131,89 +101,82 @@ def create_godot_project(project_name: str, project_path: str, asset_folders: li
         print("Assets already imported. Skipping asset copy and import steps.")
 
     print("\nAssets directory is ready. Preparing to run tool scripts.")
-    countdown(5)
+    countdown(3)
 
-	# copy addons
-    shutil.copytree(addons_folder, os.path.join(project_dir, "addons"), dirs_exist_ok=True)
+    # copy addons
+    if os.path.exists(addons_folder):
+        shutil.copytree(addons_folder, os.path.join(project_dir, "addons"), dirs_exist_ok=True)
 
     # 2. Copy config and script files needed for scene generation
     shutil.copy2(json_path, os.path.join(project_dir, "scene_config.json"))
 
     scripts_dest_dir = os.path.join(project_dir, "Scripts")
-    if os.path.exists(scripts_dest_dir):
-        shutil.rmtree(scripts_dest_dir)
-    # always copy the scripts folder to ensure we have the latest
-    shutil.copytree(scripts_folder, scripts_dest_dir)
-    print(f"Copied scene_config.json and tool scripts into the project. {scripts_dest_dir}")
+    if os.path.exists(scripts_folder):
+        # always copy the scripts folder to ensure we have the latest
+        shutil.copytree(scripts_folder, scripts_dest_dir, dirs_exist_ok=True)
+        print(f"Copied scene_config.json and tool scripts into the project.")
 
-    # 3. Run Pass 1 (Scene Creation)
-    print("You may need to manually close the Godot GUI after this step.")
-    countdown(5)
-    run_godot_command(
-        [
-            godot_executable,
-            "--editor",
-            "--path", project_dir,
-            "--script", "res://Scripts/_BuildScenes.gd"
-        ], "Pass 1: Scene Creation")
+    # 3. Run Scene Building Script
+    # MODIFIED: Build the command and conditionally add the --no-exit flag
+    scene_build_command = [
+        godot_executable,
+        "--editor",
+        "--path", project_dir,
+        "--script", "res://Scripts/_BuildScenes.gd"
+    ]
+    if no_exit:
+        scene_build_command.append("--no-exit")
+        print("\n'--no-exit' flag detected. Godot will remain open after script execution.")
+
+    run_godot_command(scene_build_command, "Scene Building")
 
     print("\n✅✅✅ Godot project setup and scene generation complete! ✅✅✅")
-    countdown(5)
+    countdown(3)
 
 
-def main() -> None:
+def main(project_name: str, repo_root: str, no_exit: bool) -> None:
     # --- Path Discovery ---
-
-    # The "Module Root" is the directory where this script is located. All generated
-    # content and tool script sources are relative to this location.
     module_root = os.path.abspath(os.path.dirname(__file__))
     print(f"Module Root (for generated content): {module_root}")
 
-    # The "Repo Root" is found by searching up for 'project.json' and is used only
-    # to locate the source for game assets.
-    repo_root = ""
-    path_walker = module_root
-    while path_walker != os.path.dirname(path_walker): # Loop until we hit the drive root
-        if os.path.exists(os.path.join(path_walker, 'project.json')):
-            repo_root = path_walker
-            break
-        path_walker = os.path.dirname(path_walker)
-
     if not repo_root:
-        print("WARNING: Could not find 'project.json' to locate repo root. Assuming it's the same as the module root.")
+        print("WARNING: --repo-root not specified. Assuming it's the same as the module root.")
         repo_root = module_root
-
     print(f"Repository Root (for asset sources): {repo_root}")
 
     # --- Path Definitions ---
-
-    # Source paths for assets, scripts, and configs
     asset_source_folders = [os.path.join(repo_root, "GameFiles", "ExtractedOut")]
     tool_scripts_source_folder = os.path.join(module_root, "Scripts")
     addons_source_folder = os.path.join(module_root, "addons")
     scene_config_json_path = os.path.join(module_root, 'scene_config.json')
-
-    # Destination path for the generated Godot project, relative to the module root.
     godot_project_parent_dir = os.path.join(module_root, 'GodotGame')
 
     # --- Configuration ---
     GODOT_EXECUTABLE = os.path.join(repo_root, "Tools", "Godot", "Godot_v4.4.1-stable_mono_win64", "Godot_v4.4.1-stable_mono_win64.exe")
-    
-	# dds - textures, glb - 3d assets, wav - audio, ogv - video
     GAME_ASSET_EXTENSIONS = [".dds", ".glb", ".wav", ".ogv"]
 
     # --- Execution ---
     create_godot_project(
-        project_name="Game",
+        project_name=project_name,
         project_path=godot_project_parent_dir,
         asset_folders=asset_source_folders,
         scripts_folder=tool_scripts_source_folder,
         addons_folder=addons_source_folder,
         json_path=scene_config_json_path,
         asset_extensions=GAME_ASSET_EXTENSIONS,
-        godot_executable=GODOT_EXECUTABLE
+        godot_executable=GODOT_EXECUTABLE,
+        no_exit=no_exit # Pass the flag down
     )
 
 if __name__ == "__main__":
-    main()
-
+    parser = argparse.ArgumentParser(description="Godot Project Setup")
+    parser.add_argument("--project-name", default="Game", help="Name of the Godot project")
+    parser.add_argument("--repo-root", required=True, help="Path to the repository root directory")
+    parser.add_argument("--no-exit", action="store_true", help="Do not exit Godot after running the GDScript (for debugging purposes)")
+    args = parser.parse_args()
+    
+    main(
+        project_name=args.project_name,
+        repo_root=args.repo_root,
+        no_exit=args.no_exit
+    )

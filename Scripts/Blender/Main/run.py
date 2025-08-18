@@ -1,6 +1,6 @@
 """
 This module orchestrates the execution of init and blend CLI commands.
-RemakeRegistry\Games\TheSimpsonsGame PS3\Scripts\Blender\Main\run.py
+RemakeRegistry\Games\TheSimpsonsGame-PS3\Scripts\Blender\Main\run.py
 """
 
 import subprocess
@@ -37,7 +37,11 @@ def main(working_dir, preinstanced_dir, blend_dir, glb_dir, output_dir, root_dri
 
         print(Colours.CYAN, f"Running command: {init_args}")
 
-        subprocess.run(init_args, check=True)
+        # Run init script and capture exit code
+        init_result = subprocess.run(init_args)
+        if init_result.returncode != 0:
+            print(Colours.RED, f"Init script failed with exit code {init_result.returncode}. Aborting blend script.")
+            sys.exit(init_result.returncode)
 
         print(Colours.CYAN, "Running blend")
 
@@ -124,7 +128,7 @@ if __name__ == "__main__":
     glb_dir = Path(working_dir, "GameFiles", "STROUT")
     output_dir = Path(working_dir, "Tools", "Blender")
     root_drive = Path(os.path.splitdrive(working_dir)[0] + os.sep, "TMP_TSG_LNKS")
-    blank_blend_source = Path(working_dir, "RemakeRegistry", "Games", "TheSimpsonsGame PS3", "blank.blend")
+    blank_blend_source = Path(working_dir, "RemakeRegistry", "Games", "TheSimpsonsGame-PS3", "blank.blend")
     marker = os.path.join("GameFiles", "STROUT") + os.sep
 
 

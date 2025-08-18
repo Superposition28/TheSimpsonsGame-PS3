@@ -33,8 +33,19 @@
         "class": "Node3D",
         "type": "scene",
         "children": [
-            {"name": "Levels", "path": "Node4D/Node3D/Levels.tscn"},
-            {"name": "Player", "path": "addons/srcoder_thirdperson_controller/player.tscn"}
+            {
+				"name": "Levels", "path": "Node4D/Node3D/Levels.tscn"
+			},
+            {
+				"name": "Player", "path": "addons/srcoder_thirdperson_controller/player.tscn",
+				"config": {
+					"transform": {
+						"position": {"x": 1000, "y": 10, "z": 0},
+						"rotation_degrees": {"x": 0, "y": 0, "z": 0},
+						"scale": {"x": 1, "y": 1, "z": 1}
+					}
+				}
+			}
         ]
     },
     {
@@ -82,7 +93,12 @@
             "children": [
                 {
                     "name": "Zone01_Terrain",
-                    "path": "assets/Map_3-00_GameHub/gamehub/zone01_str/EU_EN/assets/environs++gamehub++gamehub++zone01/export/terrain/lodmodel1.rws.PS3.glb"
+                    "path": "assets/Map_3-00_GameHub/gamehub/zone01_str/EU_EN/assets/environs++gamehub++gamehub++zone01/export/terrain/lodmodel1.rws.PS3.glb",
+                    "collision": {
+                        "enabled": true,
+                        "shapePlacement": "StaticBodyChild",
+                        "ShapeType": "Trimesh"
+                    }
                 }
             ]
         }]
@@ -106,131 +122,291 @@
             "children": [
                 {
                     "name": "Zone01_Terrain",
-                    "path": "assets/Map_3-00_SprHub/spr_hub/zone01_str/EU_EN/assets/environs++spr_hub++spr_hub++zone01/export/terrain/lodmodel1.rws.PS3.glb"
+                    "path": "assets/Map_3-00_SprHub/spr_hub/zone01_str/EU_EN/assets/environs++spr_hub++spr_hub++zone01/export/terrain/lodmodel1.rws.PS3.glb",
+                    "collision": {
+                        "enabled": true,
+                        "shapePlacement": "StaticBodyChild",
+                        "ShapeType": "Trimesh"
+                    }
                 },
                 {
                     "name": "Zone01_opt",
-                    "path": "assets/Map_3-00_SprHub/spr_hub/zone01_str/EU_EN/assets/environs++spr_hub++spr_hub++zone01/opt/export++zone01/opt_model1.rws.PS3.glb"
+                    "path": "assets/Map_3-00_SprHub/spr_hub/zone01_str/EU_EN/assets/environs++spr_hub++spr_hub++zone01/opt/export++zone01/opt_model1.rws.PS3.glb",
+                    "collision": {
+                        "enabled": true,
+                        "shapePlacement": "StaticBodyChild",
+                        "ShapeType": "Trimesh"
+                    }
                 },
                 {
                     "name": "Zone02_Terrain",
-                    "path": "assets/Map_3-00_SprHub/spr_hub/zone02_str/EU_EN/assets/environs/spr_hub++spr_hub++zone02/export/terrain/lodmodel1.rws.PS3.glb"
+                    "path": "assets/Map_3-00_SprHub/spr_hub/zone02_str/EU_EN/assets/environs/spr_hub++spr_hub++zone02/export/terrain/lodmodel1.rws.PS3..glb",
+                    "collision": {
+                        "enabled": true,
+                        "shapePlacement": "StaticBodyChild",
+                        "ShapeType": "Trimesh"
+                    }
                 },
                 {
                     "name": "Zone02_opt",
-                    "path": "assets/Map_3-00_SprHub/spr_hub/zone02_str/EU_EN/assets/environs/spr_hub++spr_hub++zone02/opt/export++zone02/opt_model1.rws.PS3.glb"
+                    "path": "assets/Map_3-00_SprHub/spr_hub/zone02_str/EU_EN/assets/environs/spr_hub++spr_hub++zone02/opt/export++zone02/opt_model1.rws.PS3..glb",
+                    "collision": {
+                        "enabled": true,
+                        "shapePlacement": "StaticBodyChild",
+                        "ShapeType": "Trimesh"
+                    }
                 },
                 {
                     "name": "Zone03_Terrain",
-                    "path": "assets/Map_3-00_SprHub/spr_hub/zone03_str/EU_EN/assets/environs/spr_hub++spr_hub++zone03/export/terrain/lodmodel1.rws.PS3.glb"
+                    "path": "assets/Map_3-00_SprHub/spr_hub/zone03_str/EU_EN/assets/environs/spr_hub++spr_hub++zone03/export/terrain/lodmodel1.rws.PS3..glb",
+                    "collision": {
+                        "enabled": true,
+                        "shapePlacement": "StaticBodyChild",
+                        "ShapeType": "Trimesh"
+                    }
                 },
                 {
                     "name": "Zone03_opt",
-                    "path": "assets/Map_3-00_SprHub/spr_hub/zone03_str/EU_EN/assets/environs/spr_hub++spr_hub++zone03/opt/export++zone03/opt_model1.rws.PS3.glb"
+                    "path": "assets/Map_3-00_SprHub/spr_hub/zone03_str/EU_EN/assets/environs/spr_hub++spr_hub++zone03/opt/export++zone03/opt_model1.rws.PS3..glb",
+                    "collision": {
+                        "enabled": true,
+                        "shapePlacement": "StaticBodyChild",
+                        "ShapeType": "Trimesh"
+                    }
                 },
                 {
                     "name": "bldg_school",
-                    "path": "assets/Map_3-00_SprHub/spr_hub/zone04_str/EU_EN/assets/environs/spr_downtown++bldg_school++geo++export++bldg_school/lodmodel1.rws.PS3.glb"
+                    "path": "assets/Map_3-00_SprHub/spr_hub/zone04_str/EU_EN/assets/environs/spr_downtown++bldg_school++geo++export++bldg_school/lodmodel1.rws.PS3..glb",
+                    "collision": {
+                        "enabled": true,
+                        "shapePlacement": "StaticBodyChild",
+                        "ShapeType": "Trimesh"
+                    }
                 },
                 {
                     "name": "Zone04_Terrain",
-                    "path": "assets/Map_3-00_SprHub/spr_hub/zone04_str/EU_EN/assets/environs/spr_hub++spr_hub++zone04/export/terrain/lodmodel1.rws.PS3.glb"
+                    "path": "assets/Map_3-00_SprHub/spr_hub/zone04_str/EU_EN/assets/environs/spr_hub++spr_hub++zone04/export/terrain/lodmodel1.rws.PS3..glb",
+                    "collision": {
+                        "enabled": true,
+                        "shapePlacement": "StaticBodyChild",
+                        "ShapeType": "Trimesh"
+                    }
                 },
                 {
                     "name": "Zone04_opt",
-                    "path": "assets/Map_3-00_SprHub/spr_hub/zone04_str/EU_EN/assets/environs/spr_hub++spr_hub++zone04/opt/export++zone04/opt_model1.rws.PS3.glb"
+                    "path": "assets/Map_3-00_SprHub/spr_hub/zone04_str/EU_EN/assets/environs/spr_hub++spr_hub++zone04/opt/export++zone04/opt_model1.rws.PS3..glb",
+                    "collision": {
+                        "enabled": true,
+                        "shapePlacement": "StaticBodyChild",
+                        "ShapeType": "Trimesh"
+                    }
                 },
                 {
                     "name": "Zone05_Terrain",
-                    "path": "assets/Map_3-00_SprHub/spr_hub/zone05_str/EU_EN/assets/environs++spr_hub++spr_hub++zone05/export/terrain/lodmodel1.rws.PS3.glb"
+                    "path": "assets/Map_3-00_SprHub/spr_hub/zone05_str/EU_EN/assets/environs++spr_hub++spr_hub++zone05/export/terrain/lodmodel1.rws.PS3..glb",
+                    "collision": {
+                        "enabled": true,
+                        "shapePlacement": "StaticBodyChild",
+                        "ShapeType": "Trimesh"
+                    }
                 },
                 {
                     "name": "Zone05_opt",
-                    "path": "assets/Map_3-00_SprHub/spr_hub/zone05_str/EU_EN/assets/environs++spr_hub++spr_hub++zone05/opt/export++zone05/opt_model1.rws.PS3.glb"
+                    "path": "assets/Map_3-00_SprHub/spr_hub/zone05_str/EU_EN/assets/environs++spr_hub++spr_hub++zone05/opt/export++zone05/opt_model1.rws.PS3..glb",
+                    "collision": {
+                        "enabled": true,
+                        "shapePlacement": "StaticBodyChild",
+                        "ShapeType": "Trimesh"
+                    }
                 },
                 {
                     "name": "bowlarama",
-                    "path": "assets/Map_3-00_SprHub/spr_hub/zone06_str/EU_EN/assets/environs/spr_commercial++bldg_bowlarama++export++bowlarama/lodmodel1.rws.PS3.fbx"
+                    "path": "assets/Map_3-00_SprHub/spr_hub/zone06_str/EU_EN/assets/environs/spr_commercial++bldg_bowlarama++export++bowlarama/lodmodel1.rws.PS3..glb",
+                    "collision": {
+                        "enabled": true,
+                        "shapePlacement": "StaticBodyChild",
+                        "ShapeType": "Trimesh"
+                    }
                 },
                 {
                     "name": "Zone06_Terrain",
-                    "path": "assets/Map_3-00_SprHub/spr_hub/zone06_str/EU_EN/assets/environs/spr_hub++spr_hub++zone06/export/terrain/lodmodel1.rws.PS3.glb"
+                    "path": "assets/Map_3-00_SprHub/spr_hub/zone06_str/EU_EN/assets/environs/spr_hub++spr_hub++zone06/export/terrain/lodmodel1.rws.PS3..glb",
+                    "collision": {
+                        "enabled": true,
+                        "shapePlacement": "StaticBodyChild",
+                        "ShapeType": "Trimesh"
+                    }
                 },
                 {
                     "name": "Zone07_Terrain",
-                    "path": "assets/Map_3-00_SprHub/spr_hub/zone07_str/EU_EN/assets/environs++spr_hub++spr_hub++zone07/export/terrain/lodmodel1.rws.PS3.fbx"
+                    "path": "assets/Map_3-00_SprHub/spr_hub/zone07_str/EU_EN/assets/environs++spr_hub++spr_hub++zone07/export/terrain/lodmodel1.rws.PS3..glb",
+                    "collision": {
+                        "enabled": true,
+                        "shapePlacement": "StaticBodyChild",
+                        "ShapeType": "Trimesh"
+                    }
                 },
                 {
                     "name": "Zone07_opt",
-                    "path": "assets/Map_3-00_SprHub/spr_hub/zone07_str/EU_EN/assets/environs++spr_hub++spr_hub++zone07/opt/export++zone07/opt_model1.rws.PS3.glb"
+                    "path": "assets/Map_3-00_SprHub/spr_hub/zone07_str/EU_EN/assets/environs++spr_hub++spr_hub++zone07/opt/export++zone07/opt_model1.rws.PS3..glb",
+                    "collision": {
+                        "enabled": true,
+                        "shapePlacement": "StaticBodyChild",
+                        "ShapeType": "Trimesh"
+                    }
                 },
                 {
                     "name": "Zone08_Terrain",
-                    "path": "assets/Map_3-00_SprHub/spr_hub/zone08_str/EU_EN/assets/environs/spr_hub++spr_hub++zone08/export/terrain/lodmodel1.rws.PS3.fbx"
+                    "path": "assets/Map_3-00_SprHub/spr_hub/zone08_str/EU_EN/assets/environs/spr_hub++spr_hub++zone08/export/terrain/lodmodel1.rws.PS3..glb",
+                    "collision": {
+                        "enabled": true,
+                        "shapePlacement": "StaticBodyChild",
+                        "ShapeType": "Trimesh"
+                    }
                 },
                 {
                     "name": "bldg_duff_brewery",
-                    "path": "assets/Map_3-00_SprHub/spr_hub/zone08_str/EU_EN/assets/environs/spr_industrial++bldg_duff_brewery++geo++export++bldg_duff_brewery/lodmodel1.rws.PS3.glb"
+                    "path": "assets/Map_3-00_SprHub/spr_hub/zone08_str/EU_EN/assets/environs/spr_industrial++bldg_duff_brewery++geo++export++bldg_duff_brewery/lodmodel1.rws.PS3..glb",
+                    "collision": {
+                        "enabled": true,
+                        "shapePlacement": "StaticBodyChild",
+                        "ShapeType": "Trimesh"
+                    }
                 },
                 {
                     "name": "Zone09_Terrain",
-                    "path": "assets/Map_3-00_SprHub/spr_hub/zone09_str/EU_EN/assets/environs++spr_hub++spr_hub++zone09/export/terrain/lodmodel1.rws.PS3.fbx"
+                    "path": "assets/Map_3-00_SprHub/spr_hub/zone09_str/EU_EN/assets/environs++spr_hub++spr_hub++zone09/export/terrain/lodmodel1.rws.PS3..glb",
+                    "collision": {
+                        "enabled": true,
+                        "shapePlacement": "StaticBodyChild",
+                        "ShapeType": "Trimesh"
+                    }
                 },
                 {
                     "name": "Zone10_Terrain",
-                    "path": "assets/Map_3-00_SprHub/spr_hub/zone10_str/EU_EN/assets/environs++spr_hub++spr_hub++zone10/export/terrain/lodmodel1.rws.PS3.fbx"
+                    "path": "assets/Map_3-00_SprHub/spr_hub/zone10_str/EU_EN/assets/environs++spr_hub++spr_hub++zone10/export/terrain/lodmodel1.rws.PS3..glb",
+                    "collision": {
+                        "enabled": true,
+                        "shapePlacement": "StaticBodyChild",
+                        "ShapeType": "Trimesh"
+                    }
                 },
                 {
                     "name": "Zone11_Terrain",
-                    "path": "assets/Map_3-00_SprHub/spr_hub/zone11_str/EU_EN/assets++environs++spr_hub++spr_hub++zone11/export/terrain/lodmodel1.rws.PS3.glb"
+                    "path": "assets/Map_3-00_SprHub/spr_hub/zone11_str/EU_EN/assets++environs++spr_hub++spr_hub++zone11/export/terrain/lodmodel1.rws.PS3..glb",
+                    "collision": {
+                        "enabled": true,
+                        "shapePlacement": "StaticBodyChild",
+                        "ShapeType": "Trimesh"
+                    }
                 },
                 {
                     "name": "Zone12_Terrain",
-                    "path": "assets/Map_3-00_SprHub/spr_hub/zone12_str/EU_EN/assets++environs++spr_hub++spr_hub++zone12/export/terrain/lodmodel1.rws.PS3.glb"
+                    "path": "assets/Map_3-00_SprHub/spr_hub/zone12_str/EU_EN/assets++environs++spr_hub++spr_hub++zone12/export/terrain/lodmodel1.rws.PS3..glb",
+                    "collision": {
+                        "enabled": true,
+                        "shapePlacement": "StaticBodyChild",
+                        "ShapeType": "Trimesh"
+                    }
                 },
                 {
                     "name": "Zone13_Terrain",
-                    "path": "assets/Map_3-00_SprHub/spr_hub/zone13_str/EU_EN/assets/environs++spr_hub++spr_hub++zone13/export/terrain/lodmodel1.rws.PS3.glb"
+                    "path": "assets/Map_3-00_SprHub/spr_hub/zone13_str/EU_EN/assets/environs++spr_hub++spr_hub++zone13/export/terrain/lodmodel1.rws.PS3..glb",
+                    "collision": {
+                        "enabled": true,
+                        "shapePlacement": "StaticBodyChild",
+                        "ShapeType": "Trimesh"
+                    }
                 },
                 {
                     "name": "Zone14_Terrain",
-                    "path": "assets/Map_3-00_SprHub/spr_hub/zone14_str/EU_EN/assets/environs++spr_hub++spr_hub++zone14/export/terrain/lodmodel1.rws.PS3.fbx"
+                    "path": "assets/Map_3-00_SprHub/spr_hub/zone14_str/EU_EN/assets/environs++spr_hub++spr_hub++zone14/export/terrain/lodmodel1.rws.PS3..glb",
+                    "collision": {
+                        "enabled": true,
+                        "shapePlacement": "StaticBodyChild",
+                        "ShapeType": "Trimesh"
+                    }
                 },
                 {
                     "name": "Zone15_Terrain",
-                    "path": "assets/Map_3-00_SprHub/spr_hub/zone15_str/EU_EN/assets/environs++spr_hub++spr_hub++zone15/export/terrain/lodmodel1.rws.PS3.fbx"
+                    "path": "assets/Map_3-00_SprHub/spr_hub/zone15_str/EU_EN/assets/environs++spr_hub++spr_hub++zone15/export/terrain/lodmodel1.rws.PS3..glb",
+                    "collision": {
+                        "enabled": true,
+                        "shapePlacement": "StaticBodyChild",
+                        "ShapeType": "Trimesh"
+                    }
                 },
                 {
                     "name": "Zone15_opt",
-                    "path": "assets/Map_3-00_SprHub/spr_hub/zone15_str/EU_EN/assets/environs++spr_hub++spr_hub++zone15/opt/export++zone15/opt_model1.rws.PS3.fbx"
+                    "path": "assets/Map_3-00_SprHub/spr_hub/zone15_str/EU_EN/assets/environs++spr_hub++spr_hub++zone15/opt/export++zone15/opt_model1.rws.PS3..glb",
+                    "collision": {
+                        "enabled": true,
+                        "shapePlacement": "StaticBodyChild",
+                        "ShapeType": "Trimesh"
+                    }
                 },
                 {
                     "name": "Zone16_Terrain",
-                    "path": "assets/Map_3-00_SprHub/spr_hub/zone16_str/EU_EN/assets/environs++spr_hub++spr_hub++zone16/export/terrain/lodmodel1.rws.PS3.glb"
+                    "path": "assets/Map_3-00_SprHub/spr_hub/zone16_str/EU_EN/assets/environs++spr_hub++spr_hub++zone16/export/terrain/lodmodel1.rws.PS3..glb",
+                    "collision": {
+                        "enabled": true,
+                        "shapePlacement": "StaticBodyChild",
+                        "ShapeType": "Trimesh"
+                    }
                 },
                 {
                     "name": "Zone17_Terrain",
-                    "path": "assets/Map_3-00_SprHub/spr_hub/zone17_str/EU_EN/assets/environs++spr_hub++spr_hub++zone17/export/terrain/lodmodel1.rws.PS3.glb"
+                    "path": "assets/Map_3-00_SprHub/spr_hub/zone17_str/EU_EN/assets/environs++spr_hub++spr_hub++zone17/export/terrain/lodmodel1.rws.PS3..glb",
+                    "collision": {
+                        "enabled": true,
+                        "shapePlacement": "StaticBodyChild",
+                        "ShapeType": "Trimesh"
+                    }
                 },
                 {
                     "name": "Zone18_Terrain",
-                    "path": "assets/Map_3-00_SprHub/spr_hub/zone18_str/EU_EN++assets++environs++spr_hub++spr_hub++zone18/export/terrain/lodmodel1.rws.PS3.glb"
+                    "path": "assets/Map_3-00_SprHub/spr_hub/zone18_str/EU_EN++assets++environs++spr_hub++spr_hub++zone18/export/terrain/lodmodel1.rws.PS3..glb",
+                    "collision": {
+                        "enabled": true,
+                        "shapePlacement": "StaticBodyChild",
+                        "ShapeType": "Trimesh"
+                    }
                 },
                 {
                     "name": "Zone19_Terrain",
-                    "path": "assets/Map_3-00_SprHub/spr_hub/zone19_str/EU_EN/assets/environs++spr_hub++spr_hub++zone19/export/terrain/lodmodel1.rws.PS3.glb"
+                    "path": "assets/Map_3-00_SprHub/spr_hub/zone19_str/EU_EN/assets/environs++spr_hub++spr_hub++zone19/export/terrain/lodmodel1.rws.PS3..glb",
+                    "collision": {
+                        "enabled": true,
+                        "shapePlacement": "StaticBodyChild",
+                        "ShapeType": "Trimesh"
+                    }
                 },
                 {
                     "name": "Zone20_Terrain",
-                    "path": "assets/Map_3-00_SprHub/spr_hub/zone20_str/EU_EN/assets/environs++spr_hub++spr_hub++zone20/export/terrain/lodmodel1.rws.PS3.fbx"
+                    "path": "assets/Map_3-00_SprHub/spr_hub/zone20_str/EU_EN/assets/environs++spr_hub++spr_hub++zone20/export/terrain/lodmodel1.rws.PS3..glb",
+                    "collision": {
+                        "enabled": true,
+                        "shapePlacement": "StaticBodyChild",
+                        "ShapeType": "Trimesh"
+                    }
                 },
                 {
                     "name": "Zone21_Terrain",
-                    "path": "assets/Map_3-00_SprHub/spr_hub/zone21_str/EU_EN/assets/environs++spr_hub++spr_hub++zone21/export/terrain/lodmodel1.rws.PS3.glb"
+                    "path": "assets/Map_3-00_SprHub/spr_hub/zone21_str/EU_EN/assets/environs++spr_hub++spr_hub++zone21/export/terrain/lodmodel1.rws.PS3..glb",
+                    "collision": {
+                        "enabled": true,
+                        "shapePlacement": "StaticBodyChild",
+                        "ShapeType": "Trimesh"
+                    }
                 },
                 {
                     "name": "Zone21_opt",
-                    "path": "assets/Map_3-00_SprHub/spr_hub/zone21_str/EU_EN/assets/environs++spr_hub++spr_hub++zone21/opt/export/zone21/opt_model1.rws.PS3.glb"
+                    "path": "assets/Map_3-00_SprHub/spr_hub/zone21_str/EU_EN/assets/environs++spr_hub++spr_hub++zone21/opt/export/zone21/opt_model1.rws.PS3..glb",
+                    "collision": {
+                        "enabled": true,
+                        "shapePlacement": "StaticBodyChild",
+                        "ShapeType": "Trimesh"
+                    }
                 }
             ]
         }]
@@ -259,7 +435,15 @@
                         "enabled": true,
                         "shapePlacement": "StaticBodyChild",
                         "ShapeType": "Trimesh"
-                    }
+                    },
+					"config": {
+						"mesh_overrides": [
+							{
+								"path": "mesh_0_0",
+								"visible": false
+							}
+						]
+					}
                 },
                 {
                     "name": "Zone02_Terrain",

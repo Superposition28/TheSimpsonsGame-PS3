@@ -342,6 +342,7 @@ class PreinstancedFileProcessor:
         if not self.blank_blend_source or not os.path.isfile(self.blank_blend_source):
             print(colour="RED", prefix="BlendInit", msg=f"BlankBlendSource '{self.blank_blend_source}' is not set or does not exist.")
             raise FileNotFoundError(f"BlankBlendSource '{self.blank_blend_source}' is not set or does not exist.")
+            exit(1)
 
         preinstanced_files = []
         for dirpath, _, files in os.walk(self.input_dir):
