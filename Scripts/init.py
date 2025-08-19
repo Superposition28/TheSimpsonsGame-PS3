@@ -7,9 +7,10 @@ import shutil # Import shutil for file operations
 
 import os
 import sys
+# add RemakeEngine Utilities, custom print 'printer' and SDK
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..', '..', '..', '..', 'Utils')))
 from printer import print, Colours, print_error, print_verbose, print_debug, printc
-
+from Engine_sdk import prompt, progress, warn, error, start, end
 
 # --- Constants for Directory Lists ---
 USRDIR_DIRS = [
@@ -79,7 +80,7 @@ def check_or_create_config(filename):
     config_file_path = os.path.abspath(filename)
     project_base_dir = os.path.dirname(config_file_path)
     local_data_path = os.path.join(project_base_dir, "Source\\GameFiles\\SimpGamePS3")
-	# path to this file
+    # path to this file
     this_file_path = os.path.abspath(__file__)
     # path to module parent dir of this files dir
     path_to_module = os.path.dirname(os.path.dirname(this_file_path))
@@ -159,8 +160,12 @@ def check_or_create_config(filename):
         if not source_path_valid_in_file:
             print(Colours.YELLOW, f"Warning: 'RemakeEngine.Directories.SourcePath' in '{filename}' is missing, empty, or invalid.")
             while True:
-                print(Colours.CYAN, "Please enter the full path to the source directory:")
-                user_input_path = input("> ").strip()
+                # Old
+                # print(Colours.CYAN, "Please enter the full path to the source directory:")
+                # user_input_path = input("> ").strip()
+
+                # New (GUI will show a dialog; CLI still works because it’s stdin)
+                user_input_path = prompt("Please enter the full path to the source directory:")
                 if not user_input_path:
                     print(Colours.YELLOW, "Path cannot be empty. Please try again.")
                     continue
@@ -200,7 +205,8 @@ def check_or_create_config(filename):
             print(Colours.CYAN, "  3) " + Colours.CYAN + "Use original path" + Colours.YELLOW + f" '{os.path.basename(path_from_config)}' directly (Warning: This Tool might modify/corrupt original files)")
 
             while True:
-                choice = input("Enter your choice (1, 2, or 3): ").strip()
+                #choice = input("Enter your choice (1, 2, or 3): ").strip()
+                choice = prompt("Enter your choice (1, 2, or 3): ").strip()
 
                 # --- Option 1: Copy with Progress ---
                 if choice == '1':
