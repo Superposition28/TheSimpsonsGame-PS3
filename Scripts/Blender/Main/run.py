@@ -30,7 +30,7 @@ def main(working_dir, preinstanced_dir, blend_dir, glb_dir, output_dir, root_dri
         init_args.extend(["--root-drive", str(root_drive)])
         init_args.extend(["--blank-blend-source", str(blank_blend_source)])
         if debug_sleep == "True":
-            init_args.extend(["--debug-sleep", debug_sleep])
+            init_args.extend(["--debug-sleep"])
         if verbose == "True":
             init_args.extend(["--verbose"])
         init_args.extend(["--marker", str(marker)])

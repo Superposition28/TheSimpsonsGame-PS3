@@ -4,16 +4,6 @@ import subprocess
 import time
 import argparse
 
-# Add optional tqdm import (graceful fallback if not installed)
-try:
-    from tqdm import tqdm
-    def _progress(iterable, **kwargs):
-        return tqdm(iterable, **kwargs)
-except Exception:
-    # tqdm not available -> no progress bar, iterate normally
-    def _progress(iterable, **kwargs):
-        return iterable
-
 def countdown(count: int) -> None:
     """
     Simple countdown timer that prints the remaining seconds.
@@ -35,39 +25,30 @@ def copy_assets(folders_to_copy: list, project_dir: str, asset_extensions: list,
             print(f"Warning: Asset source folder path does not exist: {folder_path}")
             continue
 
-        # First collect all matching files so we can show progress
-        matched_files = []
+        print(f"Copying files with extensions {asset_extensions} from {folder_path} to {assets_dest_dir}...")
+        copied_count = 0
         for root, dirs, files in os.walk(folder_path):
             for filename in files:
                 if any(filename.lower().endswith(ext.lower()) for ext in asset_extensions):
                     source_file_path = os.path.join(root, filename)
+                    # Calculate relative path from the *source* folder to maintain structure
                     relative_path = os.path.relpath(source_file_path, folder_path)
-                    matched_files.append((source_file_path, relative_path))
+                    destination_file_path = os.path.join(assets_dest_dir, relative_path)
 
-        if matched_files:
-            print(f"Copying {len(matched_files)} file(s) with extensions {asset_extensions} from {folder_path} to {assets_dest_dir}...")
-            copied_count = 0
-            # Use progress wrapper (tqdm when available)
-            for source_file_path, relative_path in _progress(matched_files, desc=f"Copying from {os.path.basename(folder_path)}", unit="file"):
-                destination_file_path = os.path.join(assets_dest_dir, relative_path)
-                os.makedirs(os.path.dirname(destination_file_path), exist_ok=True)
-                shutil.copy2(source_file_path, destination_file_path)
-                copied_count += 1
+                    os.makedirs(os.path.dirname(destination_file_path), exist_ok=True)
+                    shutil.copy2(source_file_path, destination_file_path)
+                    copied_count += 1
 
+        if copied_count > 0:
             print(f"Files copied: {copied_count} file(s) from {folder_path}.")
         else:
             print(f"No files found with extensions {asset_extensions} in {folder_path}.")
 
-    # copy all logo image files to the project directory, with progress
+    # copy all logo image files to the project directory
     if logo_image_files:
-        logos_dest = os.path.join(project_dir, "logos")
-        os.makedirs(logos_dest, exist_ok=True)
-        print(f"Copying {len(logo_image_files)} logo image(s) to {logos_dest}...")
-        for logo_file in _progress(logo_image_files, desc="Copying logos", unit="file"):
-            try:
-                shutil.copy2(logo_file, logos_dest)
-            except Exception as e:
-                print(f"Warning: Failed to copy logo '{logo_file}': {e}")
+        os.makedirs(os.path.join(project_dir, "logos"), exist_ok=True)
+        for logo_file in logo_image_files:
+            shutil.copy2(logo_file, os.path.join(project_dir, "logos"))
 
 
 def run_godot_command(command: list, step_name: str):
@@ -112,8 +93,8 @@ def create_godot_project(project_name: str, project_path: str, asset_folders: li
             f.write(project_file_content)
         print(f"Created project.godot file.")
 
-    # 1. Copy assets if assets folder not found or empty
-    if not os.path.exists(os.path.join(project_dir, "assets")) or not os.listdir(os.path.join(project_dir, "assets")):
+    # 1. Copy assets and run importer
+    if not os.path.exists(os.path.join(project_dir, ".godot")): # Use .godot folder as import marker
         copy_assets(asset_folders, project_dir, asset_extensions, logo_image_files)
         run_godot_command(
             [

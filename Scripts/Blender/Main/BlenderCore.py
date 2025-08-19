@@ -1,286 +1,234 @@
-## RemakeRegistry\Games\TheSimpsonsGame-PS3\Scripts\Blender\Main\BlenderCore.py
-
-import json
+# RemakeRegistry\Games\TheSimpsonsGame-PS3\Scripts\Blender\Main\BlenderCore.py
 import subprocess
-import configparser # This import is not used, consider removing if not needed elsewhere
 from pathlib import Path
 import argparse
-import sqlite3 # Added for database interaction
-
+import sqlite3
+import multiprocessing
 import os
 import sys
+from functools import partial # ADDED: For cleaner worker function calls
+from collections import namedtuple # ADDED: For more readable results
+from tqdm import tqdm # ADDED: For the progress bar
+
+import tempfile # ADDED: For temporary directories
+import shutil   # ADDED: For safely removing directories
+
+
+# Add Utils path for printer
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..', '..', '..', '..', '..', '..', 'Utils')))
-from printer import print, Colours, print_error, print_verbose, print_debug, printc
+from printer import Colours, print
 
-
-# Global variables for paths (consider making these configurable or passed as arguments)
-global python_script_path, python_extension_file, blender_exe_path
-global verbose, debug_sleep, export, current_dir, db_file_path # Added db_file_path
-
-# Command-line argument parsing (values will be set in main)
-verbose = False
-debug_sleep = False
-export = set()
-
-# path to this file
+# --- Configuration (Kept global as these are constants for the script's lifetime) ---
 current_dir = os.path.dirname(os.path.abspath(__file__))
-
-# Hardcoded paths - consider moving to a config file or command-line arguments for more flexibility
 python_script_path = Path(current_dir).parent / "MainPreinstancedConvert.py"
 python_extension_file = Path(current_dir).parent / "PreinstancedImportExtension.py"
-# asset_mapping_file = "Tools/Blender/asset_mapping.json" # Replaced by db_file_path
 blender_exe_path = "Tools/Blender/blender-4.0.2-windows-x64/blender.exe"
-DB_FILENAME_DEFAULT = "asset_map.sqlite" # Default name if only a directory is provided for DB
+DB_FILENAME_DEFAULT = "asset_map.sqlite"
 
-def blender_processing():
-    global python_script_path, python_extension_file, blender_exe_path
-    global verbose, debug_sleep, export, current_dir, db_file_path # Ensure db_file_path is accessible
+# ADDED: A named tuple for structured, readable results from the worker
+ProcessResult = namedtuple("ProcessResult", ["asset_id", "success", "message"])
 
-    loop_count = 0
-    print(Colours.DARKGRAY, "Starting Blender processing using SQLite asset map...")
+# --- Worker Function (Modified to capture and print output to console) ---
+def run_blender_for_asset(asset_row: dict, export_formats: list, be_verbose: bool, use_debug_sleep: bool) -> ProcessResult:
+    """
+    Worker function that processes a single asset.
+    This version now uses an isolated, temporary directory for the Blender addon.
+    This version captures subprocess output and prints it to the console if --verbose is used.
+    """
+    asset_id = asset_row["identifier"]
+    filename = asset_row["filename"]
 
-    if not db_file_path or not os.path.isfile(db_file_path):
-        print(Colours.RED, f"Error: Database file not found or not specified: {db_file_path}")
-        sys.exit(1)
+    temp_addon_dir = tempfile.mkdtemp(prefix="blender_addon_")
 
-    conn = None
     try:
-        conn = sqlite3.connect(db_file_path)
-        conn.row_factory = sqlite3.Row # Access columns by name
-        cursor = conn.cursor()
+        blend_symlink_path = asset_row["blend_symlink"]
+        glb_symlink_path = asset_row["glb_symlink"]
+        preinstanced_symlink_path = asset_row["preinstanced_symlink"]
 
-        # Fetch necessary columns. Add 'identifier' if you need it for logging as 'key' was used.
-        cursor.execute("""
-            SELECT identifier, filename, preinstanced_symlink, blend_symlink, glb_symlink
-            FROM asset_map
-        """)
-        assets = cursor.fetchall()
+        if not all([filename, blend_symlink_path, glb_symlink_path, preinstanced_symlink_path]):
+            return ProcessResult(asset_id, False, "Missing required symlink paths or filename")
 
-        if not assets:
-            print(Colours.YELLOW, f"No assets found in the database: {db_file_path}")
-            return
+        blend_symlink_file = os.path.join(blend_symlink_path, filename + ".blend")
+        glb_symlink_file = os.path.join(glb_symlink_path, filename + ".glb")
+        fbx_symlink_file = os.path.join(glb_symlink_path, filename + ".fbx")
+        preinstanced_symlink_file = os.path.join(preinstanced_symlink_path, filename + ".preinstanced")
 
-        for asset_row in assets:
-            loop_count += 1
-            print(Colours.RESET, "")
-            print(Colours.YELLOW, f"Loop Count: {loop_count} (Asset ID: {asset_row['identifier']})")
-            print(Colours.RESET, "")
+        if not os.path.isfile(blend_symlink_file):
+            return ProcessResult(asset_id, False, f"Blend symlink not found: {blend_symlink_file}")
 
-            # Check if essential symlink paths and filename are present in the DB row
-            # These columns in the DB can be NULL if not populated by the first script
-            filename = asset_row["filename"]
-            blend_symlink_path = asset_row["blend_symlink"]
-            glb_symlink_path = asset_row["glb_symlink"]
-            preinstanced_symlink_path = asset_row["preinstanced_symlink"]
+        run_blender_flag = False
+        if 'glb' in export_formats and not os.path.isfile(glb_symlink_file):
+            run_blender_flag = True
+        if 'fbx' in export_formats and not os.path.isfile(fbx_symlink_file):
+            run_blender_flag = True
 
-            if not all([filename, blend_symlink_path, glb_symlink_path, preinstanced_symlink_path]):
-                print(Colours.YELLOW, f"Warning: Missing one or more required symlink paths or filename for asset ID: {asset_row['identifier']}. Skipping.")
-                if verbose:
-                    print(Colours.YELLOW, f"  Filename: {filename}")
-                    print(Colours.YELLOW, f"  Blend Symlink Path: {blend_symlink_path}")
-                    print(Colours.YELLOW, f"  GLB Symlink Path: {glb_symlink_path}")
-                    print(Colours.YELLOW, f"  Preinstanced Symlink Path: {preinstanced_symlink_path}")
-                continue
-            else:
-                print(Colours.CYAN, f"All required paths are present for asset ID: {asset_row['identifier']}")
+        if not run_blender_flag:
+            return ProcessResult(asset_id, True, f"Skipped: requested exports already exist for {filename}")
 
-            blend_symlink_file = os.path.join(blend_symlink_path, filename + ".blend")
-            glb_symlink_file = os.path.join(glb_symlink_path, filename + ".glb")
-            # Assuming fbx uses the same directory structure as glb as per original logic
-            fbx_symlink_path = glb_symlink_path
-            fbx_symlink_file = os.path.join(fbx_symlink_path, filename + ".fbx")
-            preinstanced_symlink_file = os.path.join(preinstanced_symlink_path, filename + ".preinstanced")
+        if not os.path.isfile(preinstanced_symlink_file):
+            return ProcessResult(asset_id, False, f"Preinstanced symlink missing: {preinstanced_symlink_file}")
 
-            if os.path.isfile(blend_symlink_file):
-                run_blender = False
-                try:
-                    # Determine if export is needed based on existence of target files and --export flags
-                    needs_export = False
-                    if 'glb' in export and not os.path.isfile(glb_symlink_file):
-                        needs_export = True
-                    if 'fbx' in export and not os.path.isfile(fbx_symlink_file):
-                        needs_export = True
+        args = [
+            str(blender_exe_path),
+            "-b", blend_symlink_file,
+            "--python", str(python_script_path),
+            "--",
+            blend_symlink_file,
+            preinstanced_symlink_file,
+            glb_symlink_file,
+            str(python_extension_file),
+            "true" if be_verbose else "false",
+            "true" if use_debug_sleep else "false",
+            current_dir,
+            fbx_symlink_file,
+            asset_id,
+            temp_addon_dir,
+            ",".join(sorted(list(export_formats))),
+        ]
+        # CHANGE: Conditionally print the output based on the --verbose flag
+        if be_verbose:
+            # CHANGE: Use subprocess.run to wait for the command and capture its output
+            proc = subprocess.run(args, capture_output=True, text=True, encoding='utf-8')
 
-                    print(Colours.CYAN, f"Processing asset: {filename} (ID: {asset_row['identifier']})")
-                    print(Colours.CYAN, f"Blend file: {blend_symlink_file}")
-                    print(Colours.CYAN, f"GLB file: {glb_symlink_file}")
-                    print(Colours.CYAN, f"FBX file: {fbx_symlink_file}")
-                    print(Colours.CYAN, f"Preinstanced file: {preinstanced_symlink_file}")
+            # Use a lock to prevent interleaved printing from multiple processes
+            #with tqdm.get_lock():
 
-                    # If no specific format in --export needs generating, skip Blender if both exist (or if not requested)
-                    # This logic might need refinement based on exact requirements.
-                    # The original script checked `if not os.path.isfile(glb_symlink_file) or not os.path.isfile(fbx_symlink_file):`
-                    # which means it would run if EITHER was missing, regardless of --export contents.
-                    # Let's refine to: run if any requested export format file is missing.
+            # allow interleaved printing
+            print(Colours.DARKGRAY, f"\n--- Output for Asset ID: {asset_id} ---")
+            # Print stdout if it contains anything
+            if proc.stdout:
+                print(Colours.GRAY, proc.stdout.strip())
+            # Print stderr if it contains anything
+            if proc.stderr:
+                print(Colours.YELLOW, proc.stderr.strip())
+            print(Colours.DARKGRAY, f"--- End of Output for Asset ID: {asset_id} ---\n")
+        else:
+            proc = subprocess.run(args, capture_output=True, text=True, encoding='utf-8')
 
-                    if not export: # If --export is empty, maybe default to checking/creating both? Or skip?
-                        # For now, let's assume if --export is empty, we don't run Blender.
-                        # Or, if we want to maintain original behavior of creating if missing:
-                        # if not os.path.isfile(glb_symlink_file) or not os.path.isfile(fbx_symlink_file):
-                        #    run_blender = True
-                        pass # Decided by specific export format checks below
+        # Check for errors after execution
+        if proc.returncode != 0:
+            error_details = proc.stderr or proc.stdout or "Blender process produced no output."
+            return ProcessResult(asset_id, False, f"Blender exited with code {proc.returncode}. Details: {error_details}")
 
-                    if 'glb' in export and not os.path.isfile(glb_symlink_file):
-                        run_blender = True
-                    if 'fbx' in export and not os.path.isfile(fbx_symlink_file):
-                        run_blender = True
+        # Post-checks
+        if 'glb' in export_formats and not os.path.isfile(glb_symlink_file):
+            return ProcessResult(asset_id, False, f"GLB file was not created: {glb_symlink_file}")
+        if 'fbx' in export_formats and not os.path.isfile(fbx_symlink_file):
+            return ProcessResult(asset_id, False, f"FBX file was not created: {fbx_symlink_file}")
 
-                    # If no export types are specified, but we want to process if files are missing (original implicit behavior)
-                    if not export and (not os.path.isfile(glb_symlink_file) or not os.path.isfile(fbx_symlink_file)):
-                        # This case needs clarification: if --export is empty, should it still process?
-                        # For now, let's assume --export must specify what to do.
-                        # If you want it to run if files are missing even without --export, uncomment next line.
-                        # run_blender = True
-                        print(Colours.YELLOW, f"Skipping Blender for {filename}: No export formats specified in --export and files might be missing.")
-                except Exception as ex:
-                    print(Colours.RED, f"1Error processing asset {filename} (ID: {asset_row['identifier']}): {ex}")
-                    # Consider if this should be sys.exit(1) or just skip the asset
-                try:
-                    if run_blender and os.path.isfile(preinstanced_symlink_file):
-                        verbose_str = "true" if verbose else "false"
-                        debug_sleep_str = "true" if debug_sleep else "false"
-                        export_str = ",".join(sorted(list(export))) # Pass the requested export formats, ensure consistent order
+        return ProcessResult(asset_id, True, f"Processed successfully: {filename}")
 
-                        print(Colours.GRAY, "# Start Blender Output")
-                        args = [
-                            blender_exe_path,
-                            "-b", blend_symlink_file,
-                            "--python", python_script_path,
-                            "--",
-                            blend_symlink_file,
-                            preinstanced_symlink_file,
-                            glb_symlink_file, # MainPreinstancedConvert.py might still expect this path for .glb
-                            python_extension_file,
-                            verbose_str,
-                            debug_sleep_str,
-                            export_str, # Pass the set of exports
-                            current_dir,
-                            fbx_symlink_file # Pass FBX path too, if your script supports it
-                        ]
-                        print(Colours.MAGENTA, f"Blender args: {args}")
-                        blender_command = ' '.join(
-                            f'"{a}"' if ' ' in str(a) else str(a)
-                            for a in args
-                        )
-                        print(Colours.MAGENTA, f"Blender command --> {blender_command}")
+    except Exception as e:
+        return ProcessResult(asset_id, False, f"A critical exception occurred in the worker: {str(e)}")
+    finally:
+        # ADDED: Ensure the temporary directory is always cleaned up
+        if os.path.isdir(temp_addon_dir):
+            shutil.rmtree(temp_addon_dir)
 
-                        proc = subprocess.Popen(
-                            args,
-                            stdout=subprocess.PIPE,
-                            stderr=subprocess.PIPE,
-                            text=True
-                        )
-                        output, error = proc.communicate()
-                        print(Colours.RESET, output)
-                        if error:
-                            print(Colours.RED, error)
-                        print(Colours.GRAY, "# End Blender Output")
+# --- Main Orchestration ---
+def blender_processing(db_path: str, num_workers: int, export_formats, be_verbose: bool, use_debug_sleep: bool) -> None:
+    print(Colours.DARKGRAY, f"Starting Blender processing with {num_workers} workers...")
 
-                        # Post-processing check (original logic had 'if export == True:')
-                        # This check should be more specific, e.g., if 'glb' was requested
-                        if 'glb' in export: # Check if GLB export was attempted
-                            if os.path.isfile(glb_symlink_file):
-                                # Check for errors within the GLB file content (if it's text, like an error message)
-                                try:
-                                    with open(glb_symlink_file, "r", encoding="utf-8", errors="ignore") as f_glb:
-                                        glb_content_sample = f_glb.read(512) # Read a sample
-                                    if "Error:" in glb_content_sample or "Exception:" in glb_content_sample or proc.returncode != 0:
-                                        print(Colours.RED, f"Blender execution for {filename} might have failed or GLB contains errors (check Blender output above).")
-                                    else:
-                                        print(Colours.GREEN, f"GLB file processed/verified for: {glb_symlink_file}")
-                                except Exception as e_read:
-                                    print(Colours.YELLOW, f"Could not read GLB {glb_symlink_file} for error checking: {e_read}")
-                            else:
-                                print(Colours.RED, f"Failed to create GLB output file: {glb_symlink_file}")
-                        if 'fbx' in export: # Check if FBX export was attempted
-                            if os.path.isfile(fbx_symlink_file):
-                                print(Colours.GREEN, f"FBX file processed/verified for: {fbx_symlink_file}")
-                            else:
-                                print(Colours.RED, f"Failed to create FBX output file: {fbx_symlink_file}")
-                        else:
-                            print(Colours.RED, f"Error: No corresponding .preinstanced symlink found for: {preinstanced_symlink_file} (linked from {blend_symlink_path})")
-                            # Consider if this should be sys.exit(1) or just skip the asset
-                    else:
-                        print(Colours.YELLOW, f"Skipping Blender for {filename}: Requested output files already exist or not specified in --export.")
-                        if 'glb' in export and os.path.isfile(glb_symlink_file):
-                            print(Colours.GREEN, f"GLB file already exists: {glb_symlink_file}")
-                        if 'fbx' in export and os.path.isfile(fbx_symlink_file):
-                            print(Colours.GREEN, f"FBX file already exists: {fbx_symlink_file}")
-                except Exception as ex:
-                    print(Colours.RED, f"Error processing asset {filename} (ID: {asset_row['identifier']}): {ex}")
-                    # Consider if this should be sys.exit(1) or just skip the asset
-            else:
-                print(Colours.RED, f"Error: Blend symlink file not found: {blend_symlink_file} (asset ID: {asset_row['identifier']})")
-                # Consider if this should be sys.exit(1) or just skip the asset
+    try:
+        conn = sqlite3.connect(db_path)
+        conn.row_factory = sqlite3.Row
+        # Fetch the rows as sqlite3.Row objects first
+        rows_from_db = conn.execute("SELECT identifier, filename, preinstanced_symlink, blend_symlink, glb_symlink FROM asset_map").fetchall()
+        conn.close()
+
+        # CHANGE: Convert sqlite3.Row objects to standard dictionaries
+        assets_to_process = [dict(row) for row in rows_from_db]
 
     except sqlite3.Error as e:
         print(Colours.RED, f"SQLite error: {e}")
         sys.exit(1)
-    except FileNotFoundError: # Should be caught by the initial db_file_path check
-        print(Colours.RED, f"Error: Database file not found: {db_file_path}")
-        sys.exit(1)
-    except Exception as e_outer:
-        print(Colours.RED, f"An unexpected error occurred in blender_processing: {e_outer}")
-        sys.exit(1)
-    finally:
-        if conn:
-            conn.close()
-            print(Colours.DARKGRAY, "Database connection closed.")
 
+    if not assets_to_process:
+        print(Colours.YELLOW, f"No assets found in database: {db_path}")
+        return
 
-def main(verbose_param: bool, debug_sleep_param: bool, export_param: set, db_path_param: str) -> None:
-    global verbose, debug_sleep, export, db_file_path # Add db_file_path to globals updated by main
+    # Use 'partial' to create a new function with the constant arguments already "baked in".
+    # This is a clean way to pass extra, non-changing arguments to a pool worker.
+    worker_func = partial(run_blender_for_asset,
+                          export_formats=export_formats,
+                          be_verbose=be_verbose,
+                          use_debug_sleep=use_debug_sleep)
 
-    verbose = verbose_param
-    print(Colours.BLUE, f"Verbose mode: {verbose}")
-    debug_sleep = debug_sleep_param
-    print(Colours.BLUE, f"Debug sleep: {debug_sleep}")
-    export = export_param if export_param is not None else set() # Ensure export is a set
-    print(Colours.BLUE, f"Export formats: {export}")
-    db_file_path = db_path_param
-    print(Colours.BLUE, f"Database file path: {db_file_path}")
+    results = []
+    print(Colours.BLUE, f"Found {len(assets_to_process)} assets. Dispatching to workers...")
 
+    # Use a multiprocessing Pool and wrap the iterator with tqdm for a progress bar
+    with multiprocessing.Pool(processes=num_workers) as pool:
+        # pool.imap_unordered is memory efficient and lets us see progress as tasks finish
+        result_iterator = pool.imap_unordered(worker_func, assets_to_process)
+        for result in tqdm(result_iterator, total=len(assets_to_process), desc="Processing Assets"):
+            results.append(result)
 
-    print(Colours.BLUE, "Initializing...")
+    # Now we process the results using the named tuple for clarity
+    successes = [r for r in results if r.success]
+    failures = [r for r in results if not r.success]
+    skipped = [r for r in successes if r.message.startswith("Skipped")]
 
-    # Validate essential paths early
-    if not os.path.isfile(blender_exe_path):
-        print(Colours.RED, f"Blender executable not found: {blender_exe_path}")
-        sys.exit(1)
-    if not os.path.isfile(python_script_path):
-        print(Colours.RED, f"Blender Python script not found: {python_script_path}")
-        sys.exit(1)
-    if not os.path.isfile(python_extension_file):
-        print(Colours.RED, f"Blender Python extension file not found: {python_extension_file}")
-        sys.exit(1)
+    print(Colours.GREEN, f"\n✅ {len(successes) - len(skipped)} assets processed successfully.")
+    print(Colours.YELLOW, f"⚪ {len(skipped)} assets skipped (already exist).")
+    print(Colours.RED, f"❌ {len(failures)} assets failed.")
 
+    if failures:
+        print(Colours.RED, "\n--- Failure Details ---")
+        for result in failures:
+            print(Colours.RED, f"  - ID {result.asset_id}: {result.message}")
 
-    print(Colours.DARKGRAY, "Blender Processing using SQLite database...")
-    blender_processing()
-    print(Colours.GREEN, "Processing complete.")
-
-if __name__ == "__main__":
-    parser = argparse.ArgumentParser(description="Process assets using Blender, based on an SQLite asset map.")
-    parser.add_argument("--verbose", action="store_true", help="Enable verbose output")
-    parser.add_argument("--debug-sleep", action="store_true", help="Enable debug sleep pauses in Blender script (if supported by it)")
-    parser.add_argument("--export", type=str, nargs='*', help="Export formats (e.g., --export fbx glb). If not specified, existing files won't be regenerated by default.")
-    parser.add_argument("--db-file-path", type=str, required=True, help=f"Full path to the SQLite database file (e.g., 'output/{DB_FILENAME_DEFAULT}').")
-
+def main() -> None:
+    parser = argparse.ArgumentParser(description="Process assets in parallel using Blender with an SQLite asset map.")
+    parser.add_argument("--verbose", action="store_true", help="Enable verbose output from Blender subprocesses.")
+    parser.add_argument("--debug-sleep", action="store_true", help="Enable debug sleep pauses in the Blender script.")
+    parser.add_argument("--export", type=str, nargs='*', help="Export formats (e.g., --export fbx glb).")
+    parser.add_argument("--db-file-path", type=str, required=True, help=f"Path to SQLite database file.")
+    parser.add_argument("--workers", type=int, help="Number of parallel Blender instances. Defaults to number of CPU cores.")
     args = parser.parse_args()
 
-    parsed_export_formats = set()
+    export_formats = set()
     if args.export:
         for item in args.export:
-            parsed_export_formats.update(item.lower().split()) # Split space-separated and add to set, ensure lowercase
+            export_formats.update(item.lower().split())
 
-    if not os.path.isabs(args.db_file_path):
-        print(Colours.YELLOW, f"Database path '{args.db_file_path}' is not absolute. Resolving relative to current directory '{os.getcwd()}'.")
-        db_path = os.path.abspath(args.db_file_path)
+    # avoid too many workers if not specified
+    if args.workers is None:
+        # Calculate 75% of CPU cores, ensuring it's a whole number and at least 1.
+        #args.workers = max(1, int(multiprocessing.cpu_count() * 0.75))
+        args.workers = int(multiprocessing.cpu_count())
+
+    if args.debug_sleep:
+        print(Colours.BLUE, "Debug sleep mode enabled.")
+        debug_sleep = True
     else:
-        db_path = args.db_file_path
+        debug_sleep = False
 
-    if not os.path.isfile(db_path):
-        print(Colours.RED, f"Error: Database file does not exist at the specified path: {db_path}")
-        sys.exit(1)
+    if args.verbose:
+        print(Colours.BLUE, "Verbose mode enabled.")
+        verbose = True
+    else:
+        verbose = False
 
-    main(args.verbose, args.debug_sleep, parsed_export_formats, db_path)
+    db_path = os.path.abspath(args.db_file_path) if not os.path.isabs(args.db_file_path) else args.db_file_path
+
+    # --- Path and Argument Validation ---
+    for path in [blender_exe_path, python_script_path, python_extension_file, db_path]:
+        if not os.path.exists(path):
+            print(Colours.RED, f"Error: Required file or directory not found: {path}")
+            sys.exit(1)
+
+    # delete blend.log before starting new process
+    blend_log_path = os.path.join(os.path.dirname(__file__), "blend.log")
+    if os.path.exists(blend_log_path):
+        os.remove(blend_log_path)
+
+    print(Colours.BLUE, f"Export formats: {export_formats or 'None'}")
+    print(Colours.BLUE, f"Database: {db_path}")
+    print(Colours.BLUE, f"Workers: {args.workers}")
+
+    blender_processing(db_path, args.workers, export_formats, verbose, debug_sleep)
+    print(Colours.GREEN, "\nProcessing complete.")
+
+if __name__ == "__main__":
+    main()

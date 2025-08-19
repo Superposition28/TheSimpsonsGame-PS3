@@ -151,7 +151,6 @@ def generate_asset_mapping(conn, root_drive, preinstanced_root, blend_root, mark
     conn.commit()
     return assets_processed_count
 
-
 def create_symlink_entry(src, dst, is_dir=True, debug_sleep_duration=0):
     try:
         if os.path.lexists(dst):
@@ -382,7 +381,6 @@ class PreinstancedFileProcessor:
             if self.debug_sleep_enabled: time.sleep(0.05)
         print(colour="GREEN", prefix="BlendInit", msg=f"Total .preinstanced files processed for blend/glb structure setup: {len(preinstanced_files)}")
 
-
 def run(args):
     global VERBOSE
     VERBOSE = args.verbose
@@ -421,6 +419,10 @@ def run(args):
     conn = None
     try:
         print(colour="CYAN", prefix="BlendInit", msg="--- Initializing Database ---")
+        # if db file exists delete
+        if os.path.exists(actual_db_file_path):
+            os.remove(actual_db_file_path)
+            print(colour="GREEN", prefix="BlendInit", msg=f"Deleted existing database file: {actual_db_file_path}")
         conn = init_db(actual_db_file_path)
         print(colour="GREEN", prefix="BlendInit", msg=f"Database initialized/opened at: {actual_db_file_path}")
         if debug_sleep_enabled: time.sleep(2)
