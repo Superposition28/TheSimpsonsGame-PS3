@@ -9,14 +9,14 @@ import argparse
 
 import os
 import sys
-sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..', '..', '..', '..', '..', '..', 'Utils')))
-from printer import print, Colours, print_error, print_verbose, print_debug, printc
+sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..', '..', '..', '..', '..', '..', 'Engine')))
+from Utils.printer import print, Colours, error, print_verbose, print_debug, printc
 
 def main(working_dir, preinstanced_dir, glb_dir, output_dir, root_drive, blank_blend_source, verbose, debug_sleep, export_fbx, export_glb, export_single, marker) -> None:
     """Main function to execute init and blend processes as CLI commands."""
     try:
 
-        #print(Colours.CYAN, "Running init")
+        #print(colour=Colours.CYAN, "Running init")
         #init_args = [sys.executable, "RemakeRegistry/Games/TheSimpsonsGame/Scripts/Blender-fixer/Main/BlenderInit.py"]
         #init_args.extend(["--preinstanced-dir", str(preinstanced_dir)])
         #init_args.extend(["--blend-dir", str(blend_dir)])
@@ -30,11 +30,11 @@ def main(working_dir, preinstanced_dir, glb_dir, output_dir, root_drive, blank_b
         #    init_args.extend(["--verbose"])
         #init_args.extend(["--marker", str(marker)])
 
-        #print(Colours.CYAN, f"Running command: {init_args}")
+        #print(colour=Colours.CYAN, f"Running command: {init_args}")
 
         #subprocess.run(init_args, check=True)
 
-        print(Colours.CYAN, "Running blend")
+        print(colour=Colours.CYAN, "Running blend")
 
         # Construct CLI arguments
         blend_args = [sys.executable, "RemakeRegistry/Games/TheSimpsonsGame/Scripts/Blender-fixer/Main/BlenderCore.py"]
@@ -54,10 +54,10 @@ def main(working_dir, preinstanced_dir, glb_dir, output_dir, root_drive, blank_b
 
         blend_args.extend(["--db-file-path", "Tools\\Blender\\asset_map.sqlite"])
 
-        print(Colours.CYAN, f"running command: {blend_args}")
+        print(colour=Colours.CYAN, f"running command: {blend_args}")
         subprocess.run(blend_args, check=True)
     except subprocess.CalledProcessError as e:
-        print(Colours.RED, f"An error occurred while executing the command: {e}")
+        print(colour=Colours.RED, f"An error occurred while executing the command: {e}")
         sys.exit(1)
 
 if __name__ == "__main__":
@@ -72,9 +72,9 @@ if __name__ == "__main__":
     args = parser.parse_args()
 
     verbose = args.verbose
-    print(Colours.BLUE, f"Verbose: {verbose}")
+    print(colour=Colours.BLUE, f"Verbose: {verbose}")
     debug_sleep = args.debug_sleep
-    print(Colours.BLUE, f"Debug sleep: {debug_sleep}")
+    print(colour=Colours.BLUE, f"Debug sleep: {debug_sleep}")
     export = args.export
 
     export_single = None
@@ -90,8 +90,8 @@ if __name__ == "__main__":
         if len(export) == 2:
             # Unpack to two variables if there are exactly two formats
             export_fbx, export_glb = export
-            print(Colours.BLUE, f"Export FBX: {export_fbx}")
-            print(Colours.BLUE, f"Export GLB: {export_glb}")
+            print(colour=Colours.BLUE, f"Export FBX: {export_fbx}")
+            print(colour=Colours.BLUE, f"Export GLB: {export_glb}")
         elif len(export) == 1:
             # Handle case where only one export format is provided
             export_single = export[0]
@@ -99,12 +99,12 @@ if __name__ == "__main__":
                 export_fbx = export_single
             elif export_single == "glb":
                 export_glb = export_single
-            print(Colours.BLUE, f"Export: {export_single}")
+            print(colour=Colours.BLUE, f"Export: {export_single}")
         else:
             # Handle the case where the list has an unexpected number of formats
-            print(Colours.RED, "Error: Expected one or two export formats.")
+            print(colour=Colours.RED, "Error: Expected one or two export formats.")
     else:
-        print(Colours.RED, "Error: No export formats provided.")
+        print(colour=Colours.RED, "Error: No export formats provided.")
         sys.exit(1)
 
     working_dir = execution_path = Path.cwd()

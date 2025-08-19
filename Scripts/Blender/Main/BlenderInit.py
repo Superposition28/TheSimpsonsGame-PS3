@@ -9,9 +9,9 @@ import sqlite3
 
 import os
 import sys
-sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..', '..', '..', '..', '..', '..', 'Utils')))
-from printer import printerprint as print
-from printer import Colours, print_error, print_verbose, print_debug, printc
+sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..', '..', '..', '..', '..', '..', 'Engine')))
+
+from Utils.printer import print, Colours, error, print_verbose, print_debug, printc
 
 
 VERBOSE = False # Global verbose flag
@@ -22,7 +22,7 @@ def extract_map_subdirectory(full_path, markerParam):
     marker = markerParam.replace('/', os.sep).replace('\\', os.sep) # Normalize marker too
 
     if not marker:
-        print(colour="YELLOW", prefix="BlendInit", msg=f"Warning: Marker is not provided. Cannot extract map subdirectory from path: {full_path_normalized}. Returning _UNKNOWN_MAP_NO_MARKER.")
+        print(colour="YELLOW", prefix="BlendInit", message=f"Warning: Marker is not provided. Cannot extract map subdirectory from path: {full_path_normalized}. Returning _UNKNOWN_MAP_NO_MARKER.")
         return "_UNKNOWN_MAP_NO_MARKER" # No exit
 
     idx = full_path_normalized.lower().find(marker.lower())
@@ -40,7 +40,7 @@ def extract_map_subdirectory(full_path, markerParam):
 
         if not subdir_candidate:
             # Path ended with the marker, or marker + only slashes.
-            print(colour="CYAN", prefix="BlendInit", msg=f"Info: Marker '{marker}' found in '{full_path_normalized}', but path ends with marker or only separators follow. No specific subdirectory extracted. Returning _NO_SUBDIR_AFTER_MARKER.")
+            print(colour="CYAN", prefix="BlendInit", message=f"Info: Marker '{marker}' found in '{full_path_normalized}', but path ends with marker or only separators follow. No specific subdirectory extracted. Returning _NO_SUBDIR_AFTER_MARKER.")
             return "_NO_SUBDIR_AFTER_MARKER" # No exit
 
         # Split the remaining part by the OS path separator.
@@ -50,15 +50,15 @@ def extract_map_subdirectory(full_path, markerParam):
         if parts:
             # Successfully found the first directory component after the marker.
             if VERBOSE: # Optional: print only if verbose
-                print(colour="GREEN", prefix="BlendInit", msg=f"Success: Marker '{marker}', Path '{full_path_normalized}', Subdir Part '{parts[0]}'")
+                print(colour="GREEN", prefix="BlendInit", message=f"Success: Marker '{marker}', Path '{full_path_normalized}', Subdir Part '{parts[0]}'")
             return parts[0]
         else:
             # This might happen if subdir_candidate was, for example, just "////"
-            print(colour="YELLOW", prefix="BlendInit", msg=f"Warning: Marker '{marker}' found in '{full_path_normalized}', but could not isolate a subdirectory from the remainder '{subdir_candidate}'. Returning _NO_SUBDIR_PARTS_FOUND.")
+            print(colour="YELLOW", prefix="BlendInit", message=f"Warning: Marker '{marker}' found in '{full_path_normalized}', but could not isolate a subdirectory from the remainder '{subdir_candidate}'. Returning _NO_SUBDIR_PARTS_FOUND.")
             return "_NO_SUBDIR_PARTS_FOUND" # No exit
     else:
         # Marker string was not found anywhere in the path.
-        print(colour="YELLOW", prefix="BlendInit", msg=f"Warning: Marker '{marker}' was not found in path: {full_path_normalized}. Returning _UNKNOWN_MAP_NOT_FOUND.")
+        print(colour="YELLOW", prefix="BlendInit", message=f"Warning: Marker '{marker}' was not found in path: {full_path_normalized}. Returning _UNKNOWN_MAP_NOT_FOUND.")
         return "_UNKNOWN_MAP_NOT_FOUND" # No exit
 
 def md5_hash(s):
@@ -92,7 +92,7 @@ def generate_asset_mapping(conn, root_drive, preinstanced_root, blend_root, mark
     if not os.path.isdir(blend_root):
         raise FileNotFoundError(f"Blend root directory not found: {blend_root}")
     if glb_root and not os.path.isdir(glb_root):
-        print(colour="CYAN", prefix="BlendInit", msg=f"GLB root directory {glb_root} not found, creating it.")
+        print(colour="CYAN", prefix="BlendInit", message=f"GLB root directory {glb_root} not found, creating it.")
         os.makedirs(glb_root, exist_ok=True)
 
     cursor = conn.cursor()
@@ -116,12 +116,12 @@ def generate_asset_mapping(conn, root_drive, preinstanced_root, blend_root, mark
                 glb_full_abs = os.path.join(os.path.abspath(glb_root), glb_rel)
 
             if check_existence and not os.path.isfile(blend_full_abs):
-                print(colour="YELLOW", prefix="BlendInit", msg=f"Warning: Corresponding blend file not found: {blend_full_abs}")
+                print(colour="YELLOW", prefix="BlendInit", message=f"Warning: Corresponding blend file not found: {blend_full_abs}")
                 continue
 
             map_subdir = extract_map_subdirectory(preinstanced_file_abs, marker)
             if VERBOSE:
-                print(colour="CYAN", prefix="BlendInit", msg=f"Extracted Map Subdirectory: '{map_subdir}' for {preinstanced_file_abs}")
+                print(colour="CYAN", prefix="BlendInit", message=f"Extracted Map Subdirectory: '{map_subdir}' for {preinstanced_file_abs}")
 
             identifier = md5_hash(preinstanced_rel.replace('\\', '/')) # Use normalized relative path for hash
 
@@ -146,7 +146,7 @@ def generate_asset_mapping(conn, root_drive, preinstanced_root, blend_root, mark
                 ''', asset_info)
                 assets_processed_count +=1
             except sqlite3.Error as e:
-                print(colour="RED", prefix="BlendInit", msg=f"Error inserting/replacing asset {identifier} into DB: {e}")
+                print(colour="RED", prefix="BlendInit", message=f"Error inserting/replacing asset {identifier} into DB: {e}")
 
     conn.commit()
     return assets_processed_count
@@ -157,7 +157,7 @@ def create_symlink_entry(src, dst, is_dir=True, debug_sleep_duration=0):
             if os.path.islink(dst):
                  return True
             else:
-                print(colour="YELLOW", prefix="BlendInit", msg=f"Warning: Path {dst} exists and is not a symlink. Removing to create symlink.")
+                print(colour="YELLOW", prefix="BlendInit", message=f"Warning: Path {dst} exists and is not a symlink. Removing to create symlink.")
                 if os.path.isdir(dst) and not os.path.islink(dst): # Check again it's not a link before rmtree
                     shutil.rmtree(dst)
                 else:
@@ -165,14 +165,14 @@ def create_symlink_entry(src, dst, is_dir=True, debug_sleep_duration=0):
 
         os.symlink(src, dst, target_is_directory=is_dir)
         if VERBOSE: # Only print if verbose
-            print(colour="GREEN", prefix="BlendInit", msg=f"Created symlink: {dst} -> {src}")
+            print(colour="GREEN", prefix="BlendInit", message=f"Created symlink: {dst} -> {src}")
         return True
     except PermissionError as e:
-        print(colour="RED", prefix="BlendInit", msg=f"Permission error creating symlink {dst} -> {src}: {e}. Try running as administrator or enabling Developer Mode on Windows.")
+        print(colour="RED", prefix="BlendInit", message=f"Permission error creating symlink {dst} -> {src}: {e}. Try running as administrator or enabling Developer Mode on Windows.")
         if debug_sleep_duration > 0: time.sleep(debug_sleep_duration)
         return False
     except Exception as e:
-        print(colour="RED", prefix="BlendInit", msg=f"Error creating symlink {dst} -> {src}: {e}")
+        print(colour="RED", prefix="BlendInit", message=f"Error creating symlink {dst} -> {src}: {e}")
         if debug_sleep_duration > 0: time.sleep(debug_sleep_duration)
         return False
 
@@ -187,25 +187,25 @@ def create_symbolic_links(conn, root_drive, debug_sleep_enabled=False): # Change
     debug_sleep_actual_duration = 5 if debug_sleep_enabled else 0
 
     if VERBOSE:
-        print(colour="CYAN", prefix="BlendInit", msg=f"Starting symbolic link creation for {len(assets)} assets.")
+        print(colour="CYAN", prefix="BlendInit", message=f"Starting symbolic link creation for {len(assets)} assets.")
 
     for asset_row in assets: # Renamed to avoid conflict
         identifier, map_subdir, preinstanced_full, blend_full, glb_path_from_db = asset_row
 
         if VERBOSE:
-            print(colour="CYAN", prefix="BlendInit", msg=f"Processing asset: {identifier}, map_subdir: {map_subdir}")
+            print(colour="CYAN", prefix="BlendInit", message=f"Processing asset: {identifier}, map_subdir: {map_subdir}")
 
         if not map_subdir or map_subdir.startswith("_UNKNOWN_MAP") or map_subdir == "_NO_SUBDIR_AFTER_MARKER":
-            print(colour="YELLOW", prefix="BlendInit", msg=f"Warning: Map subdirectory '{map_subdir}' for asset {identifier} is not suitable for symlink creation. Skipping.")
+            print(colour="YELLOW", prefix="BlendInit", message=f"Warning: Map subdirectory '{map_subdir}' for asset {identifier} is not suitable for symlink creation. Skipping.")
             continue
 
         target_base = os.path.join(root_drive, map_subdir)
         try:
             if VERBOSE:
-                print(colour="CYAN", prefix="BlendInit", msg=f"Ensuring target base directory exists: {target_base}")
+                print(colour="CYAN", prefix="BlendInit", message=f"Ensuring target base directory exists: {target_base}")
             os.makedirs(target_base, exist_ok=True)
         except OSError as e:
-            print(colour="RED", prefix="BlendInit", msg=f"Error creating target base directory {target_base} for symlinks: {e}")
+            print(colour="RED", prefix="BlendInit", message=f"Error creating target base directory {target_base} for symlinks: {e}")
             exit(1)
 
         symlinks_to_update_in_db = {}
@@ -213,12 +213,12 @@ def create_symbolic_links(conn, root_drive, debug_sleep_enabled=False): # Change
         # --- Helper function for symlink verification ---
         def verify_symlink(link_folder_path, src_folder_path, asset_id, link_type_name):
             if not (os.path.exists(link_folder_path) and os.path.islink(link_folder_path)):
-                print(colour="RED", prefix="BlendInit", msg=f"Error: {link_type_name} symlink {link_folder_path} for asset {asset_id} was not created or is not a symlink.")
+                print(colour="RED", prefix="BlendInit", message=f"Error: {link_type_name} symlink {link_folder_path} for asset {asset_id} was not created or is not a symlink.")
                 return False
 
             # Check if the symlink (when resolved) is a directory
             if not os.path.isdir(link_folder_path):
-                print(colour="RED", prefix="BlendInit", msg=f"Error: {link_type_name} symlink {link_folder_path} for asset {asset_id} does not point to a directory.")
+                print(colour="RED", prefix="BlendInit", message=f"Error: {link_type_name} symlink {link_folder_path} for asset {asset_id} does not point to a directory.")
                 return False
 
             try:
@@ -227,13 +227,13 @@ def create_symbolic_links(conn, root_drive, debug_sleep_enabled=False): # Change
 
                 if resolved_link_target != resolved_src_folder:
                     actual_target_raw = os.readlink(link_folder_path)
-                    print(colour="RED", prefix="BlendInit", msg=f"Error: {link_type_name} symlink {link_folder_path} for asset {asset_id} points to '{resolved_link_target}' (raw: '{actual_target_raw}') instead of expected '{resolved_src_folder}'.")
+                    print(colour="RED", prefix="BlendInit", message=f"Error: {link_type_name} symlink {link_folder_path} for asset {asset_id} points to '{resolved_link_target}' (raw: '{actual_target_raw}') instead of expected '{resolved_src_folder}'.")
                     return False
                 elif VERBOSE:
-                    print(colour="GREEN", prefix="BlendInit", msg=f"Successfully verified {link_type_name} symlink for {asset_id}: {link_folder_path} -> {resolved_src_folder}")
+                    print(colour="GREEN", prefix="BlendInit", message=f"Successfully verified {link_type_name} symlink for {asset_id}: {link_folder_path} -> {resolved_src_folder}")
                 return True
             except OSError as e_resolve:
-                print(colour="RED", prefix="BlendInit", msg=f"Error reading/resolving {link_type_name} symlink {link_folder_path} for asset {asset_id}: {e_resolve}")
+                print(colour="RED", prefix="BlendInit", message=f"Error reading/resolving {link_type_name} symlink {link_folder_path} for asset {asset_id}: {e_resolve}")
                 return False
         # --- End of helper function ---
 
@@ -241,24 +241,24 @@ def create_symbolic_links(conn, root_drive, debug_sleep_enabled=False): # Change
             src_folder = os.path.dirname(preinstanced_full)
             link_folder = os.path.join(target_base, f"{identifier}_preinstanced")
             if VERBOSE:
-                print(colour="CYAN", prefix="BlendInit", msg=f"Attempting to create preinstanced symlink: {link_folder} -> {src_folder}")
+                print(colour="CYAN", prefix="BlendInit", message=f"Attempting to create preinstanced symlink: {link_folder} -> {src_folder}")
             if create_symlink_entry(src_folder, link_folder, is_dir=True, debug_sleep_duration=debug_sleep_actual_duration):
                 if verify_symlink(link_folder, src_folder, identifier, "preinstanced"):
                     symlinks_to_update_in_db["preinstanced_symlink"] = link_folder
             elif VERBOSE: # create_symlink_entry failed
-                print(colour="YELLOW", prefix="BlendInit", msg=f"Failed to create preinstanced symlink for {identifier} (function returned false).")
+                print(colour="YELLOW", prefix="BlendInit", message=f"Failed to create preinstanced symlink for {identifier} (function returned false).")
 
 
         if blend_full and os.path.isfile(blend_full):
             src_folder = os.path.dirname(blend_full)
             link_folder = os.path.join(target_base, f"{identifier}_blend")
             if VERBOSE:
-                print(colour="CYAN", prefix="BlendInit", msg=f"Attempting to create blend symlink: {link_folder} -> {src_folder}")
+                print(colour="CYAN", prefix="BlendInit", message=f"Attempting to create blend symlink: {link_folder} -> {src_folder}")
             if create_symlink_entry(src_folder, link_folder, is_dir=True, debug_sleep_duration=debug_sleep_actual_duration):
                 if verify_symlink(link_folder, src_folder, identifier, "blend"):
                     symlinks_to_update_in_db["blend_symlink"] = link_folder
             elif VERBOSE: # create_symlink_entry failed
-                print(colour="YELLOW", prefix="BlendInit", msg=f"Failed to create blend symlink for {identifier} (function returned false).")
+                print(colour="YELLOW", prefix="BlendInit", message=f"Failed to create blend symlink for {identifier} (function returned false).")
 
 
         if glb_path_from_db: # glb_path_from_db is a full path to a file
@@ -266,18 +266,18 @@ def create_symbolic_links(conn, root_drive, debug_sleep_enabled=False): # Change
             if os.path.isdir(src_folder): # Check if the source *directory* for GLB exists
                 link_folder = os.path.join(target_base, f"{identifier}_glb")
                 if VERBOSE:
-                    print(colour="CYAN", prefix="BlendInit", msg=f"Attempting to create GLB symlink: {link_folder} -> {src_folder}")
+                    print(colour="CYAN", prefix="BlendInit", message=f"Attempting to create GLB symlink: {link_folder} -> {src_folder}")
                 if create_symlink_entry(src_folder, link_folder, is_dir=True, debug_sleep_duration=debug_sleep_actual_duration):
                     if verify_symlink(link_folder, src_folder, identifier, "GLB"):
                         symlinks_to_update_in_db["glb_symlink"] = link_folder
                 elif VERBOSE: # create_symlink_entry failed
-                    print(colour="YELLOW", prefix="BlendInit", msg=f"Failed to create GLB symlink for {identifier} (function returned false).")
+                    print(colour="YELLOW", prefix="BlendInit", message=f"Failed to create GLB symlink for {identifier} (function returned false).")
             elif VERBOSE: # src_folder for GLB does not exist
                 # This condition was already present, just ensuring it's clear
                 if os.path.exists(glb_path_from_db): # If the GLB file exists but its parent dir somehow doesn't (unlikely with dirname)
-                    print(colour="YELLOW", prefix="BlendInit", msg=f"GLB source folder {src_folder} for asset {identifier} does not exist, but GLB file {glb_path_from_db} does. Symlink not created.")
+                    print(colour="YELLOW", prefix="BlendInit", message=f"GLB source folder {src_folder} for asset {identifier} does not exist, but GLB file {glb_path_from_db} does. Symlink not created.")
                 else: # GLB file itself also doesn't exist (implies src_folder based on it also wouldn't)
-                    print(colour="YELLOW", prefix="BlendInit", msg=f"GLB file {glb_path_from_db} and its source folder {src_folder} do not exist for asset {identifier}. GLB symlink not created.")
+                    print(colour="YELLOW", prefix="BlendInit", message=f"GLB file {glb_path_from_db} and its source folder {src_folder} do not exist for asset {identifier}. GLB symlink not created.")
 
 
         if symlinks_to_update_in_db:
@@ -289,20 +289,20 @@ def create_symbolic_links(conn, root_drive, debug_sleep_enabled=False): # Change
                 params_for_update["identifier"] = identifier
 
                 if VERBOSE:
-                    print(colour="CYAN", prefix="BlendInit", msg=f"Updating DB for {identifier} with symlinks: {symlinks_to_update_in_db}")
+                    print(colour="CYAN", prefix="BlendInit", message=f"Updating DB for {identifier} with symlinks: {symlinks_to_update_in_db}")
 
                 cursor.execute(update_query, params_for_update)
                 conn.commit() # Commit per asset update if symlinks were made
                 updated_symlinks_count += 1
                 if VERBOSE:
-                    print(colour="GREEN", prefix="BlendInit", msg=f"Successfully updated symlink paths in DB for {identifier}")
+                    print(colour="GREEN", prefix="BlendInit", message=f"Successfully updated symlink paths in DB for {identifier}")
             except sqlite3.Error as e:
-                print(colour="RED", prefix="BlendInit", msg=f"Error updating symlinks for asset {identifier} in DB: {e}")
+                print(colour="RED", prefix="BlendInit", message=f"Error updating symlinks for asset {identifier} in DB: {e}")
                 # Potentially rollback if a commit per asset is not desired and an error occurs
                 # For now, it commits per asset if symlinks_to_update_in_db is non-empty
 
         if VERBOSE:
-            print(colour="CYAN", prefix="BlendInit", msg=f"Finished processing symlinks for {identifier} in '{map_subdir}'")
+            print(colour="CYAN", prefix="BlendInit", message=f"Finished processing symlinks for {identifier} in '{map_subdir}'")
             if debug_sleep_enabled and debug_sleep_actual_duration > 0: # Ensure duration is positive
                 time.sleep(debug_sleep_actual_duration)
 
@@ -315,7 +315,7 @@ def create_symbolic_links(conn, root_drive, debug_sleep_enabled=False): # Change
     # conn.commit() 
     # print(colour="BLUE", prefix="BlendInit", msg=final_commit_message) # Example final message
     
-    print(colour="GREEN", prefix="BlendInit", msg=f"Total assets updated with symlink information in DB: {updated_symlinks_count}")
+    print(colour="GREEN", prefix="BlendInit", message=f"Total assets updated with symlink information in DB: {updated_symlinks_count}")
 
 class PreinstancedFileProcessor:
     def __init__(self, input_dir, blend_dir, glb_dir, blank_blend_source, debug_sleep_enabled, verbose_flag):
@@ -328,18 +328,18 @@ class PreinstancedFileProcessor:
 
     def process_files(self):
         if not self.input_dir or not os.path.isdir(self.input_dir):
-            print(colour="RED", prefix="BlendInit", msg=f"InputDirectory '{self.input_dir}' is not set or does not exist.")
+            print(colour="RED", prefix="BlendInit", message=f"InputDirectory '{self.input_dir}' is not set or does not exist.")
             raise FileNotFoundError(f"InputDirectory '{self.input_dir}' is not set or does not exist.")
         if not self.blend_dir:
-            print(colour="RED", prefix="BlendInit", msg="BlendDirectory is not set.")
+            print(colour="RED", prefix="BlendInit", message=f"BlendDirectory is not set.")
             raise ValueError("BlendDirectory is not set.")
         os.makedirs(self.blend_dir, exist_ok=True)
         if not self.glb_dir:
-            print(colour="RED", prefix="BlendInit", msg="GLBOutputDirectory is not set.")
+            print(colour="RED", prefix="BlendInit", message=f"GLBOutputDirectory is not set.")
             raise ValueError("GLBOutputDirectory is not set.")
         os.makedirs(self.glb_dir, exist_ok=True)
         if not self.blank_blend_source or not os.path.isfile(self.blank_blend_source):
-            print(colour="RED", prefix="BlendInit", msg=f"BlankBlendSource '{self.blank_blend_source}' is not set or does not exist.")
+            print(colour="RED", prefix="BlendInit", message=f"BlankBlendSource '{self.blank_blend_source}' is not set or does not exist.")
             raise FileNotFoundError(f"BlankBlendSource '{self.blank_blend_source}' is not set or does not exist.")
             exit(1)
 
@@ -349,12 +349,12 @@ class PreinstancedFileProcessor:
                 if file_item.endswith('.preinstanced'):
                     preinstanced_files.append(os.path.join(dirpath, file_item))
 
-        print(colour="CYAN", prefix="BlendInit", msg=f"Found {len(preinstanced_files)} .preinstanced files in {self.input_dir}.")
+        print(colour="CYAN", prefix="BlendInit", message=f"Found {len(preinstanced_files)} .preinstanced files in {self.input_dir}.")
         input_dir_abs = os.path.abspath(self.input_dir)
 
         for preinst_path in preinstanced_files:
             if self.verbose:
-                print(colour="CYAN", prefix="BlendInit", msg=f"Processing preinstanced file: {preinst_path}")
+                print(colour="CYAN", prefix="BlendInit", message=f"Processing preinstanced file: {preinst_path}")
 
             rel_path = os.path.relpath(preinst_path, input_dir_abs)
             blend_dest_dir = os.path.join(os.path.abspath(self.blend_dir), os.path.dirname(rel_path))
@@ -370,64 +370,64 @@ class PreinstancedFileProcessor:
                 try:
                     shutil.copy2(self.blank_blend_source, blend_dest_full_path)
                     if self.verbose:
-                        print(colour="CYAN", prefix="BlendInit", msg=f"Copied {self.blank_blend_source} to {blend_dest_full_path}")
+                        print(colour="CYAN", prefix="BlendInit", message=f"Copied {self.blank_blend_source} to {blend_dest_full_path}")
                 except Exception as ex:
-                    print(colour="RED", prefix="BlendInit", msg=f"Error copying blank blend file to '{blend_dest_full_path}': {ex}")
+                    print(colour="RED", prefix="BlendInit", message=f"Error copying blank blend file to '{blend_dest_full_path}': {ex}")
                     if self.debug_sleep_enabled: time.sleep(1)
             #else:
                 #if self.verbose:
-                    #print(colour="BLUE", prefix="BlendInit", msg=f"{os.path.basename(blend_dest_full_path)} already exists, skipping copy.")
+                    #print(colour="BLUE", prefix="BlendInit", message=f"{os.path.basename(blend_dest_full_path)} already exists, skipping copy.")
 
             if self.debug_sleep_enabled: time.sleep(0.05)
-        print(colour="GREEN", prefix="BlendInit", msg=f"Total .preinstanced files processed for blend/glb structure setup: {len(preinstanced_files)}")
+        print(colour="GREEN", prefix="BlendInit", message=f"Total .preinstanced files processed for blend/glb structure setup: {len(preinstanced_files)}")
 
 def run(args):
     global VERBOSE
     VERBOSE = args.verbose
 
-    print(colour="CYAN", prefix="BlendInit", msg=f"Input args: {args}")
+    print(colour="CYAN", prefix="BlendInit", message=f"Input args: {args}")
 
     marker = args.marker
-    print(colour="CYAN", prefix="BlendInit", msg=f"Marker: {marker}")
+    print(colour="CYAN", prefix="BlendInit", message=f"Marker: {marker}")
     preinstanced_dir = os.path.abspath(args.preinstanced_dir)
-    print(colour="CYAN", prefix="BlendInit", msg=f"Preinstanced Directory: {preinstanced_dir}")
+    print(colour="CYAN", prefix="BlendInit", message=f"Preinstanced Directory: {preinstanced_dir}")
     blend_dir = os.path.abspath(args.blend_dir)
-    print(colour="CYAN", prefix="BlendInit", msg=f"Blend Directory: {blend_dir}")
+    print(colour="CYAN", prefix="BlendInit", message=f"Blend Directory: {blend_dir}")
     glb_dir = os.path.abspath(args.glb_dir)
-    print(colour="CYAN", prefix="BlendInit", msg=f"GLB Directory: {glb_dir}")
+    print(colour="CYAN", prefix="BlendInit", message=f"GLB Directory: {glb_dir}")
 
     database_output_directory = os.path.abspath(args.output_dir)
-    print(colour="CYAN", prefix="BlendInit", msg=f"Database Output Directory: {database_output_directory}")
+    print(colour="CYAN", prefix="BlendInit", message=f"Database Output Directory: {database_output_directory}")
 
     try:
         os.makedirs(database_output_directory, exist_ok=True)
-        print(colour="GREEN", prefix="BlendInit", msg=f"Ensured database output directory exists: {database_output_directory}")
+        print(colour="GREEN", prefix="BlendInit", message=f"Ensured database output directory exists: {database_output_directory}")
     except OSError as e:
-        print(colour="RED", prefix="BlendInit", msg=f"Could not create database output directory {database_output_directory}: {e}")
+        print(colour="RED", prefix="BlendInit", message=f"Could not create database output directory {database_output_directory}: {e}")
         exit(1)
 
     actual_db_file_path = os.path.join(database_output_directory, DB_FILENAME)
-    print(colour="CYAN", prefix="BlendInit", msg=f"Database file will be at: {actual_db_file_path}")
+    print(colour="CYAN", prefix="BlendInit", message=f"Database file will be at: {actual_db_file_path}")
 
     root_drive = os.path.abspath(args.root_drive)
-    print(colour="CYAN", prefix="BlendInit", msg=f"Root Drive for Symlinks: {root_drive}")
+    print(colour="CYAN", prefix="BlendInit", message=f"Root Drive for Symlinks: {root_drive}")
     blank_blend_source = os.path.abspath(args.blank_blend_source)
-    print(colour="CYAN", prefix="BlendInit", msg=f"Blank Blend Source: {blank_blend_source}")
+    print(colour="CYAN", prefix="BlendInit", message=f"Blank Blend Source: {blank_blend_source}")
     debug_sleep_enabled = args.debug_sleep
-    print(colour="CYAN", prefix="BlendInit", msg=f"Debug Sleep Enabled: {debug_sleep_enabled}")
+    print(colour="CYAN", prefix="BlendInit", message=f"Debug Sleep Enabled: {debug_sleep_enabled}")
 
     conn = None
     try:
-        print(colour="CYAN", prefix="BlendInit", msg="--- Initializing Database ---")
+        print(colour="CYAN", prefix="BlendInit", message=f"--- Initializing Database ---")
         # if db file exists delete
         if os.path.exists(actual_db_file_path):
             os.remove(actual_db_file_path)
-            print(colour="GREEN", prefix="BlendInit", msg=f"Deleted existing database file: {actual_db_file_path}")
+            print(colour="GREEN", prefix="BlendInit", message=f"Deleted existing database file: {actual_db_file_path}")
         conn = init_db(actual_db_file_path)
-        print(colour="GREEN", prefix="BlendInit", msg=f"Database initialized/opened at: {actual_db_file_path}")
+        print(colour="GREEN", prefix="BlendInit", message=f"Database initialized/opened at: {actual_db_file_path}")
         if debug_sleep_enabled: time.sleep(2)
 
-        print(colour="CYAN", prefix="BlendInit", msg="--- Step 1: Processing Preinstanced Files (Copy blank blends, create dir structure) ---")
+        print(colour="CYAN", prefix="BlendInit", message=f"--- Step 1: Processing Preinstanced Files (Copy blank blends, create dir structure) ---")
         processor = PreinstancedFileProcessor(
             input_dir=preinstanced_dir,
             blend_dir=blend_dir,
@@ -438,63 +438,63 @@ def run(args):
         )
         if debug_sleep_enabled: time.sleep(2)
         processor.process_files()
-        print(colour="GREEN", prefix="BlendInit", msg="--- Step 1: Completed ---")
+        print(colour="GREEN", prefix="BlendInit", message=f"--- Step 1: Completed ---")
         if debug_sleep_enabled: time.sleep(2)
 
-        print(colour="CYAN", prefix="BlendInit", msg=f"--- Step 2: Preparing Symbolic Link Root Directory: {root_drive} ---")
+        print(colour="CYAN", prefix="BlendInit", message=f"--- Step 2: Preparing Symbolic Link Root Directory: {root_drive} ---")
         if os.path.exists(root_drive) and not os.path.isdir(root_drive):
-            print(colour="RED", prefix="BlendInit", msg=f"Symlink root path {root_drive} exists but is not a directory. Please resolve this.")
+            print(colour="RED", prefix="BlendInit", message=f"Symlink root path {root_drive} exists but is not a directory. Please resolve this.")
             exit(1)
         elif not os.path.exists(root_drive):
-            print(colour="CYAN", prefix="BlendInit", msg=f"Symlink root directory {root_drive} does not exist. Creating it.")
+            print(colour="CYAN", prefix="BlendInit", message=f"Symlink root directory {root_drive} does not exist. Creating it.")
             os.makedirs(root_drive, exist_ok=True)
         elif os.path.isdir(root_drive):
-            print(colour="CYAN", prefix="BlendInit", msg=f"Symlink root directory {root_drive} already exists. Proceeding.")
+            print(colour="CYAN", prefix="BlendInit", message=f"Symlink root directory {root_drive} already exists. Proceeding.")
             try:
                 shutil.rmtree(root_drive) # Remove existing directory to ensure a clean state
                 os.makedirs(root_drive, exist_ok=True) # Recreate the directory
             except OSError as e:
-                print(colour="RED", prefix="BlendInit", msg=f"Could not remove existing directory {root_drive}: {e}")
+                print(colour="RED", prefix="BlendInit", message=f"Could not remove existing directory {root_drive}: {e}")
                 exit(1)
-        print(colour="GREEN", prefix="BlendInit", msg=f"Root directory for symbolic links ensured: {root_drive}")
+        print(colour="GREEN", prefix="BlendInit", message=f"Root directory for symbolic links ensured: {root_drive}")
         if debug_sleep_enabled: time.sleep(2)
 
-        print(colour="CYAN", prefix="BlendInit", msg="--- Step 3: Generating Asset Map & Populating Database ---")
+        print(colour="CYAN", prefix="BlendInit", message=f"--- Step 3: Generating Asset Map & Populating Database ---")
         if debug_sleep_enabled: time.sleep(2)
         asset_count = generate_asset_mapping(conn, root_drive, preinstanced_dir, blend_dir, marker, glb_dir, check_existence=False)
-        print(colour="GREEN", prefix="BlendInit", msg=f"Generated and stored map for {asset_count} assets in the database.")
+        print(colour="GREEN", prefix="BlendInit", message=f"Generated and stored map for {asset_count} assets in the database.")
         if debug_sleep_enabled: time.sleep(2)
 
-        print(colour="CYAN", prefix="BlendInit", msg=f"--- Step 4: Creating Symbolic Links in: {root_drive} ---")
+        print(colour="CYAN", prefix="BlendInit", message=f"--- Step 4: Creating Symbolic Links in: {root_drive} ---")
         if debug_sleep_enabled: time.sleep(2)
         create_symbolic_links(conn, root_drive, debug_sleep_enabled=debug_sleep_enabled)
-        print(colour="GREEN", prefix="BlendInit", msg="--- Step 4: Symbolic links creation and DB update process completed. ---")
+        print(colour="GREEN", prefix="BlendInit", message=f"--- Step 4: Symbolic links creation and DB update process completed. ---")
         if debug_sleep_enabled: time.sleep(2)
 
         if conn:
             conn.commit()
 
     except FileNotFoundError as e:
-        print(colour="RED", prefix="BlendInit", msg=f"A required file or directory was not found: {e}")
+        print(colour="RED", prefix="BlendInit", message=f"A required file or directory was not found: {e}")
         if conn: conn.rollback()
         exit(1)
     except ValueError as e:
-        print(colour="RED", prefix="BlendInit", msg=f"A configuration value is invalid: {e}")
+        print(colour="RED", prefix="BlendInit", message=f"A configuration value is invalid: {e}")
         if conn: conn.rollback()
         exit(1)
     except PermissionError as e:
-        print(colour="RED", prefix="BlendInit", msg=f"A permission error occurred: {e}. Try running with appropriate privileges.")
+        print(colour="RED", prefix="BlendInit", message=f"A permission error occurred: {e}. Try running with appropriate privileges.")
         if conn: conn.rollback()
         exit(1)
     except Exception as e:
-        print(colour="RED", prefix="BlendInit", msg=f"An unexpected ERROR occurred: {type(e).__name__} - {e}")
-        print(colour="RED", prefix="BlendInit", msg=f"{traceback.format_exc()}")
+        print(colour="RED", prefix="BlendInit", message=f"An unexpected ERROR occurred: {type(e).__name__} - {e}")
+        print(colour="RED", prefix="BlendInit", message=f"{traceback.format_exc()}")
         if conn: conn.rollback()
         exit(1)
     finally:
         if conn:
             conn.close()
-            print(colour="CYAN", prefix="BlendInit", msg="Database connection closed.")
+            print(colour="CYAN", prefix="BlendInit", message=f"Database connection closed.")
 
 if __name__ == "__main__":
     argsparse = argparse.ArgumentParser(description="Process preinstanced files, manage assets in SQLite DB, and create symbolic links.")
@@ -513,9 +513,9 @@ if __name__ == "__main__":
     try:
         run(args)
     except SystemExit:
-        print(colour="YELLOW", prefix="BlendInit", msg="Script exited.")
+        print(colour="YELLOW", prefix="BlendInit", message=f"Script exited.")
     except Exception as e:
-        print(colour="RED", prefix="BlendInit", msg=f"A critical unhandled ERROR occurred at the top level: {type(e).__name__} - {e}")
-        print(colour="RED", prefix="BlendInit", msg=f"{traceback.format_exc()}")
+        print(colour="RED", prefix="BlendInit", message=f"A critical unhandled ERROR occurred at the top level: {type(e).__name__} - {e}")
+        print(colour="RED", prefix="BlendInit", message=f"{traceback.format_exc()}")
     else:
-        print(colour="GREEN", prefix="BlendInit", msg="Script finished successfully.")
+        print(colour="GREEN", prefix="BlendInit", message=f"Script finished successfully.")

@@ -15,7 +15,7 @@ import shutil   # ADDED: For safely removing directories
 
 
 # Add Utils path for printer
-sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..', '..', '..', '..', '..', '..', 'Utils')))
+sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..', '..', '..', '..', '..', '..', 'Engine')))
 from printer import Colours, print
 
 # --- Configuration (Kept global as these are constants for the script's lifetime) ---
@@ -94,14 +94,14 @@ def run_blender_for_asset(asset_row: dict, export_formats: list, be_verbose: boo
             #with tqdm.get_lock():
 
             # allow interleaved printing
-            print(Colours.DARKGRAY, f"\n--- Output for Asset ID: {asset_id} ---")
+            print(colour=Colours.DARKGRAY, message=f"\n--- Output for Asset ID: {asset_id} ---")
             # Print stdout if it contains anything
             if proc.stdout:
-                print(Colours.GRAY, proc.stdout.strip())
+                print(colour=Colours.GRAY, message=proc.stdout.strip())
             # Print stderr if it contains anything
             if proc.stderr:
-                print(Colours.YELLOW, proc.stderr.strip())
-            print(Colours.DARKGRAY, f"--- End of Output for Asset ID: {asset_id} ---\n")
+                print(colour=Colours.YELLOW, message=proc.stderr.strip())
+            print(colour=Colours.DARKGRAY, message=f"--- End of Output for Asset ID: {asset_id} ---\n")
         else:
             proc = subprocess.run(args, capture_output=True, text=True, encoding='utf-8')
 
@@ -127,7 +127,7 @@ def run_blender_for_asset(asset_row: dict, export_formats: list, be_verbose: boo
 
 # --- Main Orchestration ---
 def blender_processing(db_path: str, num_workers: int, export_formats, be_verbose: bool, use_debug_sleep: bool) -> None:
-    print(Colours.DARKGRAY, f"Starting Blender processing with {num_workers} workers...")
+    print(colour=Colours.DARKGRAY, message=f"Starting Blender processing with {num_workers} workers...")
 
     try:
         conn = sqlite3.connect(db_path)
@@ -140,11 +140,11 @@ def blender_processing(db_path: str, num_workers: int, export_formats, be_verbos
         assets_to_process = [dict(row) for row in rows_from_db]
 
     except sqlite3.Error as e:
-        print(Colours.RED, f"SQLite error: {e}")
+        print(colour=Colours.RED, message=f"SQLite error: {e}")
         sys.exit(1)
 
     if not assets_to_process:
-        print(Colours.YELLOW, f"No assets found in database: {db_path}")
+        print(colour=Colours.YELLOW, message=f"No assets found in database: {db_path}")
         return
 
     # Use 'partial' to create a new function with the constant arguments already "baked in".
@@ -155,7 +155,7 @@ def blender_processing(db_path: str, num_workers: int, export_formats, be_verbos
                           use_debug_sleep=use_debug_sleep)
 
     results = []
-    print(Colours.BLUE, f"Found {len(assets_to_process)} assets. Dispatching to workers...")
+    print(colour=Colours.BLUE, message=f"Found {len(assets_to_process)} assets. Dispatching to workers...")
 
     # Use a multiprocessing Pool and wrap the iterator with tqdm for a progress bar
     with multiprocessing.Pool(processes=num_workers) as pool:
@@ -169,14 +169,14 @@ def blender_processing(db_path: str, num_workers: int, export_formats, be_verbos
     failures = [r for r in results if not r.success]
     skipped = [r for r in successes if r.message.startswith("Skipped")]
 
-    print(Colours.GREEN, f"\n✅ {len(successes) - len(skipped)} assets processed successfully.")
-    print(Colours.YELLOW, f"⚪ {len(skipped)} assets skipped (already exist).")
-    print(Colours.RED, f"❌ {len(failures)} assets failed.")
+    print(colour=Colours.GREEN, message=f"\n✅ {len(successes) - len(skipped)} assets processed successfully.")
+    print(colour=Colours.YELLOW, message=f"⚪ {len(skipped)} assets skipped (already exist).")
+    print(colour=Colours.RED, message=f"❌ {len(failures)} assets failed.")
 
     if failures:
-        print(Colours.RED, "\n--- Failure Details ---")
+        print(colour=Colours.RED, message="\n--- Failure Details ---")
         for result in failures:
-            print(Colours.RED, f"  - ID {result.asset_id}: {result.message}")
+            print(colour=Colours.RED, message=f"  - ID {result.asset_id}: {result.message}")
 
 def main() -> None:
     parser = argparse.ArgumentParser(description="Process assets in parallel using Blender with an SQLite asset map.")
@@ -199,13 +199,13 @@ def main() -> None:
         args.workers = int(multiprocessing.cpu_count())
 
     if args.debug_sleep:
-        print(Colours.BLUE, "Debug sleep mode enabled.")
+        print(colour=Colours.BLUE, message="Debug sleep mode enabled.")
         debug_sleep = True
     else:
         debug_sleep = False
 
     if args.verbose:
-        print(Colours.BLUE, "Verbose mode enabled.")
+        print(colour=Colours.BLUE, message="Verbose mode enabled.")
         verbose = True
     else:
         verbose = False
@@ -215,7 +215,7 @@ def main() -> None:
     # --- Path and Argument Validation ---
     for path in [blender_exe_path, python_script_path, python_extension_file, db_path]:
         if not os.path.exists(path):
-            print(Colours.RED, f"Error: Required file or directory not found: {path}")
+            print(colour=Colours.RED, message=f"Error: Required file or directory not found: {path}")
             sys.exit(1)
 
     # delete blend.log before starting new process
@@ -223,12 +223,12 @@ def main() -> None:
     if os.path.exists(blend_log_path):
         os.remove(blend_log_path)
 
-    print(Colours.BLUE, f"Export formats: {export_formats or 'None'}")
-    print(Colours.BLUE, f"Database: {db_path}")
-    print(Colours.BLUE, f"Workers: {args.workers}")
+    print(colour=Colours.BLUE, message=f"Export formats: {export_formats or 'None'}")
+    print(colour=Colours.BLUE, message=f"Database: {db_path}")
+    print(colour=Colours.BLUE, message=f"Workers: {args.workers}")
 
     blender_processing(db_path, args.workers, export_formats, verbose, debug_sleep)
-    print(Colours.GREEN, "\nProcessing complete.")
+    print(colour=Colours.GREEN, message="\nProcessing complete.")
 
 if __name__ == "__main__":
     main()

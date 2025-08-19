@@ -6,8 +6,9 @@ import time
 
 import os
 import sys
-sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..', '..', '..', '..', '..', 'Utils')))
-from printer import print, Colours, print_error, print_verbose, print_debug, printc
+sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..', '..', '..', '..', '..', 'Engine')))
+from Utils.printer import print, Colours, error, warn, ok, debug, verbose
+
 
 # --- Morton Unswizzling Helper ---
 # The morton_encode_2d function uses a more direct bit manipulation approach.
@@ -47,7 +48,7 @@ def unswizzle_data(swizzled_data, width, height, bytes_per_pixel):
     """Unswizzles Morton ordered data to linear."""
     linear_data_size = width * height * bytes_per_pixel
     if not swizzled_data or len(swizzled_data) < linear_data_size : # Should be exactly linear_data_size for base mip
-        print(Colours.YELLOW, f"      Warning: Swizzled data length ({len(swizzled_data)}) is less than expected ({linear_data_size}) for {width}x{height}@{bytes_per_pixel}bpp. Skipping unswizzle.")
+        print(colour=Colours.YELLOW, message=f"      Warning: Swizzled data length ({len(swizzled_data)}) is less than expected ({linear_data_size}) for {width}x{height}@{bytes_per_pixel}bpp. Skipping unswizzle.")
         return None
 
     linear_data = bytearray(linear_data_size)
@@ -58,7 +59,7 @@ def unswizzle_data(swizzled_data, width, height, bytes_per_pixel):
 
             if (morton_idx * bytes_per_pixel) + bytes_per_pixel > len(swizzled_data):
                 # This case should ideally not be hit if dimensions and bpp are correct for swizzled_data length
-                #print(Colours.YELLOW, f"      Warning: Morton index {morton_idx} out of bounds for swizzled data. ({x_coord},{y_coord})")
+                #print(colour=Colours.YELLOW, message=f"      Warning: Morton index {morton_idx} out of bounds for swizzled data. ({x_coord},{y_coord})")
                 #time.sleep(5)
                 continue # Or handle error appropriately
 
@@ -177,7 +178,7 @@ def process_texture_data_segment(segment_data, segment_original_start_offset, ou
     texture_name_signature = b'\x2D\x00\x02\x1C\x00\x00\x00\x0A'
     len_texture_name_signature = len(texture_name_signature)
 
-    print(Colours.CYAN, f"  Scanning data segment (len {len(segment_data)}) for textures using signature {texture_name_signature.hex()}...")
+    print(colour=Colours.CYAN, message=f"  Scanning data segment (len {len(segment_data)}) for textures using signature {texture_name_signature.hex()}...")
 
     # before extracting data
     segments_processed_successfully = 0
@@ -200,15 +201,15 @@ def process_texture_data_segment(segment_data, segment_original_start_offset, ou
             # Or, simply, the rule is "+8 from start of identified signature block".
             name_string_start_offset_in_segment = name_sig_offset_in_segment + 12
             name_end_scan_in_segment = name_string_start_offset_in_segment
-            print(Colours.GREEN, f"    name_sig_offset_in_segment = 0x{name_sig_offset_in_segment:X} (file offset 0x{segment_original_start_offset + name_sig_offset_in_segment:X})")
-            print(Colours.GREEN, f"    name_string_start_offset_in_segment = 0x{name_string_start_offset_in_segment:X} (file offset 0x{segment_original_start_offset + name_string_start_offset_in_segment:X})")
-            print(Colours.GREEN, f"    name_end_scan_in_segment = 0x{name_end_scan_in_segment:X} (file offset 0x{segment_original_start_offset + name_end_scan_in_segment:X})")
-            print(Colours.GREEN, f"    Found name signature {texture_name_signature.hex()} at seg_offset 0x{name_sig_offset_in_segment:X} (file offset 0x{segment_original_start_offset + name_sig_offset_in_segment:X})")
+            print(colour=Colours.GREEN, message=f"    name_sig_offset_in_segment = 0x{name_sig_offset_in_segment:X} (file offset 0x{segment_original_start_offset + name_sig_offset_in_segment:X})")
+            print(colour=Colours.GREEN, message=f"    name_string_start_offset_in_segment = 0x{name_string_start_offset_in_segment:X} (file offset 0x{segment_original_start_offset + name_string_start_offset_in_segment:X})")
+            print(colour=Colours.GREEN, message=f"    name_end_scan_in_segment = 0x{name_end_scan_in_segment:X} (file offset 0x{segment_original_start_offset + name_end_scan_in_segment:X})")
+            print(colour=Colours.GREEN, message=f"    Found name signature {texture_name_signature.hex()} at seg_offset 0x{name_sig_offset_in_segment:X} (file offset 0x{segment_original_start_offset + name_sig_offset_in_segment:X})")
 
             # Ensure there's space for name string and its null terminators after the +8 offset
             if name_string_start_offset_in_segment + 2 > len(segment_data): # Need at least 2 bytes for \x00\x00
                 # This implies the signature was found, but the segment ends before a name string could exist.
-                print(Colours.YELLOW, f"    WARNING: Found name signature {texture_name_signature.hex()} at seg_offset 0x{name_sig_offset_in_segment:X}, "
+                print(colour=Colours.YELLOW, message=f"    WARNING: Found name signature {texture_name_signature.hex()} at seg_offset 0x{name_sig_offset_in_segment:X}, "
                       f"but not enough data for name string (expected at 0x{name_string_start_offset_in_segment:X}).")
                 i = name_sig_offset_in_segment + 1 # Advance past the start of this problematic signature
                 time.sleep(5)
@@ -226,12 +227,12 @@ def process_texture_data_segment(segment_data, segment_original_start_offset, ou
 
                 if not name_str_val:
                     name_str_val = f"unnamed_texture_at_0x{segment_original_start_offset + name_sig_offset_in_segment:08X}"
-                    print(Colours.RED, f"    WARNING: Name string parsing failed for signature {texture_name_signature.hex()} at seg_offset 0x{name_sig_offset_in_segment:X}. "
+                    print(colour=Colours.RED, message=f"    WARNING: Name string parsing failed for signature {texture_name_signature.hex()} at seg_offset 0x{name_sig_offset_in_segment:X}. "
                           f"Using fallback name '{name_str_val}' (sig at file 0x{segment_original_start_offset + name_sig_offset_in_segment:X}).")
                     exit(1)
 
                 if current_name_info and not current_name_info['processed_meta']:
-                    print(Colours.YELLOW, f"    WARNING: Previous name '{current_name_info['name']}' (sig at file 0x{current_name_info['original_file_offset']:X}) "
+                    print(colour=Colours.YELLOW, message=f"    WARNING: Previous name '{current_name_info['name']}' (sig at file 0x{current_name_info['original_file_offset']:X}) "
                           f"was pending metadata but new name '{name_str_val}' was found.")
                     time.sleep(5)
 
@@ -241,7 +242,7 @@ def process_texture_data_segment(segment_data, segment_original_start_offset, ou
                     'name_sig_offset_in_segment': name_sig_offset_in_segment,
                     'original_file_offset': segment_original_start_offset + name_sig_offset_in_segment
                 }
-                print(Colours.CYAN, f"    Parsed name: '{current_name_info['name']}' (signature {texture_name_signature.hex()} at seg_offset 0x{name_sig_offset_in_segment:X}, file 0x{current_name_info['original_file_offset']:X})")
+                print(colour=Colours.CYAN, message=f"    Parsed name: '{current_name_info['name']}' (signature {texture_name_signature.hex()} at seg_offset 0x{name_sig_offset_in_segment:X}, file 0x{current_name_info['original_file_offset']:X})")
                 i = name_end_scan_in_segment + 2
 
                 # --- Metadata Search Step 1: Find first non-00 byte after name ---
@@ -254,10 +255,10 @@ def process_texture_data_segment(segment_data, segment_original_start_offset, ou
                     scan_ptr_for_n00 += 1
 
                 if first_n00_after_name_offset == -1:
-                    print(Colours.RED, f"      FATAL ERROR: No non-00 byte found after name '{current_name_info['name']}' (File Offset: 0x{current_name_info['original_file_offset']:X}) to start metadata search.")
+                    print(colour=Colours.RED, message=f"      FATAL ERROR: No non-00 byte found after name '{current_name_info['name']}' (File Offset: 0x{current_name_info['original_file_offset']:X}) to start metadata search.")
                     exit(1)
 
-                # print(Colours.CYAN, f"      (Debug) First non-00 byte after name found at seg_offset 0x{first_n00_after_name_offset:X}.") # Optional Debug
+                # print(colour=Colours.CYAN, message=f"      (Debug) First non-00 byte after name found at seg_offset 0x{first_n00_after_name_offset:X}.") # Optional Debug
 
                 # --- Metadata Search Step 2: From first_n00_after_name_offset, scan for "01 <known_fmt_code>" ---
                 known_format_codes = {0x52, 0x53, 0x54, 0x86, 0x02}
@@ -272,12 +273,12 @@ def process_texture_data_segment(segment_data, segment_original_start_offset, ou
                         if potential_fmt_code in known_format_codes:
                             offset_of_01_marker = scan_ptr_for_01_fmt
                             scanned_fmt_code = potential_fmt_code
-                            # print(Colours.CYAN, f"      (Debug) Found metadata signature 0x01 {scanned_fmt_code:02X} at seg_offset 0x{offset_of_01_marker:X}.") # Optional Debug
+                            # print(colour=Colours.CYAN, message=f"      (Debug) Found metadata signature 0x01 {scanned_fmt_code:02X} at seg_offset 0x{offset_of_01_marker:X}.") # Optional Debug
                             break
                     scan_ptr_for_01_fmt += 1
 
                 if offset_of_01_marker == -1:
-                    print(Colours.RED, f"      FATAL ERROR: Metadata signature (01 <known_fmt_code>) not found for '{current_name_info['name']}' (File Offset: 0x{current_name_info['original_file_offset']:X}) "
+                    print(colour=Colours.RED, message=f"      FATAL ERROR: Metadata signature (01 <known_fmt_code>) not found for '{current_name_info['name']}' (File Offset: 0x{current_name_info['original_file_offset']:X}) "
                           f"after first non-00 byte at seg_offset 0x{first_n00_after_name_offset:X}.")
                     exit(1)
 
@@ -285,12 +286,12 @@ def process_texture_data_segment(segment_data, segment_original_start_offset, ou
                 meta_offset_in_segment = offset_of_01_marker - 2
 
                 if meta_offset_in_segment < 0:
-                    print(Colours.RED, f"      FATAL ERROR: Calculated metadata block start (seg_offset 0x{meta_offset_in_segment:X}) is negative for '{current_name_info['name']}' "
+                    print(colour=Colours.RED, message=f"      FATAL ERROR: Calculated metadata block start (seg_offset 0x{meta_offset_in_segment:X}) is negative for '{current_name_info['name']}' "
                           f"(01_marker at 0x{offset_of_01_marker:X}). Structural issue.")
                     exit(1)
 
                 if not (meta_offset_in_segment + 16 <= len(segment_data)):
-                    print(Colours.RED, f"      FATAL ERROR: Not enough data for 16-byte metadata block for '{current_name_info['name']}' (File Offset: 0x{current_name_info['original_file_offset']:X}). "
+                    print(colour=Colours.RED, message=f"      FATAL ERROR: Not enough data for 16-byte metadata block for '{current_name_info['name']}' (File Offset: 0x{current_name_info['original_file_offset']:X}). "
                           f"Needed 16 bytes from calculated seg_offset 0x{meta_offset_in_segment:X}, segment length {len(segment_data)}.")
                     exit(1)
 
@@ -298,39 +299,39 @@ def process_texture_data_segment(segment_data, segment_original_start_offset, ou
                 fmt_code_from_block = metadata_bytes[3]
 
                 if fmt_code_from_block != scanned_fmt_code:
-                    print(Colours.RED, f"      FATAL ERROR: Format code mismatch for '{current_name_info['name']}'. Scanned 01 {scanned_fmt_code:02X} (fmt_code at seg_offset 0x{offset_of_01_marker + 1:X}), "
+                    print(colour=Colours.RED, message=f"      FATAL ERROR: Format code mismatch for '{current_name_info['name']}'. Scanned 01 {scanned_fmt_code:02X} (fmt_code at seg_offset 0x{offset_of_01_marker + 1:X}), "
                           f"but metadata_bytes[3] (at seg_offset 0x{meta_offset_in_segment + 3:X}) is {fmt_code_from_block:02X}. Alignment error.")
                     exit(1)
 
                 fmt_code = fmt_code_from_block
-                # print(Colours.CYAN, f"      (Debug) metadata_bytes = {metadata_bytes.hex()}") # Optional Debug
-                print(Colours.CYAN, f"      Processing metadata for '{current_name_info['name']}' (Format Code 0x{fmt_code:02X} from metadata at seg_offset 0x{meta_offset_in_segment:X})")
+                # print(colour=Colours.CYAN, message=f"      (Debug) metadata_bytes = {metadata_bytes.hex()}") # Optional Debug
+                print(colour=Colours.CYAN, message=f"      Processing metadata for '{current_name_info['name']}' (Format Code 0x{fmt_code:02X} from metadata at seg_offset 0x{meta_offset_in_segment:X})")
                 width = struct.unpack('>H', metadata_bytes[4:6])[0]
                 height = struct.unpack('>H', metadata_bytes[6:8])[0]
                 mip_map_count_from_file = metadata_bytes[9]
                 total_pixel_data_size = struct.unpack('<I', metadata_bytes[12:16])[0]
-                print(Colours.CYAN, f"        Meta Details - W: {width}, H: {height}, MipsFromFile: {mip_map_count_from_file}, DataSize: {total_pixel_data_size}")
+                print(colour=Colours.CYAN, message=f"        Meta Details - W: {width}, H: {height}, MipsFromFile: {mip_map_count_from_file}, DataSize: {total_pixel_data_size}")
 
                 if width == 0 or height == 0:
                     if width == 0 and height == 0 :
-                        print(Colours.YELLOW, f"          Skipping '{current_name_info['name']}' (File Offset: 0x{current_name_info['original_file_offset']:X}) due to zero dimensions (placeholder).")
+                        print(colour=Colours.YELLOW, message=f"          Skipping '{current_name_info['name']}' (File Offset: 0x{current_name_info['original_file_offset']:X}) due to zero dimensions (placeholder).")
                         current_name_info['processed_meta'] = True
                         i = meta_offset_in_segment + 16
                         if i > len(segment_data): i = len(segment_data)
                         time.sleep(5)
                         continue
                     else:
-                        print(Colours.RED, f"          FATAL ERROR: Invalid metadata (W:{width}, H:{height}, one is zero) for '{current_name_info['name']}' (File Offset: 0x{current_name_info['original_file_offset']:X}).")
+                        print(colour=Colours.RED, message=f"          FATAL ERROR: Invalid metadata (W:{width}, H:{height}, one is zero) for '{current_name_info['name']}' (File Offset: 0x{current_name_info['original_file_offset']:X}).")
                         exit(1)
                 elif total_pixel_data_size == 0:
-                    print(Colours.RED, f"          FATAL ERROR: Invalid metadata (Size:{total_pixel_data_size} with W:{width}, H:{height}) for '{current_name_info['name']}' (File Offset: 0x{current_name_info['original_file_offset']:X}).")
+                    print(colour=Colours.RED, message=f"          FATAL ERROR: Invalid metadata (Size:{total_pixel_data_size} with W:{width}, H:{height}) for '{current_name_info['name']}' (File Offset: 0x{current_name_info['original_file_offset']:X}).")
                     exit(1)
 
                 pixel_data_start_offset_in_segment = meta_offset_in_segment + 16
                 actual_mip_data_to_process_size = total_pixel_data_size
 
                 if pixel_data_start_offset_in_segment + actual_mip_data_to_process_size > len(segment_data):
-                    print(Colours.RED, f"          FATAL ERROR: Not enough pixel data for '{current_name_info['name']}' (File Offset: 0x{current_name_info['original_file_offset']:X}). "
+                    print(colour=Colours.RED, message=f"          FATAL ERROR: Not enough pixel data for '{current_name_info['name']}' (File Offset: 0x{current_name_info['original_file_offset']:X}). "
                           f"Expected {actual_mip_data_to_process_size} from seg_offset 0x{pixel_data_start_offset_in_segment:X}, available: {len(segment_data) - pixel_data_start_offset_in_segment}.")
                     exit(1)
 
@@ -344,23 +345,23 @@ def process_texture_data_segment(segment_data, segment_original_start_offset, ou
                 if fmt_code == 0x52: # DXT1
                     dds_header = create_dds_header_dxt(width, height, mip_map_count_from_file, 'DXT1')
                     output_pixel_data = swizzled_base_mip_data; export_format_str = "DXT1"
-                    print(Colours.CYAN, f"        (Debug) DXT1 format detected. Size: {actual_mip_data_to_process_size} bytes.")
+                    print(colour=Colours.CYAN, message=f"        (Debug) DXT1 format detected. Size: {actual_mip_data_to_process_size} bytes.")
                 elif fmt_code == 0x53: # DXT3
                     dds_header = create_dds_header_dxt(width, height, mip_map_count_from_file, 'DXT3')
                     output_pixel_data = swizzled_base_mip_data; export_format_str = "DXT3"
-                    print(Colours.CYAN, f"        (Debug) DXT3 format detected. Size: {actual_mip_data_to_process_size} bytes.")
+                    print(colour=Colours.CYAN, message=f"        (Debug) DXT3 format detected. Size: {actual_mip_data_to_process_size} bytes.")
                 elif fmt_code == 0x54: # DXT5
                     dds_header = create_dds_header_dxt(width, height, mip_map_count_from_file, 'DXT5')
                     output_pixel_data = swizzled_base_mip_data; export_format_str = "DXT5"
-                    print(Colours.CYAN, f"        (Debug) DXT5 format detected. Size: {actual_mip_data_to_process_size} bytes.")
+                    print(colour=Colours.CYAN, message=f"        (Debug) DXT5 format detected. Size: {actual_mip_data_to_process_size} bytes.")
                 elif fmt_code == 0x86: # Morton swizzled BGRA8888
                     export_format_str = "RGBA8888 (from Swizzled BGRA)"
                     expected_size = width * height * 4
                     bytes_per_pixel_for_unswizzle = 4
                     needs_unswizzle = True
-                    print(Colours.CYAN, f"        (Debug) Swizzled BGRA format detected. Size: {actual_mip_data_to_process_size} bytes.")
+                    print(colour=Colours.CYAN, message=f"        (Debug) Swizzled BGRA format detected. Size: {actual_mip_data_to_process_size} bytes.")
                     if actual_mip_data_to_process_size != expected_size:
-                        print(Colours.RED, f"          FATAL ERROR: Data size mismatch for BGRA '{current_name_info['name']}' (File 0x{current_name_info['original_file_offset']:X}): expected {expected_size}, got {actual_mip_data_to_process_size}.")
+                        print(colour=Colours.RED, message=f"          FATAL ERROR: Data size mismatch for BGRA '{current_name_info['name']}' (File 0x{current_name_info['original_file_offset']:X}): expected {expected_size}, got {actual_mip_data_to_process_size}.")
                         exit(1)
                     linear_bgra_data = unswizzle_data(swizzled_base_mip_data, width, height, bytes_per_pixel_for_unswizzle)
                     if linear_bgra_data:
@@ -372,9 +373,9 @@ def process_texture_data_segment(segment_data, segment_original_start_offset, ou
                 elif fmt_code == 0x02: # Morton swizzled A8 or P8A8/L8A8
                     export_format_str = "RGBA8888 (from Swizzled A8 or P8A8)"
                     needs_unswizzle = True
-                    print(Colours.CYAN, f"        (Debug) Swizzled A8 or P8A8 format detected. Size: {actual_mip_data_to_process_size} bytes.")
+                    print(colour=Colours.CYAN, message=f"        (Debug) Swizzled A8 or P8A8 format detected. Size: {actual_mip_data_to_process_size} bytes.")
                     if actual_mip_data_to_process_size == width * height * 1: # A8
-                        print(Colours.CYAN, f"        (Debug) A8 format detected. Size: {actual_mip_data_to_process_size} bytes.")
+                        print(colour=Colours.CYAN, message=f"        (Debug) A8 format detected. Size: {actual_mip_data_to_process_size} bytes.")
                         bytes_per_pixel_for_unswizzle = 1
                         linear_a8_data = unswizzle_data(swizzled_base_mip_data, width, height, bytes_per_pixel_for_unswizzle)
                         if linear_a8_data:
@@ -389,29 +390,29 @@ def process_texture_data_segment(segment_data, segment_original_start_offset, ou
                         linear_p8a8_data = unswizzle_data(swizzled_base_mip_data, width, height, bytes_per_pixel_for_unswizzle)
                         if linear_p8a8_data:
                             output_pixel_data = bytearray(width * height * 4)
-                            print(Colours.CYAN, f"        (Debug) P8A8/L8A8 format detected. Size: {actual_mip_data_to_process_size} bytes.")
+                            print(colour=Colours.CYAN, message=f"        (Debug) P8A8/L8A8 format detected. Size: {actual_mip_data_to_process_size} bytes.")
                             for p_idx in range(width * height):
                                 p8_or_l8, a8 = linear_p8a8_data[p_idx*2+0], linear_p8a8_data[p_idx*2+1]
                                 output_pixel_data[p_idx*4+0]=p8_or_l8; output_pixel_data[p_idx*4+1]=p8_or_l8
                                 output_pixel_data[p_idx*4+2]=p8_or_l8; output_pixel_data[p_idx*4+3]=a8
                             dds_header = create_dds_header_rgba(width, height, 1)
                     else:
-                        print(Colours.RED, f"          FATAL ERROR: Data size mismatch for Format 0x02 '{current_name_info['name']}' (File 0x{current_name_info['original_file_offset']:X}): expected {width*height} or {width*height*2}, got {actual_mip_data_to_process_size}.")
+                        print(colour=Colours.RED, message=f"          FATAL ERROR: Data size mismatch for Format 0x02 '{current_name_info['name']}' (File 0x{current_name_info['original_file_offset']:X}): expected {width*height} or {width*height*2}, got {actual_mip_data_to_process_size}.")
                         exit(1)
                 else:
-                    print(Colours.RED, f"          FATAL ERROR: Unknown or unsupported format code 0x{fmt_code:02X} for texture '{current_name_info['name']}' (File 0x{current_name_info['original_file_offset']:X}).")
+                    print(colour=Colours.RED, message=f"          FATAL ERROR: Unknown or unsupported format code 0x{fmt_code:02X} for texture '{current_name_info['name']}' (File 0x{current_name_info['original_file_offset']:X}).")
                     exit(1)
 
                 if not (dds_header and output_pixel_data):
                     error_reason = "pixel data processing failed"
                     if needs_unswizzle and not output_pixel_data:
                         error_reason = f"failed to unswizzle data (format 0x{fmt_code:02X}, {bytes_per_pixel_for_unswizzle}bpp)"
-                        print(Colours.RED, f"          FATAL ERROR: Failed to unswizzle data for '{current_name_info['name']}' (File 0x{current_name_info['original_file_offset']:X}). Reason: {error_reason}.")
+                        print(colour=Colours.RED, message=f"          FATAL ERROR: Failed to unswizzle data for '{current_name_info['name']}' (File 0x{current_name_info['original_file_offset']:X}). Reason: {error_reason}.")
                     if fmt_code in [0x52,0x53,0x54,0x86,0x02]:
-                        print(Colours.RED, f"          FATAL ERROR: Failed to generate exportable DDS data for known format 0x{fmt_code:02X} for texture '{current_name_info['name']}' (File 0x{current_name_info['original_file_offset']:X}). Reason: {error_reason}.")
+                        print(colour=Colours.RED, message=f"          FATAL ERROR: Failed to generate exportable DDS data for known format 0x{fmt_code:02X} for texture '{current_name_info['name']}' (File 0x{current_name_info['original_file_offset']:X}). Reason: {error_reason}.")
                     else:
-                        print(Colours.RED, f"          FATAL ERROR: Unknown or unsupported format code 0x{fmt_code:02X} for texture '{current_name_info['name']}' (File 0x{current_name_info['original_file_offset']:X}).")
-                    print(Colours.RED, f"          FATAL ERROR: Failed to export texture '{current_name_info['name']}' (File 0x{current_name_info['original_file_offset']:X}).")
+                        print(colour=Colours.RED, message=f"          FATAL ERROR: Unknown or unsupported format code 0x{fmt_code:02X} for texture '{current_name_info['name']}' (File 0x{current_name_info['original_file_offset']:X}).")
+                    print(colour=Colours.RED, message=f"          FATAL ERROR: Failed to export texture '{current_name_info['name']}' (File 0x{current_name_info['original_file_offset']:X}).")
                     exit(1)
 
                 clean_name = sanitize_filename(current_name_info['name'])
@@ -421,13 +422,13 @@ def process_texture_data_segment(segment_data, segment_original_start_offset, ou
                 try:
                     with open(dds_filename, "wb") as dds_file:
                         dds_file.write(dds_header); dds_file.write(output_pixel_data)
-                    print(Colours.CYAN, f"          Successfully exported: {dds_filename} (Format: {export_format_str}, {width}x{height})")
+                    print(colour=Colours.CYAN, message=f"          Successfully exported: {dds_filename} (Format: {export_format_str}, {width}x{height})")
                     textures_found_in_segment += 1
                 except IOError as e:
-                    print(Colours.RED, f"          FATAL ERROR: IOError writing DDS file {dds_filename} for '{current_name_info['name']}': {e}")
+                    print(colour=Colours.RED, message=f"          FATAL ERROR: IOError writing DDS file {dds_filename} for '{current_name_info['name']}': {e}")
                     exit(1)
                 except Exception as e:
-                    print(Colours.RED, f"          FATAL ERROR: Unexpected error writing DDS file {dds_filename} for '{current_name_info['name']}': {e}")
+                    print(colour=Colours.RED, message=f"          FATAL ERROR: Unexpected error writing DDS file {dds_filename} for '{current_name_info['name']}': {e}")
                     exit(1)
 
                 current_name_info['processed_meta'] = True
@@ -435,10 +436,10 @@ def process_texture_data_segment(segment_data, segment_original_start_offset, ou
                 if i > len(segment_data): i = len(segment_data)
                 continue
             else: # Name signature found, but name string parsing failed (no double null)
-                print(Colours.YELLOW, f"    WARNING: Name signature {texture_name_signature.hex()} at seg_offset 0x{name_sig_offset_in_segment:X} (file 0x{segment_original_start_offset + name_sig_offset_in_segment:X}) "
+                print(colour=Colours.YELLOW, message=f"    WARNING: Name signature {texture_name_signature.hex()} at seg_offset 0x{name_sig_offset_in_segment:X} (file 0x{segment_original_start_offset + name_sig_offset_in_segment:X}) "
                       f"failed full name parsing (no double null found).")
                 if current_name_info and not current_name_info['processed_meta']:
-                    print(Colours.YELLOW, f"      WARNING: Discarding pending name '{current_name_info['name']}' (sig at file 0x{current_name_info['original_file_offset']:X}) due to malformed subsequent name signature.")
+                    print(colour=Colours.YELLOW, message=f"      WARNING: Discarding pending name '{current_name_info['name']}' (sig at file 0x{current_name_info['original_file_offset']:X}) due to malformed subsequent name signature.")
                 current_name_info = None
                 i = name_sig_offset_in_segment + 1
                 time.sleep(5)
@@ -448,24 +449,24 @@ def process_texture_data_segment(segment_data, segment_original_start_offset, ou
         # Loop continues
 
     if current_name_info and not current_name_info['processed_meta']:
-        print(Colours.YELLOW, f"  WARNING: End of segment reached. Pending name '{current_name_info['name']}' (sig at file 0x{current_name_info['original_file_offset']:X}) did not find or complete its metadata processing.")
+        print(colour=Colours.YELLOW, message=f"  WARNING: End of segment reached. Pending name '{current_name_info['name']}' (sig at file 0x{current_name_info['original_file_offset']:X}) did not find or complete its metadata processing.")
         #time.sleep(5)
         exit(1)
     if textures_found_in_segment == 0:
-        print(Colours.YELLOW, f"  No textures successfully exported from segment starting at file offset 0x{segment_original_start_offset:X} that met all processing criteria.")
+        print(colour=Colours.YELLOW, message=f"  No textures successfully exported from segment starting at file offset 0x{segment_original_start_offset:X} that met all processing criteria.")
         #time.sleep(5)
         exit(1)
     return textures_found_in_segment
 
 def export_textures_from_txd(txd_filepath, output_dir_base):
-    print(Colours.CYAN, f"Processing TXD file: {txd_filepath}")
+    print(colour=Colours.CYAN, message=f"Processing TXD file: {txd_filepath}")
     try:
         with open(txd_filepath, "rb") as f: data = f.read()
     except FileNotFoundError:
-        print(Colours.RED, f"Error: File not found: {txd_filepath}")
+        print(colour=Colours.RED, message=f"Error: File not found: {txd_filepath}")
         return 0
     except Exception as e:
-        print(Colours.RED, f"Error reading file {txd_filepath}: {e}")
+        print(colour=Colours.RED, message=f"Error reading file {txd_filepath}: {e}")
         return 0
 
     txd_file_name_no_ext = os.path.splitext(os.path.basename(txd_filepath))[0]
@@ -476,9 +477,9 @@ def export_textures_from_txd(txd_filepath, output_dir_base):
     if not os.path.exists(output_dir_base):
         try:
             os.makedirs(output_dir_base)
-            print(Colours.CYAN, f"  Created output directory: {output_dir_base}") # Should this be CYAN or BLUE for success?
+            print(colour=Colours.CYAN, message=f"  Created output directory: {output_dir_base}") # Should this be CYAN or BLUE for success?
         except OSError as e:
-            print(Colours.RED, f"  Error: Could not create output directory {output_dir_base}: {e}. Textures from this TXD cannot be saved.")
+            print(colour=Colours.RED, message=f"  Error: Could not create output directory {output_dir_base}: {e}. Textures from this TXD cannot be saved.")
             exit(1)
 
 
@@ -566,33 +567,33 @@ def export_textures_from_txd(txd_filepath, output_dir_base):
         else:
             break
     total_EOF_SIGNATURE_patterns = len(eof_occurrences)
-    print(Colours.BLUE, f"  Found {total_EOF_SIGNATURE_patterns} occurrences of EOF_SIGNATURE pattern in the entire file.")
+    print(colour=Colours.BLUE, message=f"  Found {total_EOF_SIGNATURE_patterns} occurrences of EOF_SIGNATURE pattern in the entire file.")
     # --- END: Count EOF_SIGNATURE pattern ---
     if total_EOF_SIGNATURE_patterns != 1:
         if total_EOF_SIGNATURE_patterns == 0:
-            print(Colours.RED, f"  ERROR: EOF pattern not found in the file. This may indicate a corrupted or incomplete TXD file.")
+            print(colour=Colours.RED, message=f"  ERROR: EOF pattern not found in the file. This may indicate a corrupted or incomplete TXD file.")
         else:
-            print(Colours.RED, f"  ERROR: Expected 1 EOF pattern, found {total_EOF_SIGNATURE_patterns}. This may indicate a corrupted or incomplete TXD file.")
+            print(colour=Colours.RED, message=f"  ERROR: Expected 1 EOF pattern, found {total_EOF_SIGNATURE_patterns}. This may indicate a corrupted or incomplete TXD file.")
         exit(1)
 
     # --- START: Count sig_file_start in the entire file ---
     total_sig_file_start = data.count(sig_file_start)
-    print(Colours.BLUE, f"  Found {total_sig_file_start} occurrences of sig_file_start in the entire file.")
+    print(colour=Colours.BLUE, message=f"  Found {total_sig_file_start} occurrences of sig_file_start in the entire file.")
     # --- END: Count sig_file_start ---
 
     # --- START: Count sig_block_start in the entire file ---
     total_sig_block_start = data.count(sig_block_start)
-    print(Colours.BLUE, f"  Found {total_sig_block_start} occurrences of sig_block_start in the entire file.")
+    print(colour=Colours.BLUE, message=f"  Found {total_sig_block_start} occurrences of sig_block_start in the entire file.")
     # --- END: Count sig_block_start ---
 
     # --- START: Count sig_compound_end_marker in the entire file ---
     total_sig_compound_end_marker = data.count(sig_compound_end_marker) # Same as sig_block_start
-    print(Colours.BLUE, f"  Found {total_sig_compound_end_marker} occurrences of sig_compound_end_marker in the entire file.")
+    print(colour=Colours.BLUE, message=f"  Found {total_sig_compound_end_marker} occurrences of sig_compound_end_marker in the entire file.")
     # --- END: Count sig_compound_end_marker ---
 
     # --- START: Count texture_name_signature in the entire file ---
     total_texture_name_signature = data.count(texture_name_signature)
-    print(Colours.BLUE, f"  Found {total_texture_name_signature} occurrences of texture_name_signature in the entire file.")
+    print(colour=Colours.BLUE, message=f"  Found {total_texture_name_signature} occurrences of texture_name_signature in the entire file.")
     # --- END: Count texture_name_signature ---
 
     total_textures = 0
@@ -604,7 +605,7 @@ def export_textures_from_txd(txd_filepath, output_dir_base):
 
     # --- Phase 1: Process initial 0x16 segment (if present) ---
     if data.startswith(sig_file_start):
-        print(Colours.CYAN, f"  File starts with sig_file_start (0x16). Processing initial segment.")
+        print(colour=Colours.CYAN, message=f"  File starts with sig_file_start (0x16). Processing initial segment.")
         start_of_data_after_0x16 = len(sig_file_start)
         
         try:
@@ -613,14 +614,14 @@ def export_textures_from_txd(txd_filepath, output_dir_base):
 
             # Check if this marker is actually the EOF_SIGNATURE pattern
             if _is_eof_pattern_at_pos(data, pos_marker):
-                print(Colours.CYAN, f"      0x16 segment data (offset 0x{start_of_data_after_0x16:X}) ends before EOF_SIGNATURE pattern found at 0x{pos_marker:X}.")
+                print(colour=Colours.CYAN, message=f"      0x16 segment data (offset 0x{start_of_data_after_0x16:X}) ends before EOF_SIGNATURE pattern found at 0x{pos_marker:X}.")
                 segment_data = data[start_of_data_after_0x16 : pos_marker]
                 if segment_data:
                     data_segments_to_scan.append((start_of_data_after_0x16, segment_data))
                 search_ptr = len(data) # EOF hit, no more blocks to process
             else:
                 # It's a genuine sig_compound_end_marker (which is also a sig_block_start)
-                print(Colours.CYAN, f"      0x16 segment data (offset 0x{start_of_data_after_0x16:X}) ends before sig_compound_end_marker at 0x{pos_marker:X}.")
+                print(colour=Colours.CYAN, message=f"      0x16 segment data (offset 0x{start_of_data_after_0x16:X}) ends before sig_compound_end_marker at 0x{pos_marker:X}.")
                 segment_data = data[start_of_data_after_0x16 : pos_marker]
                 if segment_data:
                     data_segments_to_scan.append((start_of_data_after_0x16, segment_data))
@@ -630,7 +631,7 @@ def export_textures_from_txd(txd_filepath, output_dir_base):
             # No sig_compound_end_marker found. Check if EOF_SIGNATURE pattern is present instead.
             pos_eof = _find_eof_pattern(data, start_of_data_after_0x16)
             if pos_eof != -1: # If EOF pattern found
-                print(Colours.CYAN, f"      0x16 segment data (offset 0x{start_of_data_after_0x16:X}) ends before EOF_SIGNATURE pattern (direct find) at 0x{pos_eof:X}.")
+                print(colour=Colours.CYAN, message=f"      0x16 segment data (offset 0x{start_of_data_after_0x16:X}) ends before EOF_SIGNATURE pattern (direct find) at 0x{pos_eof:X}.")
                 segment_data = data[start_of_data_after_0x16 : pos_eof]
                 if segment_data:
                     data_segments_to_scan.append((start_of_data_after_0x16, segment_data))
@@ -638,13 +639,13 @@ def export_textures_from_txd(txd_filepath, output_dir_base):
             else: # EOF pattern also not found
                 # Neither sig_compound_end_marker nor EOF_SIGNATURE pattern found after 0x16 header.
                 # This implies the 0x16 data runs to the end of the file.
-                print(Colours.YELLOW, f"      Warning: No sig_compound_end_marker or EOF_SIGNATURE pattern found after 0x16 segment start. Assuming 0x16 data to end of file.")
+                print(colour=Colours.YELLOW, message=f"      Warning: No sig_compound_end_marker or EOF_SIGNATURE pattern found after 0x16 segment start. Assuming 0x16 data to end of file.")
                 segment_data = data[start_of_data_after_0x16:]
                 if segment_data:
                     data_segments_to_scan.append((start_of_data_after_0x16, segment_data))
                 search_ptr = len(data) # Reached end of file
     else:
-        print(Colours.YELLOW, "  File does not start with sig_file_start (0x16). Will scan for 0x14 blocks from beginning.")
+        print(colour=Colours.YELLOW, message="  File does not start with sig_file_start (0x16). Will scan for 0x14 blocks from beginning.")
         search_ptr = 0 # Start scanning for 0x14 blocks from the beginning of the file
 
 
@@ -658,11 +659,11 @@ def export_textures_from_txd(txd_filepath, output_dir_base):
 
             # CRITICAL CHECK: Is this sig_block_start actually the EOF_SIGNATURE pattern?
             if _is_eof_pattern_at_pos(data, found_block_start_at):
-                print(Colours.CYAN, f"  Encountered EOF_SIGNATURE pattern at 0x{found_block_start_at:X} while searching for a 0x14 block start. Ending block scan.")
+                print(colour=Colours.CYAN, message=f"  Encountered EOF_SIGNATURE pattern at 0x{found_block_start_at:X} while searching for a 0x14 block start. Ending block scan.")
                 break # EOF found, no more valid blocks.
 
             # If not EOF, it's a genuine start of a 0x14 block.
-            print(Colours.CYAN, f"  Found 0x14 block start signature at file offset 0x{found_block_start_at:X}.")
+            print(colour=Colours.CYAN, message=f"  Found 0x14 block start signature at file offset 0x{found_block_start_at:X}.")
             start_of_data_after_0x14 = found_block_start_at + len_block_marker
             
             # Now, find the end of this 0x14 block's data.
@@ -674,14 +675,14 @@ def export_textures_from_txd(txd_filepath, output_dir_base):
 
                 # Check if this next_marker is actually the EOF_SIGNATURE pattern
                 if _is_eof_pattern_at_pos(data, pos_next_marker):
-                    print(Colours.CYAN, f"      0x14 block (data from 0x{start_of_data_after_0x14:X}) ends before EOF_SIGNATURE pattern (found as next marker) at 0x{pos_next_marker:X}.")
+                    print(colour=Colours.CYAN, message=f"      0x14 block (data from 0x{start_of_data_after_0x14:X}) ends before EOF_SIGNATURE pattern (found as next marker) at 0x{pos_next_marker:X}.")
                     segment_data = data[start_of_data_after_0x14 : pos_next_marker]
                     if segment_data:
                         data_segments_to_scan.append((start_of_data_after_0x14, segment_data))
                     current_scan_pos = len(data) # EOF hit, stop all scanning.
                 else:
                     # Genuine next sig_compound_end_marker. Current block data ends before it.
-                    print(Colours.CYAN, f"      0x14 block (data from 0x{start_of_data_after_0x14:X}) ends before next sig_compound_end_marker at 0x{pos_next_marker:X}.")
+                    print(colour=Colours.CYAN, message=f"      0x14 block (data from 0x{start_of_data_after_0x14:X}) ends before next sig_compound_end_marker at 0x{pos_next_marker:X}.")
                     segment_data = data[start_of_data_after_0x14 : pos_next_marker]
                     if segment_data:
                         data_segments_to_scan.append((start_of_data_after_0x14, segment_data))
@@ -691,7 +692,7 @@ def export_textures_from_txd(txd_filepath, output_dir_base):
                 # This implies the current 0x14 block might be the last one, ending at EOF pattern or physical EOF.
                 pos_eof = _find_eof_pattern(data, start_of_data_after_0x14)
                 if pos_eof != -1: # If EOF pattern found
-                    print(Colours.CYAN, f"      0x14 block (data from 0x{start_of_data_after_0x14:X}) ends before EOF_SIGNATURE pattern (direct find) at 0x{pos_eof:X}.")
+                    print(colour=Colours.CYAN, message=f"      0x14 block (data from 0x{start_of_data_after_0x14:X}) ends before EOF_SIGNATURE pattern (direct find) at 0x{pos_eof:X}.")
                     segment_data = data[start_of_data_after_0x14 : pos_eof]
                     if segment_data:
                         data_segments_to_scan.append((start_of_data_after_0x14, segment_data))
@@ -699,7 +700,7 @@ def export_textures_from_txd(txd_filepath, output_dir_base):
                 else: # EOF pattern also not found
                     # No sig_compound_end_marker AND no EOF_SIGNATURE pattern found after this block's data started.
                     # This means this 0x14 block's data runs to the physical end of the file.
-                    print(Colours.YELLOW, f"      Warning: For 0x14 block (data from 0x{start_of_data_after_0x14:X}), no subsequent marker or EOF pattern found. Assuming data to end of file.")
+                    print(colour=Colours.YELLOW, message=f"      Warning: For 0x14 block (data from 0x{start_of_data_after_0x14:X}), no subsequent marker or EOF pattern found. Assuming data to end of file.")
                     segment_data = data[start_of_data_after_0x14:]
                     if segment_data:
                         data_segments_to_scan.append((start_of_data_after_0x14, segment_data))
@@ -707,13 +708,13 @@ def export_textures_from_txd(txd_filepath, output_dir_base):
 
         except ValueError: # data.index(sig_block_start, current_scan_pos) failed.
             # No more sig_block_start (and thus no more 0x14 blocks or EOF prefix) found from current_scan_pos.
-            print(Colours.BLUE, f"  No more sig_block_start (or EOF pattern prefix) found after offset 0x{current_scan_pos:X}. Ending 0x14 block scan.")
+            print(colour=Colours.BLUE, message=f"  No more sig_block_start (or EOF pattern prefix) found after offset 0x{current_scan_pos:X}. Ending 0x14 block scan.")
             break # Exit the while loop.
 
 
     # Fallback logic from original code (Noesis-style) - can be adapted or removed based on TXD format strictness
     if not data_segments_to_scan and data.startswith(sig_file_start) and len(data) > 0x28 :
-        print(Colours.YELLOW, "  No segments found by primary rules, but file starts with 0x16. Defaulting to process from offset 0x28 (Noesis-style).")
+        print(colour=Colours.YELLOW, message="  No segments found by primary rules, but file starts with 0x16. Defaulting to process from offset 0x28 (Noesis-style).")
         # Ensure this doesn't read past EOF if EOF is close to 0x28
         eof_pos_fallback = _find_eof_pattern(data, 0x28)
         if eof_pos_fallback != -1:
@@ -721,35 +722,35 @@ def export_textures_from_txd(txd_filepath, output_dir_base):
         else:
             data_segments_to_scan.append( (0x28, data[0x28:]) )
     elif not data_segments_to_scan:
-        print(Colours.RED, f"  No data segments identified for processing in '{txd_filepath}' based on defined block signatures.")
+        print(colour=Colours.RED, message=f"  No data segments identified for processing in '{txd_filepath}' based on defined block signatures.")
         # time.sleep(5) # Original had sleep here
 
     if not data_segments_to_scan:
-        print(Colours.RED, f"  No processable data segments ultimately found in '{txd_filepath}'.")
+        print(colour=Colours.RED, message=f"  No processable data segments ultimately found in '{txd_filepath}'.")
         # time.sleep(5) # Original had sleep here
         return 0
 
     num_segments_to_process = len(data_segments_to_scan)
-    print(Colours.BLUE, f"\n  Found {num_segments_to_process} segment(s) to process in '{txd_filepath}'.")
+    print(colour=Colours.BLUE, message=f"\n  Found {num_segments_to_process} segment(s) to process in '{txd_filepath}'.")
 
     for i, (seg_start_offset, seg_data) in enumerate(data_segments_to_scan):
         if not seg_data:
-            print(Colours.YELLOW, f"\n  Skipping zero-length segment #{i+1} (intended to start at file offset 0x{seg_start_offset:X}).")
+            print(colour=Colours.YELLOW, message=f"\n  Skipping zero-length segment #{i+1} (intended to start at file offset 0x{seg_start_offset:X}).")
             # time.sleep(5) # Original had sleep here
             continue
-        print(Colours.CYAN, f"\n  Processing segment #{i+1}: data starts at file offset 0x{seg_start_offset:X}, segment length {len(seg_data)} bytes.")
+        print(colour=Colours.CYAN, message=f"\n  Processing segment #{i+1}: data starts at file offset 0x{seg_start_offset:X}, segment length {len(seg_data)} bytes.")
         textures_in_segment = process_texture_data_segment(seg_data, seg_start_offset, output_dir_base) # Pass output_dir_base
         total_textures_exported_from_file += textures_in_segment
 
 
     if total_textures_exported_from_file > 0:
-        print(Colours.CYAN, f"\nFinished processing for '{txd_filepath}'. Exported {total_textures_exported_from_file} textures to '{output_dir_base}'.")
+        print(colour=Colours.CYAN, message=f"\nFinished processing for '{txd_filepath}'. Exported {total_textures_exported_from_file} textures to '{output_dir_base}'.")
     else:
-        print(Colours.RED, f"\nNo textures were successfully exported from any identified segments in '{txd_filepath}'.")
+        print(colour=Colours.RED, message=f"\nNo textures were successfully exported from any identified segments in '{txd_filepath}'.")
 
     # Compare exported count with estimated count from raw name signatures
     if total_textures_exported_from_file != total_textures:
-        print(Colours.YELLOW, f"  WARNING: Number of raw name signatures found ({total_textures}) does not match number of textures reported as exported ({total_textures_exported_from_file}). This could be due to segmentation logic, invalid texture data, or duplicate/unused name entries.")
+        print(colour=Colours.YELLOW, message=f"  WARNING: Number of raw name signatures found ({total_textures}) does not match number of textures reported as exported ({total_textures_exported_from_file}). This could be due to segmentation logic, invalid texture data, or duplicate/unused name entries.")
         # time.sleep(5) # Original had sleep here
 
     return total_textures_exported_from_file
@@ -769,7 +770,7 @@ def main():
     files_with_exports = 0 # Count of files from which at least one texture was exported
 
     if not os.path.exists(input_path_abs):
-        print(Colours.RED, f"Error: Input path '{input_path_abs}' does not exist.")
+        print(colour=Colours.RED, message=f"Error: Input path '{input_path_abs}' does not exist.")
         exit(1)
 
     txd_files_to_process = []
@@ -777,26 +778,26 @@ def main():
         if input_path_abs.lower().endswith(".txd"):
             txd_files_to_process.append(input_path_abs)
         else:
-            print(Colours.RED, f"Error: Input file '{input_path_abs}' is not a .txd file.")
+            print(colour=Colours.RED, message=f"Error: Input file '{input_path_abs}' is not a .txd file.")
             exit(1) # #exit if a single specified file is not TXD
     elif os.path.isdir(input_path_abs):
-        print(Colours.CYAN, f"Scanning directory: {input_path_abs}")
+        print(colour=Colours.CYAN, message=f"Scanning directory: {input_path_abs}")
         for root, _, files in os.walk(input_path_abs):
             for file in files:
                 if file.lower().endswith(".txd"):
                     txd_files_to_process.append(os.path.join(root, file))
         if not txd_files_to_process:
-            print(Colours.RED, f"No .txd files found in directory '{input_path_abs}'.")
+            print(colour=Colours.RED, message=f"No .txd files found in directory '{input_path_abs}'.")
             return # Not a fatal error, just no work.
     else: # Should not be reached if os.path.exists passed
-        print(Colours.RED, f"Error: Input path '{input_path_abs}' is not a valid file or directory.")
+        print(colour=Colours.RED, message=f"Error: Input path '{input_path_abs}' is not a valid file or directory.")
         exit(1)
 
     if not txd_files_to_process:
-        print(Colours.RED, "No .txd files to process.")
+        print(colour=Colours.RED, message="No .txd files to process.")
         return
 
-    print(Colours.CYAN, f"Found {len(txd_files_to_process)} .txd file(s) to process.")
+    print(colour=Colours.CYAN, message=f"Found {len(txd_files_to_process)} .txd file(s) to process.")
 
     last_used_output_base_for_summary = ""
 
@@ -808,7 +809,7 @@ def main():
 
         last_used_output_base_for_summary = current_output_dir_base_for_txd # For summary message
 
-        print(Colours.CYAN, f"\n--- Processing file: {txd_file_path} ---")
+        print(colour=Colours.CYAN, message=f"\n--- Processing file: {txd_file_path} ---")
         # export_textures_from_txd will create its own "filename_txd" subfolder within current_output_dir_base_for_txd
         textures_in_current_file = export_textures_from_txd(txd_file_path, current_output_dir_base_for_txd)
 
@@ -818,23 +819,23 @@ def main():
             files_with_exports +=1
 
 
-    print(Colours.CYAN, "\n--- Summary ---")
-    print(Colours.CYAN, f"Attempted to process {len(txd_files_to_process)} .txd file(s).")
+    print(colour=Colours.CYAN, message="\n--- Summary ---")
+    print(colour=Colours.CYAN, message=f"Attempted to process {len(txd_files_to_process)} .txd file(s).")
     if files_processed_count > 0 : # If any file was actually processed (even if it had 0 textures)
-        print(Colours.CYAN, f"Files fully processed: {files_processed_count}.") # Should match len(txd_files_to_process) if no early #exits
-        print(Colours.CYAN, f"Files with at least one texture exported: {files_with_exports}.")
-        print(Colours.CYAN, f"Total textures exported across all files: {overall_textures_exported}.")
+        print(colour=Colours.CYAN, message=f"Files fully processed: {files_processed_count}.") # Should match len(txd_files_to_process) if no early #exits
+        print(colour=Colours.CYAN, message=f"Files with at least one texture exported: {files_with_exports}.")
+        print(colour=Colours.CYAN, message=f"Total textures exported across all files: {overall_textures_exported}.")
         if overall_textures_exported > 0:
             if output_dir_base_arg: # If -o was used
-                print(Colours.CYAN, f"Base output directory specified: '{output_dir_base_arg}' (TXD-specific subfolders created within).")
+                print(colour=Colours.CYAN, message=f"Base output directory specified: '{output_dir_base_arg}' (TXD-specific subfolders created within).")
             else: # -o not used, output relative to each TXD
-                print(Colours.CYAN, f"Output subdirectories created relative to each input TXD file's location (e.g., '{os.path.join(last_used_output_base_for_summary, 'examplename_txd')}').")
+                print(colour=Colours.CYAN, message=f"Output subdirectories created relative to each input TXD file's location (e.g., '{os.path.join(last_used_output_base_for_summary, 'examplename_txd')}').")
 
         if files_processed_count == 858 and overall_textures_exported != 7318:
-            print(Colours.YELLOW, f"WARNING: Only {overall_textures_exported} textures were exported. This may indicate that some textures were not processed or exported due to errors.")
+            print(colour=Colours.YELLOW, message=f"WARNING: Only {overall_textures_exported} textures were exported. This may indicate that some textures were not processed or exported due to errors.")
 
     else: # This case should ideally not be hit if txd_files_to_process was not empty
-        print(Colours.YELLOW, "No .txd files ended up being processed.")
+        print(colour=Colours.YELLOW, message="No .txd files ended up being processed.")
 
 if __name__ == '__main__':
     main()

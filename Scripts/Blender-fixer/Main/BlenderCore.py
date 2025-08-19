@@ -7,8 +7,8 @@ import sqlite3 # Added for database interaction
 
 import os
 import sys
-sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..', '..', '..', '..', '..', '..', 'Utils')))
-from printer import print, Colours, print_error, print_verbose, print_debug, printc
+sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..', '..', '..', '..', '..', '..', 'Engine')))
+from Utils.printer import print, Colours, error, print_verbose, print_debug, printc
 
 
 # Global variables for paths (consider making these configurable or passed as arguments)
@@ -34,10 +34,10 @@ def blender_processing():
     global verbose, debug_sleep, export, current_dir, db_file_path # Ensure db_file_path is accessible
 
     loop_count = 0
-    print(Colours.DARKGRAY, "Starting Blender processing using SQLite asset map...")
+    print(colour=Colours.DARKGRAY, "Starting Blender processing using SQLite asset map...")
 
     if not db_file_path or not os.path.isfile(db_file_path):
-        print(Colours.RED, f"Error: Database file not found or not specified: {db_file_path}")
+        print(colour=Colours.RED, f"Error: Database file not found or not specified: {db_file_path}")
         sys.exit(1)
 
     conn = None
@@ -54,14 +54,14 @@ def blender_processing():
         assets = cursor.fetchall()
 
         if not assets:
-            print(Colours.YELLOW, f"No assets found in the database: {db_file_path}")
+            print(colour=Colours.YELLOW, f"No assets found in the database: {db_file_path}")
             return
 
         for asset_row in assets:
             loop_count += 1
-            print(Colours.RESET, "")
-            print(Colours.YELLOW, f"Loop Count: {loop_count} (Asset ID: {asset_row['identifier']})")
-            print(Colours.RESET, "")
+            print(colour=Colours.RESET, "")
+            print(colour=Colours.YELLOW, f"Loop Count: {loop_count} (Asset ID: {asset_row['identifier']})")
+            print(colour=Colours.RESET, "")
 
             # Check if essential symlink paths and filename are present in the DB row
             # These columns in the DB can be NULL if not populated by the first script
@@ -70,11 +70,11 @@ def blender_processing():
             glb_symlink_path = asset_row["glb_symlink"]
 
             if not all([filename, blend_symlink_path, glb_symlink_path]):
-                print(Colours.YELLOW, f"Warning: Missing one or more required symlink paths or filename for asset ID: {asset_row['identifier']}. Skipping.")
+                print(colour=Colours.YELLOW, f"Warning: Missing one or more required symlink paths or filename for asset ID: {asset_row['identifier']}. Skipping.")
                 if verbose:
-                    print(Colours.YELLOW, f"  Filename: {filename}")
-                    print(Colours.YELLOW, f"  Blend Symlink Path: {blend_symlink_path}")
-                    print(Colours.YELLOW, f"  GLB Symlink Path: {glb_symlink_path}")
+                    print(colour=Colours.YELLOW, f"  Filename: {filename}")
+                    print(colour=Colours.YELLOW, f"  Blend Symlink Path: {blend_symlink_path}")
+                    print(colour=Colours.YELLOW, f"  GLB Symlink Path: {glb_symlink_path}")
                 continue
 
             blend_symlink_file = os.path.join(blend_symlink_path, filename + ".blend")
@@ -103,14 +103,14 @@ def blender_processing():
 
                     # If no export types are specified, but we want to process if files are missing (original implicit behavior)
                     if not export and (not os.path.isfile(glb_symlink_file) or not os.path.isfile(fbx_symlink_file)):
-                        print(Colours.YELLOW, f"Skipping Blender for {filename}: No export formats specified in --export and files might be missing.")
+                        print(colour=Colours.YELLOW, f"Skipping Blender for {filename}: No export formats specified in --export and files might be missing.")
 
                     if run_blender:
                         verbose_str = "true" if verbose else "false"
                         debug_sleep_str = "true" if debug_sleep else "false"
                         export_str = ",".join(sorted(list(export))) # Pass the requested export formats, ensure consistent order
 
-                        print(Colours.GRAY, "# Start Blender Output")
+                        print(colour=Colours.GRAY, "# Start Blender Output")
                         args = [
                             blender_exe_path,
                             "-b", blend_symlink_file,
@@ -126,7 +126,7 @@ def blender_processing():
                             fbx_symlink_file # Pass FBX path too, if your script supports it
                         ]
                         blender_command = ' '.join(f'"{a}"' if ' ' in a else a for a in args)
-                        print(Colours.MAGENTA, f"Blender command --> {blender_command}")
+                        print(colour=Colours.MAGENTA, f"Blender command --> {blender_command}")
 
                         proc = subprocess.Popen(
                             args,
@@ -135,10 +135,10 @@ def blender_processing():
                             text=True
                         )
                         output, error = proc.communicate()
-                        print(Colours.RESET, output)
+                        print(colour=Colours.RESET, output)
                         if error:
-                            print(Colours.RED, error)
-                        print(Colours.GRAY, "# End Blender Output")
+                            print(colour=Colours.RED, error)
+                        print(colour=Colours.GRAY, "# End Blender Output")
 
                         # Post-processing check (original logic had 'if export == True:')
                         # This check should be more specific, e.g., if 'glb' was requested
@@ -149,74 +149,74 @@ def blender_processing():
                                     with open(glb_symlink_file, "r", encoding="utf-8", errors="ignore") as f_glb:
                                         glb_content_sample = f_glb.read(512) # Read a sample
                                     if "Error:" in glb_content_sample or "Exception:" in glb_content_sample or proc.returncode != 0:
-                                        print(Colours.RED, f"Blender execution for {filename} might have failed or GLB contains errors (check Blender output above).")
+                                        print(colour=Colours.RED, f"Blender execution for {filename} might have failed or GLB contains errors (check Blender output above).")
                                     else:
-                                        print(Colours.GREEN, f"GLB file processed/verified for: {glb_symlink_file}")
+                                        print(colour=Colours.GREEN, f"GLB file processed/verified for: {glb_symlink_file}")
                                 except Exception as e_read:
-                                    print(Colours.YELLOW, f"Could not read GLB {glb_symlink_file} for error checking: {e_read}")
+                                    print(colour=Colours.YELLOW, f"Could not read GLB {glb_symlink_file} for error checking: {e_read}")
                             else:
-                                print(Colours.RED, f"Failed to create GLB output file: {glb_symlink_file}")
+                                print(colour=Colours.RED, f"Failed to create GLB output file: {glb_symlink_file}")
                         if 'fbx' in export: # Check if FBX export was attempted
                             if os.path.isfile(fbx_symlink_file):
-                                    print(Colours.GREEN, f"FBX file processed/verified for: {fbx_symlink_file}")
+                                    print(colour=Colours.GREEN, f"FBX file processed/verified for: {fbx_symlink_file}")
                             else:
-                                print(Colours.RED, f"Failed to create FBX output file: {fbx_symlink_file}")
+                                print(colour=Colours.RED, f"Failed to create FBX output file: {fbx_symlink_file}")
                     else:
-                        print(Colours.YELLOW, f"Skipping Blender for {filename}: Requested output files already exist or not specified in --export.")
+                        print(colour=Colours.YELLOW, f"Skipping Blender for {filename}: Requested output files already exist or not specified in --export.")
                         if 'glb' in export and os.path.isfile(glb_symlink_file):
-                            print(Colours.GREEN, f"GLB file already exists: {glb_symlink_file}")
+                            print(colour=Colours.GREEN, f"GLB file already exists: {glb_symlink_file}")
                         if 'fbx' in export and os.path.isfile(fbx_symlink_file):
-                            print(Colours.GREEN, f"FBX file already exists: {fbx_symlink_file}")
+                            print(colour=Colours.GREEN, f"FBX file already exists: {fbx_symlink_file}")
 
                 except Exception as ex:
-                    print(Colours.RED, f"Error processing asset {filename} (ID: {asset_row['identifier']}): {ex}")
+                    print(colour=Colours.RED, f"Error processing asset {filename} (ID: {asset_row['identifier']}): {ex}")
                     # Consider if this should be sys.exit(1) or just skip the asset
             else:
-                print(Colours.RED, f"Error: Blend symlink file not found: {blend_symlink_file} (asset ID: {asset_row['identifier']})")
+                print(colour=Colours.RED, f"Error: Blend symlink file not found: {blend_symlink_file} (asset ID: {asset_row['identifier']})")
                 # Consider if this should be sys.exit(1) or just skip the asset
 
     except sqlite3.Error as e:
-        print(Colours.RED, f"SQLite error: {e}")
+        print(colour=Colours.RED, f"SQLite error: {e}")
         sys.exit(1)
     except FileNotFoundError: # Should be caught by the initial db_file_path check
-        print(Colours.RED, f"Error: Database file not found: {db_file_path}")
+        print(colour=Colours.RED, f"Error: Database file not found: {db_file_path}")
         sys.exit(1)
     except Exception as e_outer:
-        print(Colours.RED, f"An unexpected error occurred in blender_processing: {e_outer}")
+        print(colour=Colours.RED, f"An unexpected error occurred in blender_processing: {e_outer}")
         sys.exit(1)
     finally:
         if conn:
             conn.close()
-            print(Colours.DARKGRAY, "Database connection closed.")
+            print(colour=Colours.DARKGRAY, "Database connection closed.")
 
 
 def main(verbose_param: bool, debug_sleep_param: bool, export_param: set, db_path_param: str) -> None:
     global verbose, debug_sleep, export, db_file_path # Add db_file_path to globals updated by main
 
     verbose = verbose_param
-    print(Colours.BLUE, f"Verbose mode: {verbose}")
+    print(colour=Colours.BLUE, f"Verbose mode: {verbose}")
     debug_sleep = debug_sleep_param
-    print(Colours.BLUE, f"Debug sleep: {debug_sleep}")
+    print(colour=Colours.BLUE, f"Debug sleep: {debug_sleep}")
     export = export_param if export_param is not None else set() # Ensure export is a set
-    print(Colours.BLUE, f"Export formats: {export}")
+    print(colour=Colours.BLUE, f"Export formats: {export}")
     db_file_path = db_path_param
-    print(Colours.BLUE, f"Database file path: {db_file_path}")
+    print(colour=Colours.BLUE, f"Database file path: {db_file_path}")
 
 
-    print(Colours.BLUE, "Initializing...")
+    print(colour=Colours.BLUE, "Initializing...")
 
     # Validate essential paths early
     if not os.path.isfile(blender_exe_path):
-        print(Colours.RED, f"Blender executable not found: {blender_exe_path}")
+        print(colour=Colours.RED, f"Blender executable not found: {blender_exe_path}")
         sys.exit(1)
     if not os.path.isfile(python_script_path):
-        print(Colours.RED, f"Blender Python script not found: {python_script_path}")
+        print(colour=Colours.RED, f"Blender Python script not found: {python_script_path}")
         sys.exit(1)
 
 
-    print(Colours.DARKGRAY, "Blender Processing using SQLite database...")
+    print(colour=Colours.DARKGRAY, "Blender Processing using SQLite database...")
     blender_processing()
-    print(Colours.GREEN, "Processing complete.")
+    print(colour=Colours.GREEN, "Processing complete.")
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="Process assets using Blender, based on an SQLite asset map.")
@@ -233,13 +233,13 @@ if __name__ == "__main__":
             parsed_export_formats.update(item.lower().split()) # Split space-separated and add to set, ensure lowercase
 
     if not os.path.isabs(args.db_file_path):
-        print(Colours.YELLOW, f"Database path '{args.db_file_path}' is not absolute. Resolving relative to current directory '{os.getcwd()}'.")
+        print(colour=Colours.YELLOW, f"Database path '{args.db_file_path}' is not absolute. Resolving relative to current directory '{os.getcwd()}'.")
         db_path = os.path.abspath(args.db_file_path)
     else:
         db_path = args.db_file_path
 
     if not os.path.isfile(db_path):
-        print(Colours.RED, f"Error: Database file does not exist at the specified path: {db_path}")
+        print(colour=Colours.RED, f"Error: Database file does not exist at the specified path: {db_path}")
         sys.exit(1)
 
     main(args.verbose, args.debug_sleep, parsed_export_formats, db_path)
