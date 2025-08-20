@@ -349,56 +349,36 @@ def parallel_import_subprojects(godot_executable: str, subproject_dirs: list, ma
                 print(f"ERROR: Godot executable not found at '{godot_executable}'")
                 raise
 
-# REPLACED: helpers for move and tree-move with skip-on-exists + cross-device fallback
-def _safe_move_skip_existing(src: str, dest: str) -> None:
-    """
-    Move src -> dest, creating parent dirs.
-    If dest already exists, skip (first-writer-wins).
-    Handles cross-device moves (falls back to shutil.move).
-    """
+# NEW: helpers for safe copy/link and tree merge
+def _safe_link_or_copy(src: str, dest: str) -> None:
     os.makedirs(os.path.dirname(dest), exist_ok=True)
     if os.path.exists(dest):
-        # Destination already exists -> skip as per "skip-on-exists" policy
         return
     try:
-        # Fast path: same-filesystem atomic replace (won't overwrite because we checked)
-        os.replace(src, dest)
-    except OSError as e:
-        # Common case: cross-device error -> fall back to shutil.move
-        if getattr(e, "errno", None) == errno.EXDEV:
-            try:
-                shutil.move(src, dest)
-            except Exception as e2:
-                print(f"Warning: could not move '{src}' -> '{dest}': {e2}")
-        else:
-            # For other errors attempt shutil.move as a best-effort fallback
-            try:
-                shutil.move(src, dest)
-            except Exception as e2:
-                print(f"Warning: could not move '{src}' -> '{dest}': {e2}")
+        try:
+            os.link(src, dest)
+        except Exception:
+            shutil.copy2(src, dest)
+    except Exception as e:
+        print(f"Warning: could not place '{src}' -> '{dest}': {e}")
 
-def _move_tree_skip_existing(src_dir: str, dest_dir: str) -> None:
-    """
-    Move a whole tree from src_dir into dest_dir, skipping files that already exist at destination.
-    Leaves any empty directories behind in the source tree (caller may remove the temp tree later).
-    """
+def _copy_tree_skip_existing(src_dir: str, dest_dir: str) -> None:
     if not os.path.exists(src_dir):
         return
     for root, _, files in os.walk(src_dir):
         rel = os.path.relpath(root, src_dir)
         for fn in files:
-            src_file = os.path.join(root, fn)
-            dest_file = os.path.join(dest_dir, rel, fn)
-            _safe_move_skip_existing(src_file, dest_file)
+            _safe_link_or_copy(os.path.join(root, fn),
+                               os.path.join(dest_dir, rel, fn))
 
-# REPLACED: merge_import_metadata with move-based merge function
+# REPLACE merge_import_metadata with new merge function
 def merge_subprojects_into_main(subproject_dirs: list, main_project_dir: str) -> None:
     """
-    Merge strategy for Godot 4.4 using MOVE + skip-on-exists:
-      - Move <sub>/assets/*           -> <main>/assets/*
-      - Move <sub>/.godot/imported/*  -> <main>/.godot/imported/*
-      - Move <sub>/.godot/editor/*    -> <main>/.godot/editor/*
-    Sidecar .import/.uid will travel with their sibling assets under assets/.
+    Merge strategy for Godot 4.4:
+      - Copy <sub>/assets/* -> <main>/assets/* (skip if exists)
+      - Copy <sub>/.godot/imported/* -> <main>/.godot/imported/* (skip if exists)
+      - Copy <sub>/.godot/editor/*   -> <main>/.godot/editor/*   (skip if exists)
+    Sidecar .import/.uid travel with their sibling assets under assets/.
     """
     main_assets = os.path.join(main_project_dir, "assets")
     os.makedirs(main_assets, exist_ok=True)
@@ -406,20 +386,20 @@ def merge_subprojects_into_main(subproject_dirs: list, main_project_dir: str) ->
     os.makedirs(os.path.join(main_project_dir, ".godot", "editor"), exist_ok=True)
 
     for sp in subproject_dirs:
-        # 1) assets (includes .import/.uid sidecars)
+        # 1) assets (includes .import/.uid sidecars next to each asset)
         sp_assets = os.path.join(sp, "assets")
-        print(f"Merging (move) assets from {sp_assets} -> {main_assets}")
-        _move_tree_skip_existing(sp_assets, main_assets)
+        print(f"Merging assets from {sp_assets} -> {main_assets}")
+        _copy_tree_skip_existing(sp_assets, main_assets)
 
         # 2) .godot/imported cache
         sp_imported = os.path.join(sp, ".godot", "imported")
-        print(f"Merging (move) .godot/imported from {sp_imported}")
-        _move_tree_skip_existing(sp_imported, os.path.join(main_project_dir, ".godot", "imported"))
+        print(f"Merging .godot/imported from {sp_imported}")
+        _copy_tree_skip_existing(sp_imported, os.path.join(main_project_dir, ".godot", "imported"))
 
         # 3) .godot/editor state
         sp_editor = os.path.join(sp, ".godot", "editor")
-        print(f"Merging (move) .godot/editor from {sp_editor}")
-        _move_tree_skip_existing(sp_editor, os.path.join(main_project_dir, ".godot", "editor"))
+        print(f"Merging .godot/editor from {sp_editor}")
+        _copy_tree_skip_existing(sp_editor, os.path.join(main_project_dir, ".godot", "editor"))
 
 def main(project_name: str, repo_root: str, no_exit: bool, sourcePath: str) -> None:
     # --- Path Discovery ---

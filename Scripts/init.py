@@ -8,9 +8,9 @@ import shutil # Import shutil for file operations
 import os
 import sys
 # add RemakeEngine Utilities, custom print 'printer' and SDK
-sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..', '..', '..', '..', 'Engine')))
-from Utils.printer import print, Colours, error, print_verbose, print_debug, printc
-from Utils.Engine_sdk import prompt, progress, warn, error, start, end
+sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..', '..', '..', '..', '.')))
+from Engine.Utils.printer import print, Colours, error, print_verbose, print_debug, printc
+import Engine.Utils.Engine_sdk as sdk #import prompt, progress, warn, error, start, end
 
 # --- Constants for Directory Lists ---
 USRDIR_DIRS = [
@@ -151,8 +151,8 @@ def check_or_create_config(filename):
                     else:
                         print(colour=Colours.RED, message=f"  Error: Validation failed. Could not find all required subdirectories from *either* list within '{path_to_validate}'.")
 
-                else:
-                    print(colour=Colours.YELLOW, message=f"  Warning: Configured SourcePath '{path_from_config}' is not currently a valid directory.")
+                #else:
+                    #print(colour=Colours.YELLOW, message=f"  Warning: Configured SourcePath '{path_from_config}' does not exist.")
         except AttributeError:
             pass
 
@@ -160,12 +160,7 @@ def check_or_create_config(filename):
         if not source_path_valid_in_file:
             print(colour=Colours.YELLOW, message=f"Warning: 'RemakeEngine.Directories.SourcePath' in '{filename}' is missing, empty, or invalid.")
             while True:
-                # Old
-                # print(colour=Colours.CYAN, message="Please enter the full path to the source directory:")
-                # user_input_path = input("> ").strip()
-
-                # New (GUI will show a dialog; CLI still works because it’s stdin)
-                user_input_path = prompt("Please enter the full path to the source directory:")
+                user_input_path = sdk.prompt("Please enter the full path to the source directory:")
                 if not user_input_path:
                     print(colour=Colours.YELLOW, message="Path cannot be empty. Please try again.")
                     continue
@@ -206,7 +201,7 @@ def check_or_create_config(filename):
 
             while True:
                 #choice = input("Enter your choice (1, 2, or 3): ").strip()
-                choice = prompt("Enter your choice (1, 2, or 3): ").strip()
+                choice = sdk.prompt("Enter your choice (1, 2, or 3): ").strip()
 
                 # --- Option 1: Copy with Progress ---
                 if choice == '1':
