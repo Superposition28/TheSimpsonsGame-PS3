@@ -15,8 +15,8 @@ import shutil   # ADDED: For safely removing directories
 
 
 # Add Utils path for printer
-sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..', '..', '..', '..', '..', '..', 'Engine')))
-from printer import Colours, print
+sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..', '..', '..', '..', '..', '..', '.')))
+from Engine.Utils.printer import Colours, print
 
 # --- Configuration (Kept global as these are constants for the script's lifetime) ---
 current_dir = os.path.dirname(os.path.abspath(__file__))

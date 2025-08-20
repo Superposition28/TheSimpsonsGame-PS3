@@ -134,7 +134,7 @@
 		{
 			"Name": "generate Godot Game (EXPERIMENTAL)",
 			"Instructions": "(New), this is a very early implementation that generates the first level of the game from the extracted files.",
-			"run-all": true,
+			"run-all": false,
 			"script_type": "python",
 			"script": "{{RemakeEngine.Config.module_path}}\\Godot\\init.py",
 			"args": ["--project-name", "TheSimpsonsGame", "--repo-root", "{{RemakeEngine.Config.project_path}}", "--sourcePath", "{{RemakeEngine.Directories.SourcePath}}"]
