@@ -1,3 +1,4 @@
+# RemakeRegistry\Games\TheSimpsonsGame-PS3\Godot\Scripts\_BuildScenes.gd
 @tool
 extends SceneTree
 
@@ -180,9 +181,9 @@ func _init():
 	print("--- Pass 2 Complete ---")
 	print("\n✅✅✅ Scene building finished! ✅✅✅")
 
-	if OS.get_cmdline_args().has("--no-exit"):
-		print("\n'--no-exit' flag detected. Godot will remain open.")
-	else:
-		print("\nWaiting before exiting...")
-		await create_timer(3.0).timeout
-		quit()
+	#if OS.get_cmdline_args().has("--no-exit"):
+		#print("\n'--no-exit' flag detected. Godot will remain open.")
+	#else:
+		#print("\nWaiting before exiting, to give godot time to process the scenes...")
+		#await create_timer(100.0).timeout
+		#quit()

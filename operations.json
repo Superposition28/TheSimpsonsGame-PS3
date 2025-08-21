@@ -9,7 +9,7 @@
 		},
 		{
 			"Name": "Download Tools",
-			"run-all": false,
+			"run-all": true,
 			"Instructions": "download all tools, locally",
 			"script_type": "python",
 			"script": "Tools\\Download\\main.py",
@@ -133,11 +133,11 @@
 		},
 		{
 			"Name": "generate Godot Game (EXPERIMENTAL)",
-			"Instructions": "(New), this is a very early implementation that generates the first level of the game from the extracted files.",
-			"run-all": false,
+			"Instructions": "",
+			"run-all": true,
 			"script_type": "python",
 			"script": "{{RemakeEngine.Config.module_path}}\\Godot\\init.py",
-			"args": ["--project-name", "TheSimpsonsGame", "--repo-root", "{{RemakeEngine.Config.project_path}}", "--sourcePath", "{{RemakeEngine.Directories.SourcePath}}"]
+			"args": ["--project-name", "SimpsonsGamePS3", "--repo-root", "{{RemakeEngine.Config.project_path}}", "--sourcePath", "{{RemakeEngine.Directories.SourcePath}}"]
 		}
 	]
 }
