@@ -1,7 +1,3 @@
-## just implemented Godot Experimentally for full game generation
-https://github.com/Superposition28/TheSimpsonsGame-PS3/tree/main/Godot
-
-
 # Remake Engine Game Module, The Simpsons Game 2007 (PS3-edition)
 
 A re-implementation tool built using the RemakeEngine
