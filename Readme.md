@@ -7,11 +7,12 @@ https://github.com/Superposition28/TheSimpsonsGame-PS3/tree/main/Godot
 
 A re-implementation tool built using the RemakeEngine
 
-
-Implements original game logic in C#.
+Features
 Converts the user-provided game assets into formats usable by Godot.
+generates game project with python and GD script
 Users must own the original game.
-
+Goals
+Implement original game logic in C#.
 
 This module contains the Core logics for remaking The Simpsons Game 2007 ps3 game.
 
