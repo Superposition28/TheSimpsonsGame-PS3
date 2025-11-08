@@ -30,7 +30,8 @@ Game.Menu/
 
 
 !.vscode/
-config/
+!config/
+config/old/
 !data/
 dev-tools/
 Game/
