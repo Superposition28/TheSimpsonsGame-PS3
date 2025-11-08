@@ -28,16 +28,10 @@ config/old/
 dev-tools/old/
 
 
-
-
 **/brknsrcoder_thirdperson_controller/
 **/godotsteam_csharpbindings/
-**/srcoder_thirdperson_controller/
-
-
 
 
 test/
 .1gitignore
-
 
