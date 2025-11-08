@@ -27,11 +27,6 @@ __pycache__/
 config/old/
 dev-tools/old/
 
-
-**/brknsrcoder_thirdperson_controller/
-
-
-
 test/
 .1gitignore
 
