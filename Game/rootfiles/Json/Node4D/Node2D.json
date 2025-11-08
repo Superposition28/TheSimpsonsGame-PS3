@@ -1,0 +1,17 @@
+[
+    {
+        "name": "Node2D",
+        "path": "Node4D/Node2D.tscn",
+        "class": "Node2D",
+        "type": "scene",
+        "children": [
+            {
+                "name": "Terminal_ControlNode",
+                "type": "scene",
+                "path": "Node4D/Node2D/Terminal_ControlNode.tscn",
+                "class": "Control",
+                "config_file": "Node4D/Node2D/Terminal_ControlNode.json"
+            }
+        ]
+    }
+]

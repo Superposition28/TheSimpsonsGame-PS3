@@ -1,0 +1,25 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "collision.schema.json",
+  "title": "CollisionConfig",
+  "type": "object",
+  "properties": {
+    "enabled": {
+      "type": "boolean",
+      "default": false
+    },
+    "ShapeType": {
+      "type": "string",
+      "enum": [
+        "Trimesh",
+        "Convex"
+      ],
+      "default": "Trimesh"
+    },
+    "containerName": {
+      "type": "string",
+      "default": "Mesh_Collisions"
+    }
+  },
+  "additionalProperties": false
+}
