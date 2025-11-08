@@ -1,0 +1,65 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "child_entry.schema.json",
+  "title": "ChildEntry",
+  "type": "object",
+  "properties": {
+    "name": {
+      "type": "string"
+    },
+    "path": {
+      "type": "string",
+      "description": "Scene path (e.g., scenes/Foo.tscn)."
+    },
+    "class": {
+      "type": "string",
+      "description": "ClassDB class name to instantiate if no path is given."
+    },
+    "index": {
+      "$ref": "index_ref.schema.json"
+    },
+    "config": {
+      "$ref": "node_config.schema.json"
+    },
+    "script": {
+      "type": "string",
+      "description": "Script path to attach to the instantiated node."
+    },
+    "config_file": {
+      "type": "string",
+      "description": "Nested JSON config (relative to CONFIG_ROOT)."
+    },
+    "children": {
+      "type": "array",
+      "items": {
+        "$ref": "child_entry.schema.json"
+      }
+    },
+    "collision": {
+      "$ref": "collision.schema.json"
+    },
+    "editable_children": {
+      "type": "boolean",
+      "description": "Per-child override for editable flag."
+    }
+  },
+  "anyOf": [
+    {
+      "required": [
+        "path"
+      ]
+    },
+    {
+      "required": [
+        "class"
+      ]
+    },
+    {
+      "required": [
+        "index"
+      ]
+    }
+  ],
+  "additionalProperties": false,
+  "description": "Descriptor for an instantiated child node (scene, class, or indexed GLB)."
+}

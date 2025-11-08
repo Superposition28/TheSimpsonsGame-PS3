@@ -1,0 +1,382 @@
+[
+  {
+    "children": [
+      {
+        "class": "Sprite2D",
+        "config": {
+          "position": {
+            "x": 2600.0,
+            "y": 488.0
+          },
+          "texture_path": "res://assets/frontend/frontend_str/build/PS3/pal_en/assets_rws/frontend/frontend/texture_dictionary/frontend_txd/1_frontend_assets.png"
+        },
+        "name": "1FrontendAssets"
+      },
+      {
+        "children": [
+          {
+            "class": "Sprite2D",
+            "config": {
+              "position": {
+                "x": 208.000015258789,
+                "y": 528.0
+              },
+              "region_enabled": true,
+              "region_rect": {
+                "position": {
+                  "x": 69.0,
+                  "y": 136.5
+                },
+                "size": {
+                  "x": 52.0,
+                  "y": 52.0
+                }
+              },
+              "scale": {
+                "x": 0.615384876728058,
+                "y": 0.615384995937347
+              },
+              "texture_path": "res://assets/frontend/frontend_str/build/PS3/pal_en/assets_rws/frontend/frontend/texture_dictionary/frontend_split16_txd/buttons.png"
+            },
+            "name": "S_Button"
+          },
+          {
+            "class": "Label",
+            "config": {
+              "layout_mode": 0,
+              "offsets": {
+                "offset_bottom": 546.0,
+                "offset_left": 232.0,
+                "offset_right": 307.0,
+                "offset_top": 512.0
+              },
+              "text": "Delete"
+            },
+            "name": "Label8"
+          },
+          {
+            "class": "Sprite2D",
+            "config": {
+              "position": {
+                "x": 880.0,
+                "y": 528.0
+              },
+              "region_enabled": true,
+              "region_rect": {
+                "position": {
+                  "x": 196.0,
+                  "y": 136.5
+                },
+                "size": {
+                  "x": 54.0,
+                  "y": 53.0
+                }
+              },
+              "scale": {
+                "x": 0.646363735198975,
+                "y": 0.570754706859589
+              },
+              "texture_path": "res://assets/frontend/frontend_str/build/PS3/pal_en/assets_rws/frontend/frontend/texture_dictionary/frontend_split16_txd/buttons.png"
+            },
+            "name": "X_Button"
+          },
+          {
+            "class": "Label",
+            "config": {
+              "layout_mode": 0,
+              "offsets": {
+                "offset_bottom": 546.0,
+                "offset_left": 784.0,
+                "offset_right": 853.0,
+                "offset_top": 512.0
+              },
+              "text": "Select"
+            },
+            "name": "Label9"
+          },
+          {
+            "class": "Sprite2D",
+            "config": {
+              "position": {
+                "x": 526.0,
+                "y": 127.0
+              },
+              "texture_path": "res://assets/frontend/frontend_str/build/PS3/pal_en/assets_rws/frontend/frontend/texture_dictionary/frontend_split19_txd/4_SharedLibrary.png"
+            },
+            "name": "4SharedLibrary"
+          },
+          {
+            "class": "Label",
+            "config": {
+              "layout_mode": 0,
+              "offsets": {
+                "offset_bottom": 116.0,
+                "offset_left": 409.0,
+                "offset_right": 640.0,
+                "offset_top": 69.0
+              },
+              "text": "Saved Games"
+            },
+            "name": "Label"
+          },
+          {
+            "children": [
+              {
+                "class": "Sprite2D",
+                "config": {
+                  "position": {
+                    "x": 528.0,
+                    "y": 459.5
+                  },
+                  "scale": {
+                    "x": 1.15625011920929,
+                    "y": 0.15234375
+                  },
+                  "texture_path": "res://assets/frontend/frontend_str/build/PS3/pal_en/assets_rws/frontend/frontend/texture_dictionary/frontend_split24_txd/2_SharedLibrary.png"
+                },
+                "name": "CURRENT LEVEL OF SELECTED SAVE FILE BackGround"
+              },
+              {
+                "class": "Sprite2D",
+                "config": {
+                  "position": {
+                    "x": 528.0,
+                    "y": 440.0
+                  },
+                  "scale": {
+                    "x": 1.17968761920929,
+                    "y": 1.0
+                  },
+                  "texture_path": "res://assets/frontend/frontend_str/build/PS3/pal_en/assets_rws/frontend/frontend/texture_dictionary/frontend_split20_txd/3_SharedLibrary.png"
+                },
+                "name": "3SharedLibrary2"
+              },
+              {
+                "class": "Sprite2D",
+                "config": {
+                  "position": {
+                    "x": 528.0,
+                    "y": 480.000091552734
+                  },
+                  "scale": {
+                    "x": 1.181640625,
+                    "y": 0.812498152256012
+                  },
+                  "texture_path": "res://assets/frontend/frontend_str/build/PS3/pal_en/assets_rws/frontend/frontend/texture_dictionary/frontend_split20_txd/3_SharedLibrary.png"
+                },
+                "name": "3SharedLibrary"
+              },
+              {
+                "class": "RichTextLabel",
+                "config": {
+                  "bbcode_text": "CURRENT LEVEL OF SELECTED SAVE FILE",
+                  "layout_mode": 3,
+                  "offsets": {
+                    "offset_bottom": 472.0,
+                    "offset_left": 384.0,
+                    "offset_right": 689.690002441406,
+                    "offset_top": 448.0
+                  }
+                },
+                "name": "CURRENT LEVEL OF SELECTED SAVE FILE"
+              }
+            ],
+            "class": "Node2D",
+            "name": "Node2D"
+          },
+          {
+            "children": [
+              {
+                "class": "Label",
+                "config": {
+                  "layout_mode": 3,
+                  "offsets": {
+                    "offset_bottom": 381.0,
+                    "offset_left": 351.0,
+                    "offset_right": 372.0,
+                    "offset_top": 212.0
+                  },
+                  "text": "A\nB\nC\nD"
+                },
+                "name": "ABCD"
+              },
+              {
+                "class": "Label",
+                "config": {
+                  "layout_mode": 3,
+                  "offsets": {
+                    "offset_bottom": 242.0,
+                    "offset_left": 371.0,
+                    "offset_right": 640.0,
+                    "offset_top": 219.0
+                  },
+                  "text": "New Game"
+                },
+                "name": "New GameA"
+              },
+              {
+                "class": "Label",
+                "config": {
+                  "layout_mode": 3,
+                  "offsets": {
+                    "offset_bottom": 286.0,
+                    "offset_left": 371.0,
+                    "offset_right": 640.0,
+                    "offset_top": 263.0
+                  },
+                  "text": "New Game"
+                },
+                "name": "New GameB"
+              },
+              {
+                "class": "Label",
+                "config": {
+                  "layout_mode": 3,
+                  "offsets": {
+                    "offset_bottom": 329.0,
+                    "offset_left": 371.0,
+                    "offset_right": 640.0,
+                    "offset_top": 306.0
+                  },
+                  "text": "New Game"
+                },
+                "name": "New GameC"
+              },
+              {
+                "class": "Label",
+                "config": {
+                  "layout_mode": 3,
+                  "offsets": {
+                    "offset_bottom": 373.0,
+                    "offset_left": 372.0,
+                    "offset_right": 641.0,
+                    "offset_top": 350.0
+                  },
+                  "text": "New Game"
+                },
+                "name": "New GameD"
+              },
+              {
+                "class": "Sprite2D",
+                "config": {
+                  "position": {
+                    "x": 507.191986083984,
+                    "y": 342.0
+                  },
+                  "scale": {
+                    "x": 0.553937554359436,
+                    "y": 1.0
+                  },
+                  "texture_path": "res://assets/frontend/frontend_str/build/PS3/pal_en/assets_rws/frontend/frontend/texture_dictionary/frontend_split20_txd/3_SharedLibrary.png"
+                },
+                "name": "3SharedLibrary4"
+              },
+              {
+                "class": "Sprite2D",
+                "config": {
+                  "position": {
+                    "x": 506.194671630859,
+                    "y": 296.0
+                  },
+                  "scale": {
+                    "x": 0.557778120040894,
+                    "y": 1.0
+                  },
+                  "texture_path": "res://assets/frontend/frontend_str/build/PS3/pal_en/assets_rws/frontend/frontend/texture_dictionary/frontend_split20_txd/3_SharedLibrary.png"
+                },
+                "name": "3SharedLibrary5"
+              },
+              {
+                "class": "Sprite2D",
+                "config": {
+                  "position": {
+                    "x": 506.683563232422,
+                    "y": 254.0
+                  },
+                  "scale": {
+                    "x": 0.567642211914063,
+                    "y": 1.0
+                  },
+                  "texture_path": "res://assets/frontend/frontend_str/build/PS3/pal_en/assets_rws/frontend/frontend/texture_dictionary/frontend_split20_txd/3_SharedLibrary.png"
+                },
+                "name": "3SharedLibrary3"
+              }
+            ],
+            "class": "Node2D",
+            "name": "SaveList"
+          }
+        ],
+        "class": "ColorRect",
+        "config": {
+          "color": {
+            "a": 1.0,
+            "b": 0.879999995231628,
+            "g": 0.176000043749809,
+            "r": 0.0
+          },
+          "layout_mode": 0,
+          "offsets": {
+            "offset_bottom": 656.0,
+            "offset_left": 0.0,
+            "offset_right": 1184.0,
+            "offset_top": 0.0
+          }
+        },
+        "name": "TV_Content_ColorRect"
+      },
+      {
+        "children": [
+          {
+            "class": "Sprite2D",
+            "config": {
+              "position": {
+                "x": 7.25048828125,
+                "y": 9.21969604492188
+              },
+              "scale": {
+                "x": 2.79956388473511,
+                "y": 3.23649454116821
+              },
+              "texture_path": "res://assets/frontend/frontend_str/build/PS3/pal_en/assets_rws/frontend/frontend/texture_dictionary/frontend_split24_txd/8_SharedLibrary.png"
+            },
+            "name": "8SharedLibrary"
+          },
+          {
+            "class": "Sprite2D",
+            "config": {
+              "position": {
+                "x": 1.1153564453125,
+                "y": 0.614654541015625
+              },
+              "scale": {
+                "x": 0.997821390628815,
+                "y": 0.998799502849579
+              },
+              "texture_path": "res://assets/frontend/frontend_str/build/PS3/pal_en/assets_rws/frontend/frontend/texture_dictionary/frontend_split11_txd/7_SharedLibrary.png"
+            },
+            "name": "7SharedLibrary"
+          }
+        ],
+        "class": "Sprite2D",
+        "config": {
+          "position": {
+            "x": 549.000061035156,
+            "y": 319.5
+          },
+          "scale": {
+            "x": 0.896484375,
+            "y": 0.813476622104645
+          },
+          "texture_path": "res://assets/frontend/frontend_str/build/PS3/pal_en/assets_rws/frontend/frontend/texture_dictionary/frontend_split3_txd/9_SharedLibrary.png"
+        },
+        "name": "TV"
+      }
+    ],
+    "class": "Control",
+    "editable_children_default": true,
+    "name": "MainMenu_ControlNode2",
+    "overwrite": true,
+    "path": "Node4D/Node2D/Menus/MainMenu_ControlNode2/main_menu_control_node_2.tscn",
+    "type": "scene"
+  }
+]

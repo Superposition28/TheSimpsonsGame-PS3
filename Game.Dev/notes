@@ -1,0 +1,7 @@
+
+re-add player, reimplement player controll, keep original player controller and create a command that disables the new command based controller and switches back to the original backup controller.
+add main menu toggle on escape key press
+fix terminal visibility toggle with ` key press
+
+update Json map with the correct default visibility settings for each overlay, menu and terminal
+

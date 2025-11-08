@@ -1,0 +1,19 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "transform.schema.json",
+  "title": "Transform3DFields",
+  "type": "object",
+  "properties": {
+    "position": {
+      "$ref": "vector3.schema.json"
+    },
+    "rotation_degrees": {
+      "$ref": "vector3.schema.json"
+    },
+    "scale": {
+      "$ref": "vector3.schema.json"
+    }
+  },
+  "additionalProperties": false,
+  "description": "Subset of Transform3D fields supported in config.transform."
+}

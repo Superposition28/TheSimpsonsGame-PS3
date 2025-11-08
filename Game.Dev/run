@@ -1,0 +1,5 @@
+```pwsh
+cd A:\RemakeEngine;
+dotnet run -c Debug --project EngineNet --framework net9.0 -- --game_module "RemakeRegistry\Games\TheSimpsonsGame-PS3\" --script_type "lua" --script "{{Game_Root}}\Game.Dev\init.lua" --args ["--project-name", "SimpsonsGamePS3", "--repo-root", "{{Project_Root}}", "--sourcePath", "{{Game_Root}}/GameFiles/STROUT"]
+```
+

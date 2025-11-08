@@ -1,0 +1,18 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "node_config.schema.json",
+  "title": "NodeConfig",
+  "type": "object",
+  "properties": {
+    "transform": {
+      "$ref": "transform.schema.json"
+    },
+    "mesh_overrides": {
+      "type": "array",
+      "items": {
+        "$ref": "mesh_override.schema.json"
+      }
+    }
+  },
+  "additionalProperties": false
+}
