@@ -13,9 +13,11 @@
 dev/
 test/
 
+
 # operations, generated files
 operations/Blender/asset_map.sqlite
 operations/Blender/blend.log
+
 
 # Python cache files
 __pycache__/
@@ -25,17 +27,13 @@ __pycache__/
 config/old/
 dev-tools/old/
 
+
 Game/
 Game.Dev/
+
 
 !operations/
 reversing/
 test/
 .1gitignore
-
-config.lua
-flatten2.py
-
-operations_cli.md
-
 
