@@ -28,19 +28,14 @@ dev-tools/old/
 Game/
 Game.Dev/
 
-operations/
+!operations/
 reversing/
 test/
 .1gitignore
-!.gitignore
-!blank.blend
+
 config.lua
 flatten2.py
-!LICENCE
+
 operations_cli.md
-!operations.toml
-!Readme.md
-!TODO.md
-!Tools.toml
 
 
