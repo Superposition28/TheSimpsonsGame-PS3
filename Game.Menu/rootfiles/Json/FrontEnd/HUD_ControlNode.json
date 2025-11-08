@@ -1,0 +1,25 @@
+[
+  {
+    "children": [
+      {
+        "class": "Panel",
+        "config": {
+          "layout_mode": 0,
+          "offsets": {
+            "offset_bottom": 0.0,
+            "offset_left": 0.0,
+            "offset_right": 0.0,
+            "offset_top": 0.0
+          }
+        },
+        "name": "Panel"
+      }
+    ],
+    "class": "Control",
+    "editable_children_default": true,
+    "name": "HUD_ControlNode",
+    "overwrite": true,
+    "path": "FrontEnd/HUD_ControlNode/hud_control_node.tscn",
+    "type": "scene"
+  }
+]

@@ -1,0 +1,368 @@
+[
+  {
+    "children": [
+      {
+        "children": [
+          {
+            "class": "Sprite2D",
+            "config": {
+              "position": {
+                "x": 4520.0,
+                "y": 1224.0
+              },
+              "texture_path": "res://assets/frontend/frontend_str/build/PS3/pal_en/assets_rws/frontend/frontend/texture_dictionary/frontend_split20_txd/9_cliche_summary.png"
+            },
+            "name": "9ClicheSummary"
+          },
+          {
+            "class": "Sprite2D",
+            "config": {
+              "position": {
+                "x": 1568.0,
+                "y": 824.0
+              },
+              "texture_path": "res://assets/frontend/frontend_str/build/PS3/pal_en/assets_rws/frontend/frontend/texture_dictionary/frontend_split24_txd/88_cliche_summary.png"
+            },
+            "name": "88ClicheSummary"
+          },
+          {
+            "class": "Sprite2D",
+            "config": {
+              "position": {
+                "x": 3632.0,
+                "y": 1200.0
+              },
+              "texture_path": "res://assets/frontend/frontend_str/build/PS3/pal_en/assets_rws/frontend/frontend/texture_dictionary/frontend_split24_txd/91_cliche_summary.png"
+            },
+            "name": "91ClicheSummary"
+          },
+          {
+            "class": "Sprite2D",
+            "config": {
+              "position": {
+                "x": 3336.0,
+                "y": 1408.0
+              },
+              "texture_path": "res://assets/frontend/frontend_str/build/PS3/pal_en/assets_rws/frontend/frontend/texture_dictionary/frontend_split24_txd/94_cliche_summary.png"
+            },
+            "name": "94ClicheSummary"
+          },
+          {
+            "class": "Sprite2D",
+            "config": {
+              "position": {
+                "x": 2992.0,
+                "y": 872.0
+              },
+              "texture_path": "res://assets/frontend/frontend_str/build/PS3/pal_en/assets_rws/frontend/frontend/texture_dictionary/frontend_split24_txd/97_cliche_summary.png"
+            },
+            "name": "97ClicheSummary"
+          },
+          {
+            "class": "Sprite2D",
+            "config": {
+              "position": {
+                "x": 2976.0,
+                "y": 1504.0
+              },
+              "texture_path": "res://assets/frontend/frontend_str/build/PS3/pal_en/assets_rws/frontend/frontend/texture_dictionary/frontend_split25_txd/37_cliche_summary.png"
+            },
+            "name": "37ClicheSummary"
+          },
+          {
+            "class": "Sprite2D",
+            "config": {
+              "position": {
+                "x": 3336.0,
+                "y": 1032.0
+              },
+              "texture_path": "res://assets/frontend/frontend_str/build/PS3/pal_en/assets_rws/frontend/frontend/texture_dictionary/frontend_split25_txd/67_cliche_summary.png"
+            },
+            "name": "67ClicheSummary"
+          },
+          {
+            "class": "Sprite2D",
+            "config": {
+              "position": {
+                "x": 2280.0,
+                "y": 872.0
+              },
+              "texture_path": "res://assets/frontend/frontend_str/build/PS3/pal_en/assets_rws/frontend/frontend/texture_dictionary/frontend_split25_txd/70_cliche_summary.png"
+            },
+            "name": "70ClicheSummary"
+          },
+          {
+            "class": "Sprite2D",
+            "config": {
+              "position": {
+                "x": 192.0,
+                "y": 832.0
+              },
+              "texture_path": "res://assets/frontend/frontend_str/build/PS3/pal_en/assets_rws/frontend/frontend/texture_dictionary/frontend_split25_txd/73_cliche_summary.png"
+            },
+            "name": "73ClicheSummary"
+          },
+          {
+            "class": "Sprite2D",
+            "config": {
+              "position": {
+                "x": 2632.0,
+                "y": 896.0
+              },
+              "texture_path": "res://assets/frontend/frontend_str/build/PS3/pal_en/assets_rws/frontend/frontend/texture_dictionary/frontend_split25_txd/76_cliche_summary.png"
+            },
+            "name": "76ClicheSummary"
+          },
+          {
+            "class": "Sprite2D",
+            "config": {
+              "position": {
+                "x": 192.0,
+                "y": 1152.0
+              },
+              "texture_path": "res://assets/frontend/frontend_str/build/PS3/pal_en/assets_rws/frontend/frontend/texture_dictionary/frontend_split25_txd/79_cliche_summary.png"
+            },
+            "name": "79ClicheSummary"
+          },
+          {
+            "class": "Sprite2D",
+            "config": {
+              "position": {
+                "x": 512.0,
+                "y": 1472.0
+              },
+              "texture_path": "res://assets/frontend/frontend_str/build/PS3/pal_en/assets_rws/frontend/frontend/texture_dictionary/frontend_split25_txd/82_cliche_summary.png"
+            },
+            "name": "82ClicheSummary"
+          },
+          {
+            "class": "Sprite2D",
+            "config": {
+              "position": {
+                "x": 192.0,
+                "y": 1480.0
+              },
+              "texture_path": "res://assets/frontend/frontend_str/build/PS3/pal_en/assets_rws/frontend/frontend/texture_dictionary/frontend_split25_txd/85_cliche_summary.png"
+            },
+            "name": "85ClicheSummary"
+          },
+          {
+            "class": "Sprite2D",
+            "config": {
+              "position": {
+                "x": 512.0,
+                "y": 1152.0
+              },
+              "texture_path": "res://assets/frontend/frontend_str/build/PS3/pal_en/assets_rws/frontend/frontend/texture_dictionary/frontend_split26_txd/46_cliche_summary.png"
+            },
+            "name": "46ClicheSummary"
+          },
+          {
+            "class": "Sprite2D",
+            "config": {
+              "position": {
+                "x": 1256.0,
+                "y": 840.0
+              },
+              "texture_path": "res://assets/frontend/frontend_str/build/PS3/pal_en/assets_rws/frontend/frontend/texture_dictionary/frontend_split26_txd/49_cliche_summary.png"
+            },
+            "name": "49ClicheSummary"
+          },
+          {
+            "class": "Sprite2D",
+            "config": {
+              "position": {
+                "x": 2296.0,
+                "y": 1200.0
+              },
+              "texture_path": "res://assets/frontend/frontend_str/build/PS3/pal_en/assets_rws/frontend/frontend/texture_dictionary/frontend_split26_txd/52_cliche_summary.png"
+            },
+            "name": "52ClicheSummary"
+          },
+          {
+            "class": "Sprite2D",
+            "config": {
+              "position": {
+                "x": 1544.0,
+                "y": 1520.0
+              },
+              "texture_path": "res://assets/frontend/frontend_str/build/PS3/pal_en/assets_rws/frontend/frontend/texture_dictionary/frontend_split26_txd/55_cliche_summary.png"
+            },
+            "name": "55ClicheSummary"
+          },
+          {
+            "class": "Sprite2D",
+            "config": {
+              "position": {
+                "x": 2664.0,
+                "y": 1520.0
+              },
+              "texture_path": "res://assets/frontend/frontend_str/build/PS3/pal_en/assets_rws/frontend/frontend/texture_dictionary/frontend_split26_txd/58_cliche_summary.png"
+            },
+            "name": "58ClicheSummary"
+          },
+          {
+            "class": "Sprite2D",
+            "config": {
+              "position": {
+                "x": 2632.0,
+                "y": 1160.0
+              },
+              "texture_path": "res://assets/frontend/frontend_str/build/PS3/pal_en/assets_rws/frontend/frontend/texture_dictionary/frontend_split26_txd/61_cliche_summary.png"
+            },
+            "name": "61ClicheSummary"
+          },
+          {
+            "class": "Sprite2D",
+            "config": {
+              "position": {
+                "x": 1208.0,
+                "y": 1168.0
+              },
+              "texture_path": "res://assets/frontend/frontend_str/build/PS3/pal_en/assets_rws/frontend/frontend/texture_dictionary/frontend_split27_txd/30_cliche_summary.png"
+            },
+            "name": "30ClicheSummary"
+          },
+          {
+            "class": "Sprite2D",
+            "config": {
+              "position": {
+                "x": 872.0,
+                "y": 1144.0
+              },
+              "texture_path": "res://assets/frontend/frontend_str/build/PS3/pal_en/assets_rws/frontend/frontend/texture_dictionary/frontend_split27_txd/34_cliche_summary.png"
+            },
+            "name": "34ClicheSummary"
+          },
+          {
+            "class": "Sprite2D",
+            "config": {
+              "position": {
+                "x": 1952.0,
+                "y": 1544.0
+              },
+              "texture_path": "res://assets/frontend/frontend_str/build/PS3/pal_en/assets_rws/frontend/frontend/texture_dictionary/frontend_split27_txd/43_cliche_summary.png"
+            },
+            "name": "43ClicheSummary"
+          },
+          {
+            "class": "Sprite2D",
+            "config": {
+              "position": {
+                "x": 1936.0,
+                "y": 1200.0
+              },
+              "texture_path": "res://assets/frontend/frontend_str/build/PS3/pal_en/assets_rws/frontend/frontend/texture_dictionary/frontend_split27_txd/100_cliche_summary.png"
+            },
+            "name": "100ClicheSummary"
+          },
+          {
+            "class": "Sprite2D",
+            "config": {
+              "position": {
+                "x": 880.0,
+                "y": 1512.0
+              },
+              "texture_path": "res://assets/frontend/frontend_str/build/PS3/pal_en/assets_rws/frontend/frontend/texture_dictionary/frontend_split27_txd/103_cliche_summary.png"
+            },
+            "name": "103ClicheSummary"
+          },
+          {
+            "class": "Sprite2D",
+            "config": {
+              "position": {
+                "x": 512.0,
+                "y": 832.0
+              },
+              "texture_path": "res://assets/frontend/frontend_str/build/PS3/pal_en/assets_rws/frontend/frontend/texture_dictionary/frontend_split27_txd/106_cliche_summary.png"
+            },
+            "name": "106ClicheSummary"
+          },
+          {
+            "class": "Sprite2D",
+            "config": {
+              "position": {
+                "x": 2960.0,
+                "y": 1144.0
+              },
+              "texture_path": "res://assets/frontend/frontend_str/build/PS3/pal_en/assets_rws/frontend/frontend/texture_dictionary/frontend_split27_txd/109_cliche_summary.png"
+            },
+            "name": "109ClicheSummary"
+          },
+          {
+            "class": "Sprite2D",
+            "config": {
+              "position": {
+                "x": 2280.0,
+                "y": 1520.0
+              },
+              "texture_path": "res://assets/frontend/frontend_str/build/PS3/pal_en/assets_rws/frontend/frontend/texture_dictionary/frontend_split27_txd/112_cliche_summary.png"
+            },
+            "name": "112ClicheSummary"
+          },
+          {
+            "class": "Sprite2D",
+            "config": {
+              "position": {
+                "x": 1176.0,
+                "y": 1528.0
+              },
+              "texture_path": "res://assets/frontend/frontend_str/build/PS3/pal_en/assets_rws/frontend/frontend/texture_dictionary/frontend_split27_txd/115_cliche_summary.png"
+            },
+            "name": "115ClicheSummary"
+          },
+          {
+            "class": "Sprite2D",
+            "config": {
+              "position": {
+                "x": 1576.0,
+                "y": 1176.0
+              },
+              "texture_path": "res://assets/frontend/frontend_str/build/PS3/pal_en/assets_rws/frontend/frontend/texture_dictionary/frontend_split27_txd/118_cliche_summary.png"
+            },
+            "name": "118ClicheSummary"
+          },
+          {
+            "class": "Sprite2D",
+            "config": {
+              "position": {
+                "x": 880.0,
+                "y": 848.0
+              },
+              "texture_path": "res://assets/frontend/frontend_str/build/PS3/pal_en/assets_rws/frontend/frontend/texture_dictionary/frontend_split27_txd/121_cliche_summary.png"
+            },
+            "name": "121ClicheSummary"
+          },
+          {
+            "class": "Sprite2D",
+            "config": {
+              "position": {
+                "x": 1936.0,
+                "y": 880.0
+              },
+              "texture_path": "res://assets/frontend/frontend_str/build/PS3/pal_en/assets_rws/frontend/frontend/texture_dictionary/frontend_split28_txd/40_cliche_summary.png"
+            },
+            "name": "40ClicheSummary"
+          }
+        ],
+        "class": "Panel",
+        "config": {
+          "layout_mode": 0,
+          "offsets": {
+            "offset_bottom": 0.0,
+            "offset_left": 0.0,
+            "offset_right": 0.0,
+            "offset_top": 0.0
+          }
+        },
+        "name": "Panel"
+      }
+    ],
+    "class": "Control",
+    "editable_children_default": true,
+    "name": "Cliche_ControlNode",
+    "overwrite": true,
+    "path": "FrontEnd/Cliche_ControlNode/cliche_control_node.tscn",
+    "type": "scene"
+  }
+]

@@ -1,0 +1,68 @@
+[
+  {
+    "children": [
+      {
+        "config": {
+          "layout_mode": 3,
+          "offsets": {
+            "offset_bottom": 646.0,
+            "offset_left": 0.0,
+            "offset_right": 1154.0,
+            "offset_top": 0.0
+          }
+        },
+        "config_file": "FrontEnd/Menus/MainMenu_ControlNode2.json",
+        "editable_children": true,
+        "name": "MainMenu_ControlNode2",
+        "path": "FrontEnd/Menus/MainMenu_ControlNode2/main_menu_control_node_2.tscn"
+      },
+      {
+        "config": {
+          "layout_mode": 3,
+          "offsets": {
+            "offset_bottom": 646.0,
+            "offset_left": 0.0,
+            "offset_right": 1154.0,
+            "offset_top": 0.0
+          }
+        },
+        "config_file": "FrontEnd/Menus/MainMenu_ControlNode.json",
+        "editable_children": true,
+        "name": "MainMenu_ControlNode",
+        "path": "FrontEnd/Menus/MainMenu_ControlNode/main_menu_control_node.tscn"
+      },
+      {
+        "config": {
+          "layout_mode": 3,
+          "offsets": {
+            "offset_bottom": 646.0,
+            "offset_left": 0.0,
+            "offset_right": 1154.0,
+            "offset_top": 0.0
+          }
+        },
+        "config_file": "FrontEnd/Menus/StartMenu_ControlNode.json",
+        "editable_children": true,
+        "name": "StartMenu_ControlNode",
+        "path": "FrontEnd/Menus/StartMenu_ControlNode/start_menu_control_node.tscn"
+      },
+      {
+        "class": "Sprite2D",
+        "config": {
+          "position": {
+            "x": -632.0,
+            "y": -624.0
+          },
+          "texture_path": "res://assets/frontend/frontend_str/build/PS3/pal_en/assets_rws/frontend/frontend/texture_dictionary/frontend_split23_txd/64_popup.png"
+        },
+        "name": "64Popup"
+      }
+    ],
+    "class": "Node2D",
+    "editable_children_default": true,
+    "name": "Menus",
+    "overwrite": true,
+    "path": "FrontEnd/Menus/menus.tscn",
+    "type": "scene"
+  }
+]

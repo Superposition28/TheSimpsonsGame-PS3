@@ -22,21 +22,12 @@ __pycache__/
 *.pyc
 
 
-# tmp, remove later
-Game.Dev/
-Game/
-Game.Menu/
-
-
-
-!.vscode/
-!config/
 config/old/
-!data/
-dev-tools/
+dev-tools/old/
+
 Game/
 Game.Dev/
-Game.Menu/
+
 operations/
 reversing/
 test/

@@ -1,0 +1,48 @@
+[
+  {
+    "children": [
+      {
+        "config": {
+          "layout_mode": 3,
+          "offsets": {
+            "offset_bottom": 640.0,
+            "offset_left": 0.0,
+            "offset_right": 1144.0,
+            "offset_top": 0.0
+          }
+        },
+        "config_file": "FrontEnd/Cliche_ControlNode.json",
+        "editable_children": true,
+        "name": "Cliche_ControlNode",
+        "path": "FrontEnd/Cliche_ControlNode/cliche_control_node.tscn"
+      },
+      {
+        "config": {
+          "layout_mode": 3,
+          "offsets": {
+            "offset_bottom": 640.0,
+            "offset_left": 0.0,
+            "offset_right": 1144.0,
+            "offset_top": 0.0
+          }
+        },
+        "config_file": "FrontEnd/HUD_ControlNode.json",
+        "editable_children": true,
+        "name": "HUD_ControlNode",
+        "path": "FrontEnd/HUD_ControlNode/hud_control_node.tscn"
+      },
+      {
+        "config_file": "FrontEnd/Menus.json",
+        "editable_children": true,
+        "name": "Menus",
+        "path": "FrontEnd/Menus/menus.tscn"
+      }
+    ],
+    "class": "Node2D",
+    "editable_children_default": true,
+    "name": "FrontEnd",
+    "overwrite": true,
+    "path": "FrontEnd/FrontEnd.tscn",
+    "type": "scene"
+  }
+]

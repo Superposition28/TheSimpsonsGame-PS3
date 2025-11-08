@@ -1,0 +1,18 @@
+
+
+
+indexing 
+things that needs indexing
+
+EN and US versions for all listed
+
+raw source files no changes no linking -- GameFilesIndex_[EU||US]_SourceOnly-0 run before extraction with python EngineApps\Games\TheSimpsonsGame-PS3\dev-tools\indexer\main.py --mode EU_ORIGINAL 
+renamed raw source files no linking -- GameFilesIndex_[EU||US]_SourceOnly-1 run before extraction but after ranaming python EngineApps\Games\TheSimpsonsGame-PS3\dev-tools\indexer\main.py --mode EU_ORIGINAL 
+
+raw source str extracted files linked to source -- GameFilesIndex_[EU||US]_Full-0 run after extraction with python EngineApps\Games\TheSimpsonsGame-PS3\dev-tools\indexer\main.py --mode EU_PROCESSED
+renamed source str extracted files linked to source
+
+the second set should be done when the process is improved for now focus on using original unchanged files and paths
+may need to force strout folder to drive root A:\strout\ to avoid long path issues or improve symlinks
+
+
