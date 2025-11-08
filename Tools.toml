@@ -1,0 +1,45 @@
+title = "The Simpsons Game PS3 Tools"
+
+[[tool]]
+name = "Blender"
+version = "4.0.2"
+destination = "./TMP/Downloads"
+unpack = true
+unpack_destination = "./Tools/Blender"
+
+[[tool]]
+name = "QuickBMS"
+version = "0.12.0"
+destination = "./TMP/Downloads"
+unpack = true
+unpack_destination = "./Tools/QuickBMS/exe"
+
+[[tool]]
+name = "Godot"
+version = "4.5-stable-mono"
+destination = "./TMP/Downloads"
+unpack = true
+unpack_destination = "./Tools/Godot"
+
+[[tool]]
+name = "vgmstream-cli"
+version = "r2023"
+destination = "./TMP/Downloads"
+unpack = true
+unpack_destination = "./Tools/vgmstream-cli"
+
+[[tool]]
+name = "ffmpeg"
+version = "8.0"
+destination = "./TMP/Downloads"
+unpack = true
+unpack_destination = "./Tools/ffmpeg"
+
+[[tool]]
+name = "ImageMagick"
+version = "7.1.2-8-Q16-HDRI"
+destination = "./TMP/Downloads"
+unpack = true
+unpack_destination = "./Tools/ImageMagick"
+
+

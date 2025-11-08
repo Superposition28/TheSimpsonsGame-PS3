@@ -1,0 +1,54 @@
+
+# vs code history extension directory
+**/.history/**
+
+
+# godot project artifacts, in Game.*/**
+*.uid
+*.cfg
+*.md5
+
+
+# temporary experiment directories
+dev/
+test/
+
+# operations, generated files
+operations/Blender/asset_map.sqlite
+operations/Blender/blend.log
+
+# Python cache files
+__pycache__/
+*.pyc
+
+
+# tmp, remove later
+Game.Dev/
+Game/
+Game.Menu/
+
+
+
+!.vscode/
+config/
+!data/
+dev-tools/
+Game/
+Game.Dev/
+Game.Menu/
+operations/
+reversing/
+test/
+.1gitignore
+!.gitignore
+!blank.blend
+config.lua
+flatten2.py
+!LICENCE
+operations_cli.md
+!operations.toml
+!Readme.md
+!TODO.md
+!Tools.toml
+
+

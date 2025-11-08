@@ -1,0 +1,2132 @@
+# Source: \GAMEFILES\USRDIR\ASSETS_1_AUDIO_STREAMS\EN
+
+# KEY
+# File pattern format:
+#   d_<char><set?>_<ctx>_<id>_<ch?>.exa.snu
+# where:
+#   d_ = dialogue
+#   <char> = short character code (e.g., as=alien, fr=French guy, lg=logger, moe/moer=Moe, uter=Üter, teen=Squeaky-Voiced Teen, etc.)
+#   <set?> = optional two-digit set number tied to the numbered bank (e.g., as01, fr02, lg02)
+#   <ctx> = tiny context chunk (e.g., xxx for generic; others include igc for cutscenes, level tags like gr/bsh/nvq, etc.)
+#   <id> = 7-digit line index
+
+# <ch?> ambient audio files in the global folder often have _qd as an indicator that they are quad channel audio not duel channel
+
+#since every filename shows something like:
+# 00047cb
+# 0006552
+#that means it’s a zero-padded, fixed-width 7-digit hexadecimal ID.
+
+# snu format known by vgmstream
+
+## 'EN' audio files
+
+# Dialogue -- 7315
+
+-   EN-Dialogue:
+    -   OLD_DIR_NAME: 01_xxx_0  ## complete
+        NEW_DIR_NAME: generic_1
+        files:
+        -   Name: Alien_1
+            Level: Invasion of the Yokel-Snatchers?
+            file_patterns:
+                file_pattern: d_as01_xxx_#######.exa.snu
+                file_regex: ^d_as01_xxx_[0-9a-fA-F]{7}\.exa\.snu$
+                file_glob: d_as01_xxx_[0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f].exa.snu
+        -   Name: César or Ugolin
+            Level: Medal of Homer
+            Note: name César or Ugolin? (surrendering french guy)
+            file_patterns:
+                file_pattern: d_fr01_xxx_#######.exa.snu
+                file_regex: ^d_fr01_xxx_[0-9a-fA-F]{7}\.exa\.snu$
+                file_glob: d_fr01_xxx_[0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f].exa.snu
+        -   Name: Logger_1
+            Level: Lisa the Tree Hugger
+            file_patterns:
+                file_pattern: d_lg01_xxx_#######.exa.snu
+                file_regex: ^d_lg01_xxx_[0-9a-fA-F]{7}\.exa\.snu$
+                file_glob: d_lg01_xxx_[0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f].exa.snu
+
+    -   OLD_DIR_NAME: 02_xxx_0  ## complete
+        NEW_DIR_NAME: generic_2
+        files:
+        -   Name: Alien_2
+            Level: Invasion of the Yokel-Snatchers?
+            file_patterns:
+                file_pattern: d_as02_xxx_#######.exa.snu
+                file_regex: ^d_as02_xxx_[0-9a-fA-F]{7}\.exa\.snu$
+                file_glob: d_as02_xxx_[0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f].exa.snu
+        -   Name: César or Ugolin
+            Level: Medal of Homer
+            file_patterns:
+                file_pattern: d_fr02_xxx_#######.exa.snu
+                file_regex: ^d_fr02_xxx_[0-9a-fA-F]{7}\.exa\.snu$
+                file_glob: d_fr02_xxx_[0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f].exa.snu
+        -   Name: Logger_2
+            Level: Lisa the Tree Hugger
+            file_patterns:
+                file_pattern: d_lg02_xxx_#######.exa.snu
+                file_regex: ^d_lg02_xxx_[0-9a-fA-F]{7}\.exa\.snu$
+                file_glob: d_lg02_xxx_[0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f].exa.snu
+
+    -   OLD_DIR_NAME: ab_xxx_0  ## complete
+        NEW_DIR_NAME: edna_krabappel
+        files:
+        -   Name: Edna Krabappel
+            Level: world + Mob Rules
+            file_patterns:
+                file_pattern: d_krab_xxx_#######.exa.snu
+                file_regex: ^d_krab_xxx_[0-9a-fA-F]{7}\.exa\.snu$
+                file_glob: d_krab_xxx_[0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f].exa.snu
+
+    -   OLD_DIR_NAME: ad_xxx_0  ## complete
+        NEW_DIR_NAME: lard_lad
+        files:
+        -   Name: Lard Lad
+            Level: Shadow of the Colossal Donut
+            file_patterns:
+                file_pattern: d_llad_xxx_#######.exa.snu
+                file_regex: ^d_llad_xxx_[0-9a-fA-F]{7}\.exa\.snu$
+                file_glob: d_llad_xxx_[0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f].exa.snu
+
+    -   OLD_DIR_NAME: ag_xxx_0  ## complete
+        NEW_DIR_NAME: two_headed_dragon
+        files:
+        -   Name: two-headed Patty and Selma dragon
+            Level: NeverQuest
+            file_patterns:
+                file_pattern: d_drag_xxx_#######.exa.snu
+                file_regex: ^d_drag_xxx_[0-9a-fA-F]{7}\.exa\.snu$
+                file_glob: d_drag_xxx_[0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f].exa.snu
+
+    -   OLD_DIR_NAME: ak_xxx_0  ## complete
+        NEW_DIR_NAME: shakespeare_jailbird
+        files:
+        -   Name: William Shakespeare
+            Level: Game Over
+            file_patterns:
+                file_pattern: d_shak_xxx_#######.exa.snu
+                file_regex: ^d_shak_xxx_[0-9a-fA-F]{7}\.exa\.snu$
+                file_glob: d_shak_xxx_[0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f].exa.snu
+        -   Name: Snake Jailbird
+            Level: world + Mob Rules
+            Note: contains voice lines for maultiple levels probably all
+            file_patterns:
+                file_pattern: d_snak_xxx_#######.exa.snu
+                file_regex: ^d_snak_xxx_[0-9a-fA-F]{7}\.exa\.snu$
+                file_glob: d_snak_xxx_[0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f].exa.snu
+
+    -   OLD_DIR_NAME: al_xxx_0  ## complete
+        NEW_DIR_NAME: gary_chalmers
+        files:
+        -   Name: Gary Chalmers
+            Level: world
+            file_patterns:
+                file_pattern: d_chal_xxx_#######.exa.snu
+                file_regex: ^d_chal_xxx_[0-9a-fA-F]{7}\.exa\.snu$
+                file_glob: d_chal_xxx_[0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f].exa.snu
+
+    -   OLD_DIR_NAME: an_xxx_0  ## complete
+        NEW_DIR_NAME: brandine_duffman
+        files:
+        -   Name: Brandine Spuckler
+            Level: world + Mob Rules
+            file_patterns:
+                file_pattern: d_bran_xxx_#######.exa.snu
+                file_regex: ^d_bran_xxx_[0-9a-fA-F]{7}\.exa\.snu$
+                file_glob: d_bran_xxx_[0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f].exa.snu
+        -   Name: Duffman
+            Level: Around the World in 80 Bites
+            file_patterns:
+                file_pattern: d_dman_xxx_#######.exa.snu
+                file_regex: ^d_dman_xxx_[0-9a-fA-F]{7}\.exa\.snu$
+                file_glob: d_dman_xxx_[0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f].exa.snu
+
+    -   OLD_DIR_NAME: ar_xxx_0  ## complete
+        NEW_DIR_NAME: Charlie_Maze_Announcer_voice
+        files:
+        -   Name: Charlie (SNPP)
+            Note: Charlie is the Dangerous Emissions Supervisor of Sector 7G at the (Springfield Nuclear Power Plant).
+            Level: world + Mob Rules
+            file_patterns:
+                file_pattern: d_char_xxx_#######.exa.snu
+                file_regex: ^d_char_xxx_[0-9a-fA-F]{7}\.exa\.snu$
+                file_glob: d_char_xxx_[0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f].exa.snu
+        -   Name: Maze Announcer voice
+            Level: NeverQuest -   Dungeon
+            Note: from NeverQuest in topdown view dungeon section
+            file_patterns:
+                file_pattern: d_gnar_xxx_#######.exa.snu
+                file_regex: ^d_gnar_xxx_[0-9a-fA-F]{7}\.exa\.snu$
+                file_glob: d_gnar_xxx_[0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f].exa.snu
+
+    -   OLD_DIR_NAME: av_xxx_0  ## complete
+        NEW_DIR_NAME: heaven_voice
+        files:
+        -   Name: heaven voice
+            Level: Game Over
+            file_patterns:
+                file_pattern: d_spav_xxx_#######.exa.snu
+                file_regex: ^d_spav_xxx_[0-9a-fA-F]{7}\.exa\.snu$
+                file_glob: d_spav_xxx_[0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f].exa.snu
+
+    -   OLD_DIR_NAME: bo_xxx_0  ## complete
+        NEW_DIR_NAME: jimbo_jones
+        files:
+        -   Name: Jimbo Jones
+            Level: world + Bartman Begins
+            file_patterns:
+                file_pattern: d_jmbo_xxx_#######.exa.snu
+                file_regex: ^d_jmbo_xxx_[0-9a-fA-F]{7}\.exa\.snu$
+                file_glob: d_jmbo_xxx_[0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f].exa.snu
+
+    -   OLD_DIR_NAME: cb_xxx_0  ## complete
+        NEW_DIR_NAME: chocolate_bunny
+        files:
+        -   Name: Chocolate Bunny
+            Level: Land_Of_Chocolate
+            file_patterns:
+                file_pattern: d_chcb_xxx_#######.exa.snu
+                file_regex: ^d_chcb_xxx_[0-9a-fA-F]{7}\.exa\.snu$
+                file_glob: d_chcb_xxx_[0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f].exa.snu
+
+    -   OLD_DIR_NAME: cg_xxx_0  ## complete
+        NEW_DIR_NAME: itchy_the_mouse
+        files:
+        -   Name: Itchy the Mouse
+            Level: Grand Theft Scratchy
+            file_patterns:
+                file_pattern: d_itcg_xxx_#######.exa.snu
+                file_regex: ^d_itcg_xxx_[0-9a-fA-F]{7}\.exa\.snu$
+                file_glob: d_itcg_xxx_[0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f].exa.snu
+
+    -   OLD_DIR_NAME: ch_xxx_0  ## complete
+        NEW_DIR_NAME: poochie_the_dog
+        files:
+        -   Name: Poochie the Dog
+            Level: Grand Theft Scratchy
+            file_patterns:
+                file_pattern: d_poch_xxx_#######.exa.snu
+                file_regex: ^d_poch_xxx_[0-9a-fA-F]{7}\.exa\.snu$
+                file_glob: d_poch_xxx_[0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f].exa.snu
+
+    -   OLD_DIR_NAME: cl_xxx_0  ## complete
+        NEW_DIR_NAME: sea_captain
+        files:
+        -   Name: Horatio Peter McCallister
+            Level: world + The Day of the Dolphin
+            NickName: sea captain
+            file_patterns:
+                file_pattern: d_mccl_xxx_#######.exa.snu
+                file_regex: ^d_mccl_xxx_[0-9a-fA-F]{7}\.exa\.snu$
+                file_glob: d_mccl_xxx_[0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f].exa.snu
+
+    -   OLD_DIR_NAME: co_xxx_0  ## complete
+        NEW_DIR_NAME: disco_stu
+        files:
+        -   Name: Stu Discothèque
+            Level: world
+            NickName: Disco Stu
+            file_patterns:
+                file_pattern: d_dsco_xxx_#######.exa.snu
+                file_regex: ^d_dsco_xxx_[0-9a-fA-F]{7}\.exa\.snu$
+                file_glob: d_dsco_xxx_[0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f].exa.snu
+
+    -   OLD_DIR_NAME: cp_xxx_0  ## complete
+        NEW_DIR_NAME: itchy_the_mouse_pimp
+        files:
+        -   Name: Itchy the Mouse Pimp
+            Level: Grand Theft Scratchy
+            file_patterns:
+                file_pattern: d_itcp_xxx_#######.exa.snu
+                file_regex: ^d_itcp_xxx_[0-9a-fA-F]{7}\.exa\.snu$
+                file_glob: d_itcp_xxx_[0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f].exa.snu
+
+    -   OLD_DIR_NAME: df_xxx_0  ## complete
+        NEW_DIR_NAME: Flanderses
+        files:
+        -   Name: Ned Flanders
+            Level: world + Mob Rules
+            file_patterns:
+                file_pattern: d_nedf_xxx_#######.exa.snu
+                file_regex: ^d_nedf_xxx_[0-9a-fA-F]{7}\.exa\.snu$
+                file_glob: d_nedf_xxx_[0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f].exa.snu
+        -   Name: Rod Flanders
+            Level: world + Mob Rules
+            file_patterns:
+                file_pattern: d_rodf_xxx_#######.exa.snu
+                file_regex: ^d_rodf_xxx_[0-9a-fA-F]{7}\.exa\.snu$
+                file_glob: d_rodf_xxx_[0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f].exa.snu
+        -   Name: Todd Flanders
+            Level: world + Mob Rules
+            file_patterns:
+                file_pattern: d_todf_xxx_#######.exa.snu
+                file_regex: ^d_todf_xxx_[0-9a-fA-F]{7}\.exa\.snu$
+                file_glob: d_todf_xxx_[0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f].exa.snu
+
+    -   OLD_DIR_NAME: dg_xxx_0  ## complete
+        NEW_DIR_NAME: sad_sonic
+        files:
+        -   Name: sonic the hedge hog
+            Level: Enter the Cheatrix
+            file_patterns:
+                file_pattern: d_hedg_xxx_#######.exa.snu
+                file_regex: ^d_hedg_xxx_[0-9a-fA-F]{7}\.exa\.snu$
+                file_glob: d_hedg_xxx_[0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f].exa.snu
+
+    -   OLD_DIR_NAME: ds_xxx_0  ## complete
+        NEW_DIR_NAME: comic_book_guy_sumo
+        files:
+        -   Name: Sumo Comic Book Guy
+            Level: Big Super Happy Fun Fun Game
+            file_patterns:
+                file_pattern: d_suds_xxx_#######.exa.snu
+                file_regex: ^d_suds_xxx_[0-9a-fA-F]{7}\.exa\.snu$
+                file_glob: d_suds_xxx_[0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f].exa.snu
+
+    -   OLD_DIR_NAME: dx_xxx_0  ## complete
+        NEW_DIR_NAME: god
+        files:
+        -   Name: God
+            Level: Game Over
+            file_patterns:
+                file_pattern: d_godx_xxx_#######.exa.snu
+                file_regex: ^d_godx_xxx_[0-9a-fA-F]{7}\.exa\.snu$
+                file_glob: d_godx_xxx_[0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f].exa.snu
+
+    -   OLD_DIR_NAME: ef_xxx_0  ## complete
+        NEW_DIR_NAME: chef_luigi
+        files:
+        -   Name: Luigi Risotto
+            Level: world?
+            Note: real name Lothar Folkman, Chef Luigi
+            NickName: Chef Luigi
+            file_patterns:
+                file_pattern: d_chef_xxx_#######.exa.snu
+                file_regex: ^d_chef_xxx_[0-9a-fA-F]{7}\.exa\.snu$
+                file_glob: d_chef_xxx_[0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f].exa.snu
+
+    -   OLD_DIR_NAME: en_xxx_0
+        NEW_DIR_NAME: squeaky_voiced_teen
+        files:
+        -   Name: Jeremy Freedman
+            Level: world + Mob Rules
+            Note: more commonly known as Squeaky-Voiced Teen
+            file_patterns:
+                file_pattern: d_teen_xxx_#######.exa.snu
+                file_regex: ^d_teen_xxx_[0-9a-fA-F]{7}\.exa\.snu$
+                file_glob: d_teen_xxx_[0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f].exa.snu
+
+    -   OLD_DIR_NAME: er_xxx_0
+        NEW_DIR_NAME: moe_orc_uter
+        files:
+        -   Name: Orc Moe Szyslak
+            Level: NeverQuest
+            file_patterns:
+                file_pattern: d_moer_xxx_#######.exa.snu
+                file_regex: ^d_moer_xxx_[0-9a-fA-F]{7}\.exa\.snu$
+                file_glob: d_moer_xxx_[0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f].exa.snu
+        -   Name: Üter Zörker
+            Level: world + Medal of Homer
+            file_patterns:
+                file_pattern: d_uter_xxx_#######.exa.snu
+                file_regex: ^d_uter_xxx_[0-9a-fA-F]{7}\.exa\.snu$
+                file_glob: d_uter_xxx_[0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f].exa.snu
+
+    -   OLD_DIR_NAME: es_xxx_0
+        NEW_DIR_NAME: moe
+        files:
+        -   Name: Moe Szyslak
+            Level: world + mob rules
+            file_patterns:
+                file_pattern: d_moes_xxx_#######.exa.snu
+                file_regex: ^d_moes_xxx_[0-9a-fA-F]{7}\.exa\.snu$
+                file_glob: d_moes_xxx_[0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f].exa.snu
+
+    -   OLD_DIR_NAME: et_xxx_0
+        NEW_DIR_NAME: cletus
+        files:
+        -   Name: Cletus Spuckler
+            Level: world
+            file_patterns:
+                file_pattern: d_clet_xxx_#######.exa.snu
+                file_regex: ^d_clet_xxx_[0-9a-fA-F]{7}\.exa\.snu$
+                file_glob: d_clet_xxx_[0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f].exa.snu
+
+    -   OLD_DIR_NAME: ex_xxx_0
+        NEW_DIR_NAME: rich_texan
+        files:
+        -   Name: Richard Texan
+            Level: world?
+            Note: The Rich Texan
+            file_patterns:
+                file_pattern: d_ctex_xxx_#######.exa.snu
+                file_regex: ^d_ctex_xxx_[0-9a-fA-F]{7}\.exa\.snu$
+                file_glob: d_ctex_xxx_[0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f].exa.snu
+
+    -   OLD_DIR_NAME: fe_xxx_0
+        NEW_DIR_NAME: museum_voice_female
+        files:
+        -   Name: unknown
+            Level: Bartman begins
+            Note: female voice 'and woman'
+            file_patterns:
+                file_pattern: d_mvfe_xxx_#######.exa.snu
+                file_regex: ^d_mvfe_xxx_[0-9a-fA-F]{7}\.exa\.snu$
+                file_glob: d_mvfe_xxx_[0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f].exa.snu
+
+    -   OLD_DIR_NAME: fh_xxx_0
+        NEW_DIR_NAME: hobbits
+        files:
+        -   Name: rod flanders (hobbit)
+            Level: NeverQuest
+            file_patterns:
+                file_pattern: d_rdfh_xxx_#######.exa.snu
+                file_regex: ^d_rdfh_xxx_[0-9a-fA-F]{7}\.exa\.snu$
+                file_glob: d_rdfh_xxx_[0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f].exa.snu
+        -   Name: tod flanders (hobbit)
+            Level: NeverQuest
+            file_patterns:
+                file_pattern: d_tdfh_xxx_#######.exa.snu
+                file_regex: ^d_tdfh_xxx_[0-9a-fA-F]{7}\.exa\.snu$
+                file_glob: d_tdfh_xxx_[0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f].exa.snu
+
+    -   OLD_DIR_NAME: gf_xxx_0
+        NEW_DIR_NAME: madden_football_player
+        files:
+        -   Name:  Madden football player
+            Level: Enter the Cheatrix
+            file_patterns:
+                file_pattern: d_gegf_xxx_#######.exa.snu
+                file_regex: ^d_gegf_xxx_[0-9a-fA-F]{7}\.exa\.snu$
+                file_glob: d_gegf_xxx_[0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f].exa.snu
+
+    -   OLD_DIR_NAME: gg_xxx_0
+        NEW_DIR_NAME: TBD
+        files:
+        -   Name: TBD
+            Level: TBD
+            file_patterns:
+                file_pattern: d_digg_xxx_#######.exa.snu
+                file_regex: ^d_digg_xxx_[0-9a-fA-F]{7}\.exa\.snu$
+                file_glob: d_digg_xxx_[0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f].exa.snu
+
+    -   OLD_DIR_NAME: gh_xxx_0
+        NEW_DIR_NAME: otto_ghost
+        files:
+        -   Name: otto mann (ghost)
+            Level: NeverQuest
+            file_patterns:
+                file_pattern: d_otgh_xxx_#######.exa.snu
+                file_regex: ^d_otgh_xxx_[0-9a-fA-F]{7}\.exa\.snu$
+                file_glob: d_otgh_xxx_[0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f].exa.snu
+
+    -   OLD_DIR_NAME: gn_xxx_0
+        NEW_DIR_NAME: museum_voice_male
+        files:
+        -   Name: voice over guy
+            Level: Bartman begins
+            file_patterns:
+                file_pattern: d_segn_xxx_#######.exa.snu
+                file_regex: ^d_segn_xxx_[0-9a-fA-F]{7}\.exa\.snu$
+                file_glob: d_segn_xxx_[0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f].exa.snu
+
+    -   OLD_DIR_NAME: go_xxx_0
+        NEW_DIR_NAME: music_teacher
+        files:
+        -   Name: Dewey Largo
+            file_patterns:
+                file_pattern: d_lrgo_xxx_#######.exa.snu
+                file_regex: ^d_lrgo_xxx_[0-9a-fA-F]{7}\.exa\.snu$
+                file_glob: d_lrgo_xxx_[0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f].exa.snu
+
+    -   OLD_DIR_NAME: gr_xxx_0
+        NEW_DIR_NAME: itchy_the_mouse
+        files:
+        -   Name: itchy
+            Level: grand theft itchy
+            file_patterns:
+                file_pattern: d_itgr_xxx_#######.exa.snu
+                file_regex: ^d_itgr_xxx_[0-9a-fA-F]{7}\.exa\.snu$
+                file_glob: d_itgr_xxx_[0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f].exa.snu
+
+    -   OLD_DIR_NAME: gs_xxx_0
+        NEW_DIR_NAME: Street_Fighter_Legs
+        files:
+        -   Name: Street Fighter
+            Level: Enter the Cheatrix
+            file_patterns:
+                file_pattern: d_gegs_xxx_#######.exa.snu
+                file_regex: ^d_gegs_xxx_[0-9a-fA-F]{7}\.exa\.snu$
+                file_glob: d_gegs_xxx_[0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f].exa.snu
+        -   Name: Legs
+            Level: unknown
+            Note: Springfield Mafia Member
+            file_patterns:
+                file_pattern: d_legs_xxx_#######.exa.snu
+                file_regex: ^d_legs_xxx_[0-9a-fA-F]{7}\.exa\.snu$
+                file_glob: d_legs_xxx_[0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f].exa.snu
+
+    -   OLD_DIR_NAME: gy_xxx_0
+        NEW_DIR_NAME: comic_book_guy
+        files:
+        -   Name: Comic Book Guy
+            Level: world + Mob Rules
+            Note: seems like all of his generic lines
+            file_patterns:
+                file_pattern: d_cbgy_xxx_#######.exa.snu
+                file_regex: ^d_cbgy_xxx_[0-9a-fA-F]{7}\.exa\.snu$
+                file_glob: d_cbgy_xxx_[0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f].exa.snu
+
+    -   OLD_DIR_NAME: hr_xxx_0
+        NEW_DIR_NAME: white_chocolate_rabbit
+        files:
+        -   Name: White Chocolate Rabbit
+            Level: Land_Of_Chocolate
+            file_patterns:
+                file_pattern: d_wchr_xxx_#######.exa.snu
+                file_regex: ^d_wchr_xxx_[0-9a-fA-F]{7}\.exa\.snu$
+                file_glob: d_wchr_xxx_[0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f].exa.snu
+
+    -   OLD_DIR_NAME: ht_xxx_0
+        NEW_DIR_NAME: kirk_van_houten
+        files:
+        -   Name: Kirk Van Houten
+            Level: world + Mob Rules
+            Note: all generic
+            file_patterns:
+                file_pattern: d_kvht_xxx_#######.exa.snu
+                file_regex: ^d_kvht_xxx_[0-9a-fA-F]{7}\.exa\.snu$
+                file_glob: d_kvht_xxx_[0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f].exa.snu
+
+    -   OLD_DIR_NAME: ib_xxx_0
+        NEW_DIR_NAME: hibbert
+        files:
+        -   Name: TBD
+            Level: TBD
+            file_patterns:
+                file_pattern: d_bhib_xxx_#######.exa.snu
+                file_regex: ^d_bhib_xxx_[0-9a-fA-F]{7}\.exa\.snu$
+                file_glob: d_bhib_xxx_[0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f].exa.snu
+        -   Name: TBD
+            Level: TBD
+            file_patterns:
+                file_pattern: d_jhib_xxx_#######.exa.snu
+                file_regex: ^d_jhib_xxx_[0-9a-fA-F]{7}\.exa\.snu$
+                file_glob: d_jhib_xxx_[0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f].exa.snu
+
+    -   OLD_DIR_NAME: id_xxx_0
+        NEW_DIR_NAME: TBD
+        files:
+        -   Name: TBD
+            Level: TBD
+            file_patterns:
+                file_pattern: d_zoid_xxx_#######.exa.snu
+                file_regex: ^d_zoid_xxx_[0-9a-fA-F]{7}\.exa\.snu$
+                file_glob: d_zoid_xxx_[0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f].exa.snu
+
+    -   OLD_DIR_NAME: ie_xxx_0
+        NEW_DIR_NAME: eddie
+        files:
+        -   Name: TBD
+            Level: TBD
+            file_patterns:
+                file_pattern: d_edie_xxx_#######.exa.snu
+                file_regex: ^d_edie_xxx_[0-9a-fA-F]{7}\.exa\.snu$
+                file_glob: d_edie_xxx_[0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f].exa.snu
+
+    -   OLD_DIR_NAME: ig_xxx_0
+        NEW_DIR_NAME: wiggum
+        files:
+        -   Name: Clancy Wiggum
+            Level: MobRules
+            Note: 77 voice from wiggum during MobRules
+            file_patterns:
+                file_pattern: d_cwig_xxx_#######.exa.snu
+                file_regex: ^d_cwig_xxx_[0-9a-fA-F]{7}\.exa\.snu$
+                file_glob: d_cwig_xxx_[0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f].exa.snu
+        -   Name: Ralph Wiggum
+            Level: MobRules
+            Note: 126 voice from Ralph during MobRules
+            file_patterns:
+                file_pattern: d_rwig_xxx_#######.exa.snu
+                file_regex: ^d_rwig_xxx_[0-9a-fA-F]{7}\.exa\.snu$
+                file_glob: d_rwig_xxx_[0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f].exa.snu
+        -   Name: Sarah Wiggum
+            Level: unknown
+            Note: 25 voice from Sarah all just saying 'clancy' in different tones
+            file_patterns:
+                file_pattern: d_swig_xxx_#######.exa.snu
+                file_regex: ^d_swig_xxx_[0-9a-fA-F]{7}\.exa\.snu$
+                file_glob: d_swig_xxx_[0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f].exa.snu
+
+    -   OLD_DIR_NAME: in_xxx_0
+        NEW_DIR_NAME: frink_skinner
+        files:
+        -   Name: Professor Jonathan Frink
+            Level: World?
+            file_patterns:
+                file_pattern: d_frin_xxx_#######.exa.snu
+                file_regex: ^d_frin_xxx_[0-9a-fA-F]{7}\.exa\.snu$
+                file_glob: d_frin_xxx_[0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f].exa.snu
+        -   Name: Seymour Skinner
+            Level: World?
+            file_patterns:
+                file_pattern: d_skin_xxx_#######.exa.snu
+                file_regex: ^d_skin_xxx_[0-9a-fA-F]{7}\.exa\.snu$
+                file_glob: d_skin_xxx_[0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f].exa.snu
+
+    -   OLD_DIR_NAME: is_xxx_0
+        NEW_DIR_NAME: lewis
+        files:
+        -   Name: TBD
+            Level: TBD
+            file_patterns:
+                file_pattern: d_lwis_xxx_#######.exa.snu
+                file_regex: ^d_lwis_xxx_[0-9a-fA-F]{7}\.exa\.snu$
+                file_glob: d_lwis_xxx_[0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f].exa.snu
+
+    -   OLD_DIR_NAME: iv_xxx_0
+        NEW_DIR_NAME: TBD
+        files:
+        -   Name: TBD
+            Level: TBD
+            file_patterns:
+                file_pattern: d_dciv_xxx_#######.exa.snu
+                file_regex: ^d_dciv_xxx_[0-9a-fA-F]{7}\.exa\.snu$
+                file_glob: d_dciv_xxx_[0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f].exa.snu
+        -   Name: TBD
+            Level: TBD
+            file_patterns:
+                file_pattern: d_nriv_xxx_#######.exa.snu
+                file_regex: ^d_nriv_xxx_[0-9a-fA-F]{7}\.exa\.snu$
+                file_glob: d_nriv_xxx_[0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f].exa.snu
+
+    -   OLD_DIR_NAME: kn_xxx_0
+        NEW_DIR_NAME: agnes_skinner
+        files:
+        -   Name: TBD
+            Level: TBD
+            file_patterns:
+                file_pattern: d_askn_xxx_#######.exa.snu
+                file_regex: ^d_askn_xxx_[0-9a-fA-F]{7}\.exa\.snu$
+                file_glob: d_askn_xxx_[0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f].exa.snu
+
+    -   OLD_DIR_NAME: l1_xxx_0
+        NEW_DIR_NAME: TBD
+        files:
+        -   Name: TBD
+            Level: TBD
+            file_patterns:
+                file_pattern: d_dyl1_xxx_#######.exa.snu
+                file_regex: ^d_dyl1_xxx_[0-9a-fA-F]{7}\.exa\.snu$
+                file_glob: d_dyl1_xxx_[0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f].exa.snu
+
+    -   OLD_DIR_NAME: l2_xxx_0
+        NEW_DIR_NAME: TBD
+        files:
+        -   Name: TBD
+            Level: TBD
+            file_patterns:
+                file_pattern: d_dyl2_xxx_#######.exa.snu
+                file_regex: ^d_dyl2_xxx_[0-9a-fA-F]{7}\.exa\.snu$
+                file_glob: d_dyl2_xxx_[0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f].exa.snu
+
+    -   OLD_DIR_NAME: lf_xxx_0
+        NEW_DIR_NAME: dolph_rainer_wolfcastle
+        files:
+        -   Name: TBD
+            Level: TBD
+            file_patterns:
+                file_pattern: d_dolf_xxx_#######.exa.snu
+                file_regex: ^d_dolf_xxx_[0-9a-fA-F]{7}\.exa\.snu$
+                file_glob: d_dolf_xxx_[0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f].exa.snu
+        -   Name: TBD
+            Level: TBD
+            file_patterns:
+                file_pattern: d_rwlf_xxx_#######.exa.snu
+                file_regex: ^d_rwlf_xxx_[0-9a-fA-F]{7}\.exa\.snu$
+                file_glob: d_rwlf_xxx_[0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f].exa.snu
+
+    -   OLD_DIR_NAME: lg_xxx_0
+        NEW_DIR_NAME: dolph
+        files:
+        -   Name: TBD
+            Level: TBD
+            file_patterns:
+                file_pattern: d_dolg_xxx_#######.exa.snu
+                file_regex: ^d_dolg_xxx_[0-9a-fA-F]{7}\.exa\.snu$
+                file_glob: d_dolg_xxx_[0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f].exa.snu
+
+    -   OLD_DIR_NAME: li_xxx_0
+        NEW_DIR_NAME: groundskeeper_willie
+        files:
+        -   Name: TBD
+            Level: TBD
+            file_patterns:
+                file_pattern: d_wili_xxx_#######.exa.snu
+                file_regex: ^d_wili_xxx_[0-9a-fA-F]{7}\.exa\.snu$
+                file_glob: d_wili_xxx_[0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f].exa.snu
+
+    -   OLD_DIR_NAME: lk_xxx_0
+        NEW_DIR_NAME: dolph
+        files:
+        -   Name: TBD
+            Level: TBD
+            file_patterns:
+                file_pattern: d_dolk_xxx_#######.exa.snu
+                file_regex: ^d_dolk_xxx_[0-9a-fA-F]{7}\.exa\.snu$
+                file_glob: d_dolk_xxx_[0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f].exa.snu
+
+    -   OLD_DIR_NAME: ll_xxx_0
+        NEW_DIR_NAME: groundskeeper_willie
+        files:
+        -   Name: TBD
+            Level: TBD
+            file_patterns:
+                file_pattern: d_will_xxx_#######.exa.snu
+                file_regex: ^d_will_xxx_[0-9a-fA-F]{7}\.exa\.snu$
+                file_glob: d_will_xxx_[0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f].exa.snu
+
+    -   OLD_DIR_NAME: ls_xxx_0
+        NEW_DIR_NAME: dolph_nelson
+        files:
+        -   Name: TBD
+            Level: TBD
+            file_patterns:
+                file_pattern: d_dols_xxx_#######.exa.snu
+                file_regex: ^d_dols_xxx_[0-9a-fA-F]{7}\.exa\.snu$
+                file_glob: d_dols_xxx_[0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f].exa.snu
+        -   Name: TBD
+            Level: TBD
+            file_patterns:
+                file_pattern: d_nels_xxx_#######.exa.snu
+                file_regex: ^d_nels_xxx_[0-9a-fA-F]{7}\.exa\.snu$
+                file_glob: d_nels_xxx_[0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f].exa.snu
+
+    -   OLD_DIR_NAME: lx_xxx_0
+        NEW_DIR_NAME: gil_gunderson
+        files:
+        -   Name: TBD
+            Level: TBD
+            file_patterns:
+                file_pattern: d_gilx_xxx_#######.exa.snu
+                file_regex: ^d_gilx_xxx_[0-9a-fA-F]{7}\.exa\.snu$
+                file_glob: d_gilx_xxx_[0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f].exa.snu
+
+    -   OLD_DIR_NAME: m8_xxx_0
+        NEW_DIR_NAME: homer_simpson
+        files:
+        -   Name: TBD
+            Level: TBD
+            file_patterns:
+                file_pattern: d_hom8_xxx_#######.exa.snu
+                file_regex: ^d_hom8_xxx_[0-9a-fA-F]{7}\.exa\.snu$
+                file_glob: d_hom8_xxx_[0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f].exa.snu
+
+    -   OLD_DIR_NAME: ma_xxx_0
+        NEW_DIR_NAME: TBD
+        files:
+        -   Name: TBD
+            Level: TBD
+            file_patterns:
+                file_pattern: d_mvma_xxx_#######.exa.snu
+                file_regex: ^d_mvma_xxx_[0-9a-fA-F]{7}\.exa\.snu$
+                file_glob: d_mvma_xxx_[0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f].exa.snu
+        -   Name: TBD
+            Level: TBD
+            file_patterns:
+                file_pattern: d_slma_xxx_#######.exa.snu
+                file_regex: ^d_slma_xxx_[0-9a-fA-F]{7}\.exa\.snu$
+                file_glob: d_slma_xxx_[0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f].exa.snu
+
+    -   OLD_DIR_NAME: mb_xxx_0
+        NEW_DIR_NAME: bumblebee_man
+        files:
+        -   Name: TBD
+            Level: TBD
+            file_patterns:
+                file_pattern: d_bumb_xxx_#######.exa.snu
+                file_regex: ^d_bumb_xxx_[0-9a-fA-F]{7}\.exa\.snu$
+                file_glob: d_bumb_xxx_[0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f].exa.snu
+
+    -   OLD_DIR_NAME: md_xxx_0
+        NEW_DIR_NAME: TBD
+        files:
+        -   Name: TBD
+            Level: TBD
+            file_patterns:
+                file_pattern: d_sumd_xxx_#######.exa.snu
+                file_regex: ^d_sumd_xxx_[0-9a-fA-F]{7}\.exa\.snu$
+                file_glob: d_sumd_xxx_[0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f].exa.snu
+
+    -   OLD_DIR_NAME: mi_xxx_0
+        NEW_DIR_NAME: TBD
+        files:
+        -   Name: TBD
+            Level: TBD
+            file_patterns:
+                file_pattern: d_sumi_xxx_#######.exa.snu
+                file_regex: ^d_sumi_xxx_[0-9a-fA-F]{7}\.exa\.snu$
+                file_glob: d_sumi_xxx_[0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f].exa.snu
+
+    -   OLD_DIR_NAME: ml_xxx_0
+        NEW_DIR_NAME: TBD
+        files:
+        -   Name: TBD
+            Level: TBD
+            file_patterns:
+                file_pattern: d_suml_xxx_#######.exa.snu
+                file_regex: ^d_suml_xxx_[0-9a-fA-F]{7}\.exa\.snu$
+                file_glob: d_suml_xxx_[0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f].exa.snu
+
+    -   OLD_DIR_NAME: mn_xxx_0
+        NEW_DIR_NAME: TBD
+        files:
+        -   Name: TBD
+            Level: TBD
+            file_patterns:
+                file_pattern: d_kbmn_xxx_#######.exa.snu
+                file_regex: ^d_kbmn_xxx_[0-9a-fA-F]{7}\.exa\.snu$
+                file_glob: d_kbmn_xxx_[0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f].exa.snu
+        -   Name: TBD
+            Level: TBD
+            file_patterns:
+                file_pattern: d_mlmn_xxx_#######.exa.snu
+                file_regex: ^d_mlmn_xxx_[0-9a-fA-F]{7}\.exa\.snu$
+                file_glob: d_mlmn_xxx_[0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f].exa.snu
+        -   Name: TBD
+            Level: TBD
+            file_patterns:
+                file_pattern: d_olmn_xxx_#######.exa.snu
+                file_regex: ^d_olmn_xxx_[0-9a-fA-F]{7}\.exa\.snu$
+                file_glob: d_olmn_xxx_[0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f].exa.snu
+
+    -   OLD_DIR_NAME: mp_xxx_0
+        NEW_DIR_NAME: grampa_simpson
+        files:
+        -   Name: TBD
+            Level: TBD
+            file_patterns:
+                file_pattern: d_grmp_xxx_#######.exa.snu
+                file_regex: ^d_grmp_xxx_[0-9a-fA-F]{7}\.exa\.snu$
+                file_glob: d_grmp_xxx_[0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f].exa.snu
+
+    -   OLD_DIR_NAME: mr_xxx_0
+        NEW_DIR_NAME: homer_simpson
+        files:
+        -   Name: Homer Simpsons
+            Level: Global
+            Note: contains 668 voice lines for Homer
+            file_patterns:
+                file_pattern: d_homr_xxx_#######.exa.snu
+                file_regex: ^d_homr_xxx_[0-9a-fA-F]{7}\.exa\.snu$
+                file_glob: d_homr_xxx_[0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f].exa.snu
+
+    -   OLD_DIR_NAME: ms_xxx_0
+        NEW_DIR_NAME: TBD
+        files:
+        -   Name: TBD
+            Level: TBD
+            file_patterns:
+                file_pattern: d_sums_xxx_#######.exa.snu
+                file_regex: ^d_sums_xxx_[0-9a-fA-F]{7}\.exa\.snu$
+                file_glob: d_sums_xxx_[0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f].exa.snu
+
+    -   OLD_DIR_NAME: mx_xxx_0
+        NEW_DIR_NAME: TBD
+        files:
+        -   Name: TBD
+            Level: TBD
+            file_patterns:
+                file_pattern: d_samx_xxx_#######.exa.snu
+                file_regex: ^d_samx_xxx_[0-9a-fA-F]{7}\.exa\.snu$
+                file_glob: d_samx_xxx_[0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f].exa.snu
+
+    -   OLD_DIR_NAME: my_xxx_0
+        NEW_DIR_NAME: TBD
+        files:
+        -   Name: TBD
+            Level: TBD
+            file_patterns:
+                file_pattern: d_pemy_xxx_#######.exa.snu
+                file_regex: ^d_pemy_xxx_[0-9a-fA-F]{7}\.exa\.snu$
+                file_glob: d_pemy_xxx_[0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f].exa.snu
+
+    -   OLD_DIR_NAME: na_xxx_0
+        NEW_DIR_NAME: TBD
+        files:
+        -   Name: TBD
+            Level: TBD
+            file_patterns:
+                file_pattern: d_eana_xxx_#######.exa.snu
+                file_regex: ^d_eana_xxx_[0-9a-fA-F]{7}\.exa\.snu$
+                file_glob: d_eana_xxx_[0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f].exa.snu
+
+    -   OLD_DIR_NAME: nd_xxx_0
+        NEW_DIR_NAME: TBD
+        files:
+        -   Name: TBD
+            Level: TBD
+            file_patterns:
+                file_pattern: d_bend_xxx_#######.exa.snu
+                file_regex: ^d_bend_xxx_[0-9a-fA-F]{7}\.exa\.snu$
+                file_glob: d_bend_xxx_[0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f].exa.snu
+        -   Name: TBD
+            Level: TBD
+            file_patterns:
+                file_pattern: d_jsnd_xxx_#######.exa.snu
+                file_regex: ^d_jsnd_xxx_[0-9a-fA-F]{7}\.exa\.snu$
+                file_glob: d_jsnd_xxx_[0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f].exa.snu
+        -   Name: TBD
+            Level: TBD
+            file_patterns:
+                file_pattern: d_wend_xxx_#######.exa.snu
+                file_regex: ^d_wend_xxx_[0-9a-fA-F]{7}\.exa\.snu$
+                file_glob: d_wend_xxx_[0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f].exa.snu
+
+    -   OLD_DIR_NAME: nf_xxx_0
+        NEW_DIR_NAME: TBD
+        files:
+        -   Name: TBD
+            Level: TBD
+            file_patterns:
+                file_pattern: d_benf_xxx_#######.exa.snu
+                file_regex: ^d_benf_xxx_[0-9a-fA-F]{7}\.exa\.snu$
+                file_glob: d_benf_xxx_[0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f].exa.snu
+
+    -   OLD_DIR_NAME: nj_xxx_0
+        NEW_DIR_NAME: manjula
+        files:
+        -   Name: TBD
+            Level: TBD
+            file_patterns:
+                file_pattern: d_manj_xxx_#######.exa.snu
+                file_regex: ^d_manj_xxx_[0-9a-fA-F]{7}\.exa\.snu$
+                file_glob: d_manj_xxx_[0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f].exa.snu
+
+    -   OLD_DIR_NAME: ny_xxx_0
+        NEW_DIR_NAME: janey_kearney_lenny
+        files:
+        -   Name: TBD
+            Level: TBD
+            file_patterns:
+                file_pattern: d_jany_xxx_#######.exa.snu
+                file_regex: ^d_jany_xxx_[0-9a-fA-F]{7}\.exa\.snu$
+                file_glob: d_jany_xxx_[0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f].exa.snu
+        -   Name: TBD
+            Level: TBD
+            file_patterns:
+                file_pattern: d_krny_xxx_#######.exa.snu
+                file_regex: ^d_krny_xxx_[0-9a-fA-F]{7}\.exa\.snu$
+                file_glob: d_krny_xxx_[0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f].exa.snu
+        -   Name: TBD
+            Level: TBD
+            file_patterns:
+                file_pattern: d_lnny_xxx_#######.exa.snu
+                file_regex: ^d_lnny_xxx_[0-9a-fA-F]{7}\.exa\.snu$
+                file_glob: d_lnny_xxx_[0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f].exa.snu
+
+    -   OLD_DIR_NAME: om_xxx_0
+        NEW_DIR_NAME: TBD
+        files:
+        -   Name: TBD
+            Level: TBD
+            file_patterns:
+                file_pattern: d_drom_xxx_#######.exa.snu
+                file_regex: ^d_drom_xxx_[0-9a-fA-F]{7}\.exa\.snu$
+                file_glob: d_drom_xxx_[0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f].exa.snu
+
+    -   OLD_DIR_NAME: on_xxx_0
+        NEW_DIR_NAME: TBD
+        files:
+        -   Name: TBD
+            Level: TBD
+            file_patterns:
+                file_pattern: d_gron_xxx_#######.exa.snu
+                file_regex: ^d_gron_xxx_[0-9a-fA-F]{7}\.exa\.snu$
+                file_glob: d_gron_xxx_[0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f].exa.snu
+
+    -   OLD_DIR_NAME: oy_xxx_0
+        NEW_DIR_NAME: reverend_lovejoy
+        files:
+        -   Name: TBD
+            Level: TBD
+            file_patterns:
+                file_pattern: d_ljoy_xxx_#######.exa.snu
+                file_regex: ^d_ljoy_xxx_[0-9a-fA-F]{7}\.exa\.snu$
+                file_glob: d_ljoy_xxx_[0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f].exa.snu
+
+    -   OLD_DIR_NAME: pa_xxx_0
+        NEW_DIR_NAME: TBD
+        files:
+        -   Name: TBD
+            Level: TBD
+            file_patterns:
+                file_pattern: d_frpa_xxx_#######.exa.snu
+                file_regex: ^d_frpa_xxx_[0-9a-fA-F]{7}\.exa\.snu$
+                file_glob: d_frpa_xxx_[0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f].exa.snu
+
+    -   OLD_DIR_NAME: pb_xxx_0
+        NEW_DIR_NAME: TBD
+        files:
+        -   Name: TBD
+            Level: TBD
+            file_patterns:
+                file_pattern: d_gspb_xxx_#######.exa.snu
+                file_regex: ^d_gspb_xxx_[0-9a-fA-F]{7}\.exa\.snu$
+                file_glob: d_gspb_xxx_[0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f].exa.snu
+
+    -   OLD_DIR_NAME: pg_xxx_0
+        NEW_DIR_NAME: TBD
+        files:
+        -   Name: TBD
+            Level: TBD
+            file_patterns:
+                file_pattern: d_gspg_xxx_#######.exa.snu
+                file_regex: ^d_gspg_xxx_[0-9a-fA-F]{7}\.exa\.snu$
+                file_glob: d_gspg_xxx_[0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f].exa.snu
+
+    -   OLD_DIR_NAME: r8_xxx_0
+        NEW_DIR_NAME: marge_simpson
+        files:
+        -   Name: TBD
+            Level: TBD
+            file_patterns:
+                file_pattern: d_mar8_xxx_#######.exa.snu
+                file_regex: ^d_mar8_xxx_[0-9a-fA-F]{7}\.exa\.snu$
+                file_glob: d_mar8_xxx_[0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f].exa.snu
+
+    -   OLD_DIR_NAME: ra_xxx_0
+        NEW_DIR_NAME: TBD
+        files:
+        -   Name: TBD
+            Level: TBD
+            file_patterns:
+                file_pattern: d_sgra_xxx_#######.exa.snu
+                file_regex: ^d_sgra_xxx_[0-9a-fA-F]{7}\.exa\.snu$
+                file_glob: d_sgra_xxx_[0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f].exa.snu
+
+    -   OLD_DIR_NAME: rc_xxx_0
+        NEW_DIR_NAME: TBD
+        files:
+        -   Name: TBD
+            Level: TBD
+            file_patterns:
+                file_pattern: d_morc_xxx_#######.exa.snu
+                file_regex: ^d_morc_xxx_[0-9a-fA-F]{7}\.exa\.snu$
+                file_glob: d_morc_xxx_[0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f].exa.snu
+
+    -   OLD_DIR_NAME: rg_xxx_0
+        NEW_DIR_NAME: marge_simpson_scratchy_the_cat
+        files:
+        -   Name: TBD
+            Level: TBD
+            file_patterns:
+                file_pattern: d_marg_xxx_#######.exa.snu
+                file_regex: ^d_marg_xxx_[0-9a-fA-F]{7}\.exa\.snu$
+                file_glob: d_marg_xxx_[0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f].exa.snu
+        -   Name: TBD
+            Level: TBD
+            file_patterns:
+                file_pattern: d_scrg_xxx_#######.exa.snu
+                file_regex: ^d_scrg_xxx_[0-9a-fA-F]{7}\.exa\.snu$
+                file_glob: d_scrg_xxx_[0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f].exa.snu
+
+    -   OLD_DIR_NAME: rh_xxx_0
+        NEW_DIR_NAME: scratchy_the_cat
+        files:
+        -   Name: TBD
+            Level: TBD
+            file_patterns:
+                file_pattern: d_scrh_xxx_#######.exa.snu
+                file_regex: ^d_scrh_xxx_[0-9a-fA-F]{7}\.exa\.snu$
+                file_glob: d_scrh_xxx_[0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f].exa.snu
+
+    -   OLD_DIR_NAME: ri_xxx_0
+        NEW_DIR_NAME: sherri_terri
+        files:
+        -   Name: TBD
+            Level: TBD
+            file_patterns:
+                file_pattern: d_shri_xxx_#######.exa.snu
+                file_regex: ^d_shri_xxx_[0-9a-fA-F]{7}\.exa\.snu$
+                file_glob: d_shri_xxx_[0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f].exa.snu
+        -   Name: TBD
+            Level: TBD
+            file_patterns:
+                file_pattern: d_teri_xxx_#######.exa.snu
+                file_regex: ^d_teri_xxx_[0-9a-fA-F]{7}\.exa\.snu$
+                file_glob: d_teri_xxx_[0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f].exa.snu
+
+    -   OLD_DIR_NAME: rk_xxx_0
+        NEW_DIR_NAME: mr_sparkle
+        files:
+        -   Name: TBD
+            Level: TBD
+            file_patterns:
+                file_pattern: d_sprk_xxx_#######.exa.snu
+                file_regex: ^d_sprk_xxx_[0-9a-fA-F]{7}\.exa\.snu$
+                file_glob: d_sprk_xxx_[0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f].exa.snu
+
+    -   OLD_DIR_NAME: rl_xxx_0
+        NEW_DIR_NAME: carl_carlson
+        files:
+        -   Name: TBD
+            Level: TBD
+            file_patterns:
+                file_pattern: d_carl_xxx_#######.exa.snu
+                file_regex: ^d_carl_xxx_[0-9a-fA-F]{7}\.exa\.snu$
+                file_glob: d_carl_xxx_[0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f].exa.snu
+
+    -   OLD_DIR_NAME: rn_xxx_0
+        NEW_DIR_NAME: barney_mr_burns_martin_prince
+        files:
+        -   Name: TBD
+            Level: TBD
+            file_patterns:
+                file_pattern: d_barn_xxx_#######.exa.snu
+                file_regex: ^d_barn_xxx_[0-9a-fA-F]{7}\.exa\.snu$
+                file_glob: d_barn_xxx_[0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f].exa.snu
+        -   Name: TBD
+            Level: TBD
+            file_patterns:
+                file_pattern: d_burn_xxx_#######.exa.snu
+                file_regex: ^d_burn_xxx_[0-9a-fA-F]{7}\.exa\.snu$
+                file_glob: d_burn_xxx_[0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f].exa.snu
+        -   Name: TBD
+            Level: TBD
+            file_patterns:
+                file_pattern: d_mprn_xxx_#######.exa.snu
+                file_regex: ^d_mprn_xxx_[0-9a-fA-F]{7}\.exa\.snu$
+                file_glob: d_mprn_xxx_[0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f].exa.snu
+
+    -   OLD_DIR_NAME: rt_xxx_0
+        NEW_DIR_NAME: TBD
+        files:
+        -   Name: TBD
+            Level: TBD
+            file_patterns:
+                file_pattern: d_bart_xxx_#######.exa.snu
+                file_regex: ^d_bart_xxx_[0-9a-fA-F]{7}\.exa\.snu$
+                file_glob: d_bart_xxx_[0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f].exa.snu
+        -   Name: TBD
+            Level: TBD
+            file_patterns:
+                file_pattern: d_mart_xxx_#######.exa.snu
+                file_regex: ^d_mart_xxx_[0-9a-fA-F]{7}\.exa\.snu$
+                file_glob: d_mart_xxx_[0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f].exa.snu
+        -   Name: TBD
+            Level: TBD
+            file_patterns:
+                file_pattern: d_turt_xxx_#######.exa.snu
+                file_regex: ^d_turt_xxx_[0-9a-fA-F]{7}\.exa\.snu$
+                file_glob: d_turt_xxx_[0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f].exa.snu
+
+    -   OLD_DIR_NAME: ry_xxx_0
+        NEW_DIR_NAME: larry
+        files:
+        -   Name: TBD
+            Level: TBD
+            file_patterns:
+                file_pattern: d_lary_xxx_#######.exa.snu
+                file_regex: ^d_lary_xxx_[0-9a-fA-F]{7}\.exa\.snu$
+                file_glob: d_lary_xxx_[0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f].exa.snu
+
+    -   OLD_DIR_NAME: s8_xxx_0
+        NEW_DIR_NAME: lisa_simpson
+        files:
+        -   Name: TBD
+            Level: TBD
+            file_patterns:
+                file_pattern: d_lis8_xxx_#######.exa.snu
+                file_regex: ^d_lis8_xxx_[0-9a-fA-F]{7}\.exa\.snu$
+                file_glob: d_lis8_xxx_[0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f].exa.snu
+
+    -   OLD_DIR_NAME: sa_xxx_0
+        NEW_DIR_NAME: lisa_simpson
+        files:
+        -   Name: TBD
+            Level: TBD
+            file_patterns:
+                file_pattern: d_lisa_xxx_#######.exa.snu
+                file_regex: ^d_lisa_xxx_[0-9a-fA-F]{7}\.exa\.snu$
+                file_glob: d_lisa_xxx_[0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f].exa.snu
+
+    -   OLD_DIR_NAME: sd_xxx_0
+        NEW_DIR_NAME: milhouse_van_houten
+        files:
+        -   Name: TBD
+            Level: TBD
+            file_patterns:
+                file_pattern: d_mhsd_xxx_#######.exa.snu
+                file_regex: ^d_mhsd_xxx_[0-9a-fA-F]{7}\.exa\.snu$
+                file_glob: d_mhsd_xxx_[0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f].exa.snu
+
+    -   OLD_DIR_NAME: se_xxx_0
+        NEW_DIR_NAME: milhouse_van_houten
+        files:
+        -   Name: TBD
+            Level: TBD
+            file_patterns:
+                file_pattern: d_mhse_xxx_#######.exa.snu
+                file_regex: ^d_mhse_xxx_[0-9a-fA-F]{7}\.exa\.snu$
+                file_glob: d_mhse_xxx_[0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f].exa.snu
+
+    -   OLD_DIR_NAME: sg_xxx_0
+        NEW_DIR_NAME: wiseguy
+        files:
+        -   Name: TBD
+            Level: TBD
+            file_patterns:
+                file_pattern: d_wisg_xxx_#######.exa.snu
+                file_regex: ^d_wisg_xxx_[0-9a-fA-F]{7}\.exa\.snu$
+                file_glob: d_wisg_xxx_[0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f].exa.snu
+
+    -   OLD_DIR_NAME: sm_xxx_0
+        NEW_DIR_NAME: krusty_the_clown_maggie_simpson
+        files:
+        -   Name: TBD
+            Level: TBD
+            file_patterns:
+                file_pattern: d_krsm_xxx_#######.exa.snu
+                file_regex: ^d_krsm_xxx_[0-9a-fA-F]{7}\.exa\.snu$
+                file_glob: d_krsm_xxx_[0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f].exa.snu
+        -   Name: TBD
+            Level: TBD
+            file_patterns:
+                file_pattern: d_mgsm_xxx_#######.exa.snu
+                file_regex: ^d_mgsm_xxx_[0-9a-fA-F]{7}\.exa\.snu$
+                file_glob: d_mgsm_xxx_[0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f].exa.snu
+
+    -   OLD_DIR_NAME: sp_xxx_0
+        NEW_DIR_NAME: jasper_beardly
+        files:
+        -   Name: TBD
+            Level: TBD
+            file_patterns:
+                file_pattern: d_jasp_xxx_#######.exa.snu
+                file_regex: ^d_jasp_xxx_[0-9a-fA-F]{7}\.exa\.snu$
+                file_glob: d_jasp_xxx_[0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f].exa.snu
+
+    -   OLD_DIR_NAME: t8_xxx_0
+        NEW_DIR_NAME: bart_simpson
+        files:
+        -   Name: TBD
+            Level: TBD
+            file_patterns:
+                file_pattern: d_brt8_xxx_#######.exa.snu
+                file_regex: ^d_brt8_xxx_[0-9a-fA-F]{7}\.exa\.snu$
+                file_glob: d_brt8_xxx_[0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f].exa.snu
+
+    -   OLD_DIR_NAME: te_xxx_0
+        NEW_DIR_NAME: TBD
+        files:
+        -   Name: TBD
+            Level: TBD
+            file_patterns:
+                file_pattern: d_gate_xxx_#######.exa.snu
+                file_regex: ^d_gate_xxx_[0-9a-fA-F]{7}\.exa\.snu$
+                file_glob: d_gate_xxx_[0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f].exa.snu
+
+    -   OLD_DIR_NAME: th_xxx_0
+        NEW_DIR_NAME: smithers
+        files:
+        -   Name: TBD
+            Level: TBD
+            file_patterns:
+                file_pattern: d_smth_xxx_#######.exa.snu
+                file_regex: ^d_smth_xxx_[0-9a-fA-F]{7}\.exa\.snu$
+                file_glob: d_smth_xxx_[0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f].exa.snu
+
+    -   OLD_DIR_NAME: to_xxx_0
+        NEW_DIR_NAME: otto_mann
+        files:
+        -   Name: TBD
+            Level: TBD
+            file_patterns:
+                file_pattern: d_otto_xxx_#######.exa.snu
+                file_regex: ^d_otto_xxx_[0-9a-fA-F]{7}\.exa\.snu$
+                file_glob: d_otto_xxx_[0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f].exa.snu
+
+    -   OLD_DIR_NAME: ty_xxx_0
+        NEW_DIR_NAME: patty_bouvier
+        files:
+        -   Name: TBD
+            Level: TBD
+            file_patterns:
+                file_pattern: d_ptty_xxx_#######.exa.snu
+                file_regex: ^d_ptty_xxx_[0-9a-fA-F]{7}\.exa\.snu$
+                file_glob: d_ptty_xxx_[0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f].exa.snu
+
+    -   OLD_DIR_NAME: ui_xxx_0
+        NEW_DIR_NAME: louie
+        files:
+        -   Name: TBD
+            Level: TBD
+            file_patterns:
+                file_pattern: d_loui_xxx_#######.exa.snu
+                file_regex: ^d_loui_xxx_[0-9a-fA-F]{7}\.exa\.snu$
+                file_glob: d_loui_xxx_[0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f].exa.snu
+
+    -   OLD_DIR_NAME: um_xxx_0
+        NEW_DIR_NAME: TBD
+        files:
+        -   Name: TBD
+            Level: TBD
+            file_patterns:
+                file_pattern: d_plum_xxx_#######.exa.snu
+                file_regex: ^d_plum_xxx_[0-9a-fA-F]{7}\.exa\.snu$
+                file_glob: d_plum_xxx_[0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f].exa.snu
+
+    -   OLD_DIR_NAME: us_xxx_0
+        NEW_DIR_NAME: krusty_the_clown
+        files:
+        -   Name: TBD
+            Level: TBD
+            file_patterns:
+                file_pattern: d_krus_xxx_#######.exa.snu
+                file_regex: ^d_krus_xxx_[0-9a-fA-F]{7}\.exa\.snu$
+                file_glob: d_krus_xxx_[0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f].exa.snu
+
+    -   OLD_DIR_NAME: ux_xxx_0
+        NEW_DIR_NAME: apu_lou
+        files:
+        -   Name: TBD
+            Level: TBD
+            file_patterns:
+                file_pattern: d_apux_xxx_#######.exa.snu
+                file_regex: ^d_apux_xxx_[0-9a-fA-F]{7}\.exa\.snu$
+                file_glob: d_apux_xxx_[0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f].exa.snu
+        -   Name: TBD
+            Level: TBD
+            file_patterns:
+                file_pattern: d_loux_xxx_#######.exa.snu
+                file_regex: ^d_loux_xxx_[0-9a-fA-F]{7}\.exa\.snu$
+                file_glob: d_loux_xxx_[0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f].exa.snu
+
+    -   OLD_DIR_NAME: wg_xxx_0
+        NEW_DIR_NAME: TBD
+        files:
+        -   Name: TBD
+            Level: TBD
+            file_patterns:
+                file_pattern: d_mgwg_xxx_#######.exa.snu
+                file_regex: ^d_mgwg_xxx_[0-9a-fA-F]{7}\.exa\.snu$
+                file_glob: d_mgwg_xxx_[0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f].exa.snu
+
+    -   OLD_DIR_NAME: wm_xxx_0
+        NEW_DIR_NAME: TBD
+        files:
+        -   Name: TBD
+            Level: TBD
+            file_patterns:
+                file_pattern: d_frwm_xxx_#######.exa.snu
+                file_regex: ^d_frwm_xxx_[0-9a-fA-F]{7}\.exa\.snu$
+                file_glob: d_frwm_xxx_[0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f].exa.snu
+
+    -   OLD_DIR_NAME: yr_xxx_0
+        NEW_DIR_NAME: blue_haired_lawyer_mayor_quimby
+        files:
+        -   Name: TBD
+            Level: TBD
+            file_patterns:
+                file_pattern: d_lwyr_xxx_#######.exa.snu
+                file_regex: ^d_lwyr_xxx_[0-9a-fA-F]{7}\.exa\.snu$
+                file_glob: d_lwyr_xxx_[0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f].exa.snu
+        -   Name: TBD
+            Level: TBD
+            file_patterns:
+                file_pattern: d_mayr_xxx_#######.exa.snu
+                file_regex: ^d_mayr_xxx_[0-9a-fA-F]{7}\.exa\.snu$
+                file_glob: d_mayr_xxx_[0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f].exa.snu
+
+    # Cutscenes audio, in game cutscenes
+-   EN-CUTSCENE:
+    -   OLD_DIR_NAME: igc01.ex
+        NEW_DIR_NAME: TBD
+        files:
+        -   Name: CUTSCENE
+            Level: Bartman_Begins
+            Note: Cutscene where Bart and Homer encounter bullies robbing museum
+            file_patterns:
+                file_pattern: brt_igc01.exa.snu
+                file_regex: ^brt_igc01\.exa\.snu$
+                file_glob: brt_igc01.exa.snu
+        -   Name: TBD
+            Level: TBD
+            file_patterns:
+                file_pattern: moh_igc01.exa.snu
+                file_regex: ^moh_igc01\.exa\.snu$
+                file_glob: moh_igc01.exa.snu
+        -   Name: TBD
+            Level: TBD
+            file_patterns:
+                file_pattern: rwc_igc01.exa.snu
+                file_regex: ^rwc_igc01\.exa\.snu$
+                file_glob: rwc_igc01.exa.snu
+
+    -   OLD_DIR_NAME: igc01b.e
+        NEW_DIR_NAME: TBD
+        files:
+        -   Name: CUTSCENE
+            Level: Big_Super_Happy_Fun_Fun_Game
+            Note: release of mr sparkle
+            file_patterns:
+                file_pattern: bsh_igc01b.exa.snu
+                file_regex: ^bsh_igc01b\.exa\.snu$
+                file_glob: bsh_igc01b.exa.snu
+
+    -   OLD_DIR_NAME: igc02.ex
+        NEW_DIR_NAME: TBD
+        files:
+        -   Name: TBD
+            Level: TBD
+            file_patterns:
+                file_pattern: 80b_igc02.exa.snu
+                file_regex: ^80b_igc02\.exa\.snu$
+                file_glob: 80b_igc02.exa.snu
+        -   Name: TBD
+            Level: TBD
+            file_patterns:
+                file_pattern: gts_igc02.exa.snu
+                file_regex: ^gts_igc02\.exa\.snu$
+                file_glob: gts_igc02.exa.snu
+        -   Name: TBD
+            Level: TBD
+            file_patterns:
+                file_pattern: hug_igc02.exa.snu
+                file_regex: ^hug_igc02\.exa\.snu$
+                file_glob: hug_igc02.exa.snu
+        -   Name: TBD
+            Level: TBD
+            file_patterns:
+                file_pattern: mob_igc02.exa.snu
+                file_regex: ^mob_igc02\.exa\.snu$
+                file_glob: mob_igc02.exa.snu
+        -   Name: TBD
+            Level: TBD
+            file_patterns:
+                file_pattern: nvq_igc02.exa.snu
+                file_regex: ^nvq_igc02\.exa\.snu$
+                file_glob: nvq_igc02.exa.snu
+        -   Name: TBD
+            Level: TBD
+            file_patterns:
+                file_pattern: rwc_igc02.exa.snu
+                file_regex: ^rwc_igc02\.exa\.snu$
+                file_glob: rwc_igc02.exa.snu
+        -   Name: TBD
+            Level: TBD
+            file_patterns:
+                file_pattern: sss_igc02.exa.snu
+                file_regex: ^sss_igc02\.exa\.snu$
+                file_glob: sss_igc02.exa.snu
+
+    -   OLD_DIR_NAME: igc03.ex
+        NEW_DIR_NAME: TBD
+        files:
+        -   Name: TBD
+            Level: TBD
+            file_patterns:
+                file_pattern: hug_igc03.exa.snu
+                file_regex: ^hug_igc03\.exa\.snu$
+                file_glob: hug_igc03.exa.snu
+        -   Name: TBD
+            Level: TBD
+            file_patterns:
+                file_pattern: mob_igc03.exa.snu
+                file_regex: ^mob_igc03\.exa\.snu$
+                file_glob: mob_igc03.exa.snu
+        -   Name: TBD
+            Level: TBD
+            file_patterns:
+                file_pattern: mtp_igc03.exa.snu
+                file_regex: ^mtp_igc03\.exa\.snu$
+                file_glob: mtp_igc03.exa.snu
+
+    -   OLD_DIR_NAME: igc03a.e
+        NEW_DIR_NAME: TBD
+        files:
+        -   Name: TBD
+            Level: TBD
+            file_patterns:
+                file_pattern: mob_igc03a.exa.snu
+                file_regex: ^mob_igc03a\.exa\.snu$
+                file_glob: mob_igc03a.exa.snu
+
+    -   OLD_DIR_NAME: igc04.ex
+        NEW_DIR_NAME: TBD
+        files:
+        -   Name: TBD
+            Level: TBD
+            file_patterns:
+                file_pattern: mtp_igc04.exa.snu
+                file_regex: ^mtp_igc04\.exa\.snu$
+                file_glob: mtp_igc04.exa.snu
+
+    -   OLD_DIR_NAME: igc11.ex
+        NEW_DIR_NAME: TBD
+        files:
+        -   Name: TBD
+            Level: TBD
+            file_patterns:
+                file_pattern: 80b_igc11.exa.snu
+                file_regex: ^80b_igc11\.exa\.snu$
+                file_glob: 80b_igc11.exa.snu
+        -   Name: TBD
+            Level: TBD
+            file_patterns:
+                file_pattern: brt_igc11.exa.snu
+                file_regex: ^brt_igc11\.exa\.snu$
+                file_glob: brt_igc11.exa.snu
+        -   Name: TBD
+            Level: TBD
+            file_patterns:
+                file_pattern: BSH_igc11.exa.snu
+                file_regex: ^BSH_igc11\.exa\.snu$
+                file_glob: BSH_igc11.exa.snu
+        -   Name: TBD
+            Level: TBD
+            file_patterns:
+                file_pattern: moh_igc11.exa.snu
+                file_regex: ^moh_igc11\.exa\.snu$
+                file_glob: moh_igc11.exa.snu
+        -   Name: TBD
+            Level: TBD
+            file_patterns:
+                file_pattern: mtp_igc11.exa.snu
+                file_regex: ^mtp_igc11\.exa\.snu$
+                file_glob: mtp_igc11.exa.snu
+        -   Name: TBD
+            Level: TBD
+            file_patterns:
+                file_pattern: nvq_igc11.exa.snu
+                file_regex: ^nvq_igc11\.exa\.snu$
+                file_glob: nvq_igc11.exa.snu
+        -   Name: TBD
+            Level: TBD
+            file_patterns:
+                file_pattern: scd_igc11.exa.snu
+                file_regex: ^scd_igc11\.exa\.snu$
+                file_glob: scd_igc11.exa.snu
+
+    -   OLD_DIR_NAME: igc12.ex
+        NEW_DIR_NAME: TBD
+        files:
+        -   Name: TBD
+            Level: TBD
+            file_patterns:
+                file_pattern: bsh_igc12.exa.snu
+                file_regex: ^bsh_igc12\.exa\.snu$
+                file_glob: bsh_igc12.exa.snu
+        -   Name: TBD
+            Level: TBD
+            file_patterns:
+                file_pattern: moh_igc12.exa.snu
+                file_regex: ^moh_igc12\.exa\.snu$
+                file_glob: moh_igc12.exa.snu
+        -   Name: TBD
+            Level: TBD
+            file_patterns:
+                file_pattern: nvq_igc12.exa.snu
+                file_regex: ^nvq_igc12\.exa\.snu$
+                file_glob: nvq_igc12.exa.snu
+
+    -   OLD_DIR_NAME: igc13.ex
+        NEW_DIR_NAME: TBD
+        files:
+        -   Name: TBD
+            Level: TBD
+            file_patterns:
+                file_pattern: bsh_igc13.exa.snu
+                file_regex: ^bsh_igc13\.exa\.snu$
+                file_glob: bsh_igc13.exa.snu
+        -   Name: TBD
+            Level: TBD
+            file_patterns:
+                file_pattern: hug_igc13.exa.snu
+                file_regex: ^hug_igc13\.exa\.snu$
+                file_glob: hug_igc13.exa.snu
+        -   Name: TBD
+            Level: TBD
+            file_patterns:
+                file_pattern: nvq_igc13.exa.snu
+                file_regex: ^nvq_igc13\.exa\.snu$
+                file_glob: nvq_igc13.exa.snu
+
+    -   OLD_DIR_NAME: igc15.ex
+        NEW_DIR_NAME: TBD
+        files:
+        -   Name: TBD
+            Level: TBD
+            file_patterns:
+                file_pattern: bsh_igc15.exa.snu
+                file_regex: ^bsh_igc15\.exa\.snu$
+                file_glob: bsh_igc15.exa.snu
+
+    -   OLD_DIR_NAME: igc16.ex
+        NEW_DIR_NAME: TBD
+        files:
+        -   Name: TBD
+            Level: TBD
+            file_patterns:
+                file_pattern: bsh_igc16.exa.snu
+                file_regex: ^bsh_igc16\.exa\.snu$
+                file_glob: bsh_igc16.exa.snu
+        -   Name: TBD
+            Level: TBD
+            file_patterns:
+                file_pattern: che_igc16.exa.snu
+                file_regex: ^che_igc16\.exa\.snu$
+                file_glob: che_igc16.exa.snu
+
+    -   OLD_DIR_NAME: igc_13.e
+        NEW_DIR_NAME: TBD
+        files:
+        -   Name: CUTSCENE
+            Level: Bartman_Begins
+            Note: when bart traps a bully in a dino skeleton
+            file_patterns:
+                file_pattern: brt_igc_13.exa.snu
+                file_regex: ^brt_igc_13\.exa\.snu$
+                file_glob: brt_igc_13.exa.snu
+
+    -   OLD_DIR_NAME: igc_14.e
+        NEW_DIR_NAME: TBD
+        files:
+        -   Name: CUTSCENE
+            Level: Big_Super_Happy_Fun_Fun_Game
+            Note: when the airship appears
+            file_patterns:
+                file_pattern: bsh_igc_14.exa.snu
+                file_regex: ^bsh_igc_14\.exa\.snu$
+                file_glob: bsh_igc_14.exa.snu
+
+
+
+
+
+
+
+
+
+
+# Global' Audio files
+
+
+-   Global-Sound:
+
+    -   OLD_DIR_NAME: amb_ext_
+        NEW_DIR_NAME: ambiant_exterior_springfield_hub
+        LevelNum: 1.1
+        files:
+        -   Name: ext_garage1
+            Level: Springfield Hub
+            file_patterns:
+                file_pattern: spr_amb_ext_garage_qd_01.exa.snu
+        -   Name: ext_harbor1
+            Level: Springfield Hub
+            file_patterns:
+                file_pattern: spr_amb_ext_harbor_qd_01.exa.snu
+        -   Name: ext_generic1
+            Level: Springfield Hub
+            file_patterns:
+                file_pattern: spr_amb_ext_qd_01.exa.snu
+
+    -   OLD_DIR_NAME: amb_int_
+        NEW_DIR_NAME: ambiant_interior_springfield_hub
+        LevelNum: 1.1
+        files:
+        -   Name: int_generic1
+            Level: Springfield Hub
+            file_patterns:
+                file_pattern: spr_amb_int_generic_qd_01.exa.snu
+        -   Name: int_generic2
+            Level: Springfield Hub
+            file_patterns:
+                file_pattern: spr_amb_int_generic_qd_02.exa.snu
+        -   Name: int_house1
+            Level: Springfield Hub
+            file_patterns:
+                file_pattern: spr_amb_int_house_qd_01.exa.snu
+        -   Name: int_vent1
+            Level: Springfield Hub
+            file_patterns:
+                file_pattern: spr_amb_int_vent_qd_01.exa.snu
+
+
+
+    -   OLD_DIR_NAME: brt_dino
+        NEW_DIR_NAME: ambiant_brt_dino_bartman_begins
+        LevelNum: 2.2
+        files:
+        -   Name: brt_dino1
+            Level: Bartman Begins
+            file_patterns:
+                file_pattern: amb_brt_dino_4ch_lp.exa.snu
+
+    -   OLD_DIR_NAME: brt_dior
+        NEW_DIR_NAME: ambiant_brt_diorama_bartman_begins
+        LevelNum: 2.2
+        files:
+        -   Name: brt_diorama1
+            Level: Bartman Begins
+            file_patterns:
+                file_pattern: amb_brt_diorama_4ch_lp.exa.snu
+
+    -   OLD_DIR_NAME: brt_myst
+        NEW_DIR_NAME: ambiant_brt_mystical_bartman_begins
+        LevelNum: 2.2
+        files:
+        -   Name: brt_mystical1
+            Level: Bartman Begins
+            file_patterns:
+                file_pattern: amb_brt_mystical_qd.exa.snu
+
+    -   OLD_DIR_NAME: brt_plan
+        NEW_DIR_NAME: ambiant_brt_planet_bartman_begins
+        LevelNum: 2.2
+        files:
+        -   Name: brt_planet1
+            Level: Bartman Begins
+            file_patterns:
+                file_pattern: amb_brt_planet_4ch_lp.exa.snu
+
+    -   OLD_DIR_NAME: brt_temp
+        NEW_DIR_NAME: ambiant_brt_temple_bartman_begins
+        LevelNum: 2.2
+        files:
+        -   Name: brt_temple1
+            Level: Bartman Begins
+            file_patterns:
+                file_pattern: amb_brt_temple_4ch_lp.exa.snu
+
+
+
+    -   OLD_DIR_NAME: 80b_crow
+        NEW_DIR_NAME: ambiant_level3_crowds_around_the_world_in_80_bites
+        LevelNum: 2.3
+        files:
+        -   Name: Level3 Crowd
+            Level: Around the World in 80 Bites
+            file_patterns:
+                file_pattern: amb_80b_crowd_qd_01.exa.snu
+        -   Name: level3 crowd2
+            Level: Around the World in 80 Bites
+            file_patterns:
+                file_pattern: amb_80b_crowd_qd_02.exa.snu
+
+
+
+    -   OLD_DIR_NAME: amb_fore
+        NEW_DIR_NAME: ambiant_forest_lisa_the_tree_hugger
+        LevelNum: 2.4
+        files:
+        -   Name: tree_hug_amb_forest1
+            Level: Lisa the Tree Hugger
+            file_patterns:
+                file_pattern: hug_amb_forest_qd_01.exa.snu
+        -   Name: tree_hug_amb_forest2
+            Level: Lisa the Tree Hugger
+            file_patterns:
+                file_pattern: hug_amb_forest_qd_02.exa.snu
+        -   Name: tree_hug_amb_forest3
+            Level: Lisa the Tree Hugger
+            file_patterns:
+                file_pattern: hug_amb_forest_qd_03.exa.snu
+
+
+
+    -   OLD_DIR_NAME: amb_vent
+        NEW_DIR_NAME: ambiant_vent_mob_rules
+        LevelNum: 2.5
+        files:
+        -   Name: vent1
+            Level: Mob Rules
+            file_patterns:
+                file_pattern: mob_amb_vent_qd_01.exa.snu
+
+    -   OLD_DIR_NAME: amb_gara
+        NEW_DIR_NAME: ambiant_garage_mob_rules
+        LevelNum: 2.5
+        files:
+        -   Name: garage1
+            Level: Mob Rules
+            file_patterns:
+                file_pattern: mob_amb_garage_qd_01.exa.snu
+
+    -   OLD_DIR_NAME: amb_riot
+        NEW_DIR_NAME: ambiant_riot_mob_rules
+        LevelNum: 2.5
+        files:
+        -   Name: riot1
+            Level: Mob Rules
+            file_patterns:
+                file_pattern: mob_amb_riot_qd_01.exa.snu
+
+
+    -   OLD_DIR_NAME: che_cart
+        NEW_DIR_NAME: ambiant_cart_enter_the_cheatrix
+        LevelNum: 2.6
+        files:
+        -   Name: cart1
+            Level: Enter the Cheatrix
+            file_patterns:
+                file_pattern: amb_che_cart_qd.exa.snu
+
+    -   OLD_DIR_NAME: che_cent
+        NEW_DIR_NAME: ambiant_central_enter_the_cheatrix
+        LevelNum: 2.6
+        files:
+        -   Name: central1
+            Level: Enter the Cheatrix
+            file_patterns:
+                file_pattern: amb_che_central_qd.exa.snu
+        -   Name: central_top1
+            Level: Enter the Cheatrix
+            file_patterns:
+                file_pattern: amb_che_central_top_qd.exa.snu
+
+    -   OLD_DIR_NAME: che_mark
+        NEW_DIR_NAME: ambiant_market_enter_the_cheatrix
+        LevelNum: 2.6
+        files:
+        -   Name: market1
+            Level: Enter the Cheatrix
+            file_patterns:
+                file_pattern: amb_che_market_qd.exa.snu
+
+    -   OLD_DIR_NAME: che_mo_b
+        NEW_DIR_NAME: ambiant_bloody_enter_the_cheatrix
+        LevelNum: 2.6
+        files:
+        -   Name: bloody1
+            Level: Enter the Cheatrix
+            file_patterns:
+                file_pattern: amb_che_mo_bloody_qd.exa.snu
+
+    -   OLD_DIR_NAME: che_q_an
+        NEW_DIR_NAME: ambiant_cheat_enter_the_cheatrix
+        LevelNum: 2.6
+        files:
+        -   Name: ambiant_cheat_enter_the_cheatrix
+            Level: Enter the Cheatrix
+            file_patterns:
+                file_pattern: amb_che_q_and_a_qd.exa.snu
+
+
+    -   OLD_DIR_NAME: dod_aqua
+        NEW_DIR_NAME: ambiant_aquarium_day_of_the_dolphin
+        LevelNum: 2.7
+        files:
+        -   Name: aquarium1
+            Level: Day of the Dolphin
+            file_patterns:
+                file_pattern: amb_dod_aquarium_qd.exa.snu
+
+    -   OLD_DIR_NAME: dod_dock
+        NEW_DIR_NAME: ambiant_docks_day_of_the_dolphin
+        LevelNum: 2.7
+        files:
+        -   Name: docks1
+            Level: Day of the Dolphin
+            file_patterns:
+                file_pattern: amb_dod_docks_qd.exa.snu
+
+
+    -   OLD_DIR_NAME: amb_chao
+        NEW_DIR_NAME: ambiant_Shadow of the Colossal Donut
+        LevelNum: 2.8
+        files:
+        -   Name: Shadow of the Colossal Donut
+            Level: Shadow of the Colossal Donut
+            file_patterns:
+                file_pattern: scd_amb_chaos_harbor_qd_01.exa.snu
+        -   Name: Shadow of the Colossal Donut2
+            Level: Shadow of the Colossal Donut
+            file_patterns:
+                file_pattern: scd_amb_chaos_qd_01.exa.snu
+
+
+    -   OLD_DIR_NAME: sss_cont
+        NEW_DIR_NAME: ambiant_controlroom_invasion_of_the_yokel_snatchers
+        LevelNum: 2.9
+        files:
+        -   Name: control_room1
+            Level: Invasion of the Yokel-Snatchers
+            file_patterns:
+                file_pattern: amb_sss_control_room_qd.exa.snu
+
+    -   OLD_DIR_NAME: sss_lab_
+        NEW_DIR_NAME: ambiant_lab_invasion_of_the_yokel_snatchers
+        LevelNum: 2.9
+        files:
+        -   Name: lab1
+            Level: Invasion of the Yokel-Snatchers
+            file_patterns:
+                file_pattern: amb_sss_lab_qd.exa.snu
+
+    -   OLD_DIR_NAME: sss_mall
+        NEW_DIR_NAME: ambiant_mall_invasion_of_the_yokel_snatchers
+        LevelNum: 2.9
+        files:
+        -   Name: mall_lot1
+            Level: Invasion of the Yokel-Snatchers
+            file_patterns:
+                file_pattern: amb_sss_mall_lot_qd.exa.snu
+
+
+    -   OLD_DIR_NAME: bin_rev0
+        NEW_DIR_NAME: ambiant_bargainbin_bargain_bin
+        LevelNum: 2.10
+        files:
+        -   Name: bin_rev01
+            Level: Bargain Bin
+            file_patterns:
+                file_pattern: amb_bin_rev01_qd.exa.snu
+
+    -   OLD_DIR_NAME: gamehub_
+        NEW_DIR_NAME: ambiant_gamehub_bargain_bin
+        LevelNum: 2.10
+        files:
+        -   Name: ambiant_gamehub
+            Level: Bargain Bin
+            file_patterns:
+                file_pattern: amb_gamehub_amb_qd.exa.snu
+        -   Name: ambiant_siegehouse
+            Note: background audio for alian attack on springfield at beggining of barbain bin
+            Level: Bargain Bin
+            file_patterns:
+                file_pattern: amb_gamehub_siegehouse_rev1_qd.exa.snu
+
+
+    -   OLD_DIR_NAME: amb_shir
+        NEW_DIR_NAME: ambiant_shire_neverquest
+        LevelNum: 2.11
+        files:
+        -   Name: shire1
+            Level: NeverQuest
+            file_patterns:
+                file_pattern: nvq_amb_shire_qd_01.exa.snu
+
+    -   OLD_DIR_NAME: amb_dung
+        NEW_DIR_NAME: ambiant_dungeon_neverquest
+        LevelNum: 2.11
+        files:
+        -   Name: dungeon1
+            Level: NeverQuest
+            file_patterns:
+                file_pattern: nvq_amb_dungeon_qd_01.exa.snu
+        -   Name: dungeon2
+            Level: NeverQuest
+            file_patterns:
+                file_pattern: nvq_amb_dungeon_qd_02.exa.snu
+        -   Name: dungeon3
+            Level: NeverQuest
+            file_patterns:
+                file_pattern: nvq_amb_dungeon_qd_03.exa.snu
+
+
+
+    -   OLD_DIR_NAME: gts_full
+        NEW_DIR_NAME: ambiant_fullcity_grand_theft_scratchy
+        LevelNum: 2.12
+        files:
+        -   Name: fullcity1
+            Level: Grand Theft Scratchy
+            file_patterns:
+                file_pattern: amb_gts_fullcity_qd.exa.snu
+
+    -   OLD_DIR_NAME: gts_seas
+        NEW_DIR_NAME: ambiant_seaside_grand_theft_scratchy
+        LevelNum: 2.12
+        files:
+        -   Name: seaside1
+            Level: Grand Theft Scratchy
+            file_patterns:
+                file_pattern: amb_gts_seaside_qd.exa.snu
+
+    -   OLD_DIR_NAME: gts_stat
+        NEW_DIR_NAME: ambiant_station_grand_theft_scratchy
+        LevelNum: 2.12
+        files:
+        -   Name: station1
+            Level: Grand Theft Scratchy
+            file_patterns:
+                file_pattern: amb_gts_station_qd.exa.snu
+
+    -   OLD_DIR_NAME: gts_subu
+        NEW_DIR_NAME: ambiant_suburb_grand_theft_scratchy
+        LevelNum: 2.12
+        files:
+        -   Name: suburb1
+            Level: Grand Theft Scratchy
+            file_patterns:
+                file_pattern: amb_gts_suburb_qd.exa.snu
+
+    -   OLD_DIR_NAME: gts_vent
+        NEW_DIR_NAME: ambiant_vent_grand_theft_scratchy
+        LevelNum: 2.12
+        files:
+        -   Name: vent1
+            Level: Grand Theft Scratchy
+            file_patterns:
+                file_pattern: amb_gts_vents_qd.exa.snu
+
+    -   OLD_DIR_NAME: gts_viol
+        NEW_DIR_NAME: ambiant_violentsea_grand_theft_scratchy
+        LevelNum: 2.12
+        files:
+        -   Name: violent_sea1
+            Level: Grand Theft Scratchy
+            file_patterns:
+                file_pattern: amb_gts_violent_sea_qd.exa.snu
+
+
+    -   OLD_DIR_NAME: amb_nort
+        NEW_DIR_NAME: ambiant_northafrica_medal_of_homer
+        LevelNum: 2.13
+        files:
+        -   Name: northafrica1
+            Level: Medal of Homer
+            file_patterns:
+                file_pattern: moh_amb_northafrica_qd_01.exa.snu
+        -   Name: northafrica2
+            Level: Medal of Homer
+            file_patterns:
+                file_pattern: moh_amb_northafrica_qd_02.exa.snu
+        -   Name: northafrica3
+            Level: Medal of Homer
+            file_patterns:
+                file_pattern: moh_amb_northafrica_qd_03.exa.snu
+
+    -   OLD_DIR_NAME: amb_fren
+        NEW_DIR_NAME: ambiant_french_medal_of_homer
+        LevelNum: 2.13
+        files:
+        -   Name: french_castle
+            Level: Medal of Homer
+            file_patterns:
+                file_pattern: moh_amb_french_castle_qd.exa.snu
+        -   Name: french_village_night
+            Level: Medal of Homer
+            file_patterns:
+                file_pattern: moh_amb_french_village_night_qd.exa.snu
+
+    -   OLD_DIR_NAME: amb_airc
+        NEW_DIR_NAME: ambiant_aircraft_carrier_medal_of_homer
+        LevelNum: 2.13
+        files:
+        -   Name: Aircraft Carrier
+            Level: Medal of Homer
+            file_patterns:
+                file_pattern: moh_amb_aircraft_carrier_qd.exa.snu
+
+
+
+    -   OLD_DIR_NAME: bsh_air_
+        NEW_DIR_NAME: ambiant_airship_big_super_happy_fun_fun_game
+        LevelNum: 2.14
+        files:
+        -   Name: airship
+            Level: Big Super Happy Fun Fun Game
+            file_patterns:
+                file_pattern: amb_bsh_air_qd.exa.snu
+
+    -   OLD_DIR_NAME: bsh_beac
+        NEW_DIR_NAME: ambiant_beach_big_super_happy_fun_fun_game
+        LevelNum: 2.14
+        files:
+        -   Name: beach1
+            Level: Big Super Happy Fun Fun Game
+            file_patterns:
+                file_pattern: amb_bsh_beach_qd.exa.snu
+
+    -   OLD_DIR_NAME: bsh_figh
+        NEW_DIR_NAME: ambiant_fight_big_super_happy_fun_fun_game
+        LevelNum: 2.14
+        files:
+        -   Name: fight1
+            Level: Big Super Happy Fun Fun Game
+            file_patterns:
+                file_pattern: amb_bsh_fight_01.exa.snu
+
+    -   OLD_DIR_NAME: bsh_fire
+        NEW_DIR_NAME: ambiant_fire_big_super_happy_fun_fun_game
+        LevelNum: 2.14
+        files:
+        -   Name: fire1
+            Level: Big Super Happy Fun Fun Game
+            file_patterns:
+                file_pattern: amb_bsh_fire_qd.exa.snu
+
+    -   OLD_DIR_NAME: bsh_ice_
+        NEW_DIR_NAME: ambiant_ice_big_super_happy_fun_fun_game
+        LevelNum: 2.14
+        files:
+        -   Name: ice1
+            Level: Big Super Happy Fun Fun Game
+            file_patterns:
+                file_pattern: amb_bsh_ice_qd.exa.snu
+
+    -   OLD_DIR_NAME: bsh_vill
+        NEW_DIR_NAME: ambiant_village_big_super_happy_fun_fun_game
+        LevelNum: 2.14
+        files:
+        -   Name: village1
+            Level: Big Super Happy Fun Fun Game
+            file_patterns:
+                file_pattern: amb_bsh_village_qd.exa.snu
+
+    -   OLD_DIR_NAME: bsh__air
+        NEW_DIR_NAME: ambiant_airship_alt_big_super_happy_fun_fun_game
+        LevelNum: 2.14
+        files:
+        -   Name: airship_alt1
+            Level: Big Super Happy Fun Fun Game
+            file_patterns:
+                file_pattern: amb_bsh__airship_qd.exa.snu
+
+
+    -   OLD_DIR_NAME: amb_mans
+        NEW_DIR_NAME: ambiant_mansion_five_characters_in_search_of_an_author
+        LevelNum: 2.15
+        files:
+        -   Name: mansion2
+            Level: Five Characters in Search of an Author
+            file_patterns:
+                file_pattern: rwc_amb_mansion_qd_02.exa.snu
+
+    -   OLD_DIR_NAME: mus_simp
+        NEW_DIR_NAME: simpsons_theme_song_five_characters_in_search_of_an_author
+        LevelNum: 2.15
+        files:
+        -   Name: Simpsons Theme Song
+            Level: Five Characters in Search of an Author
+            file_patterns:
+                file_pattern: rwc_mus_simpsons_theme_song.exa.snu
+
+    -   OLD_DIR_NAME: amb_cour
+        NEW_DIR_NAME: ambiant_courtyard_five_characters_in_search_of_an_author
+        LevelNum: 2.15
+        files:
+        -   Name: courtyard2
+            Level: Five Characters in Search of an Author
+            file_patterns:
+                file_pattern: rwc_amb_courtyard_qd_02.exa.snu
+
+
+
+    -   OLD_DIR_NAME: mtp_heav
+        NEW_DIR_NAME: ambiant_heaven_meet_thy_player_game_over
+        LevelNum: 2.16
+        files:
+        -   Name: heaven_full
+            Level: Meet Thy Player / Game Over
+            file_patterns:
+                file_pattern: amb_mtp_heaven_full_qd.exa.snu
+        -   Name: heaven_lite
+            Level: Meet Thy Player / Game Over
+            file_patterns:
+                file_pattern: amb_mtp_heaven_lite_qd.exa.snu
