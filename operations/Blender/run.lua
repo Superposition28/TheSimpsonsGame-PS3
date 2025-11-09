@@ -497,8 +497,8 @@ local function main()
     ensure_directory(output_dir)
 
     -- Load phase modules (must export a `main(opts)` function)
-    local BlenderInit = load_module(join(blender_dir, "BlenderInit.lua"))
-    local BlenderCore = load_module(join(blender_dir, "BlenderCore.lua"))
+    local BlenderInit = load_module(join(output_dir, "BlenderInit.lua"))
+    local BlenderCore = load_module(join(output_dir, "BlenderCore.lua"))
 
     -- Options for initialization phase
     local init_opts = {
@@ -536,7 +536,6 @@ local function main()
         end
     end
 
-
     -- Options for core processing phase (imports, conversions, exports)
     local core_opts = {
         verbose = cli.verbose,
@@ -545,12 +544,13 @@ local function main()
         export_formats = cli.formats,
         db_file_path = join(output_dir, "asset_map.sqlite"),
         main_db = cli.main_db,
-        blender_exe_path = blender_exe_path
+        blender_exe_path = blender_exe_path,
+        game_root = cli.game_root
     }
 
     -- Phase 2: actual Blender processing and export
     local ok_core, err_core = pcall(function()
-        log(Colours.CYAN, "Running Blender processing phase")
+        log(Colours.CYAN, "Running Blender processing phase with opts: " .. tableToString(core_opts))
         BlenderCore.main(core_opts)
     end)
 

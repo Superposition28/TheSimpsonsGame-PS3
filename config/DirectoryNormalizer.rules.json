@@ -1,0 +1,47 @@
+{
+  "categories": [
+    "environs",
+    "props",
+    "chars",
+    "weapons",
+    "characters",
+    "fx",
+    "ui",
+    "audio"
+  ],
+  "purpose_tokens": [
+    "geo",
+    "opt",
+    "lod",
+    "bound",
+    "rig",
+    "tex",
+    "mat",
+    "proxy",
+    "anim",
+    "terrain"
+  ],
+  "filename_patterns": [
+    { "pattern": "^lod[_\\- ]?(\\d+)", "purpose": "lod" },
+    { "pattern": "^lod(\\d+)[_\\- ]?model$", "purpose": "lod" },
+    { "pattern": "^opt[_\\- ]?model(\\d+)$", "purpose": "opt" },
+    { "pattern": "^(.*)_geo$", "purpose": "geo" },
+    { "pattern": "^terrain", "purpose": "terrain" }
+  ],
+  "base_folder_prefixes": [
+    "Assets_",
+    "Map_"
+  ],
+  "generic_tokens": [
+    "export",
+    "assets",
+    "build",
+    "ntsc_en",
+    "ps3",
+    "rws"
+  ],
+  "strip_str_suffix": true,
+  "file_name_mode": "flattened",
+  "file_name_template": "{owner}_{asset}_{purpose}{_index}__K{key}{ext}"
+}
+

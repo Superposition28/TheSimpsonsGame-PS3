@@ -1,5 +1,28 @@
 
 
+
+
+
+
+
+godot::
+## TODO: the current scene_config.json expects very specific asset paths that are nolonger correct
+## TODO: instead auto export the full asset map sqlite db to json and use the asset_id in the scene config
+## TODO: or somehow auto generate the scene config based on the db file
+## last version does technically work, but only with the correct asset paths
+
+The materials applied to the models within godot will need to be adjustable via the godot editor scene builder script and the json configs
+
+
+Blender::
+## blender cannot handle paths that exeed windows path limits
+## blender refused to accept my solutions to this so i did two things to ensure it works for -
+## blender and any other application that needs to handle the files
+## the second solution within the blender init is to create symbolic links to the long paths, this had a noticable impact on reliability
+## but the two solutions significantly impact time to complete second only to godot
+
+
+
 Init Lua:
 the Init Lua script needs to be updated to handle multiple possible source paths for the game files
 Possible source paths provided by user:
@@ -71,11 +94,17 @@ when re-runing the downloader with no force redownload, it always redownloads de
 the Loading bar does not render correctly, often showing many empty lines and/or printing the bar on multiple lines
 this may also occur in other tools, and is likly connected to console size W and/or H, like in vs code terminal
 
-Blender Importer:
-first complete indexer, then complete integration of updated index db into importer
 
-the blender process produces a temporary asset map sqlite db that maps asset ids to file paths
-it might be better to use the main index db instead of creating a temporary one or atleast creating a link between the two, id's etc
+
+flatten:
+the flatten structure script (C#) needs to be updated to be more like this py script 'reversing\Source\Format-Analysis\preinstanced\scripts\flatten.py' or maybe it was 'reversing\Format-Analysis\preinstanced\flatten2.py'
+
+
+Texture Extraction:
+the texture extraction script needs to be updated to correctly write dds header data, some don't have the file size written correctly
+add support for exporting to png format directly from dds files to not require an external tool to convert dds to png
+
+
 
 Indexer:
 will likly require a number of possible db outputs to handle different scenarios
@@ -116,26 +145,6 @@ the conf file will contains string values for audio_state and int for isRenamed
 
 finish indexing all files EN|US both un-processed and processed
 the index needs to handle the case where audio files are moved into en and global folders after (Reorganize Audio Files) operation
-
-seems the indexer is incorrectly indexing the asset files as unknown files and assets, causing many missing files in the unknown files index
-not very important
-[Validate] -- Table: unknown_files_index (column: source_path) --
-[Validate]   5533 missing of 25470.
-
-update index to index the png output of txd extraction, currently only indexes the dds files
-
-
-flatten:
-the flatten structure script (C#) needs to be updated to be more like this py script 'reversing\Source\Format-Analysis\preinstanced\scripts\flatten.py'
-
-
-Texture Extraction:
-the texture extraction script needs to be updated to correctly write dds header data, some don't have the file size written correctly
-add support for exporting to png format directly from dds files to not require an external tool to convert dds to png
-
-
-:: :: 8/11 now that a base db has been created the blender importer can be updated to use that db to locate texture files
-TODO: FOCUS ON BLENDER IMPORT PIPELINE
 
 TMP::
 

@@ -544,8 +544,8 @@ def main() -> None:
     for dp, _, files in os.walk(root):
         for fn in files:
             fl = fn.lower()
-            if ".glb" not in fl:
-                continue
+            #if ".glb" not in fl:
+            #    continue
 
 
             full = Path(dp) / fn

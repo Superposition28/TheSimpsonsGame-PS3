@@ -7,10 +7,11 @@
 # godot project artifacts, in Game.*/**
 *.uid
 *.md5
+**/GodotGame/
 
 # chache files
-.db-shm
-.db-wal
+*.db-shm
+*.db-wal
 
 # temporary experiment directories
 dev/

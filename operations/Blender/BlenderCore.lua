@@ -27,7 +27,7 @@ Public entry point
         - opts.debug_sleep: boolean
         - opts.export: boolean
         - opts.export_formats: list of strings (e.g. {"glb", "fbx"})
-        - opts.db_file_path: string (overrides default Tools/Blender/asset_map.sqlite)
+        - opts.db_file_path: string
         - opts.main_db: string (path to main asset DB; passed to Blender script)
         - opts.blender_exe_path: string (path to Blender executable)
 
@@ -178,10 +178,6 @@ local script_root = join("EngineApps", "Games", "TheSimpsonsGame-PS3", "operatio
 local blender_dir = join(script_root, "Blender")
 local python_script_path = join(blender_dir, "MainPreinstancedConvert.py")
 local python_extension_file = join(blender_dir, "PreinstancedImportExtension.py")
---TODO: resolve Blender using engine sdk
---local blender_exe_path = 
-local default_db_path = normalize_separators("Tools/Blender/asset_map.sqlite")
-
 --- Convert a list of export format hints to a set and an ordered list.
 -- Recognized tokens: "glb", "fbx" (case-insensitive). Duplicates removed.
 -- @param list table|nil
@@ -274,7 +270,7 @@ end
 -- @param verbose boolean
 -- @param debug_sleep boolean
 -- @return table { asset_id, success, skipped, message }
-local function run_blender_for_asset(asset, export_set, ordered_formats, verbose, debug_sleep, main_db_path, blender_exe_path)
+local function run_blender_for_asset(asset, export_set, ordered_formats, verbose, debug_sleep, main_db_path, blender_exe_path, game_root_path)
     local ok, run_needed, reason = should_process_asset(asset, export_set)
     if not ok then
         return { asset_id = asset.identifier, success = false, skipped = false, message = reason }
@@ -316,6 +312,7 @@ local function run_blender_for_asset(asset, export_set, ordered_formats, verbose
         asset.identifier,
         temp_addon_dir,
         main_db_path,
+        game_root_path,
         table.concat(ordered_formats, ",")
     }
 
@@ -363,6 +360,21 @@ end
 
 local BlenderCore = {}
 
+local function tableToString(t)
+    if next(t) == nil then
+        return "none"
+    end
+    local result = {}
+    for k, v in pairs(t) do
+        if type(v) == "table" then
+            table.insert(result, tostring(k) .. "=" .. tableToString(v))
+        else
+            table.insert(result, tostring(k) .. "=" .. tostring(v))
+        end
+    end
+    return "{" .. table.concat(result, ", ") .. "}"
+end
+
 --- Entry point for batch processing.
 -- Validates resources, loads assets, processes sequentially, and summarizes.
 -- Throws an error if any asset failed to process.
@@ -373,16 +385,28 @@ function BlenderCore.main(opts)
     local debug_sleep = not not opts.debug_sleep
     local export_set, ordered_formats = normalize_export_formats(opts.export_formats)
 
-    local db_path = opts.db_file_path or default_db_path
+    local db_path = opts.db_file_path and normalize_separators(opts.db_file_path)
     db_path = normalize_separators(db_path)
+    if not db_path or db_path == "" then
+        error("DB file path must be specified in opts.db_file_path")
+        exit(1)
+    end
 
     local main_db_path = opts.main_db and normalize_separators(opts.main_db) or ""
     local blender_exe_path = opts.blender_exe_path and normalize_separators(opts.blender_exe_path) or ""
+    local game_root_path = opts.game_root and normalize_separators(opts.game_root)
+
+    log(Colours.CYAN, "all input opts: " .. tableToString(opts))
 
     log(Colours.CYAN, string.format("Export formats: %s", (#ordered_formats > 0) and table.concat(ordered_formats, ", ") or "None"))
     log(Colours.CYAN, string.format("Using DB: %s", db_path))
     log(Colours.CYAN, string.format("Using main DB: %s", main_db_path))
     log(Colours.CYAN, string.format("Using Blender executable: %s", blender_exe_path))
+    if not game_root_path then
+        error("Game root path must be specified in opts.game_root_path")
+        exit(1)
+    end
+    log(Colours.CYAN, string.format("Using game root path: %s", game_root_path))
 
     if not path_exists(blender_exe_path) then
         error(string.format("Blender executable not found: %s", blender_exe_path))
@@ -430,7 +454,7 @@ function BlenderCore.main(opts)
         -- Fallback: run sequentially using existing run_blender_for_asset implementation
         log(Colours.YELLOW, "spawn_process unavailable; running sequentially using sdk.run_process")
         for _, asset in ipairs(work_queue) do
-            local rec = run_blender_for_asset(asset, export_set, ordered_formats, VERBOSE, debug_sleep, main_db_path, blender_exe_path)
+            local rec = run_blender_for_asset(asset, export_set, ordered_formats, VERBOSE, debug_sleep, main_db_path, blender_exe_path, game_root_path)
             if rec.success then
                 table.insert(successes, rec)
             else
@@ -487,10 +511,11 @@ function BlenderCore.main(opts)
                 asset.identifier,
                 temp_addon_dir,
                 main_db_path,
+                game_root_path,
                 table.concat(ordered_formats, ",")
             }
 
-            log(Colours.DARKCYAN, string.format("Spawning process for asset %s with command: %s", tostring(asset.identifier), table.concat(cmd, " ")))
+            --log(Colours.DARKCYAN, string.format("Spawning process for asset %s with command: %s", tostring(asset.identifier), table.concat(cmd, " ")))
 
             local ok, res = pcall(function()
                 return sdk.spawn_process(cmd, { capture_stdout = true, capture_stderr = true, cwd = nil })
@@ -533,10 +558,14 @@ function BlenderCore.main(opts)
                         if sdk.remove_dir then pcall(sdk.remove_dir, info.temp_dir) end
 
                         -- log captured output grouped by asset
-                        log(Colours.DARKGRAY, string.format("\n--- Output for Asset ID: %s (PID %s) ---", info.asset.identifier, tostring(pid)))
-                        if pol.stdout and #pol.stdout > 0 then log(Colours.GRAY, pol.stdout) end
-                        if pol.stderr and #pol.stderr > 0 then log(Colours.YELLOW, pol.stderr) end
-                        log(Colours.DARKGRAY, string.format("--- End of Output for Asset ID: %s ---\n", info.asset.identifier))
+                        if (stderr and #pol.stderr > 0) or (pol.stdout and #pol.stdout > 0) then
+                            log(Colours.DARKGRAY, string.format("\n--- Output for Asset ID: %s (PID %s) ---", info.asset.identifier, tostring(pid)))
+                            if pol.stdout and #pol.stdout > 0 then log(Colours.GRAY, pol.stdout) end
+                            if pol.stderr and #pol.stderr > 0 then log(Colours.YELLOW, pol.stderr) end
+                            log(Colours.DARKGRAY, string.format("--- End of Output for Asset ID: %s ---\n", info.asset.identifier))
+                        else
+                            log(Colours.DARKGRAY, string.format("No output for Asset ID: %s (PID %s)", info.asset.identifier, tostring(pid)))
+                        end
 
                         local exit_code = pol.exit_code or 1
                         if exit_code ~= 0 then

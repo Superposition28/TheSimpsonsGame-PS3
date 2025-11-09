@@ -4,7 +4,7 @@
 bl_info = {
     "name": "The Simpsons Game 3d Asset Importer",
     "author": "Turk & Mister_Nebula & Samarixum",
-    "version": (1, 5, 2),
+    "version": (1, 5, 6),
     "blender": (4, 0, 0),  # highest supportable version
     "location": "File > Import-Export",
     "description": "Import .rws.preinstanced, .dff.preinstanced mesh files from The Simpsons Game (PS3), detect embedded strings, and link textures to meshes.",
@@ -14,16 +14,17 @@ bl_info = {
 
 import bpy
 import bmesh
-import os
 import struct
 import re
 import io
 import math
 import mathutils
+from pathlib import Path
 import numpy as np
 import string
 import tempfile
 import sqlite3
+import sys
 
 from bpy.props import (
     StringProperty,
@@ -301,7 +302,7 @@ def _extract_ascii_from(data: bytes, start_off: int, max_len: int) -> str | None
             return None
     return None
 
-def build_texture_mesh_links(data: bytes) -> tuple[dict[int, list[str]], dict[str, str]]:
+def build_texture_mesh_links(data: bytes) -> tuple[dict[int, list[str]], dict[str, str], set[str]]:
     """
     Pass 1: scan file for texture headers→names, TLFD markers, mesh chunk headers.
     Pass 2: walk events in order and associate the last texture set (after TLFD if present)
@@ -310,9 +311,11 @@ def build_texture_mesh_links(data: bytes) -> tuple[dict[int, list[str]], dict[st
     Returns tuple:
       - links: {mesh_chunk_offset: [tex_names]}
       - resolved_paths: {lower(tex_name): source_path from SQLite (if available)}
+      - all_texture_names_found: {set of all unique texture names found}
     """
     links: dict[int, list[str]] = {}
     resolved_paths: dict[str, str] = {}
+    all_texture_names_found: set[str] = set()
     events = []  # (offset, type, payload)
 
     # Required header sanity (non-fatal)
@@ -326,6 +329,7 @@ def build_texture_mesh_links(data: bytes) -> tuple[dict[int, list[str]], dict[st
             if name:
                 tex_hits += 1
                 events.append((off, "tex_name", name))
+                all_texture_names_found.add(name)
                 # Attempt to resolve to a full path via SQLite
                 _maybe_cache_texture_path(name, resolved_paths)
     if tex_hits == 0:
@@ -396,12 +400,11 @@ def build_texture_mesh_links(data: bytes) -> tuple[dict[int, list[str]], dict[st
             bPrinter(line, to_blender_editor=True)
     else:
         bPrinter("[Link] No mesh↔texture associations could be established.", to_blender_editor=True)
-    return links, resolved_paths
+    return links, resolved_paths, all_texture_names_found
 
 # --- SQLite texture index -----------------------------------------
 
 USE_SQLITE_DB_LOOKUP = True
-#SQLITE_DB_PATH = r"A:\RemakeEngine\EngineApps\Games\TheSimpsonsGame-PS3\config\GameFilesIndex_EU_Full-0.db"
 SQLITE_TABLE = "png_index"
 
 _sqlite_conn = None
@@ -415,30 +418,30 @@ def _open_sqlite_if_configured() -> sqlite3.Connection | None:
     try:
         # Check if we are in a context where bpy.context is available
         if bpy.context and bpy.context.scene:
-            dynamic_db_path = bpy.context.scene.get("tsg_db_path")
+            main_db_path = bpy.context.scene.get("tsg_db_path")
         else:
-            bPrinter(f"[SQLite] bpy.context.scene is not available. DB lookup unavailable.", console_colour="red")
-            dynamic_db_path = None
+            bPrinter(f"[SQLite] bpy.context.scene is not available. DB lookup unavailable.", console_colour="red", to_blender_editor=True)
+            main_db_path = None
 
     except Exception as e:
-        bPrinter(f"[SQLite] Failed to access bpy.context.scene: {e}", console_colour="red")
-        dynamic_db_path = None
+        bPrinter(f"[SQLite] Failed to access bpy.context.scene: {e}", console_colour="red", to_blender_editor=True)
+        main_db_path = None
 
-    if not dynamic_db_path:
-        bPrinter(f"[SQLite] 'tsg_db_path' custom property not found or empty on scene. DB lookup unavailable.", console_colour="red")
+    if not main_db_path:
+        bPrinter(f"[SQLite] 'tsg_db_path' custom property not found or empty on scene. DB lookup unavailable.", console_colour="red", to_blender_editor=True)
         return None
 
     try:
         if _sqlite_conn is None:
-            # Use the dynamic path instead of the old constant
-            if not os.path.exists(dynamic_db_path):
-                bPrinter(f"[SQLite] DB not found at dynamic path: {dynamic_db_path}", console_colour="yellow")
+            db_path = Path(main_db_path)
+            if not db_path.exists():
+                bPrinter(f"[SQLite] DB not found at: {main_db_path}", console_colour="yellow", to_blender_editor=True)
                 return None
-            _sqlite_conn = sqlite3.connect(dynamic_db_path)
-            bPrinter(f"[SQLite] Opened DB at dynamic path: {dynamic_db_path}", console_colour="green")
+            _sqlite_conn = sqlite3.connect(str(db_path))
+            bPrinter(f"[SQLite] Opened DB at: {main_db_path}", console_colour="green", to_blender_editor=True)
         return _sqlite_conn
     except Exception as e:
-        bPrinter(f"[SQLite] Failed to open DB at '{dynamic_db_path}': {e}", console_colour="red")
+        bPrinter(f"[SQLite] Failed to open DB at '{main_db_path}': {e}", console_colour="red", to_blender_editor=True)
         return None
 
 def _normalize_tex_name(name: str) -> str:
@@ -459,18 +462,21 @@ def _resolve_texture_path_from_db(tex_name: str) -> str | None:
             (norm,)
         )
         row = cur.fetchone()
+        bPrinter(f"[SQLite] Lookup for '{tex_name}' (normalized: '{norm}') returned: {row}", console_colour="green" if row else "yellow", to_blender_editor=True)
         return row[0] if row and row[0] else None
     except Exception as e:
-        bPrinter(f"[SQLite] Lookup error for '{tex_name}': {e}", console_colour="yellow")
+        bPrinter(f"[SQLite] Lookup error for '{tex_name}': {e}", console_colour="yellow", to_blender_editor=True)
         return None
 
 def _maybe_cache_texture_path(tex_name: str, cache: dict[str, str]) -> None:
     key = _normalize_tex_name(tex_name)
     if key in cache:
+        bPrinter(f"[SQLite] Cache hit for '{tex_name}': {cache[key]}", console_colour="green", to_blender_editor=True)
         return
     path = _resolve_texture_path_from_db(tex_name)
     if path:
         cache[key] = path
+    bPrinter(f"[SQLite] Cached path for '{tex_name}': {path if path else 'NOT_FOUND'}", console_colour="green" if path else "yellow", to_blender_editor=True)
 
 # --- Material helpers ---------------------------------------------------------
 
@@ -501,15 +507,48 @@ def _ensure_material_for_texture(tex_name: str, resolved_paths: dict[str, str]) 
         bsdf.location = (150, 0)
         img_node = nodes.new('ShaderNodeTexImage')
         img_node.location = (-200, 0)
-        # Attempt to load image from resolved path
+
+        # Attempt to load image from resolved db path
         img = None
-        path = resolved_paths.get(key)
-        if path and os.path.exists(path):
+        relative_path = resolved_paths.get(key) # This is the 'db_source_path'
+
+        if relative_path:
+            gameroot_path = None
             try:
-                img = bpy.data.images.load(path, check_existing=True)
+                # Check if we are in a context where bpy.context is available
+                if bpy.context and bpy.context.scene:
+                    gameroot_path = bpy.context.scene.get("tsg_gameroot_path")
+                else:
+                    bPrinter("[Material] bpy.context.scene not available.", console_colour="red")
             except Exception as e:
-                bPrinter(f"[Material] Failed to load image for '{tex_name}' from '{path}': {e}", console_colour="yellow")
+                    bPrinter(f"[Material] Error accessing scene or scene property 'tsg_gameroot_path': {e}", console_colour="red")
+
+            if gameroot_path:
+                # Construct the full absolute path as requested: gameroot + "GameFiles/STROUT/" + db_source_path
+                absolute_path = Path(gameroot_path) / "GameFiles" / "STROUT" / relative_path
+
+                # Prepend the long path prefix if on Windows
+                if sys.platform == 'win32' and not str(absolute_path).startswith('\\\\?\\'):
+                    absolute_path = Path(f"\\\\?\\{str(absolute_path)}")
+                    bPrinter(f"[Material] Applied Windows long path prefix. Attempting load from: {absolute_path}", require_debug_mode=True)
+                else:
+                    bPrinter(f"[Material] Attempting to load '{tex_name}' from: {absolute_path}", require_debug_mode=True)
+
+                if absolute_path.exists():
+                    try:
+                        img = bpy.data.images.load(str(absolute_path), check_existing=True)
+                    except Exception as e:
+                        bPrinter(f"[Material] Failed to load image for '{tex_name}' from '{absolute_path}': {e}", console_colour="yellow")
+                else:
+                    bPrinter(f"[Material] File not found at constructed path: {absolute_path}", console_colour="yellow")
+            else:
+                bPrinter(f"[Material] 'tsg_gameroot_path' not set in scene. Cannot resolve '{relative_path}'.", console_colour="red")
+        else:
+            bPrinter(f"[Material] No resolved DB path found for '{tex_name}' (key: '{key}').", console_colour="yellow")
+
         img_node.image = img
+        # --- MODIFICATION END ---
+
         try:
             links.new(img_node.outputs.get('Color'), bsdf.inputs.get('Base Color'))
         except Exception:
@@ -530,9 +569,9 @@ def _ensure_material_for_texture(tex_name: str, resolved_paths: dict[str, str]) 
         return None
 
 def _create_materials_for_all_textures(links: dict[int, list[str]], resolved_paths: dict[str, str]) -> None:
-    all_names: set[str] = set()
-    for names in links.values():
-        all_names.update(names)
+    #all_names: set[str] = set()
+    #for names in links.values():
+    #    all_names.update(names)
     if not all_names:
         return
     bPrinter(f"[Material] Creating materials for {len(all_names)} texture(s).")
@@ -558,11 +597,13 @@ class SimpGameImport(bpy.types.Operator, ImportHelper):
 
     def execute(self, context: bpy.types.Context) -> set:
         bPrinter("== The Simpsons Game Import Log ==", to_blender_editor=True, log_as_metadata=False)
+        bPrinter("Importer Version: {}.{}.{}".format(*bl_info['version']), to_blender_editor=True, log_as_metadata=False)
         bPrinter(f"Importing file: {self.filepath}", to_blender_editor=True, log_as_metadata=True)
-        bPrinter(f"File size: {os.path.getsize(self.filepath)} bytes", to_blender_editor=True, log_as_metadata=False)
-        bPrinter(f"File name: {os.path.basename(self.filepath)}", to_blender_editor=True, log_as_metadata=False)
-        bPrinter(f"Output file: {os.path.splitext(os.path.basename(self.filepath))[0]}.blend", to_blender_editor=True, log_as_metadata=False)
-        filename = os.path.basename(self.filepath).split('.')[0]
+        file_path = Path(self.filepath)
+        bPrinter(f"File size: {file_path.stat().st_size} bytes", to_blender_editor=True, log_as_metadata=False)
+        bPrinter(f"File name: {file_path.name}", to_blender_editor=True, log_as_metadata=False)
+        bPrinter(f"Output file: {file_path.stem}.blend", to_blender_editor=True, log_as_metadata=False)
+        filename = file_path.stem
         bPrinter(f"{filename}", log_as_metadata=True, metadata_key="LOD")
 
         try:
@@ -575,11 +616,41 @@ class SimpGameImport(bpy.types.Operator, ImportHelper):
             bPrinter(f"[Error] Failed to read file {self.filepath}: {e}")
             return {'CANCELLED'}
 
-        # --- Dedicated texture pass (new) ---
+        # --- Dedicated texture pass ---
         bPrinter("\n--- Texture String Pass ---", to_blender_editor=True)
-        texture_links_by_mesh_offset, texture_paths_by_name = build_texture_mesh_links(tmpRead)
+        texture_links_by_mesh_offset, texture_paths_by_name, all_found_tex_names = build_texture_mesh_links(tmpRead)
         # Create materials up-front for all discovered textures
-        _create_materials_for_all_textures(texture_links_by_mesh_offset, texture_paths_by_name)
+        _create_materials_for_all_textures(all_found_tex_names, texture_paths_by_name)
+
+        # --- Log all found texture strings and their resolved paths ---
+        bPrinter("\n--- All Found Texture Strings & DB Paths ---", to_blender_editor=True)
+        if all_found_tex_names:
+            sorted_names = sorted(list(all_found_tex_names), key=lambda s: s.lower())
+            bPrinter(f"Found {len(sorted_names)} unique texture strings. Querying DB...", to_blender_editor=True)
+
+            # Get gameroot path once
+            gameroot_path = None
+            try:
+                if bpy.context and bpy.context.scene:
+                    gameroot_path = bpy.context.scene.get("tsg_gameroot_path")
+            except Exception:
+                pass # Fail silently, will be handled in loop
+
+            for name in sorted_names:
+                key = _normalize_tex_name(name)
+                relative_path = texture_paths_by_name.get(key)
+
+                log_path = "NOT_FOUND_IN_DB"
+                if relative_path:
+                    if gameroot_path:
+                        log_path = str(Path(gameroot_path) / "GameFiles" / "STROUT" / relative_path)
+                    else:
+                        log_path = f"{relative_path} (tsg_gameroot_path not set)"
+
+                bPrinter(f"{name} -- {log_path}", to_blender_editor=True)
+        else:
+            bPrinter("No texture strings were found in the file.", to_blender_editor=True)
+
 
         # --- Perform original fixed signature detection (kept for extra visibility) ---
         bPrinter("\n--- Found Embedded Strings (Fixed Signature Scan) ---", to_blender_editor=True)
@@ -625,12 +696,43 @@ class SimpGameImport(bpy.types.Operator, ImportHelper):
                 mDataSubCount = int.from_bytes(data_io.read(4), byteorder='big')
                 bPrinter(f"[Mesh {mesh_iter}] Found chunk at {x.start():08X}. FaceDataOff: {FaceDataOff}, MeshDataSize: {MeshDataSize}, mDataTableCount: {mDataTableCount}, mDataSubCount: {mDataSubCount}")
 
-                # NEW: Log any linked textures for this mesh chunk (from pre-pass)
-                linked_tex = texture_links_by_mesh_offset.get(mesh_chunk_off, [])
-                if linked_tex:
-                    bPrinter(f"[Mesh {mesh_iter}] Linked textures: {', '.join(linked_tex)}", to_blender_editor=True)
+                # --- Log linked textures with their full paths ---
+                linked_tex_names = texture_links_by_mesh_offset.get(mesh_chunk_off, [])
+
+                # Get gameroot path once for this mesh's log
+                gameroot_path = None
+                try:
+                    if bpy.context and bpy.context.scene:
+                        gameroot_path = bpy.context.scene.get("tsg_gameroot_path")
+                except Exception:
+                    pass # Fail silently, will be handled in loop
+
+                if linked_tex_names:
+                    log_entries = []
+                    for name in linked_tex_names:
+                        # Use the same normalization as the DB cache to find the path
+                        key = _normalize_tex_name(name)
+                        relative_path = texture_paths_by_name.get(key) # Get path, default if not found
+
+                        log_path = "N/A_IN_CACHE"
+                        if relative_path:
+                            if gameroot_path:
+                                full_path = Path(gameroot_path) / "GameFiles" / "STROUT" / relative_path
+                                if sys.platform == 'win32':
+                                    full_path = Path(f"\\\\?\\{str(full_path)}")
+                                log_path = str(full_path)
+                                if not full_path.exists():
+                                    log_path += " (ERROR: texture file not found)"
+                                else:
+                                    log_path += " (note: texture detected)"
+                            else:
+                                log_path = f"{relative_path} (tsg_gameroot_path not set)"
+
+                        log_entries.append(f"{name} -- {log_path}")
+                    bPrinter(f"[Mesh {mesh_iter}] Linked textures: {', '.join(log_entries)}", to_blender_editor=True)
                 else:
                     bPrinter(f"[Mesh {mesh_iter}] Linked textures: (none)", to_blender_editor=True)
+                # --- END ---
 
             except Exception as e:
                 bPrinter(f"[Error] Failed to read mesh chunk header data at {x.start():08X}: {e}")
@@ -779,7 +881,12 @@ class SimpGameImport(bpy.types.Operator, ImportHelper):
                     continue
 
                 mesh1 = bpy.data.meshes.new(f"Mesh_{mesh_iter}_{i}")
-                mesh1.use_auto_smooth = True
+                # check if mesh1 has .use_auto_smooth attribute before setting it
+                if hasattr(mesh1, 'use_auto_smooth'):
+                    mesh1.use_auto_smooth = True
+                else:
+                    bPrinter(f"[MeshPart {mesh_iter}_{i}] Warning: Mesh object does not support 'use_auto_smooth'. Skipping this setting.", require_debug_mode=True, console_colour="yellow", to_blender_editor=True)
+
                 obj = bpy.data.objects.new(f"Mesh_{mesh_iter}_{i}", mesh1)
 
                 cur_collection.objects.link(obj)
@@ -937,7 +1044,9 @@ class SimpGameImport(bpy.types.Operator, ImportHelper):
 
                 # Apply the first linked texture's material to this object by default
                 try:
-                    first_mat_name = linked_tex[0] if linked_tex else None
+                    # Use the original variable that just has names for material linking
+                    linked_tex_for_mat = texture_links_by_mesh_offset.get(mesh_chunk_off, [])
+                    first_mat_name = linked_tex_for_mat[0] if linked_tex_for_mat else None
                     if first_mat_name:
                         mat = _ensure_material_for_texture(first_mat_name, texture_paths_by_name)
                         if mat:

@@ -38,6 +38,7 @@ class ScriptConfig:
     asset_id: str
     temp_addon_dir: str
     main_db_path: str
+    game_root_path: str
     output_fbx: Optional[str] = None
 
 # --- Utility and Logging Functions ---
@@ -92,10 +93,11 @@ def get_script_config() -> ScriptConfig:
             asset_id=argv[arg_start_index + 8],
             temp_addon_dir=argv[arg_start_index + 9],
             main_db_path=argv[arg_start_index + 10],
-            export_formats={fmt.strip() for fmt in argv[arg_start_index + 11].lower().replace(",", " ").split() if fmt.strip() in {"glb", "fbx"}} or None,
+            game_root_path=argv[arg_start_index + 11],
+            export_formats={fmt.strip() for fmt in argv[arg_start_index + 12].lower().replace(",", " ").split() if fmt.strip() in {"glb", "fbx"}} or None,
         )
     except (ValueError, IndexError) as e:
-        printc("Usage: ... -- <base.blend> ... <asset_id> <main_db_path> <temp_addon_dir>", colour='yellow')
+        printc("Usage: ... -- <base.blend> ... <asset_id> <temp_addon_dir> <main_db_path> <game_root_path> <export_formats>", colour='yellow')
         raise BlenderScriptError(f"Argument parsing failed: {e}") from e
 
 def log_script_config(config: ScriptConfig) -> None:
@@ -134,6 +136,18 @@ def setup_blender_environment(config: ScriptConfig) -> None:
             log_to_blender(f"Warning: Texture DB path not found: {db_path}")
         else:
             log_to_blender("Warning: No texture DB path was provided.")
+
+        if not config.game_root_path or not os.path.exists(config.game_root_path):
+            log_to_blender(f"Warning: Game root path not found or not provided: {config.game_root_path}")
+            exit(1)
+
+        # create tsg_gameroot_path if it doesn't exist
+        if "tsg_gameroot_path" not in bpy.context.scene or bpy.context.scene["tsg_gameroot_path"] != config.game_root_path:
+            bpy.context.scene["tsg_gameroot_path"] = config.game_root_path
+            log_to_blender(f"Set scene property 'tsg_gameroot_path' to: {config.game_root_path}")
+        else:
+            log_to_blender(f"Scene property 'tsg_gameroot_path' already set to: {bpy.context.scene['tsg_gameroot_path']}")
+
 
         log_to_blender(f"Setting script directory to temporary path: {config.temp_addon_dir}")
         log_to_blender(f"Installing and enabling addon '{ADDON_MODULE_NAME}'...")

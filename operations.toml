@@ -10,9 +10,9 @@
 ##  - verify {{SourcePath}} exists and is readable
 ## get user input for values like region and path if needed
 [[operation]]
+id = 0
 init = true
 run-all = true # rerun when using run-all to ensure config is valid
-Instructions = "Initialize configuration and validate source directory"
 depends-on = []
 script_type = "lua"
 script = "{{Game_Root}}/operations/init.lua"
@@ -21,9 +21,10 @@ script = "{{Game_Root}}/operations/init.lua"
 ## validates source only files for US and EU
 ## validates source folders exist changed or unchanged, should be unchanged on first run
 [[operation]]
+id = 1
 Name = "Validate Source Game Files and Folders"
 run-all = false
-Instructions = "Validate source (root) files using explicit table + required dir arguments"
+depends-on = [0]
 script_type = "engine"
 script = "validate-files"
 #db = "{{Game_Root}}/config/GameFilesIndex_{{Region}}_SourceOnly-{{audio_state}}-{{isRenamed}}.db"
@@ -37,9 +38,10 @@ args = [
 
 ##
 [[operation]]
+id = 2
 Name = "Download Required Tools"
-run-all = true
-Instructions = "Download and install required tools via built-in engine downloader"
+run-all = false
+depends-on = [0]
 script_type = "engine"
 script = "download_tools"
 tools_manifest = "{{Game_Root}}/Tools.toml"
@@ -53,9 +55,10 @@ default = false
 ## renames Source Game folders for clarity
 ## it should be possible to run without but that case is not be fully tested
 [[operation]]
+id = 3
 Name = "Rename base folders"
 run-all = true
-Instructions = "run rename script"
+depends-on = [0]
 script_type = "engine"
 script = "rename-folders"
 args = ["{{SourcePath}}", "--map-db-file", "{{Game_Root}}/config/RenameMap.db"]
@@ -69,8 +72,10 @@ args = ["--group", "placeholders", "--key", "isRenamed", "--value", "isRenamed",
 ## creates EN folder to match language folder patterns in EU ver
 ## creates Global folder for non language specific audio, mostly Ambiants
 [[operation]]
+id = 4
 Name = "Reorganize Audio Files"
 run-all = true
+depends-on = [0]
 script_type = "lua"
 script = "{{Game_Root}}/operations/SetupAudioDir.lua"
 args = ["{{SourcePath}}"]
@@ -84,9 +89,10 @@ args = ["--group", "placeholders", "--key", "audio_state", "--value", "audio_reo
 ## ensures all changes have been non breaking
 ## not technically needed, just for testing
 [[operation]]
+id = 5
 Name = "re-Validate Source Game Files and Folders"
 run-all = false
-Instructions = "Validate source (root) files using explicit table + required dir arguments"
+depends-on = [0]
 script_type = "engine"
 script = "validate-files"
 db = "{{Game_Root}}/config/GameFilesIndex_{{Region}}_Full-{{audio_state}}-{{isRenamed}}.db"
@@ -100,9 +106,10 @@ args = [
 ## .preinstanced, .ps3, .xml, .txd, .lh2, .alb, .ctb, .dat, .graph, .rcm_b, .sbk, .bsp, .smb, .mib, .amb, .uix, .imb, .toc, .msb, .inf, .bin, .aub, .txt, files with no extension
 ## only .preinstanced, .txd, are used
 [[operation]]
+id = 6
 Name = "Extract Archives (.STR)"
 run-all = true
-Instructions = "run quickbms script using {{Game_Root}}/operations/simpsons_str.bms"
+depends-on = [0,2] # depends on bms tool being downloaded
 script_type = "bms"
 script = "{{Game_Root}}/operations/simpsons_str.bms"
 input = "{{SourcePath}}"
@@ -113,27 +120,48 @@ extension = ".str"
 ## blender cannot handle paths that exeed windows path limits
 ## blender refused to accept my solutions to this so i did two things to ensure it works for -
 ## blender and any other application that needs to handle the files
+## blender is currently solved using symbolic links for assets, and \\?\ for texture paths, this (\\?\) actually working indicates the i dont need the sym links for blender and could just use \\?\ for assets as well
+## the same issue also occurs in godots virtual file system, the only solution there is to flatten the folder structure
 ## this process specificaly reduces redundent directory structurs without removing improtant path data
+#[[operation]]
+#id = 7
+#Name = "flatten folder structure"
+#run-all = false
+#depends-on = [0]
+#script_type = "engine"
+#script = "flatten"
+#args = ["{{SourcePath}}", "{{Game_Root}}/SourceFlat", "--rules", "{{Game_Root}}/config/PathRules.json", "--separator", "^", "--action", "copy", "--ignore", "audiostreams", "--ignore", "movies"]
 [[operation]]
-Name = "flatten folder structure"
-Instructions = "run flatten script"
+id = 7
+Name = "Normalize folder structure"
 run-all = false
-script_type = "engine"
-script = "flatten"
-args = ["{{SourcePath}}", "{{Game_Root}}/SourceFlat", "--rules", "{{Game_Root}}/config/PathRules.json", "--separator", "^", "--action", "copy", "--ignore", "audiostreams", "--ignore", "movies"]
+depends-on = [0]
+script_type = "lua"
+script = "{{Game_Root}}/operations/DirectoryNormalizer.lua"
+args = ["{{Game_Root}}/GameFiles/STROUT", "{{Game_Root}}/GameFiles/STROUT_Normalized", "--rules", "{{Game_Root}}/config/DirectoryNormalizer.rules.json", "--action", "copy", "--ignore", "audiostreams", "--ignore", "movies"]
+[[operation.prompts]]
+type = "confirm"
+Name = "dry run?"
+message = "dry run (no files will be copied)?"
+default = false
+cli_arg = "--dry-run"
 
 ## extract textures from texture dictionaries that were extracted from .str files
 [[operation]]
+id = 8
 Name = "Extract Textures (.txd -> .dds)"
 run-all = true
+depends-on = [0]
 script_type = "engine"
 script = "format-extract"
 format = "txd"
 args = ["{{Game_Root}}/GameFiles/STROUT"]
 
 [[operation]]
+id = 9
 Name = "Convert Textures (.dds -> .png)"
 run-all = true
+depends-on = [0,2] # depends on ImageMagick being downloaded
 script_type = "engine"
 script = "format-convert"
 tool = "ImageMagick"
@@ -144,11 +172,12 @@ args = [
 	"--output-ext", ".png"
 ]
 
-## validate extraction of str and txd files 
+## validate extraction of str and txd files
 [[operation]]
+id = 10
 Name = "validate extracted game files"
 run-all = false
-Instructions = "Validate extracted files using explicit table + required dir arguments"
+depends-on = [0]
 script_type = "engine"
 script = "validate-files"
 db = "{{Game_Root}}/config/GameFilesIndex_{{Region}}_Full-{{audio_state}}-{{isRenamed}}.db"
@@ -158,14 +187,13 @@ args = [
 	"--required-dirs", "audiostreams||Assets_1_Audio_Streams,movies||Assets_1_Video_Movies,frontend||Assets_2_Frontend,simpsons_chars||Assets_2_Characters_Simpsons,spr_hub||Map_3-00_SprHub,loc||Map_3-01_LandOfChocolate,brt||Map_3-02_BartmanBegins,eighty_bites||Map_3-03_HungryHungryHomer,tree_hugger||Map_3-04_TreeHugger,mob_rules||Map_3-05_MobRules,cheater||Map_3-06_EnterTheCheatrix,dayofthedolphins||Map_3-07_DayOfTheDolphin,colossaldonut||Map_3-08_TheColossalDonut,dayspringfieldstoodstill||Map_3-09_Invasion,bargainbin||Map_3-10_BargainBin,gamehub||Map_3-00_GameHub,neverquest||Map_3-11_NeverQuest,grand_theft_scratchy||Map_3-12_GrandTheftScratchy,medal_of_homer||Map_3-13_MedalOfHomer,bigsuperhappy||Map_3-14_BigSuperHappy,rhymes||Map_3-15_Rhymes,meetthyplayer||Map_3-16_MeetThyPlayer",
 ]
 
-## blender cannot handle paths that exeed windows path limits
-## blender refused to accept my solutions to this so i did two things to ensure it works for -
-## blender and any other application that needs to handle the files
-## the second solution within the blender init is to create symbolic links to the long paths, this had a noticable impact on reliability
-## but the two solutions significantly impact time to complete second only to godot
+## convert 3d models into .blend files, and export to glb for godot use
+## auto apply textures within blender as well, however materials will need to be manually adjusted within godot
 [[operation]]
+id = 11
 Name = "Convert Models (.preinstanced -> .blend)"
 run-all = true
+depends-on = [0,2,6,8,9] # depends on blender, str extraction for assets, and texture extraction and conversion for materials
 script_type = "lua"
 script = "{{Game_Root}}/operations/Blender/run.lua"
 args = [
@@ -179,7 +207,6 @@ args = [
 	"--root-drive", "{{Game_Root}}/TMP_TSG_LNKS",
 	"--main-db", "{{Game_Root}}/config/GameFilesIndex_{{Region}}_Full-{{audio_state}}-{{isRenamed}}.db",
 ]
-
 # for debugging
 [[operation.prompts]]
 type = "confirm"
@@ -187,22 +214,19 @@ Name = "verbose"
 message = "Model Conversion: Enable verbose output?"
 default = false
 cli_arg = "--verbose"
-
-# for better debugging
+# for debugging
 [[operation.prompts]]
 type = "confirm"
-Name = "debug_sleep"
-message = "Model Conversion: Enable debug sleep?"
+Name = "debug mode"
+message = "Model Conversion: Enable debug mode?"
 default = false
 cli_arg = "--debug-sleep"
-
 ## for direct export to glb or fbx instead of just creating .blend files
 [[operation.prompts]]
 type = "confirm"
 Name = "enable_export"
 message = "Model Conversion: Export additional formats (FBX/GLTF)?"
 default = true
-
 ## for direct export to glb or fbx instead of just creating .blend files
 [[operation.prompts]]
 type = "checkbox"
@@ -214,11 +238,12 @@ cli_prefix = "--export"
 condition = "enable_export"
 validation = { required = true, message = "You must select at least one format." }
 
-
 ## convert videos into a usable format for godot
 [[operation]]
+id = 12
 Name = "Convert Videos (.vp6 -> .ogv)"
-run-all = true
+run-all = false
+depends-on = [0,2] # depends on ffmpeg being downloaded
 script_type = "engine"
 script = "format-convert"
 tool = "ffmpeg"
@@ -235,8 +260,10 @@ args = [
 
 ## convert Audio into a usable format for godot
 [[operation]]
+id = 13
 Name = "Convert Audio (.snu -> .wav)"
-run-all = true
+run-all = false
+depends-on = [0,2] # depends on vgmstream being downloaded, could depend on audio reorg but that is technically optional
 script_type = "engine"
 script = "format-convert"
 tool = "vgmstream"
@@ -254,9 +281,10 @@ args = [
 
 ## final validation of all files before running godot
 [[operation]]
+id = 14
 Name = "Validate all game files"
 run-all = false
-Instructions = "Validate extracted files using explicit table + required dir arguments"
+depends-on = [0]
 script_type = "engine"
 script = "validate-files"
 db = "{{Game_Root}}/config/GameFilesIndex_{{Region}}_Full-{{audio_state}}-{{isRenamed}}.db"
@@ -270,21 +298,22 @@ args = [
 
 
 
-## TODO: the current scene_config.json expects very specific asset paths that are nolonger correct
-## TODO: instead auto export the full asset map sqlite db to json and use the asset_id in the scene config
-## TODO: or somehow auto generate the scene config based on the db file
-## last version does technically work, but only with the correct asset paths
 ## the hard part
 [[operation]]
+id = 15
 Name = "generate Godot Game (EXPERIMENTAL)"
 run-all = false
+depends-on = [0,6,8,9,11,12,13,14]
 script_type = "lua"
 script = "{{Game_Root}}/Game/init.lua"
 args = ["--project-name", "SimpsonsGamePS3", "--repo-root", "{{Project_Root}}", "--sourcePath", "{{Game_Root}}/GameFiles/STROUT"]
 
-
+## the hard part again but for menus
 [[operation]]
+id = 16
 Name = "GODOT - Generate Menu's (EXPERIMENTAL)"
+run-all = false
+depends-on = [0,6,8,9,11,12,13,14]
 script_type = "lua"
 script = "{{Project_Root}}/EngineApps/Games/TheSimpsonsGame-PS3/Game.Menu/init.lua"
 args = ["--project-name", "SimpsonsGamePS3", "--repo-root", "{{Project_Root}}", "--sourcePath", "{{Game_Root}}/GameFiles/STROUT"]
