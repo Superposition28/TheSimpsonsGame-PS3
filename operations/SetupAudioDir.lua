@@ -162,6 +162,7 @@ local function main()
 	if not input or input == "" then
 		input = prompt("Enter Audio Source Directory path:") or ""
 	end
+
 	input = normalize(input)
 
 	if not input or input == "" then
@@ -171,6 +172,13 @@ local function main()
 	if not is_dir(input) then
 		io.stderr:write(string.format("Error: Audio source directory does not exist: %s\n", input))
 		os.exit(1)
+	end
+
+	-- check if input dir contains audiostreams/ folder or the Assets_1_Audio_Streams/ folder
+	if path_exists(join(input, "audiostreams")) then
+		input = join(input, "audiostreams")
+	elseif path_exists(join(input, "Assets_1_Audio_Streams")) then
+		input = join(input, "Assets_1_Audio_Streams")
 	end
 
 	local en_dir_name = "EN"

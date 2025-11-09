@@ -25,9 +25,11 @@ Public entry point
     BlenderCore.main(opts)
         - opts.verbose: boolean
         - opts.debug_sleep: boolean
+        - opts.export: boolean
         - opts.export_formats: list of strings (e.g. {"glb", "fbx"})
         - opts.db_file_path: string (overrides default Tools/Blender/asset_map.sqlite)
-        - opts.workers: number (informational only; execution is sequential here)
+        - opts.main_db: string (path to main asset DB; passed to Blender script)
+        - opts.blender_exe_path: string (path to Blender executable)
 
 Behavior
     1) Validates required files (Blender exe, Python scripts, SQLite DB)
@@ -160,7 +162,7 @@ end
 local function make_temp_dir(prefix)
     prefix = prefix or "blender_addon_"
     -- Use a workspace-local temp root to avoid relying on os.tmpname (not available in sandbox)
-    local temp_root = join("Tools", "Blender", "tmp")
+    local temp_root = join("TMP", "blender_temp")
     ensure_directory(temp_root)
     local dir = join(temp_root, prefix .. tostring(os.time()) .. "_" .. tostring(math.random(100000, 999999)))
     ensure_directory(dir)
@@ -170,12 +172,14 @@ end
 -- Seed RNG once (used only for temp dir suffixes)
 math.randomseed(os.time())
 
+--TODO make run script pass these paths
 -- Repository-relative locations used by this pipeline
 local script_root = join("EngineApps", "Games", "TheSimpsonsGame-PS3", "operations")
 local blender_dir = join(script_root, "Blender")
 local python_script_path = join(blender_dir, "MainPreinstancedConvert.py")
 local python_extension_file = join(blender_dir, "PreinstancedImportExtension.py")
-local blender_exe_path = normalize_separators("Tools/Blender/blender-4.0.2-windows-x64/blender.exe")
+--TODO: resolve Blender using engine sdk
+--local blender_exe_path = 
 local default_db_path = normalize_separators("Tools/Blender/asset_map.sqlite")
 
 --- Convert a list of export format hints to a set and an ordered list.
@@ -270,7 +274,7 @@ end
 -- @param verbose boolean
 -- @param debug_sleep boolean
 -- @return table { asset_id, success, skipped, message }
-local function run_blender_for_asset(asset, export_set, ordered_formats, verbose, debug_sleep)
+local function run_blender_for_asset(asset, export_set, ordered_formats, verbose, debug_sleep, main_db_path, blender_exe_path)
     local ok, run_needed, reason = should_process_asset(asset, export_set)
     if not ok then
         return { asset_id = asset.identifier, success = false, skipped = false, message = reason }
@@ -311,6 +315,7 @@ local function run_blender_for_asset(asset, export_set, ordered_formats, verbose
         fbx_file,
         asset.identifier,
         temp_addon_dir,
+        main_db_path,
         table.concat(ordered_formats, ",")
     }
 
@@ -371,7 +376,13 @@ function BlenderCore.main(opts)
     local db_path = opts.db_file_path or default_db_path
     db_path = normalize_separators(db_path)
 
+    local main_db_path = opts.main_db and normalize_separators(opts.main_db) or ""
+    local blender_exe_path = opts.blender_exe_path and normalize_separators(opts.blender_exe_path) or ""
+
     log(Colours.CYAN, string.format("Export formats: %s", (#ordered_formats > 0) and table.concat(ordered_formats, ", ") or "None"))
+    log(Colours.CYAN, string.format("Using DB: %s", db_path))
+    log(Colours.CYAN, string.format("Using main DB: %s", main_db_path))
+    log(Colours.CYAN, string.format("Using Blender executable: %s", blender_exe_path))
 
     if not path_exists(blender_exe_path) then
         error(string.format("Blender executable not found: %s", blender_exe_path))
@@ -419,7 +430,7 @@ function BlenderCore.main(opts)
         -- Fallback: run sequentially using existing run_blender_for_asset implementation
         log(Colours.YELLOW, "spawn_process unavailable; running sequentially using sdk.run_process")
         for _, asset in ipairs(work_queue) do
-            local rec = run_blender_for_asset(asset, export_set, ordered_formats, VERBOSE, debug_sleep)
+            local rec = run_blender_for_asset(asset, export_set, ordered_formats, VERBOSE, debug_sleep, main_db_path, blender_exe_path)
             if rec.success then
                 table.insert(successes, rec)
             else
@@ -475,8 +486,11 @@ function BlenderCore.main(opts)
                 fbx_file,
                 asset.identifier,
                 temp_addon_dir,
+                main_db_path,
                 table.concat(ordered_formats, ",")
             }
+
+            log(Colours.DARKCYAN, string.format("Spawning process for asset %s with command: %s", tostring(asset.identifier), table.concat(cmd, " ")))
 
             local ok, res = pcall(function()
                 return sdk.spawn_process(cmd, { capture_stdout = true, capture_stderr = true, cwd = nil })

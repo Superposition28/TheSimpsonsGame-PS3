@@ -85,17 +85,17 @@ the main folder names may or may not be renamed based on the rename map to be mo
 resulting in all these outputs together:
 GameFilesIndex_EU_SourceOnly-audio_og-notRenamed.db -- notRenamed means no rename, source only means it only scans the original source structure as it would be in the iso
 GameFilesIndex_EU_SourceOnly-audio_og-isRenamed.db -- isRenamed means with rename, source only means it only scans the original source structure as it would be in the iso after renaming the base folders
-GameFilesIndex_EU_SourceOnly-audio_renamed-notRenamed.db -- as before but with audio files reorganized into en and global folders.
-GameFilesIndex_EU_SourceOnly-audio_renamed-isRenamed.db -- as before but with audio files reorganized into en and global folders.
+GameFilesIndex_EU_SourceOnly-audio_reorg-notRenamed.db -- as before but with audio files reorganized into en and global folders.
+GameFilesIndex_EU_SourceOnly-audio_reorg-isRenamed.db -- as before but with audio files reorganized into en and global folders.
 // source could also be flattened but its better to flatten after extraction, thats when all the files are deeply nested
 GameFilesIndex_EU_Full-audio_og-notRenamed.db -- full means it scans the full structure both source and extracted files
 GameFilesIndex_EU_Full-audio_og-isRenamed.db -- full means it scans the full structure both source and extracted files
-GameFilesIndex_EU_Full-audio_renamed-notRenamed.db -- as before but audio_renamed means audio files reorganized into en and global folders.
-GameFilesIndex_EU_Full-audio_renamed-isRenamed.db -- as before but audio_renamed means audio files reorganized into en and global folders.
+GameFilesIndex_EU_Full-audio_reorg-notRenamed.db -- as before but audio_reorg means audio files reorganized into en and global folders.
+GameFilesIndex_EU_Full-audio_reorg-isRenamed.db -- as before but audio_reorg means audio files reorganized into en and global folders.
 GameFilesIndex_EU_FullFlattened-audio_og-notRenamed.db -- full means it scans the full structure both source and extracted files flattened means the folder structure is flattened
 GameFilesIndex_EU_FullFlattened-audio_og-isRenamed.db -- full means it scans the full structure both source and extracted files flattened means the folder structure is flattened
-GameFilesIndex_EU_FullFlattened-audio_renamed-notRenamed.db -- as before but audio_renamed means audio files reorganized into en and global folders.
-GameFilesIndex_EU_FullFlattened-audio_renamed-isRenamed.db -- as before but audio_renamed means audio files reorganized into en and global folders.
+GameFilesIndex_EU_FullFlattened-audio_reorg-notRenamed.db -- as before but audio_reorg means audio files reorganized into en and global folders.
+GameFilesIndex_EU_FullFlattened-audio_reorg-isRenamed.db -- as before but audio_reorg means audio files reorganized into en and global folders.
 
 the init script will set a var for en or us and the ops will use that to determine which db to use
 the scripts that change the folder structure (flatten, reorganize audio files) will also set vars to indicate what changes were made so the correct db can be used
@@ -182,11 +182,34 @@ operations to run in order to produce each of the different index db's
   (Skipped) -- generate Godot Game (EXPERIMENTAL)
   (Skipped) -- GODOT - Generate Menu's (EXPERIMENTAL)
 
+
+  ## this will be the main run-all sequence
+
+  using PS A:\RemakeEngine> python EngineApps\Games\TheSimpsonsGame-PS3\dev-tools\indexer\main.py --Type Full --region EU --AudioReorg audio_reorg --renamedBaseDirs isRenamed
+  to make this db:EngineApps\Games\TheSimpsonsGame-PS3\config\GameFilesIndex_EU_Full-audio_reorg-isRenamed.db
+ GameFilesIndex_EU_Full-audio_reorg-isRenamed.db -- as before but audio_reorg means audio files reorganized into en and global folders.
+  (Skipped) -- Validate Source Game Files and Folders
+> (ran)     -- Download Required Tools
+> (ran)     -- Rename base folders
+> (ran)     -- Reorganize Audio Files
+  (Skipped) -- re-Validate Source Game Files and Folders
+> (ran)     -- Extract Archives (.STR)
+  (Skipped) -- flatten folder structure
+> (ran)     -- Extract Textures (.txd -> .dds)
+> (ran)     -- Convert Textures (.dds -> .png)
+  (Skipped) -- validate extracted game files
+> (ran)     -- Convert Models (.preinstanced -> .blend)
+> (ran)     -- Convert Videos (.vp6 -> .ogv)
+> (ran)     -- Convert Audio (.snu -> .wav)
+  (Skipped) -- Validate all game files
+  (Skipped) -- generate Godot Game (EXPERIMENTAL)
+  (Skipped) -- GODOT - Generate Menu's (EXPERIMENTAL)
+
  ## TODO the Following for EU region
 
- using PS A:\RemakeEngine> python EngineApps\Games\TheSimpsonsGame-PS3\dev-tools\indexer\main.py --Type Full --region EU --AudioReorg audio_renamed --renamedBaseDirs notRenamed
-  to make this db:EngineApps\Games\TheSimpsonsGame-PS3\config\GameFilesIndex_EU_Full-audio_renamed-notRenamed.db
- GameFilesIndex_EU_Full-audio_renamed-notRenamed.db -- as before but audio_renamed means audio files reorganized into en and global folders.
+ using PS A:\RemakeEngine> python EngineApps\Games\TheSimpsonsGame-PS3\dev-tools\indexer\main.py --Type Full --region EU --AudioReorg audio_reorg --renamedBaseDirs notRenamed
+  to make this db:EngineApps\Games\TheSimpsonsGame-PS3\config\GameFilesIndex_EU_Full-audio_reorg-notRenamed.db
+ GameFilesIndex_EU_Full-audio_reorg-notRenamed.db -- as before but audio_reorg means audio files reorganized into en and global folders.
   (Skipped) -- Validate Source Game Files and Folders
 > (ran)     -- Download Required Tools
   (Skipped) -- Rename base folders
@@ -204,25 +227,6 @@ operations to run in order to produce each of the different index db's
   (Skipped) -- generate Godot Game (EXPERIMENTAL)
   (Skipped) -- GODOT - Generate Menu's (EXPERIMENTAL)
 
-  using PS A:\RemakeEngine> python EngineApps\Games\TheSimpsonsGame-PS3\dev-tools\indexer\main.py --Type Full --region EU --AudioReorg audio_renamed --renamedBaseDirs isRenamed
-  to make this db:EngineApps\Games\TheSimpsonsGame-PS3\config\GameFilesIndex_EU_Full-audio_renamed-isRenamed.db
- GameFilesIndex_EU_Full-audio_renamed-audio_og-isRenamed.db -- as before but audio_renamed means audio files reorganized into en and global folders.
-  (Skipped) -- Validate Source Game Files and Folders
-> (ran)     -- Download Required Tools
-> (ran)     -- Rename base folders
-> (ran)     -- Reorganize Audio Files
-  (Skipped) -- re-Validate Source Game Files and Folders
-> (ran)     -- Extract Archives (.STR)
-  (Skipped) -- flatten folder structure
-> (ran)     -- Extract Textures (.txd -> .dds)
-> (ran)     -- Convert Textures (.dds -> .png)
-  (Skipped) -- validate extracted game files
-> (ran)     -- Convert Models (.preinstanced -> .blend)
-> (ran)     -- Convert Videos (.vp6 -> .ogv)
-> (ran)     -- Convert Audio (.snu -> .wav)
-  (Skipped) -- Validate all game files
-  (Skipped) -- generate Godot Game (EXPERIMENTAL)
-  (Skipped) -- GODOT - Generate Menu's (EXPERIMENTAL)
 
   using PS A:\RemakeEngine> python EngineApps\Games\TheSimpsonsGame-PS3\dev-tools\indexer\main.py --Type FullFlattened --region EU --AudioReorg audio_og --renamedBaseDirs notRenamed
   to make this db:EngineApps\Games\TheSimpsonsGame-PS3\config\GameFilesIndex_EU_FullFlattened-audio_og-notRenamed.db
@@ -264,9 +268,9 @@ operations to run in order to produce each of the different index db's
   (Skipped) -- generate Godot Game (EXPERIMENTAL)
   (Skipped) -- GODOT - Generate Menu's (EXPERIMENTAL)
 
-  using PS A:\RemakeEngine> python EngineApps\Games\TheSimpsonsGame-PS3\dev-tools\indexer\main.py --Type FullFlattened --region EU --AudioReorg audio_renamed --renamedBaseDirs notRenamed
-  to make this db:EngineApps\Games\TheSimpsonsGame-PS3\config\GameFilesIndex_EU_FullFlattened-audio_renamed-notRenamed.db
- GameFilesIndex_EU_FullFlattened-audio_renamed-notRenamed.db -- as before but audio_renamed means audio files reorganized into en and global folders.
+  using PS A:\RemakeEngine> python EngineApps\Games\TheSimpsonsGame-PS3\dev-tools\indexer\main.py --Type FullFlattened --region EU --AudioReorg audio_reorg --renamedBaseDirs notRenamed
+  to make this db:EngineApps\Games\TheSimpsonsGame-PS3\config\GameFilesIndex_EU_FullFlattened-audio_reorg-notRenamed.db
+ GameFilesIndex_EU_FullFlattened-audio_reorg-notRenamed.db -- as before but audio_reorg means audio files reorganized into en and global folders.
   (Skipped) -- Validate Source Game Files and Folders
 > (ran)     -- Download Required Tools
   (Skipped) -- Rename base folders
@@ -284,9 +288,9 @@ operations to run in order to produce each of the different index db's
   (Skipped) -- generate Godot Game (EXPERIMENTAL)
   (Skipped) -- GODOT - Generate Menu's (EXPERIMENTAL)
 
-  using PS A:\RemakeEngine> python EngineApps\Games\TheSimpsonsGame-PS3\dev-tools\indexer\main.py --Type FullFlattened --region EU --AudioReorg audio_renamed --renamedBaseDirs isRenamed
-  to make this db:EngineApps\Games\TheSimpsonsGame-PS3\config\GameFilesIndex_EU_FullFlattened-audio_renamed-isRenamed.db
- GameFilesIndex_EU_FullFlattened-audio_renamed-isRenamed.db -- as before but audio_renamed means audio files reorganized into en and global folders.
+  using PS A:\RemakeEngine> python EngineApps\Games\TheSimpsonsGame-PS3\dev-tools\indexer\main.py --Type FullFlattened --region EU --AudioReorg audio_reorg --renamedBaseDirs isRenamed
+  to make this db:EngineApps\Games\TheSimpsonsGame-PS3\config\GameFilesIndex_EU_FullFlattened-audio_reorg-isRenamed.db
+ GameFilesIndex_EU_FullFlattened-audio_reorg-isRenamed.db -- as before but audio_reorg means audio files reorganized into en and global folders.
   (Skipped) -- Validate Source Game Files and Folders
 > (ran)     -- Download Required Tools
 > (ran)     -- Rename base folders

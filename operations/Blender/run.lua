@@ -117,7 +117,8 @@ local function main()
             preinstanced_dir = nil,
             blend_dir = nil,
             blank_blend_source = nil,
-            root_drive = nil
+            root_drive = nil,
+            main_db = nil
         }
         -- Byte-wise helpers to avoid Lua pattern engine entirely
         local function is_space_byte(b)
@@ -317,6 +318,17 @@ local function main()
                     end
                 end
                 result.root_drive = clean_value(value)
+            elseif option_name == "--main-db" or option_name == "--main_db" then
+                local value = inline_value
+                if value == nil or #value == 0 then
+                    i = i + 1
+                    if i <= #args then
+                        value = args[i]
+                    else
+                        error("Expected value after --main-db")
+                    end
+                end
+                result.main_db = clean_value(value)
             end
             i = i + 1
         end
@@ -512,13 +524,28 @@ local function main()
     error(string.format("run blend init error: %s", err))
     end
 
+    -- use engine tool resolver to get blender
+    local blender_exe = nil
+    local blender_exe_path = nil
+    local tool_fn = rawget(_G, "tool")
+    if type(tool_fn) == "function" then
+        blender_exe = tool_fn("Blender")
+        if blender_exe and blender_exe ~= "" then
+            blender_exe_path = normalize_separators(blender_exe)
+            log(Colours.CYAN, string.format("Resolved Blender executable via engine tool resolver: %s", tostring(blender_exe_path)))
+        end
+    end
+
+
     -- Options for core processing phase (imports, conversions, exports)
     local core_opts = {
         verbose = cli.verbose,
         debug_sleep = cli.debug_sleep,
         export = cli.export,
         export_formats = cli.formats,
-        db_file_path = join(output_dir, "asset_map.sqlite")
+        db_file_path = join(output_dir, "asset_map.sqlite"),
+        main_db = cli.main_db,
+        blender_exe_path = blender_exe_path
     }
 
     -- Phase 2: actual Blender processing and export

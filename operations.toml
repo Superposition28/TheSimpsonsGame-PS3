@@ -13,6 +13,7 @@
 init = true
 run-all = true # rerun when using run-all to ensure config is valid
 Instructions = "Initialize configuration and validate source directory"
+depends-on = []
 script_type = "lua"
 script = "{{Game_Root}}/operations/init.lua"
 
@@ -42,7 +43,6 @@ Instructions = "Download and install required tools via built-in engine download
 script_type = "engine"
 script = "download_tools"
 tools_manifest = "{{Game_Root}}/Tools.toml"
-
 [[operation.prompts]]
 type = "confirm"
 Name = "force download"
@@ -54,13 +54,13 @@ default = false
 ## it should be possible to run without but that case is not be fully tested
 [[operation]]
 Name = "Rename base folders"
-run-all = false
+run-all = true
 Instructions = "run rename script"
 script_type = "engine"
 script = "rename-folders"
 args = ["{{SourcePath}}", "--map-db-file", "{{Game_Root}}/config/RenameMap.db"]
 [[operation.onsuccess]] # when successful, update isRenamed placeholder to "isRenamed"
-Name = "test"
+Name = "set isRenamed placeholder"
 script_type = "lua"
 script = "{{Game_Root}}/config.lua"
 args = ["--group", "placeholders", "--key", "isRenamed", "--value", "isRenamed", "--type", "string"]
@@ -73,7 +73,12 @@ Name = "Reorganize Audio Files"
 run-all = true
 script_type = "lua"
 script = "{{Game_Root}}/operations/SetupAudioDir.lua"
-args = ["{{SourcePath}}/audiostreams"]
+args = ["{{SourcePath}}"]
+[[operation.onsuccess]] # when successful, update isRenamed placeholder to "isRenamed"
+Name = "set audio_state placeholder"
+script_type = "lua"
+script = "{{Game_Root}}/config.lua"
+args = ["--group", "placeholders", "--key", "audio_state", "--value", "audio_reorg", "--type", "string"]
 
 
 ## ensures all changes have been non breaking
@@ -171,7 +176,8 @@ args = [
 	"--preinstanced-dir", "{{Game_Root}}/GameFiles/STROUT",
 	"--blend-dir", "{{Game_Root}}/GameFiles/STROUT",
 	"--blank-blend", "{{Game_Root}}/blank.blend",
-	"--root-drive", "{{Game_Root}}/TMP_TSG_LNKS"
+	"--root-drive", "{{Game_Root}}/TMP_TSG_LNKS",
+	"--main-db", "{{Game_Root}}/config/GameFilesIndex_{{Region}}_Full-{{audio_state}}-{{isRenamed}}.db",
 ]
 
 # for debugging

@@ -8,6 +8,9 @@
 *.uid
 *.md5
 
+# chache files
+.db-shm
+.db-wal
 
 # temporary experiment directories
 dev/
@@ -17,7 +20,14 @@ test/
 # operations, generated files
 operations/Blender/asset_map.sqlite
 operations/Blender/blend.log
-
+config.toml
+# entire Simpsons Game iso image dump
+Source/
+# .str archive extraction output
+/GameFiles/
+**/STROUT/
+# temporary symlinks for 3d assets blender processing, blender 4.0 cannot handle long paths, if the import script is updated to run on 4.0+ this may be removable
+TMP_TSG_LNKS/
 
 # Python cache files
 __pycache__/

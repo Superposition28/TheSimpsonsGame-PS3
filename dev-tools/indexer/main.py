@@ -75,8 +75,8 @@ def parse_args():
     )
 
     parser.add_argument(
-        '--AudioReorg', dest='audio_reorg', choices=['audio_renamed', 'audio_og'], required=True,
-        help="Audio reorg status: 'audio_renamed'|'audio_og'"
+        '--AudioReorg', dest='audio_reorg', choices=['audio_reorg', 'audio_og'], required=True,
+        help="Audio reorg status: 'audio_reorg'|'audio_og'"
     )
 
     parser.add_argument( ## changed logic of extraction tools, so the blend files are actually being placed in the STROUT folder instead of TEMP_BLEND for easier access

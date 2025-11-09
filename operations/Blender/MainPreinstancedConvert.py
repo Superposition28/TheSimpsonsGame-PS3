@@ -36,7 +36,8 @@ class ScriptConfig:
     debug_sleep: bool
     export_formats: Optional[Set[str]]
     asset_id: str
-    temp_addon_dir: str # ADDED
+    temp_addon_dir: str
+    main_db_path: str
     output_fbx: Optional[str] = None
 
 # --- Utility and Logging Functions ---
@@ -90,10 +91,11 @@ def get_script_config() -> ScriptConfig:
             output_fbx=argv[arg_start_index + 7],
             asset_id=argv[arg_start_index + 8],
             temp_addon_dir=argv[arg_start_index + 9],
-            export_formats={fmt.strip() for fmt in argv[arg_start_index + 10].lower().replace(",", " ").split() if fmt.strip() in {"glb", "fbx"}} or None,
+            main_db_path=argv[arg_start_index + 10],
+            export_formats={fmt.strip() for fmt in argv[arg_start_index + 11].lower().replace(",", " ").split() if fmt.strip() in {"glb", "fbx"}} or None,
         )
     except (ValueError, IndexError) as e:
-        printc("Usage: ... -- <base.blend> ... <asset_id> <temp_addon_dir>", colour='yellow')
+        printc("Usage: ... -- <base.blend> ... <asset_id> <main_db_path> <temp_addon_dir>", colour='yellow')
         raise BlenderScriptError(f"Argument parsing failed: {e}") from e
 
 def log_script_config(config: ScriptConfig) -> None:
@@ -121,6 +123,17 @@ def setup_blender_environment(config: ScriptConfig) -> None:
         log_to_blender(f"Opening blend file: {config.base_blend_file}")
         bpy.ops.wm.open_mainfile(filepath=config.base_blend_file)
         log_to_blender("Blend file opened successfully.")
+
+        # Set the texture DB path from the config argument
+        log_to_blender("Setting dynamic DB path...")
+        db_path = config.main_db_path
+        if db_path and os.path.exists(db_path):
+            bpy.context.scene["tsg_db_path"] = db_path
+            log_to_blender(f"Set scene property 'tsg_db_path' to: {db_path}")
+        elif db_path:
+            log_to_blender(f"Warning: Texture DB path not found: {db_path}")
+        else:
+            log_to_blender("Warning: No texture DB path was provided.")
 
         log_to_blender(f"Setting script directory to temporary path: {config.temp_addon_dir}")
         log_to_blender(f"Installing and enabling addon '{ADDON_MODULE_NAME}'...")

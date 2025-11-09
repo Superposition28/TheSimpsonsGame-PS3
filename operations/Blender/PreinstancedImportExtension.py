@@ -4,7 +4,7 @@
 bl_info = {
     "name": "The Simpsons Game 3d Asset Importer",
     "author": "Turk & Mister_Nebula & Samarixum",
-    "version": (1, 5, 0),
+    "version": (1, 5, 2),
     "blender": (4, 0, 0),  # highest supportable version
     "location": "File > Import-Export",
     "description": "Import .rws.preinstanced, .dff.preinstanced mesh files from The Simpsons Game (PS3), detect embedded strings, and link textures to meshes.",
@@ -401,7 +401,7 @@ def build_texture_mesh_links(data: bytes) -> tuple[dict[int, list[str]], dict[st
 # --- SQLite texture index -----------------------------------------
 
 USE_SQLITE_DB_LOOKUP = True
-SQLITE_DB_PATH = r"A:\RemakeEngine\EngineApps\Games\TheSimpsonsGame-PS3\config\GameFilesIndex_EU_Full-0.db"
+#SQLITE_DB_PATH = r"A:\RemakeEngine\EngineApps\Games\TheSimpsonsGame-PS3\config\GameFilesIndex_EU_Full-0.db"
 SQLITE_TABLE = "png_index"
 
 _sqlite_conn = None
@@ -410,20 +410,40 @@ def _open_sqlite_if_configured() -> sqlite3.Connection | None:
     global _sqlite_conn
     if not USE_SQLITE_DB_LOOKUP:
         return None
+
+    # Get path dynamically from the scene property set by the driver script
+    try:
+        # Check if we are in a context where bpy.context is available
+        if bpy.context and bpy.context.scene:
+            dynamic_db_path = bpy.context.scene.get("tsg_db_path")
+        else:
+            bPrinter(f"[SQLite] bpy.context.scene is not available. DB lookup unavailable.", console_colour="red")
+            dynamic_db_path = None
+
+    except Exception as e:
+        bPrinter(f"[SQLite] Failed to access bpy.context.scene: {e}", console_colour="red")
+        dynamic_db_path = None
+
+    if not dynamic_db_path:
+        bPrinter(f"[SQLite] 'tsg_db_path' custom property not found or empty on scene. DB lookup unavailable.", console_colour="red")
+        return None
+
     try:
         if _sqlite_conn is None:
-            if not SQLITE_DB_PATH or not os.path.exists(SQLITE_DB_PATH):
-                bPrinter(f"[SQLite] DB not found at configured path: {SQLITE_DB_PATH}", console_colour="yellow")
+            # Use the dynamic path instead of the old constant
+            if not os.path.exists(dynamic_db_path):
+                bPrinter(f"[SQLite] DB not found at dynamic path: {dynamic_db_path}", console_colour="yellow")
                 return None
-            _sqlite_conn = sqlite3.connect(SQLITE_DB_PATH)
+            _sqlite_conn = sqlite3.connect(dynamic_db_path)
+            bPrinter(f"[SQLite] Opened DB at dynamic path: {dynamic_db_path}", console_colour="green")
         return _sqlite_conn
     except Exception as e:
-        bPrinter(f"[SQLite] Failed to open DB: {e}", console_colour="red")
+        bPrinter(f"[SQLite] Failed to open DB at '{dynamic_db_path}': {e}", console_colour="red")
         return None
 
 def _normalize_tex_name(name: str) -> str:
     n = name.strip()
-    if n.lower().endswith('.dds'):
+    if n.lower().endswith('.png'):
         n = n[: -4]
     return n.lower()
 
@@ -435,7 +455,7 @@ def _resolve_texture_path_from_db(tex_name: str) -> str | None:
         norm = _normalize_tex_name(tex_name)
         cur = conn.cursor()
         cur.execute(
-            f"SELECT source_path FROM {SQLITE_TABLE} WHERE LOWER(REPLACE(source_file_name, '.dds', '')) = ? LIMIT 1",
+            f"SELECT source_path FROM {SQLITE_TABLE} WHERE LOWER(REPLACE(source_file_name, '.png', '')) = ? LIMIT 1",
             (norm,)
         )
         row = cur.fetchone()

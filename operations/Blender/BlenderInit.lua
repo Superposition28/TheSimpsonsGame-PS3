@@ -90,7 +90,7 @@ function PreinstancedFileProcessor.new(opts)
     self.blend_dir = absolute_path(opts.blend_dir)
     self.glb_dir = absolute_path(opts.glb_dir)
     self.blank_blend_source = absolute_path(opts.blank_blend_source)
-    self.debug_sleep_enabled = not not opts.debug_sleep_enabled
+    self.debug_mode_enabled = not not opts.debug_mode_enabled
     self.verbose = not not opts.verbose
     return self
 end
@@ -150,13 +150,13 @@ function PreinstancedFileProcessor:process_files()
                 end
             else
                 log(Colours.RED, string.format("Error copying blank blend file to '%s'", blend_dest_full_path))
-                if self.debug_sleep_enabled then
+                if self.debug_mode_enabled then
                     sleep(1)
                 end
             end
         end
 
-        if self.debug_sleep_enabled then
+        if self.debug_mode_enabled then
             sleep(0.05)
         end
     end
@@ -509,11 +509,11 @@ local function verify_symlink(link_folder_path, src_folder_path, asset_id, link_
     return true
 end
 
-local function create_symbolic_links(db, root_drive, debug_sleep_enabled)
+local function create_symbolic_links(db, root_drive, debug_mode_enabled)
     VERBOSE = true
     local rows = db.query("SELECT identifier, map_subdirectory, preinstanced_full, blend_full, glb_full FROM asset_map")
     local updated = 0
-    local debug_sleep = debug_sleep_enabled and 5 or 0
+    local debug_sleep = debug_mode_enabled and 5 or 0
 
     for _, asset in ipairs(rows) do
         local identifier = asset.identifier
@@ -614,7 +614,7 @@ function PreinstancedFileProcessor.new(opts)
     self.blend_dir = absolute_path(opts.blend_dir)
     self.glb_dir = absolute_path(opts.glb_dir)
     self.blank_blend_source = absolute_path(opts.blank_blend_source)
-    self.debug_sleep_enabled = not not opts.debug_sleep_enabled
+    self.debug_mode_enabled = not not opts.debug_mode_enabled
     self.verbose = not not opts.verbose
     return self
 end
@@ -674,13 +674,13 @@ function PreinstancedFileProcessor:process_files()
                 end
             else
                 log(Colours.RED, string.format("Error copying blank blend file to '%s'", blend_dest_full_path))
-                if self.debug_sleep_enabled then
+                if self.debug_mode_enabled then
                     sleep(1)
                 end
             end
         end
 
-        if self.debug_sleep_enabled then
+        if self.debug_mode_enabled then
             sleep(0.05)
         end
     end
@@ -718,22 +718,29 @@ local function run(args)
     local blank_blend_source = absolute_path(args.blank_blend_source)
     log(Colours.CYAN, string.format("Blank Blend Source: %s", blank_blend_source))
 
-    local debug_sleep_enabled = not not args.debug_sleep
-    log(Colours.CYAN, string.format("Debug Sleep Enabled: %s", tostring(debug_sleep_enabled)))
+    local debug_mode_enabled = not not args.debug_sleep
+    log(Colours.CYAN, string.format("Debug Mode Enabled: %s", tostring(debug_mode_enabled)))
 
     local db
     local ok, err = pcall(function()
         log(Colours.CYAN, "--- Initializing Database ---")
-        if sdk.path_exists and sdk.path_exists(db_filename) then
+        if sdk.path_exists and sdk.path_exists(db_filename) and debug_mode_enabled then
             if not (sdk.remove_file and sdk.remove_file(db_filename)) then
                 error("Failed to delete existing database file: " .. db_filename)
             end
             log(Colours.GREEN, string.format("Deleted existing database file: %s", db_filename))
         end
 
+        if (sdk.path_exists(db_filename) and not debug_mode_enabled) then
+            -- db exists, assume its correct and skip re-initialization
+            log(Colours.CYAN, string.format("Database file %s already exists; skipping initialization.", db_filename))
+            db = init_db(db_filename)
+            return
+        end
+
         db = init_db(db_filename)
         log(Colours.GREEN, string.format("Database initialized/opened at: %s", db_filename))
-        if debug_sleep_enabled then
+        if debug_mode_enabled then
             sleep(2)
         end
 
@@ -743,15 +750,15 @@ local function run(args)
             blend_dir = blend_dir,
             glb_dir = glb_dir,
             blank_blend_source = blank_blend_source,
-            debug_sleep_enabled = debug_sleep_enabled,
+            debug_mode_enabled = debug_mode_enabled,
             verbose = VERBOSE
         })
-        if debug_sleep_enabled then
+        if debug_mode_enabled then
             sleep(2)
         end
         processor:process_files()
         log(Colours.GREEN, "--- Step 1: Completed ---")
-        if debug_sleep_enabled then
+        if debug_mode_enabled then
             sleep(2)
         end
 
@@ -767,27 +774,27 @@ local function run(args)
         end
         ensure_directory(root_drive)
         log(Colours.GREEN, string.format("Root directory for symbolic links ensured: %s", root_drive))
-        if debug_sleep_enabled then
+        if debug_mode_enabled then
             sleep(2)
         end
 
         log(Colours.CYAN, "--- Step 3: Generating Asset Map & Populating Database ---")
-        if debug_sleep_enabled then
+        if debug_mode_enabled then
             sleep(2)
         end
         local asset_count = generate_asset_mapping(db, root_drive, preinstanced_dir, blend_dir, marker, glb_dir, false)
         log(Colours.GREEN, string.format("Generated and stored map for %d assets in the database.", asset_count))
-        if debug_sleep_enabled then
+        if debug_mode_enabled then
             sleep(2)
         end
 
         log(Colours.CYAN, string.format("--- Step 4: Creating Symbolic Links in: %s ---", root_drive))
-        if debug_sleep_enabled then
+        if debug_mode_enabled then
             sleep(2)
         end
-        create_symbolic_links(db, root_drive, debug_sleep_enabled)
+        create_symbolic_links(db, root_drive, debug_mode_enabled)
         log(Colours.GREEN, "--- Step 4: Symbolic links creation and DB update process completed. ---")
-        if debug_sleep_enabled then
+        if debug_mode_enabled then
             sleep(2)
         end
     end)
