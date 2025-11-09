@@ -20,15 +20,14 @@ script = "{{Game_Root}}/operations/init.lua"
 
 ## validates source only files for US and EU
 ## validates source folders exist changed or unchanged, should be unchanged on first run
-[[operation]]
+[[operation]] ## validation steps dont do anything and only depend on db file thats dynmaically selected based on placeholders
 id = 1
 Name = "Validate Source Game Files and Folders"
 run-all = false
 depends-on = [0]
 script_type = "engine"
 script = "validate-files"
-#db = "{{Game_Root}}/config/GameFilesIndex_{{Region}}_SourceOnly-{{audio_state}}-{{isRenamed}}.db"
-db = "{{Game_Root}}/config/GameFilesIndex_{{Region}}_Full-{{audio_state}}-{{isRenamed}}.db"
+db = "{{Game_Root}}/config/GameFilesIndex_{{Region}}_{{Type}}-{{audio_state}}-{{isRenamed}}.db"
 args = [
 	"{{SourcePath}}",
 	"--tables", "str_index:source_path,video_index:source_path,mus_index:source_path,snu_index:source_path",
@@ -95,7 +94,7 @@ run-all = false
 depends-on = [0]
 script_type = "engine"
 script = "validate-files"
-db = "{{Game_Root}}/config/GameFilesIndex_{{Region}}_Full-{{audio_state}}-{{isRenamed}}.db"
+db = "{{Game_Root}}/config/GameFilesIndex_{{Region}}_{{Type}}-{{audio_state}}-{{isRenamed}}.db"
 args = [
 	"{{SourcePath}}",
 	"--tables", "str_index:source_path,video_index:source_path,mus_index:source_path,snu_index:source_path",
@@ -113,17 +112,42 @@ depends-on = [0,2] # depends on bms tool being downloaded
 script_type = "bms"
 script = "{{Game_Root}}/operations/simpsons_str.bms"
 input = "{{SourcePath}}"
-output = "{{Game_Root}}/GameFiles/STROUT"
+output = "{{Game_Root}}/GameFiles/{{STROUT}}"
 extension = ".str"
 
 
+
+## if you need proof this is needed heres the stats
+#Root          : A:\RemakeEngine\EngineApps\Games\TheSimpsonsGame-PS3\GameFiles\STROUT_Normalized
+#TotalItems    : 90536
+#MaxPath       : A:\RemakeEngine\EngineApps\Games\TheSimpsonsGame-PS3\GameFiles\STROUT_Normalized\Map_3-12_GrandTheftScr
+#                atchy\props\misc\gts_clip_joint_npccollide_placeholder_eps_grand_theft_scratchy_misc__K3ta5u5fva5gts_cl
+#                ip_joint_npccollide_placeholder.meta.xml
+#MaxPathLength : 246
+#CountOver240  : 3
+#CountOver248  : 0
+#CountOver260  : 0
+
+## Compared to original extraction
+#Root          : A:\RemakeEngine\EngineApps\Games\TheSimpsonsGame-PS3\GameFiles\STROUT
+#TotalItems    : 59791
+#MaxPath       : A:\RemakeEngine\EngineApps\Games\TheSimpsonsGame-PS3\GameFiles\STROUT\Map_3-09_Invasion\dayspringfields
+#                toodstill\story_mode\igcs\igc_02_folderstream\sss_igc02_shot04_str\build\PS3\pal_en\assets_rws\daysprin
+#                gfieldstoodstill\dayspringfieldstoodstill\texture_dictionary\dayspringfieldstoodstill\story_mode\igcs\i
+#                gc_02_folderstream\sss_igc02_shot04.txd
+#MaxPathLength : 348
+#CountOver240  : 6322
+#CountOver248  : 4691
+#CountOver260  : 2783
+## the longest path being 348 characters long is a problem for blender and godot, mostly godot now
+##
 ## blender cannot handle paths that exeed windows path limits
 ## blender refused to accept my solutions to this so i did two things to ensure it works for -
 ## blender and any other application that needs to handle the files
 ## blender is currently solved using symbolic links for assets, and \\?\ for texture paths, this (\\?\) actually working indicates the i dont need the sym links for blender and could just use \\?\ for assets as well
 ## the same issue also occurs in godots virtual file system, the only solution there is to flatten the folder structure
 ## this process specificaly reduces redundent directory structurs without removing improtant path data
-#[[operation]]
+#[[operation]] old C# flattener, replaced by lua normalizer
 #id = 7
 #Name = "flatten folder structure"
 #run-all = false
@@ -134,40 +158,46 @@ extension = ".str"
 [[operation]]
 id = 7
 Name = "Normalize folder structure"
-run-all = false
+run-all = true
 depends-on = [0]
 script_type = "lua"
 script = "{{Game_Root}}/operations/DirectoryNormalizer.lua"
-args = ["{{Game_Root}}/GameFiles/STROUT", "{{Game_Root}}/GameFiles/STROUT_Normalized", "--rules", "{{Game_Root}}/config/DirectoryNormalizer.rules.json", "--action", "copy", "--ignore", "audiostreams", "--ignore", "movies"]
+args = ["{{Game_Root}}/GameFiles/{{STROUT}}", "{{Game_Root}}/GameFiles/{{STROUT}}_Normalized", "--rules", "{{Game_Root}}/config/DirectoryNormalizer.rules.json", "--action", "copy", "--ignore", "audiostreams", "--ignore", "movies"]
 [[operation.prompts]]
 type = "confirm"
 Name = "dry run?"
 message = "dry run (no files will be copied)?"
 default = false
 cli_arg = "--dry-run"
+[[operation.onsuccess]] # when successful, update placeholders to normalized
+Name = "update normalized placeholders"
+script_type = "lua"
+script = "{{Game_Root}}/config.lua"
+args = ["--group", "placeholders", "--set", "STROUT=STROUT_Normalized:string", "--set", "Type=FullFlattened:string"]
+
 
 ## extract textures from texture dictionaries that were extracted from .str files
 [[operation]]
 id = 8
 Name = "Extract Textures (.txd -> .dds)"
 run-all = true
-depends-on = [0]
+depends-on = [0,7]
 script_type = "engine"
 script = "format-extract"
 format = "txd"
-args = ["{{Game_Root}}/GameFiles/STROUT"]
+args = ["{{Game_Root}}/GameFiles/{{STROUT}}"]
 
 [[operation]]
 id = 9
 Name = "Convert Textures (.dds -> .png)"
 run-all = true
-depends-on = [0,2] # depends on ImageMagick being downloaded
+depends-on = [0,7,8,2]
 script_type = "engine"
 script = "format-convert"
 tool = "ImageMagick"
 args = [
-	"--source", "{{Game_Root}}/GameFiles/STROUT",
-	"--target", "{{Game_Root}}/GameFiles/STROUT",
+	"--source", "{{Game_Root}}/GameFiles/{{STROUT}}",
+	"--target", "{{Game_Root}}/GameFiles/{{STROUT}}",
 	"--input-ext", ".dds",
 	"--output-ext", ".png"
 ]
@@ -180,9 +210,9 @@ run-all = false
 depends-on = [0]
 script_type = "engine"
 script = "validate-files"
-db = "{{Game_Root}}/config/GameFilesIndex_{{Region}}_Full-{{audio_state}}-{{isRenamed}}.db"
+db = "{{Game_Root}}/config/GameFilesIndex_{{Region}}_{{Type}}-{{audio_state}}-{{isRenamed}}.db"
 args = [
-	"{{Game_Root}}/GameFiles/STROUT",
+	"{{Game_Root}}/GameFiles/{{STROUT}}",
 	"--tables", "preinstanced_index:source_path,txd_index:source_path,dds_index:source_path,png_index:source_path",
 	"--required-dirs", "audiostreams||Assets_1_Audio_Streams,movies||Assets_1_Video_Movies,frontend||Assets_2_Frontend,simpsons_chars||Assets_2_Characters_Simpsons,spr_hub||Map_3-00_SprHub,loc||Map_3-01_LandOfChocolate,brt||Map_3-02_BartmanBegins,eighty_bites||Map_3-03_HungryHungryHomer,tree_hugger||Map_3-04_TreeHugger,mob_rules||Map_3-05_MobRules,cheater||Map_3-06_EnterTheCheatrix,dayofthedolphins||Map_3-07_DayOfTheDolphin,colossaldonut||Map_3-08_TheColossalDonut,dayspringfieldstoodstill||Map_3-09_Invasion,bargainbin||Map_3-10_BargainBin,gamehub||Map_3-00_GameHub,neverquest||Map_3-11_NeverQuest,grand_theft_scratchy||Map_3-12_GrandTheftScratchy,medal_of_homer||Map_3-13_MedalOfHomer,bigsuperhappy||Map_3-14_BigSuperHappy,rhymes||Map_3-15_Rhymes,meetthyplayer||Map_3-16_MeetThyPlayer",
 ]
@@ -201,11 +231,11 @@ args = [
 	"--base-dir", "{{Game_Root}}",
 	"--operations-dir", "{{Game_Root}}/operations",
 	"--blender-dir", "{{Game_Root}}/operations/Blender",
-	"--preinstanced-dir", "{{Game_Root}}/GameFiles/STROUT",
-	"--blend-dir", "{{Game_Root}}/GameFiles/STROUT",
+	"--preinstanced-dir", "{{Game_Root}}/GameFiles/{{STROUT}}",
+	"--blend-dir", "{{Game_Root}}/GameFiles/{{STROUT}}",
 	"--blank-blend", "{{Game_Root}}/blank.blend",
 	"--root-drive", "{{Game_Root}}/TMP_TSG_LNKS",
-	"--main-db", "{{Game_Root}}/config/GameFilesIndex_{{Region}}_Full-{{audio_state}}-{{isRenamed}}.db",
+	"--main-db", "{{Game_Root}}/config/GameFilesIndex_{{Region}}_{{Type}}-{{audio_state}}-{{isRenamed}}.db",
 ]
 # for debugging
 [[operation.prompts]]
@@ -250,9 +280,9 @@ tool = "ffmpeg"
 args = [
 	"-m", "ffmpeg",
 	"--type", "video",
-	## doesnt need to specify the location of the movies folder as its within the source path and STROUT and the only location vp6 files exist
+	## doesnt need to specify the location of the movies folder as its within the source path and {{STROUT}} and the only location vp6 files exist
 	"-s", "{{SourcePath}}",
-	"-t", "{{Game_Root}}/GameFiles/STROUT",
+	"-t", "{{Game_Root}}/GameFiles/{{STROUT}}",
 	#"-f", "ffmpeg.exe",
 	"-i", ".vp6",
 	"-o", ".ogv"
@@ -270,9 +300,9 @@ tool = "vgmstream"
 args = [
 	"-m", "vgmstream",
 	"--type", "audio",
-	## doesnt need to specify the location of the audiostreams folder as its within the source path and STROUT and the only location snu files exist
+	## doesnt need to specify the location of the audiostreams folder as its within the source path and {{STROUT}} and the only location snu files exist
 	"-s", "{{SourcePath}}",
-	"-t", "{{Game_Root}}/GameFiles/STROUT",
+	"-t", "{{Game_Root}}/GameFiles/{{STROUT}}",
 	#"--vgmstream-cli", "vgmstream-cli.exe",
 	"-i", ".snu",
 	"-o", ".wav",
@@ -287,9 +317,9 @@ run-all = false
 depends-on = [0]
 script_type = "engine"
 script = "validate-files"
-db = "{{Game_Root}}/config/GameFilesIndex_{{Region}}_Full-{{audio_state}}-{{isRenamed}}.db"
+db = "{{Game_Root}}/config/GameFilesIndex_{{Region}}_{{Type}}-{{audio_state}}-{{isRenamed}}.db"
 args = [
-	"{{Game_Root}}/GameFiles/STROUT",
+	"{{Game_Root}}/GameFiles/{{STROUT}}",
 	"--tables", "preinstanced_index:source_path,glb_index:source_path,txd_index:source_path,dds_index:source_path,png_index:source_path,audio_wav_index:source_path,video_ogv_index:source_path",
 	"--required-dirs", "audiostreams||Assets_1_Audio_Streams,movies||Assets_1_Video_Movies,frontend||Assets_2_Frontend,simpsons_chars||Assets_2_Characters_Simpsons,spr_hub||Map_3-00_SprHub,loc||Map_3-01_LandOfChocolate,brt||Map_3-02_BartmanBegins,eighty_bites||Map_3-03_HungryHungryHomer,tree_hugger||Map_3-04_TreeHugger,mob_rules||Map_3-05_MobRules,cheater||Map_3-06_EnterTheCheatrix,dayofthedolphins||Map_3-07_DayOfTheDolphin,colossaldonut||Map_3-08_TheColossalDonut,dayspringfieldstoodstill||Map_3-09_Invasion,bargainbin||Map_3-10_BargainBin,gamehub||Map_3-00_GameHub,neverquest||Map_3-11_NeverQuest,grand_theft_scratchy||Map_3-12_GrandTheftScratchy,medal_of_homer||Map_3-13_MedalOfHomer,bigsuperhappy||Map_3-14_BigSuperHappy,rhymes||Map_3-15_Rhymes,meetthyplayer||Map_3-16_MeetThyPlayer",
 	"--debug"
@@ -298,7 +328,7 @@ args = [
 
 
 
-## the hard part
+## the HARD part
 [[operation]]
 id = 15
 Name = "generate Godot Game (EXPERIMENTAL)"
@@ -306,9 +336,9 @@ run-all = false
 depends-on = [0,6,8,9,11,12,13,14]
 script_type = "lua"
 script = "{{Game_Root}}/Game/init.lua"
-args = ["--project-name", "SimpsonsGamePS3", "--repo-root", "{{Project_Root}}", "--sourcePath", "{{Game_Root}}/GameFiles/STROUT"]
+args = ["--project-name", "SimpsonsGamePS3", "--repo-root", "{{Project_Root}}", "--sourcePath", "{{Game_Root}}/GameFiles/{{STROUT}}"]
 
-## the hard part again but for menus
+## the HARD part but its menus, and UI this time
 [[operation]]
 id = 16
 Name = "GODOT - Generate Menu's (EXPERIMENTAL)"
@@ -316,4 +346,6 @@ run-all = false
 depends-on = [0,6,8,9,11,12,13,14]
 script_type = "lua"
 script = "{{Project_Root}}/EngineApps/Games/TheSimpsonsGame-PS3/Game.Menu/init.lua"
-args = ["--project-name", "SimpsonsGamePS3", "--repo-root", "{{Project_Root}}", "--sourcePath", "{{Game_Root}}/GameFiles/STROUT"]
+args = ["--project-name", "SimpsonsGamePS3", "--repo-root", "{{Project_Root}}", "--sourcePath", "{{Game_Root}}/GameFiles/{{STROUT}}"]
+
+## more HARD parts to come?...

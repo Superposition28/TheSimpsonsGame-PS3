@@ -74,9 +74,14 @@ local function parent_dir(path)
         return nil
     end
     local normalized = normalize_separators(path)
-    local dir = normalized:match("^(.*)[/\\][^/\\]+$")
-    if dir and #dir > 0 then
-        return dir
+    local last_sep = 0
+    for i = 1, #normalized do
+        local ch = normalized:sub(i, i)
+        if ch == '/' or ch == '\\' then last_sep = i end
+    end
+    if last_sep > 0 then
+        local dir = normalized:sub(1, last_sep - 1)
+        if #dir > 0 then return dir end
     end
     return nil
 end
@@ -131,14 +136,33 @@ function PreinstancedFileProcessor:process_files()
         end
 
         local rel = normalize_separators(preinst_path):sub(#input_dir_abs + 2)
-        local rel_dir = rel:match("^(.*)[/\\][^/\\]+$")
+        -- Replace heavy Lua pattern with simple last-separator search
+        local rel_ns = normalize_separators(rel)
+        local last_sep = 0
+        for i = 1, #rel_ns do
+            local ch = rel_ns:sub(i,i)
+            if ch == '/' or ch == '\\' then last_sep = i end
+        end
+        local rel_dir = last_sep > 0 and rel_ns:sub(1, last_sep - 1) or nil
         local blend_dest_dir = rel_dir and join(self.blend_dir, rel_dir) or self.blend_dir
         local glb_dest_dir = rel_dir and join(self.glb_dir, rel_dir) or self.glb_dir
 
         ensure_directory(blend_dest_dir)
         ensure_directory(glb_dest_dir)
 
-        local base_name = preinst_path:match("([^/\\]+)%.preinstanced$") or preinst_path:match("([^/\\]+)$") or 'asset'
+        -- Derive base name without using complex patterns
+        local fn_ns = normalize_separators(preinst_path)
+        local last2 = 0
+        for i = 1, #fn_ns do
+            local ch = fn_ns:sub(i,i)
+            if ch == '/' or ch == '\\' then last2 = i end
+        end
+        local fname = last2 > 0 and fn_ns:sub(last2 + 1) or fn_ns
+        local suffix = '.preinstanced'
+        local base_name = fname
+        if #fname > #suffix and fname:sub(#fname - #suffix + 1):lower() == suffix then
+            base_name = fname:sub(1, #fname - #suffix)
+        end
         local blend_dest_filename = base_name .. ".blend"
         local blend_dest_full_path = join(blend_dest_dir, blend_dest_filename)
 
@@ -655,14 +679,33 @@ function PreinstancedFileProcessor:process_files()
         end
 
         local rel = normalize_separators(preinst_path):sub(#input_dir_abs + 2)
-        local rel_dir = rel:match("^(.*)[/\\][^/\\]+$")
+        -- Avoid complex Lua patterns on very long paths: find last separator manually
+        local rel_ns = normalize_separators(rel)
+        local last_sep = 0
+        for i = 1, #rel_ns do
+            local ch = rel_ns:sub(i, i)
+            if ch == '/' or ch == '\\' then last_sep = i end
+        end
+        local rel_dir = last_sep > 0 and rel_ns:sub(1, last_sep - 1) or nil
         local blend_dest_dir = rel_dir and join(self.blend_dir, rel_dir) or self.blend_dir
         local glb_dest_dir = rel_dir and join(self.glb_dir, rel_dir) or self.glb_dir
 
         ensure_directory(blend_dest_dir)
         ensure_directory(glb_dest_dir)
 
-        local base_name = preinst_path:match("([^/\\]+)%.preinstanced$") or preinst_path:match("([^/\\]+)$") or 'asset'
+        -- Derive base name without heavy patterns
+        local fn_ns = normalize_separators(preinst_path)
+        local last2 = 0
+        for i = 1, #fn_ns do
+            local ch = fn_ns:sub(i, i)
+            if ch == '/' or ch == '\\' then last2 = i end
+        end
+        local fname = last2 > 0 and fn_ns:sub(last2 + 1) or fn_ns
+        local suffix = '.preinstanced'
+        local base_name = fname
+        if #fname > #suffix and fname:sub(#fname - #suffix + 1):lower() == suffix then
+            base_name = fname:sub(1, #fname - #suffix)
+        end
         local blend_dest_filename = base_name .. ".blend"
         local blend_dest_full_path = join(blend_dest_dir, blend_dest_filename)
 

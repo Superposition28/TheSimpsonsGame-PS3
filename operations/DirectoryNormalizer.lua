@@ -60,6 +60,10 @@ local function to_lower_list(parts)
     return out
 end
 
+local function isdigit_byte(b)
+    return b and b >= 48 and b <= 57
+end
+
 local function split_path(p)
     local parts = {}
     for part in p:gmatch("[^/\\]+") do table.insert(parts, part) end
@@ -69,12 +73,6 @@ end
 local function ensure_dir(p)
     if sdk and sdk.ensure_dir then return sdk.ensure_dir(p) end
     return lfs.mkdir(p)
-end
-
-local function is_dir(p)
-    if sdk and sdk.is_dir then return sdk.is_dir(p) end
-    local a = lfs.attributes(p)
-    return a and a.mode == "directory" or false
 end
 
 local function path_exists(p)
@@ -128,60 +126,19 @@ local function base32_encode(bin)
     local output = {}
     local bitbuf, bitcount = 0, 0
     for i = 1, #bin do
-        bitbuf = (bitbuf << 8) | bin:byte(i)
+        bitbuf = bitbuf * 256 + bin:byte(i)
         bitcount = bitcount + 8
         while bitcount >= 5 do
-            local index = (bitbuf >> (bitcount - 5)) & 0x1F
+            local idx = math.floor(bitbuf / (2 ^ (bitcount - 5))) % 32
             bitcount = bitcount - 5
-            output[#output+1] = alphabet:sub(index + 1, index + 1)
+            output[#output+1] = alphabet:sub(idx + 1, idx + 1)
         end
     end
     if bitcount > 0 then
-        local index = (bitbuf << (5 - bitcount)) & 0x1F
-        output[#output+1] = alphabet:sub(index + 1, index + 1)
+        local idx = (bitbuf * (2 ^ (5 - bitcount))) % 32
+        output[#output+1] = alphabet:sub(idx + 1, idx + 1)
     end
     return table.concat(output)
-end
-
--- Lua 5.3+ bitwise operators are supported by MoonSharp (emulated). If not, provide fallbacks.
-if not (0x1 & 0x1) then
-    -- Fallback implementations (simple, slower). Ensure required ops exist: &, |, <<, >>.
-    local function band(a,b)
-        local res, bit = 0, 1
-        while a > 0 or b > 0 do
-            local abit = a % 2; local bbit = b % 2
-            if abit == 1 and bbit == 1 then res = res + bit end
-            a = (a - abit) / 2; b = (b - bbit) / 2; bit = bit * 2
-        end
-        return res
-    end
-    local function bor(a,b)
-        local res, bit = 0, 1
-        while a > 0 or b > 0 do
-            local abit = a % 2; local bbit = b % 2
-            if abit == 1 or bbit == 1 then res = res + bit end
-            a = (a - abit) / 2; b = (b - bbit) / 2; bit = bit * 2
-        end
-        return res
-    end
-    local function bxor(a,b)
-        local res, bit = 0, 1
-        while a > 0 or b > 0 do
-            local abit = a % 2; local bbit = b % 2
-            if (abit + bbit) == 1 then res = res + bit end
-            a = (a - abit) / 2; b = (b - bbit) / 2; bit = bit * 2
-        end
-        return res
-    end
-    local function lshift(a, n)
-        return (a * (2 ^ n)) % (2 ^ 32)
-    end
-    local function rshift(a, n)
-        return math.floor(a / (2 ^ n))
-    end
-    local mt = getmetatable(0) or {}
-    mt.__band = band; mt.__bor = bor; mt.__bxor = bxor; mt.__shl = lshift; mt.__shr = rshift
-    setmetatable(0, mt)
 end
 
 -- Short key: Base32(SHA1(original_rel_path))[:length], lowercase
@@ -208,8 +165,23 @@ local function multi_ext(name)
 end
 
 local function sanitize_filename(name)
-    -- Replace Windows-unsafe chars
-    return (name:gsub('[<>:"/\\|%?%*%z\001-\031]', '_'):gsub("^%s+|%s+$", ""))
+    -- Replace Windows-unsafe characters and control codes without complex Lua patterns
+    local out = {}
+    for i = 1, #name do
+        local ch = name:sub(i, i)
+        local b = string.byte(ch)
+        if b and b < 32 then
+            out[#out+1] = '_'
+        elseif ch == '<' or ch == '>' or ch == ':' or ch == '"' or ch == '/' or ch == '\\' or ch == '|' or ch == '?' or ch == '*' then
+            out[#out+1] = '_'
+        else
+            out[#out+1] = ch
+        end
+    end
+    local s = table.concat(out)
+    -- trim outer whitespace using simple patterns
+    s = (s:gsub('^%s+', ''):gsub('%s+$', ''))
+    return s
 end
 
 local function strip_str_suffix(token, enable)
@@ -232,15 +204,25 @@ local function char_root_and_variant(parts)
         if string.lower(parts[i]) == "chars" and i+1 <= #parts then
             local folder = parts[i+1]
             local lowerf = string.lower(folder)
-            local m1 = { string.match(lowerf, "^([a-z]+)_(.+)_str$") }
-            if #m1 > 0 then
-                local char_name = m1[1]
-                local variant = parts[i+1]:sub(#char_name+2, #parts[i+1]-4) -- preserve original casing of variant
-                return char_name .. "_str", variant, i
-            end
-            local m2 = { string.match(lowerf, "^([a-z]+)_str$") }
-            if #m2 > 0 then
-                return parts[i+1], "", i
+            if #lowerf >= 4 and lowerf:sub(#lowerf-3) == "_str" then
+                local body = folder:sub(1, #folder-4) -- keep original casing for variant
+                local us = body:find("_", 1, true)
+                if us then
+                    local char_name = string.lower(body:sub(1, us-1))
+                    -- validate char_name letters only
+                    local ok = #char_name > 0
+                    for c in char_name:gmatch(".") do
+                        local b = string.byte(c)
+                        if not (b and b >= 97 and b <= 122) then ok=false; break end
+                    end
+                    if ok then
+                        local variant = body:sub(us+1)
+                        return char_name .. "_str", variant, i
+                    end
+                else
+                    -- already canonical <name>_str
+                    return folder, "", i
+                end
             end
             return nil, "", nil
         end
@@ -293,6 +275,7 @@ local function find_category(parts, categories)
 end
 
 local function find_purpose(parts, stem, purpose_tokens, filename_patterns)
+    -- Prefer purpose from path tokens
     for _,p in ipairs(parts) do
         local pl = string.lower(p)
         for _,pt in ipairs(purpose_tokens) do
@@ -302,27 +285,68 @@ local function find_purpose(parts, stem, purpose_tokens, filename_patterns)
             end
         end
     end
-    -- Translate some regex-style patterns to Lua patterns
-    local function to_lua_pat(rx)
-        -- Replace (\d+) -> (%d+), character sets [_\- ] -> [%_%- ]
-        rx = rx:gsub("%(\\d%+%)", "(%%d+)")
-        rx = rx:gsub("%[_%\\%- %]", "[%%_%%- ]")
-        return rx
-    end
-    for _,fp in ipairs(filename_patterns or {}) do
-        local rx = to_lua_pat(fp.pattern or "")
-        if rx ~= "" and string.match(stem, rx) then
-            return fp.purpose or "misc"
+    local s = string.lower(stem or "")
+    -- lodN or lodN_model
+    if s:sub(1,3) == "lod" then
+        local i = 4
+        local ch = s:sub(i,i)
+        if ch == '_' or ch == '-' or ch == ' ' then i = i + 1 end
+        local j = i
+        while j <= #s and isdigit_byte(s:byte(j)) do j = j + 1 end
+        if j > i then
+            if j > #s then return "lod" end
+            local k = j
+            ch = s:sub(k,k)
+            if ch == '_' or ch == '-' or ch == ' ' then k = k + 1 end
+            if s:sub(k) == "model" then return "lod" end
+            return "lod"
         end
     end
+    -- opt_modelN
+    if s:sub(1,3) == "opt" then
+        local i = 4
+        local ch = s:sub(i,i)
+        if ch == '_' or ch == '-' or ch == ' ' then i = i + 1 end
+        if s:sub(i, i+4) == "model" then
+            local j = i + 5
+            local k = j
+            while k <= #s and isdigit_byte(s:byte(k)) do k = k + 1 end
+            if k > j then return "opt" end
+        end
+    end
+    -- *_geo / geo
+    if s == "geo" or (#s >= 4 and s:sub(#s-3) == "_geo") then return "geo" end
+    -- terrain*
+    if s:sub(1,7) == "terrain" then return "terrain" end
     return "misc"
 end
 
 local function extract_index(stem, purpose)
-    local m = { string.match(stem, "lod[_%- ]?(%d+)") }
-    if #m == 0 then m = { string.match(stem, "lod(%d+)[_%- ]?model") } end
-    if #m == 0 and purpose == "opt" then m = { string.match(stem, "opt[_%- ]?model(%d+)") } end
-    return m[1]
+    local s = string.lower(stem or "")
+    local p = s:find("lod", 1, true)
+    if p then
+        local i = p + 3
+        local ch = s:sub(i,i)
+        if ch == '_' or ch == '-' or ch == ' ' then i = i + 1 end
+        local j = i
+        while j <= #s and isdigit_byte(s:byte(j)) do j = j + 1 end
+        if j > i then return s:sub(i, j-1) end
+    end
+    if purpose == "opt" then
+        local po = s:find("opt", 1, true)
+        if po then
+            local i = po + 3
+            local ch = s:sub(i,i)
+            if ch == '_' or ch == '-' or ch == ' ' then i = i + 1 end
+            if s:sub(i, i+4) == "model" then
+                local j = i + 5
+                local k = j
+                while k <= #s and isdigit_byte(s:byte(k)) do k = k + 1 end
+                if k > j then return s:sub(j, k-1) end
+            end
+        end
+    end
+    return nil
 end
 
 local function pick_owner(parts, generic_tokens)
@@ -335,8 +359,25 @@ local function pick_owner(parts, generic_tokens)
             table.insert(cand, p)
         elseif pl:sub(-4) == "_hub" then
             table.insert(cand, p)
-        elseif string.match(pl, "^[a-z]+_[a-z0-9_]+") and not pl:find("zone", 1, true) and not generic_tokens[pl] then
-            table.insert(cand, p)
+        elseif not pl:find("zone", 1, true) and not generic_tokens[pl] then
+            local us = pl:find("_", 1, true)
+            if us and us > 1 then
+                local left = pl:sub(1, us-1)
+                local right = pl:sub(us+1)
+                local ok_left = #left > 0
+                for c in left:gmatch(".") do
+                    local b = string.byte(c)
+                    if not (b and b >= 97 and b <= 122) then ok_left=false; break end
+                end
+                local ok_right = #right > 0
+                for c in right:gmatch(".") do
+                    local b = string.byte(c)
+                    if not ((b and b >= 97 and b <= 122) or (b and b >= 48 and b <= 57) or c == "_") then ok_right=false; break end
+                end
+                if ok_left and ok_right then
+                    table.insert(cand, p)
+                end
+            end
         end
     end
     return cand[#cand]
@@ -517,9 +558,9 @@ local function load_rules(path)
         categories = { "environs", "props", "chars", "weapons", "characters", "fx", "ui", "audio" },
         purpose_tokens = { "geo", "opt", "lod", "bound", "rig", "tex", "mat", "proxy", "anim", "terrain" },
         filename_patterns = {
-            { pattern = "^lod[_\- ]?(\\d+)", purpose = "lod" },
-            { pattern = "^lod(\\d+)[_\- ]?model$", purpose = "lod" },
-            { pattern = "^opt[_\- ]?model(\\d+)$", purpose = "opt" },
+            { pattern = "^lod[_\\- ]?(\\d+)", purpose = "lod" },
+            { pattern = "^lod(\\d+)[_\\- ]?model$", purpose = "lod" },
+            { pattern = "^opt[_\\- ]?model(\\d+)$", purpose = "opt" },
             { pattern = "^(.*)_geo$", purpose = "geo" },
             { pattern = "^terrain", purpose = "terrain" },
         },
@@ -604,9 +645,34 @@ local function rel_path(full, root)
 end
 
 local function ext_lower(name)
-    local idx = name:match("^.*()\.")
-    if not idx then return "" end
-    return string.lower(name:sub(idx))
+    local last = nil
+    for i=1,#name do
+        if name:sub(i,i) == '.' then last = i end
+    end
+    if not last then return "" end
+    return string.lower(name:sub(last))
+end
+
+local function dirname(p)
+    local s = norm_slashes(p)
+    local last = 0
+    for i=1,#s do
+        local ch = s:sub(i,i)
+        if ch == '/' or ch == '\\' then last = i end
+    end
+    if last == 0 then return "" end
+    return s:sub(1, last-1)
+end
+
+local function basename(p)
+    local s = norm_slashes(p)
+    local last = 0
+    for i=1,#s do
+        local ch = s:sub(i,i)
+        if ch == '/' or ch == '\\' then last = i end
+    end
+    if last == 0 then return s end
+    return s:sub(last+1)
 end
 
 local function should_include_file(file, exts)
@@ -619,15 +685,21 @@ local function should_include_file(file, exts)
 end
 
 local function copy_with_collision_handling(src, dst)
-    local parent = dst:match("^(.*)[/\\][^/\\]+$")
+    local parent = dirname(dst)
     if parent and parent ~= "" then ensure_dir(parent) end
     local target = dst
     if path_exists(target) then
-        local base, ext = dst:match("^(.*)(\.[^/\\]*)$")
-        if not base then base = dst; ext = "" end
+        local ext = ext_lower(dst)
+        local base
+        if ext ~= "" then
+            base = dst:sub(1, #dst - #ext)
+        else
+            base = dst
+        end
         local i = 1
         repeat
-            target = string.format("%s_dup%s%s", base, (i==1) and "" or tostring(i), ext)
+            local suffix = (i==1) and "" or tostring(i)
+            target = string.format("%s_dup%s%s", base, suffix, ext)
             i = i + 1
         until not path_exists(target)
     end
@@ -656,81 +728,86 @@ local function main()
     end
 
     local prog = (rawget(_G, "progress") and progress(#files, "normalize", "Normalizing directory")) or nil
-    local mapping_rows = {}
-    local per_base = {}
-    local total = 0
+    local ok, err = pcall(function()
+        local mapping_rows = {}
+        local per_base = {}
+        local total = 0
 
-    for i=1,#files do
-        local full = files[i]
-        local rel = rel_path(full, args.src)
-        local new_rel, meta = build_new_path(rel, rules, tmp_key_dir)
-        if new_rel then
-            total = total + 1
-            local new_path = join(args.dst, new_rel)
+        for i=1,#files do
+            local full = files[i]
+            local rel = rel_path(full, args.src)
+            local new_rel, meta = build_new_path(rel, rules, tmp_key_dir)
+            if new_rel then
+                total = total + 1
+                local new_path = join(args.dst, new_rel)
 
-            local row = {
-                key = meta.key,
-                original_path = rel,
-                new_path = new_rel,
-                base = meta.base,
-                zone = meta.zone,
-                category = meta.category,
-                purpose = meta.purpose,
-                owner = meta.owner,
-                asset = meta.asset,
-                index = meta.index,
-                ext = meta.ext,
-            }
-            table.insert(mapping_rows, row)
-            per_base[meta.base] = per_base[meta.base] or {}
-            table.insert(per_base[meta.base], row)
+                local row = {
+                    key = meta.key,
+                    original_path = rel,
+                    new_path = new_rel,
+                    base = meta.base,
+                    zone = meta.zone,
+                    category = meta.category,
+                    purpose = meta.purpose,
+                    owner = meta.owner,
+                    asset = meta.asset,
+                    index = meta.index,
+                    ext = meta.ext,
+                }
+                table.insert(mapping_rows, row)
+                per_base[meta.base] = per_base[meta.base] or {}
+                table.insert(per_base[meta.base], row)
 
-            if args.dry_run then
-                colour_print("darkgray", string.format("[DRY COPY] %s -> %s", rel, new_rel))
-            else
-                copy_with_collision_handling(full, new_path)
+                if args.dry_run then
+                    colour_print("darkgray", string.format("[DRY COPY] %s -> %s", rel, new_rel))
+                else
+                    copy_with_collision_handling(full, new_path)
+                end
             end
+            if prog then prog:Update(1) end
         end
-        if prog then prog:Update(1) end
-    end
 
-    -- Sort rows
-    table.sort(mapping_rows, function(a,b)
-        if a.base == b.base then return a.original_path < b.original_path end
-        return a.base < b.base
-    end)
-    for _,rows in pairs(per_base) do
-        table.sort(rows, function(a,b) return a.original_path < b.original_path end)
-    end
+        -- Sort rows
+        table.sort(mapping_rows, function(a,b)
+            if a.base == b.base then return a.original_path < b.original_path end
+            return a.base < b.base
+        end)
+        for _,rows in pairs(per_base) do
+            table.sort(rows, function(a,b) return a.original_path < b.original_path end)
+        end
 
-    -- Write JSON outputs into args.dst
-    local map_json = join(args.dst, "flatten_map.json")
-    write_all_text(map_json, json_encode(mapping_rows, true))
+        -- Write JSON outputs into args.dst
+        local map_json = join(args.dst, "flatten_map.json")
+        write_all_text(map_json, json_encode(mapping_rows, true))
 
-    local created = {}
+        local created = {}
     for base, rows in pairs(per_base) do
         local safe = sanitize_filename(base)
         local per_path = join(args.dst, string.format("flatten_map_%s.json", safe))
         write_all_text(per_path, json_encode(rows, true))
-        table.insert(created, per_path:match("[^/\\]+$"))
+        table.insert(created, basename(per_path))
     end
 
-    local summary = { total_assets = total, bases = {}, files_written = {} }
-    for base, rows in pairs(per_base) do summary.bases[base] = #rows end
-    summary.files_written = { map_json:match("[^/\\]+$") }
-    for _,n in ipairs(created) do table.insert(summary.files_written, n) end
-    write_all_text(join(args.dst, "flatten_map_summary.json"), json_encode(summary, true))
+        local summary = { total_assets = total, bases = {}, files_written = {} }
+        for base, rows in pairs(per_base) do summary.bases[base] = #rows end
+        summary.files_written = { basename(map_json) }
+        for _,n in ipairs(created) do table.insert(summary.files_written, n) end
+        write_all_text(join(args.dst, "flatten_map_summary.json"), json_encode(summary, true))
 
-    print("")
-    print(string.format("Found %d assets.", total))
-    print(string.format("JSON mapping written to: %s", map_json))
-    if #created > 0 then
-        print("Per-base maps:")
-        for _,name in ipairs(created) do print("  - " .. name) end
-        print(string.format("Summary: %s", join(args.dst, "flatten_map_summary.json")))
-    end
+        print("")
+        print(string.format("Found %d assets.", total))
+        print(string.format("JSON mapping written to: %s", map_json))
+        if #created > 0 then
+            print("Per-base maps:")
+            for _,name in ipairs(created) do print("  - " .. name) end
+            print(string.format("Summary: %s", join(args.dst, "flatten_map_summary.json")))
+        end
+    end)
+
+    -- finalize progress panel (stop background spinner) regardless of success
+    if prog then prog:Complete() end
+    if not ok then error(err) end
 end
 
 -- run
 main()
-
