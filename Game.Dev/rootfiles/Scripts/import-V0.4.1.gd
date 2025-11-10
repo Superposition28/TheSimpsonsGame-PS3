@@ -1,3 +1,11 @@
+
+# -----------------------------------------------------------------------------
+# IMPORT
+# Godot EditorScript to import a previously exported scene (and its resources)
+#
+#
+# -----------------------------------------------------------------------------
+
 @tool
 extends SceneTree # Needed to run from command line with --script
 #extends EditorScript # Needed to run from the editor
@@ -413,8 +421,8 @@ func _instantiate_child(child_info: Dictionary, scene_root: Node) -> Node:
     # 4) GLB asset via index (no 'path'/'class')
     elif child_info.has("index"):
         var idx: Variant = child_info["index"]
-        if typeof(idx) == TYPE_DICTIONARY and (idx as Dictionary).has("index_source_path"):
-            var glb_abs: String = ASSET_ROOT + String((idx as Dictionary)["index_source_path"])
+        if typeof(idx) == TYPE_DICTIONARY and (idx as Dictionary).has("source_path"):
+            var glb_abs: String = ASSET_ROOT + String((idx as Dictionary)["source_path"])
             var glb_res: Variant = load(glb_abs)
             if glb_res and (glb_res is PackedScene):
                 instance = (glb_res as PackedScene).instantiate()
@@ -422,7 +430,7 @@ func _instantiate_child(child_info: Dictionary, scene_root: Node) -> Node:
                 printerr("    Failed to load GLB as scene: ", glb_abs)
                 return null
         else:
-            printerr("    'index' block missing 'index_source_path' for child: ", child_info.get("name", "<unnamed>"))
+            printerr("    'index' block missing 'source_path' for child: ", child_info.get("name", "<unnamed>"))
             return null
     else:
         printerr("    Skipping child '", child_info.get("name", "<unnamed>"), "' (needs 'path', 'class', or 'index').")

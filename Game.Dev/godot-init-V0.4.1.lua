@@ -1,3 +1,4 @@
+-- EngineApps/Games/TheSimpsonsGame-PS3/Game/init.lua
 --[[
 Folder-batched Godot import with per-language sub-batches for audio.
 - No temp projects
@@ -298,7 +299,6 @@ end
 --   verify_hash_for_large (bool, default true)
 --   large_bytes_threshold (number, default 50 MiB)
 --   exts (array of extensions like {".png", ".glb"})
---   dry_run (bool) -> logs actions without writing
 --   progress_handle (userdata from progress()) -> updated per processed file
 --   case_insensitive (bool) -> treat destination as case-insensitive and detect collisions
 --   log_sample_actions (integer) -> print first N planned actions to console; full list goes to log
@@ -307,7 +307,6 @@ local function copy_tree_incremental(src_root, dst_root, opts)
     local use_hardlinks = (opts.use_hardlinks ~= false)
     local verify_hash_for_large = (opts.verify_hash_for_large ~= false)
     local large_bytes_threshold = opts.large_bytes_threshold or (50 * 1024 * 1024)
-    local dry_run = (opts.dry_run == true)
     local progress_handle = opts.progress_handle
     local case_insensitive = (opts.case_insensitive == true)
     local log_sample_actions = tonumber(opts.log_sample_actions or 50) or 50
@@ -361,7 +360,7 @@ local function copy_tree_incremental(src_root, dst_root, opts)
     if progress_handle then progress_handle:Update(0) end
 
     -- Ensure destination root (skip for dry-run to avoid writes)
-    if not dry_run then ensure_dir(dst_root) end
+    ensure_dir(dst_root)
 
     -- Throttled ETA display
     local start_clock = os.clock()
@@ -415,41 +414,31 @@ local function copy_tree_incremental(src_root, dst_root, opts)
                 local action = use_hardlinks and "link" or "copy"
                 local at = string.format("%s: %s -> %s", action, src, dst)
                 table.insert(stats.actions, at)
-                if dry_run then write_log("INFO", at) end
-                if not dry_run then
-                    local ok = false
-                    if use_hardlinks then
-                        ok = try_hardlink(src, dst)
-                        if ok then stats.hardlinked = stats.hardlinked + 1 end
-                    end
-                    if not ok then
-                        local ok2, err = pcall(copy_file, src, dst)
-                        if not ok2 then
-                            stats.errors = stats.errors + 1
-                            log_warn(string.format("Copy failed '%s' -> '%s': %s", src, dst, tostring(err)))
-                        else
-                            stats.copied = stats.copied + 1
-                            stats.bytes_copied = stats.bytes_copied + sz
-                        end
+
+                local ok = false
+                if use_hardlinks then
+                    ok = try_hardlink(src, dst)
+                    if ok then stats.hardlinked = stats.hardlinked + 1 end
+                end
+                if not ok then
+                    local ok2, err = pcall(copy_file, src, dst)
+                    if not ok2 then
+                        stats.errors = stats.errors + 1
+                        log_warn(string.format("Copy failed '%s' -> '%s': %s", src, dst, tostring(err)))
                     else
+                        stats.copied = stats.copied + 1
                         stats.bytes_copied = stats.bytes_copied + sz
                     end
                 else
-                    -- Dry-run: treat as would-copy
-                    stats.copied = stats.copied + 1
                     stats.bytes_copied = stats.bytes_copied + sz
                 end
+
             end
         end
 
         processed_bytes = processed_bytes + sz
         if progress_handle then progress_handle:Update(1) end
         maybe_print_eta(idx)
-
-        if dry_run and sample_emitted < log_sample_actions then
-            colour_print{ colour = Colours.GRAY, message = stats.actions[#stats.actions] or "" }
-            sample_emitted = sample_emitted + 1
-        end
     end
 
     if progress_handle and stats.total_seen > 0 then progress_handle:Update(0) end
@@ -457,36 +446,36 @@ local function copy_tree_incremental(src_root, dst_root, opts)
 end
 
 -- Constants
-local AUDIO_TOP = "audiostreams"
+local AUDIO_TOP1 = "audiostreams"
+local AUDIO_TOP2 = "Assets_1_Audio_Streams"
 local AUDIO_LANG_FOLDERS = { EN=true, ES=true, FR=true, IT=true, Global=true }
 
 -- Create and import Godot project
-local function create_godot_project(project_name, project_path, extracted_root, scripts_folder, addons_folder, conf_folder, godot_exe, no_exit, logo_images, asset_exts, dry_run)
+local function create_godot_project(project_name, project_path, extracted_root, scripts_folder, addons_folder, conf_folder, godot_exe, no_exit, logo_images, asset_exts)
     local project_dir = join(project_path, project_name)
-    if not dry_run then ensure_dir(project_dir) end
+    ensure_dir(project_dir)
     log_info("Godot Project Directory: " .. project_dir)
 
     -- Open log (project-local)
     local project_log = join(project_dir, "godot-init.log")
-    if not dry_run then open_log(project_log) end
+    open_log(project_log)
     write_log("INFO", string.format("init.lua started for project '%s'", project_name))
 
-    -- project.godot from conf template
-    local proj_file = join(project_dir, "project.godot")
-    --if not file_exists(proj_file) then
-    --    local conf_path = normalize(join(dirname(project_path), join("conf", "project.godot")))
-    --    local inf, err = io.open(conf_path, "r")
-    --    if not inf then error("Cannot open conf template: " .. tostring(err)) end
-    --    local content = inf:read("*a") or ""
-    --    inf:close()
-    --    local outf = assert(io.open(proj_file, "w"))
-    --    outf:write(content)
-    --    outf:close()
-    --    colour_print{ colour = Colours.CYAN, message = "Created project.godot" }
-    --end
-
     local assets_dst_root = join(project_dir, "assets")
-    if not dry_run then ensure_dir(assets_dst_root) end
+    ensure_dir(assets_dst_root)
+
+    -- Logos
+    if logo_images and #logo_images > 0 then
+        local logos_dst = join(project_dir, "logos")
+        ensure_dir(logos_dst)
+        for _,f in ipairs(logo_images) do
+            local ok, err = pcall(copy_file, f, join(logos_dst, basename(f)))
+            if not ok then
+                colour_print{ colour = Colours.YELLOW, message = string.format("Warn: logo copy failed '%s': %s", f, tostring(err)) }
+            end
+        end
+        colour_print{ colour = Colours.BLUE, message = "Copied logo images into project." }
+    end
 
     -- Copy addons, scene_config.json and tool scripts early so they are available
     -- during per-batch headless imports. This was previously done after
@@ -497,20 +486,15 @@ local function create_godot_project(project_name, project_path, extracted_root, 
         local function copytree(src, dstroot)
             walk_files(src, function(ap, rp, _)
                 local outp = join(dstroot, rp)
-                if not dry_run then
-                    ensure_dir(dirname(outp))
-                    local ok, err = pcall(copy_file, ap, outp)
-                    if not ok then
-                        log_warn(string.format("Addon copy failed '%s' -> '%s': %s", ap, outp, tostring(err)))
-                    end
-                else
-                    -- dry-run preview
-                    write_log("INFO", string.format("addon copy: %s -> %s", ap, outp))
+                ensure_dir(dirname(outp))
+                local ok, err = pcall(copy_file, ap, outp)
+                if not ok then
+                    log_warn(string.format("Warn: addon copy failed '%s' -> '%s': %s", ap, outp, tostring(err)))
                 end
             end)
         end
         copytree(addons_folder, dst)
-        log_info("Prepared addons in project before asset import (" .. (dry_run and "dry-run" or "copied") .. ")")
+        log_info("Copied addons into project before asset import.")
     end
 
     if conf_folder and is_dir(conf_folder) then
@@ -518,19 +502,15 @@ local function create_godot_project(project_name, project_path, extracted_root, 
         local function copytree(src, dstroot)
             walk_files(src, function(ap, rp, _)
                 local outp = join(dstroot, rp)
-                if not dry_run then
-                    ensure_dir(dirname(outp))
-                    local ok, err = pcall(copy_file, ap, outp)
-                    if not ok then
-                        log_warn(string.format("Conf copy failed '%s' -> '%s': %s", ap, outp, tostring(err)))
-                    end
-                else
-                    write_log("INFO", string.format("conf copy: %s -> %s", ap, outp))
+                ensure_dir(dirname(outp))
+                local ok, err = pcall(copy_file, ap, outp)
+                if not ok then
+                    log_warn(string.format("Warn: conf copy failed '%s' -> '%s': %s", ap, outp, tostring(err)))
                 end
             end)
         end
         copytree(conf_folder, dst)
-        log_info("Prepared conf files in project root (" .. (dry_run and "dry-run" or "copied") .. ")")
+        log_info("Copied conf contents into project root before asset import.")
     end
 
     if scripts_folder and is_dir(scripts_folder) then
@@ -538,19 +518,15 @@ local function create_godot_project(project_name, project_path, extracted_root, 
         local function copytree(src, dstroot)
             walk_files(src, function(ap, rp, _)
                 local outp = join(dstroot, rp)
-                if not dry_run then
-                    ensure_dir(dirname(outp))
-                    local ok, err = pcall(copy_file, ap, outp)
-                    if not ok then
-                        log_warn(string.format("Script copy failed '%s' -> '%s': %s", ap, outp, tostring(err)))
-                    end
-                else
-                    write_log("INFO", string.format("script copy: %s -> %s", ap, outp))
+                ensure_dir(dirname(outp))
+                local ok, err = pcall(copy_file, ap, outp)
+                if not ok then
+                    log_warn(string.format("Warn: script copy failed '%s' -> '%s': %s", ap, outp, tostring(err)))
                 end
             end)
         end
         copytree(scripts_folder, scripts_dst)
-        log_info("Prepared scene_config.json and tool scripts (" .. (dry_run and "dry-run" or "copied") .. ")")
+        log_info("Copied scene_config.json and tool scripts into project before asset import.")
     end
 
     local function tableToString(t)
@@ -591,26 +567,23 @@ local function create_godot_project(project_name, project_path, extracted_root, 
 
     -- Confirm potentially destructive operations once per run
     local confirm_overwrite = true
-    if not dry_run then
-        -- If destination contains existing assets, prompt for confirmation
-        local assets_exists = is_dir(assets_dst_root)
-        if assets_exists then
-            local ans = prompt("Assets already exist in project; files may be overwritten. Continue? (y/N)", "confirm_overwrite", false)
-            if not ans or (ans:lower() ~= "y" and ans:lower() ~= "yes") then
-                log_warn("Operation cancelled by user before copying assets.")
-                close_log()
-                return
-            end
+    -- If destination contains existing assets, prompt for confirmation
+    local assets_exists = is_dir(assets_dst_root)
+    if assets_exists then
+        local ans = prompt("Assets already exist in project; files may be overwritten. Continue? (y/N)", "confirm_overwrite", false)
+        if not ans or (ans:lower() ~= "y" and ans:lower() ~= "yes") then
+            log_warn("Operation cancelled by user before copying assets.")
+            close_log()
+            return
         end
-    else
-        log_info("Dry-run mode: no files will be created, removed or modified.")
-    end
+        end
+
 
     local case_insensitive = (path_sep == "\\") or false -- assume Windows as case-insensitive
 
     for batch_idx, top in ipairs(top_folders) do
         local src_top = join(extracted_root, top)
-        if top == AUDIO_TOP then
+        if top == AUDIO_TOP1 or top == AUDIO_TOP2 then
             -- sub-batch by language folders
             local langs = {}
             local it2 = lfs.dir(src_top)
@@ -632,11 +605,11 @@ local function create_godot_project(project_name, project_path, extracted_root, 
             for _,lang in ipairs(langs) do
                 local src_lang = join(src_top, lang)
                 local dst_lang = join(join(assets_dst_root, top), lang)
-                if not dry_run then ensure_dir(dst_lang) end
+                ensure_dir(dst_lang)
 
                 -- gate with .gdignore during placement
                 local gdignore_path = join(dst_lang, ".gdignore")
-                if not dry_run then local f = io.open(gdignore_path, "a"); if f then f:close() end end
+                local f = io.open(gdignore_path, "a"); if f then f:close() end
 
                 log_info(string.format("\n=== Batch %d: %s/%s ===", batch_idx, top, lang))
 
@@ -654,7 +627,6 @@ local function create_godot_project(project_name, project_path, extracted_root, 
                     verify_hash_for_large = true,
                     large_bytes_threshold = 50*1024*1024,
                     exts = asset_exts,
-                    dry_run = dry_run,
                     progress_handle = p,
                     case_insensitive = case_insensitive,
                     log_sample_actions = 50,
@@ -663,17 +635,15 @@ local function create_godot_project(project_name, project_path, extracted_root, 
 
                 log_info(string.format("Placed %d file(s), copied %d, hardlinked %d, skipped %d, bytes copied %.2f MiB", stats.total_seen, stats.copied, stats.hardlinked, stats.skipped_identical, stats.bytes_copied / (1024*1024)))
 
-                if not dry_run then remove_file(gdignore_path) end
+                remove_file(gdignore_path)
 
-                if not dry_run then
-                    run_godot({ godot_exe, "--headless", "--path", project_dir, "--import", "-v", "--quit" }, string.format("Headless Import: %s/%s", top, lang))
-                end
+                run_godot({ godot_exe, "--headless", "--path", project_dir, "--import", "-v", "--quit" }, string.format("Headless Import: %s/%s", top, lang))
             end
         else
             local dst_top = join(assets_dst_root, top)
-            if not dry_run then ensure_dir(dst_top) end
+            ensure_dir(dst_top)
             local gdignore_path = join(dst_top, ".gdignore")
-            if not dry_run then local f = io.open(gdignore_path, "a"); if f then f:close() end end
+            local f = io.open(gdignore_path, "a"); if f then f:close() end
 
             log_info(string.format("\n=== Batch %d: %s ===", batch_idx, top))
 
@@ -688,7 +658,6 @@ local function create_godot_project(project_name, project_path, extracted_root, 
                 verify_hash_for_large = true,
                 large_bytes_threshold = 50*1024*1024,
                 exts = asset_exts,
-                dry_run = dry_run,
                 progress_handle = p,
                 case_insensitive = case_insensitive,
                 log_sample_actions = 50,
@@ -697,53 +666,29 @@ local function create_godot_project(project_name, project_path, extracted_root, 
 
             log_info(string.format("Placed %d file(s), copied %d, hardlinked %d, skipped %d, bytes copied %.2f MiB", stats.total_seen, stats.copied, stats.hardlinked, stats.skipped_identical, stats.bytes_copied / (1024*1024)))
 
-            if not dry_run then remove_file(gdignore_path) end
+            remove_file(gdignore_path)
 
-            if not dry_run then
-                run_godot({ godot_exe, "--headless", "--path", project_dir, "--import", "-v", "--quit" }, string.format("Headless Import: %s", top))
-            end
+            run_godot({ godot_exe, "--headless", "--path", project_dir, "--import", "-v", "--quit" }, string.format("Headless Import: %s", top))
         end
     end
 
     log_info("\nAssets are ready. Preparing to run tool scripts.")
-    if not dry_run then countdown(1) end
-
-    -- (Addons and scripts were copied earlier to ensure availability during imports.)
-
-    -- Logos (optional)
-    if logo_images and #logo_images > 0 then
-        local logos_dst = join(project_dir, "logos")
-        if not dry_run then ensure_dir(logos_dst) end
-        for _,f in ipairs(logo_images) do
-            local target = join(logos_dst, basename(f))
-            if not dry_run then
-                local ok, err = pcall(copy_file, f, target)
-                if not ok then
-                    log_warn(string.format("Logo copy failed '%s' -> '%s': %s", f, target, tostring(err)))
-                end
-            else
-                write_log("INFO", string.format("logo copy: %s -> %s", f, target))
-            end
-        end
-    end
+    countdown(1)
 
     -- Run scene builder
-    if not dry_run then
-        local cmd = { godot_exe, "--editor", "--path", project_dir, "--script", "res://Scripts/_BuildScenes.gd" }
-        if no_exit then table.insert(cmd, "--no-exit"); log_info("\n'--no-exit' flag detected. Godot will remain open after script execution.") end
-        run_godot(cmd, "Scene Building")
-        log_info("\n✅✅✅ Godot project setup and scene generation complete! ✅✅✅")
-        countdown(1)
-    else
-        log_info("Dry-run complete. No Godot commands executed.")
-    end
+    local cmd = { godot_exe, "--editor", "--path", project_dir, "--script", "res://Scripts/import-V0.4.gd" }
+    if no_exit then table.insert(cmd, "--no-exit"); colour_print{ colour = Colours.CYAN, message = "\n'--no-exit' flag detected. Godot will remain open after script execution." } end
+    run_godot(cmd, "Scene Building")
 
+    log_info("\n✅✅✅ Godot project setup and scene generation complete! ✅✅✅")
+    countdown(1)
+    
     close_log()
 end
 
 -- CLI
 local function parse_args(argv)
-    local opts = { ["project-name"] = "Game", ["no-exit"] = false, ["dry-run"] = false }
+    local opts = { ["project-name"] = "Game", ["no-exit"] = false }
     local i = 1
     while i <= #argv do
         local a = argv[i]
@@ -755,8 +700,8 @@ local function parse_args(argv)
             opts["no-exit"] = true; i = i + 1
         elseif a == "--sourcePath" and argv[i+1] then
             opts["sourcePath"] = argv[i+1]; i = i + 2
-        elseif a == "--dry-run" then
-            opts["dry-run"] = true; i = i + 1
+        elseif a == "--iconPath" and argv[i+1] then
+            opts["iconPath"] = argv[i+1]; i = i + 2
         else
             -- unknown or trailing
             i = i + 1
@@ -766,8 +711,10 @@ local function parse_args(argv)
 end
 
 local function resolve_godot()
-    -- Engine tool resolver is guaranteed by runtime
-    return tool("Godot")
+    local tool_fn = rawget(_G, "tool")
+    local p = tool_fn("Godot")
+    if p and p ~= "" then return p end
+    fatal("Godot executable not found via tool('Godot'); ensure Godot is installed and configured in the engine.")
 end
 
 -- Discover PNG files only in the specified directory (non-recursive)
@@ -791,7 +738,7 @@ local function discover_pngs_in_dir(dir)
     return list
 end
 
-local function main(project_name, repo_root, no_exit, sourcePath, dry_run)
+local function main(project_name, repo_root, no_exit, sourcePath, iconPath)
     -- Locate this module directory
     local this_source = debug and debug.getinfo and debug.getinfo(1, 'S')
     local this_path = this_source and this_source.source or ""
@@ -801,7 +748,7 @@ local function main(project_name, repo_root, no_exit, sourcePath, dry_run)
 
     -- Open a bootstrap log in module root immediately (independent from project log)
     local bootstrap_log = join(godot_module_root, "godot-init.log")
-    if not dry_run then open_log(bootstrap_log) end
+    open_log(bootstrap_log)
     write_log("INFO", "bootstrap logging started")
 
     log_info("Godot Module Root: " .. godot_module_root)
@@ -851,34 +798,33 @@ local function main(project_name, repo_root, no_exit, sourcePath, dry_run)
     local logos = {}
     local ok, err = pcall(function()
         -- logo discovery
-        local logo_dir = join(module_root, "Source")
+        local logo_dir = iconPath
         if is_dir(logo_dir) then
             logos = discover_pngs_in_dir(logo_dir)
         else
-            log_warn("Logo directory not found: " .. logo_dir)
+            colour_print{ colour = Colours.YELLOW, message = "Logo directory not found: " .. logo_dir }
             logos = {}
         end
         if #logos > 0 then
-            log_info("Found game logo images: " .. table.concat(logos, ", "))
+            colour_print{ colour = Colours.BLUE, message = "Found game logo images: " .. table.concat(logos, ", ") }
         end
     end)
     if not ok then
-        log_warn("Logo scan warning: " .. tostring(err))
+    colour_print{ colour = Colours.YELLOW, message = "Logo scan warning: " .. tostring(err) }
     end
 
-    create_godot_project(project_name, project_parent, extracted_root, scripts_folder, addons_folder, conf_folder, godot_exe, no_exit, logos, asset_exts, dry_run)
+    create_godot_project(project_name, project_parent, sourcePath, scripts_folder, addons_folder, conf_folder, godot_exe, no_exit, logos, asset_exts)
     -- Close bootstrap log if still open (create_godot_project opens a project-local log and then closes it)
     close_log()
 end
 
--- Entrypoint (when executed as a script by the engine)
+-- Main
 local function run()
-    -- argv is guaranteed by engine runtime
     local opts = parse_args(argv)
     if not opts["repo-root"] or not opts["sourcePath"] then
         fatal("Missing required args: --repo-root and --sourcePath")
     end
-    main(opts["project-name"], normalize(opts["repo-root"]), opts["no-exit"], normalize(opts["sourcePath"]), opts["dry-run"])
+    main(opts["project-name"], normalize(opts["repo-root"]), opts["no-exit"], normalize(opts["sourcePath"]))
 end
 
 if ... == nil then

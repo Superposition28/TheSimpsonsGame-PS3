@@ -1,5 +1,14 @@
+
+# -----------------------------------------------------------------------------
+# IMPORT
+# Godot EditorScript to import a previously exported scene (and its resources)
+#
+#
+# -----------------------------------------------------------------------------
+
 @tool
-extends EditorScript
+extends SceneTree # Needed to run from command line with --script
+#extends EditorScript # Needed to run from the editor
 
 const CONFIG_ROOT := "res://Json/"
 const ASSET_ROOT  := "res://assets/"
@@ -29,6 +38,31 @@ func _load_json_array(abs_path: String) -> Array:
         return data as Array
     printerr("FATAL: Invalid JSON (expected array): ", abs_path)
     return []
+
+# --- NEW HELPERS ---
+func _json_to_vec2(d: Dictionary) -> Vector2:
+    if d == null: return Vector2.ZERO
+    return Vector2(float(d.get("x", 0.0)), float(d.get("y", 0.0)))
+
+func _json_to_rect2(d: Dictionary) -> Rect2:
+    if d == null: return Rect2()
+    var pos := Vector2.ZERO
+    var size := Vector2.ZERO
+    if d.has("position") and d["position"] is Dictionary:
+        pos = _json_to_vec2(d["position"])
+    if d.has("size") and d["size"] is Dictionary:
+        size = _json_to_vec2(d["size"])
+    return Rect2(pos, size)
+
+func _json_to_color(d: Dictionary) -> Color:
+    if d == null: return Color.BLACK # Default to black if data is missing
+    return Color(
+        float(d.get("r", 0.0)),
+        float(d.get("g", 0.0)),
+        float(d.get("b", 0.0)),
+        float(d.get("a", 1.0))
+    )
+# --- END NEW HELPERS ---
 
 # -----------------------------------------------------------------------------
 # COLLISION
@@ -203,8 +237,9 @@ func _apply_control_offsets(ctrl: Control, cfg: Dictionary) -> void:
             if o.has("offset_right"):  ctrl.offset_right  = float(o["offset_right"])
             if o.has("offset_bottom"): ctrl.offset_bottom = float(o["offset_bottom"])
 
+# --- REPLACED FUNCTION ---
 func _apply_node_config(node: Node, config_data: Dictionary):
-    # Transform
+    # Transform (3D)
     if config_data.has("transform"):
         var node_3d := node as Node3D
         if node_3d:
@@ -241,9 +276,55 @@ func _apply_node_config(node: Node, config_data: Dictionary):
         else:
             printerr("    Warning: 'transform' on non-Node3D: ", node.name)
 
+    # --- NEW: 2D Transform (for non-Control Node2D) ---
+    if node is Node2D and not (node is Control):
+        var n2 := node as Node2D
+        if config_data.has("position"):
+            n2.position = _json_to_vec2(config_data["position"])
+        if config_data.has("rotation_degrees"):
+            n2.rotation_degrees = float(config_data["rotation_degrees"])
+        if config_data.has("scale"):
+            n2.scale = _json_to_vec2(config_data["scale"])
+
     # NEW: Control (2D) offsets & layout_mode
     if node is Control:
         _apply_control_offsets(node as Control, config_data)
+
+    # --- NEW: Sprite2D properties ---
+    if node is Sprite2D:
+        var s := node as Sprite2D
+        if config_data.has("texture_path"):
+            var path := String(config_data["texture_path"])
+            if path.is_empty() or path == "null":
+                s.texture = null
+            else:
+                var tex := load(path)
+                if tex is Texture2D:
+                    s.texture = tex
+                else:
+                    printerr("    Failed to load texture for '", node.name, "': ", path)
+        if config_data.has("region_enabled"):
+            s.region_enabled = bool(config_data["region_enabled"])
+            if config_data.has("region_rect"):
+                s.region_rect = _json_to_rect2(config_data["region_rect"])
+
+    # --- NEW: Label properties ---
+    if node is Label:
+        var l := node as Label
+        if config_data.has("text"):
+            l.text = String(config_data["text"])
+
+    # --- NEW: RichTextLabel properties ---
+    if node is RichTextLabel:
+        var rtl := node as RichTextLabel
+        if config_data.has("bbcode_text"):
+            rtl.text = String(config_data["bbcode_text"])
+
+    # --- NEW: ColorRect properties ---
+    if node is ColorRect:
+        var cr := node as ColorRect
+        if config_data.has("color"):
+            cr.color = _json_to_color(config_data["color"])
 
     # Mesh overrides
     if config_data.has("mesh_overrides"):
@@ -261,6 +342,7 @@ func _apply_node_config(node: Node, config_data: Dictionary):
                             print("      -> Set visibility for '", path_str, "' = ", (mesh_cfg as Dictionary)["visible"])
                     else:
                         printerr("      -> Could not find mesh path '", path_str, "' under '", node.name, "'")
+# --- END REPLACED FUNCTION ---
 
 # -----------------------------------------------------------------------------
 # CHILD CREATION
