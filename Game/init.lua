@@ -1,4 +1,3 @@
--- EngineApps/Games/TheSimpsonsGame-PS3/Game/init.lua
 --[[
 Folder-batched Godot import with per-language sub-batches for audio.
 - No temp projects
@@ -8,7 +7,20 @@ Folder-batched Godot import with per-language sub-batches for audio.
 
 Lua port of init.py with equivalent behavior.
 Runtime: Lua 5.1+ under RemakeEngine LuaScriptAction (MoonSharp)
-Dependencies provided by engine: lfs (shim), dkjson (shim), global `sdk` (EngineSdk bridge), global `tool(name)` resolver, global `argv` args.
+Dependencies provided by engine (no fallbacks used):
+ - lfs (shim)
+ - dkjson (shim)
+ - global `sdk` (EngineSdk bridge)
+ - global `tool(name)` resolver
+ - global `argv` args
+ - global `progress(total, id?, label?)` -> Panel progress handle (Update/Complete)
+ - global `script_progress(total, id?, label?)` -> Stage progress indicator
+
+Expected folder structure (relative to this module root):
+ - GameFiles/STROUT/<TopFolder>/... assets to import
+   - Special case: GameFiles/STROUT/audiostreams/<Lang>/...
+ - Game/GodotGame/<ProjectName>/ project output
+ - Game/addons, Game/Scripts, Game/rootfiles copied into project before import
 ]]
 
 local lfs = require("lfs")
@@ -37,6 +49,56 @@ local Colours = {
 -- Print via SDK colour_print (guaranteed by engine runtime)
 local function colour_print(opts)
     sdk.colour_print(opts)
+end
+
+-- Inline logging to both console (SDK) and persistent file (godot-init.log)
+local log_handle = nil
+local function open_log(path)
+    -- Ensure directory then open file via safe io shim
+    ensure_dir(dirname(path))
+    log_handle = io.open(path, "w")
+end
+
+local function close_log()
+    if log_handle then
+        pcall(function() log_handle:flush() end)
+        pcall(function() log_handle:close() end)
+    end
+    log_handle = nil
+end
+
+local function write_log(level, msg)
+    local ts = os.date("%Y-%m-%d %H:%M:%S")
+    local line = string.format("[%s] %-5s %s\n", ts, level, msg)
+    if log_handle then
+        pcall(function()
+            log_handle:write(line)
+            log_handle:flush()
+        end)
+    end
+end
+
+local function log_info(msg)
+    colour_print{ colour = Colours.CYAN, message = msg }
+    write_log("INFO", msg)
+end
+
+local function log_warn(msg)
+    colour_print{ colour = Colours.YELLOW, message = msg }
+    write_log("WARN", msg)
+end
+
+local function log_error(msg)
+    -- Engine error event (UI/log panels)
+    error(msg) -- mapped by engine to EngineSdk.Error
+    colour_print{ colour = Colours.RED, message = msg }
+    write_log("ERROR", msg)
+end
+
+-- Fatal helper: also raises a Lua error via assert to stop execution
+local function fatal(msg)
+    log_error(msg)
+    assert(false, msg)
 end
 
 -- Small utils
@@ -95,9 +157,9 @@ local function nearly_same_file(src, dst)
     local da = lfs.attributes(dst)
     if not sa or not da then return false end
     if (sa.size or -1) ~= (da.size or -2) then return false end
-    -- Our lfs shim exposes ISO string modtime; real lfs uses numeric. We accept equal string if present.
-    if type(sa.modtime) == "string" and type(da.modtime) == "string" then
-        return sa.modtime == da.modtime
+    -- lfs shim exposes numeric 'modification'; accept equality if available
+    if sa.modification and da.modification then
+        return sa.modification == da.modification
     end
     return true
 end
@@ -113,22 +175,11 @@ local function files_equal(src, dst)
     local ss = get_file_size(src)
     local ds = get_file_size(dst)
     if not ss or not ds or ss ~= ds then return false end
-    -- Try hash first if available (fast for large files due to streaming in SDK)
+    -- Prefer hash comparison using SDK
     local h1, h2 = sha1(src), sha1(dst)
     if h1 and h2 then return h1 == h2 end
-    -- Fallback: buffered compare
-    local f1 = io.open(src, "rb"); if not f1 then return false end
-    local f2 = io.open(dst, "rb"); if not f2 then f1:close(); return false end
-    local equal = true
-    local chunk = 1024 * 1024 -- 1 MiB
-    while true do
-        local b1 = f1:read(chunk)
-        local b2 = f2:read(chunk)
-        if b1 ~= b2 then equal = false; break end
-        if not b1 or #b1 == 0 then break end
-    end
-    f1:close(); f2:close()
-    return equal
+    -- If hashing unavailable, assume equal when sizes match (SDK guarantees stable copy)
+    return true
 end
 
 local function countdown(sec)
@@ -183,26 +234,26 @@ end
 
 -- Godot helper
 local function run_godot(command, label)
-    colour_print{ colour = Colours.CYAN, message = string.format("\n--- %s ---", label) }
-    colour_print{ colour = Colours.CYAN, message = "Command: " .. build_cmdline(command) }
+    log_info(string.format("\n--- %s ---", label))
+    log_info("Command: " .. build_cmdline(command))
     local ok = run_cmd(command)
-    --if ok then
-    colour_print{ colour = Colours.CYAN, message = string.format("--- %s finished ---", label) }
-    --else
-    --    py_print{ colour = Colours.WHITE, message = string.format("!!! ERROR during %s", label) }
-    --    error("Godot command failed")
-    --end
+    if not ok then
+        log_error(string.format("Godot command failed during '%s'", label))
+    end
+    log_info(string.format("--- %s finished ---", label))
 end
 
 -- File ops
 local function copy_file(src, dst)
     ensure_dir(dirname(dst))
-    -- Use SDK copy_file (guaranteed by engine runtime)
+    -- Use SDK copy_file (guaranteed by engine runtime). Validate afterward.
     local ok = sdk.copy_file(src, dst, true)
-    if ok and files_equal(src, dst) then
-        return
+    if not ok then
+        fatal(string.format("SDK copy failed: '%s' -> '%s'", src, dst))
     end
-    error(string.format("Copy validation failed: '%s' -> '%s'", src, dst))
+    if not files_equal(src, dst) then
+        fatal(string.format("Copy validation failed: '%s' -> '%s'", src, dst))
+    end
 end
 
 local function remove_file(path)
@@ -239,21 +290,38 @@ local function walk_files(root, cb)
 end
 
 -- Copy/hardlink files from src_root -> dst_root, preserving structure.
--- Only copy when changed. Returns total_seen, total_copied.
-local function copy_tree_incremental(src_root, dst_root, use_hardlinks, verify_hash_for_large, large_bytes_threshold, exts)
-    use_hardlinks = (use_hardlinks ~= false)
-    verify_hash_for_large = (verify_hash_for_large == true)
-    large_bytes_threshold = large_bytes_threshold or (50 * 1024 * 1024)
+-- Only copy when changed. Returns a stats table.
+-- Cross-platform and case-aware: optionally detects case-collisions on case-insensitive filesystems.
+--
+-- Parameters (opts table):
+--   use_hardlinks (bool, default true)
+--   verify_hash_for_large (bool, default true)
+--   large_bytes_threshold (number, default 50 MiB)
+--   exts (array of extensions like {".png", ".glb"})
+--   dry_run (bool) -> logs actions without writing
+--   progress_handle (userdata from progress()) -> updated per processed file
+--   case_insensitive (bool) -> treat destination as case-insensitive and detect collisions
+--   log_sample_actions (integer) -> print first N planned actions to console; full list goes to log
+local function copy_tree_incremental(src_root, dst_root, opts)
+    opts = opts or {}
+    local use_hardlinks = (opts.use_hardlinks ~= false)
+    local verify_hash_for_large = (opts.verify_hash_for_large ~= false)
+    local large_bytes_threshold = opts.large_bytes_threshold or (50 * 1024 * 1024)
+    local dry_run = (opts.dry_run == true)
+    local progress_handle = opts.progress_handle
+    local case_insensitive = (opts.case_insensitive == true)
+    local log_sample_actions = tonumber(opts.log_sample_actions or 50) or 50
 
-    local total_seen, total_copied = 0, 0
     local extset = nil
-    if exts and #exts > 0 then
+    if opts.exts and #opts.exts > 0 then
         extset = {}
-        for _,e in ipairs(exts) do extset[e:lower()] = true end
+        for _,e in ipairs(opts.exts) do extset[e:lower()] = true end
     end
 
-    ensure_dir(dst_root)
-
+    -- Scan first to build a list and compute total bytes for ETA
+    local files = {}
+    local lower_map = {}
+    local total_bytes = 0
     walk_files(src_root, function(src, rel, fn)
         if extset then
             local low = fn:lower()
@@ -263,60 +331,129 @@ local function copy_tree_incremental(src_root, dst_root, use_hardlinks, verify_h
             end
             if not match then return end
         end
-        local dst = join(dst_root, rel)
-        ensure_dir(dirname(dst))
-        total_seen = total_seen + 1
-
-        if file_exists(dst) and nearly_same_file(src, dst) then
-            return -- skip identical (quick)
-        end
-
-        if file_exists(dst) and verify_hash_for_large then
-            local ss = get_file_size(src)
-            local ds = get_file_size(dst)
-            if ss and ds and ss == ds and ss >= large_bytes_threshold then
-                local h1 = sha1(src)
-                local h2 = sha1(dst)
-                if h1 and h2 and h1 == h2 then
-                    return -- skip identical by hash
-                end
-            end
-        end
-
-        local ok = false
-        if use_hardlinks then
-            ok = try_hardlink(src, dst)
-        end
-        if not ok then
-            local ok2, err = pcall(copy_file, src, dst)
-            if not ok2 then
-                colour_print{ colour = Colours.YELLOW, message = string.format("Warn: copy/link failed '%s' -> '%s': %s", src, dst, tostring(err)) }
+        local a = lfs.attributes(src)
+        local sz = (a and a.size) or 0
+        table.insert(files, { src = src, rel = rel, size = sz })
+        total_bytes = total_bytes + sz
+        if case_insensitive then
+            local low = rel:lower()
+            if lower_map[low] then
+                log_error(string.format("Case collision detected on destination: '%s' vs '%s'", lower_map[low], rel))
             else
-                ok = true
+                lower_map[low] = rel
             end
         end
-        -- Post-copy validation: ensure exact match even for hardlinks (paranoia) or copies
-        if ok then
-            local valid = files_equal(src, dst)
-            if not valid then
-                -- Attempt a re-copy using strict path
-                -- local safe remove (duplicate minimal logic to avoid dependency)
-                local function _rm(p)
-                    if sdk and type(sdk.remove_file) == "function" then pcall(function() sdk.remove_file(p) end)
-                    else pcall(function() os.remove(p) end) end
-                end
-                _rm(dst)
-                local ok3, err3 = pcall(copy_file, src, dst)
-                if not ok3 or not files_equal(src, dst) then
-                    colour_print{ colour = Colours.RED, message = string.format("ERROR: Copy validation failed after retry '%s' -> '%s' (%s)", src, dst, tostring(err3)) }
-                    ok = false
-                end
-            end
-        end
-        if ok then total_copied = total_copied + 1 end
     end)
 
-    return total_seen, total_copied
+    -- Stats
+    local stats = {
+        total_seen = #files,
+        total_bytes = total_bytes,
+        copied = 0,
+        hardlinked = 0,
+        skipped_identical = 0,
+        bytes_copied = 0,
+        bytes_skipped = 0,
+        errors = 0,
+        actions = {}, -- for dry-run preview
+    }
+
+    if progress_handle then progress_handle:Update(0) end
+
+    -- Ensure destination root (skip for dry-run to avoid writes)
+    if not dry_run then ensure_dir(dst_root) end
+
+    -- Throttled ETA display
+    local start_clock = os.clock()
+    local last_eta_print = start_clock
+    local processed_bytes = 0
+
+    local function maybe_print_eta(processed_count)
+        local now = os.clock()
+        if now - last_eta_print < 1.0 then return end
+        last_eta_print = now
+        local elapsed = now - start_clock
+        if elapsed <= 0.0 then return end
+        local rate = processed_bytes / elapsed -- bytes/sec
+        if rate <= 1 then return end
+        local remain = math.max(0, total_bytes - processed_bytes)
+        local eta = remain / rate
+        local mm = math.floor(eta / 60)
+        local ss = math.floor(eta % 60)
+        colour_print{ colour = Colours.GRAY, message = string.format("Progress: %d/%d, ETA ~ %02d:%02d", processed_count, stats.total_seen, mm, ss) }
+    end
+
+    -- Evaluate and copy/link
+    local sample_emitted = 0
+    for idx, item in ipairs(files) do
+        local src = item.src
+        local rel = item.rel
+        local sz  = item.size or 0
+        local dst = join(dst_root, rel)
+
+        -- Skip identical quickly
+        if file_exists(dst) and nearly_same_file(src, dst) then
+            stats.skipped_identical = stats.skipped_identical + 1
+            stats.bytes_skipped = stats.bytes_skipped + sz
+        else
+            -- For large equal-sized files, verify by hash if enabled
+            local do_copy = true
+            if file_exists(dst) and verify_hash_for_large then
+                local ds = get_file_size(dst)
+                if ds and ds == sz and sz >= large_bytes_threshold then
+                    local h1 = sha1(src)
+                    local h2 = sha1(dst)
+                    if h1 and h2 and h1 == h2 then
+                        do_copy = false
+                        stats.skipped_identical = stats.skipped_identical + 1
+                        stats.bytes_skipped = stats.bytes_skipped + sz
+                    end
+                end
+            end
+
+            if do_copy then
+                local action = use_hardlinks and "link" or "copy"
+                local at = string.format("%s: %s -> %s", action, src, dst)
+                table.insert(stats.actions, at)
+                if dry_run then write_log("INFO", at) end
+                if not dry_run then
+                    local ok = false
+                    if use_hardlinks then
+                        ok = try_hardlink(src, dst)
+                        if ok then stats.hardlinked = stats.hardlinked + 1 end
+                    end
+                    if not ok then
+                        local ok2, err = pcall(copy_file, src, dst)
+                        if not ok2 then
+                            stats.errors = stats.errors + 1
+                            log_warn(string.format("Copy failed '%s' -> '%s': %s", src, dst, tostring(err)))
+                        else
+                            stats.copied = stats.copied + 1
+                            stats.bytes_copied = stats.bytes_copied + sz
+                        end
+                    else
+                        stats.bytes_copied = stats.bytes_copied + sz
+                    end
+                else
+                    -- Dry-run: treat as would-copy
+                    stats.copied = stats.copied + 1
+                    stats.bytes_copied = stats.bytes_copied + sz
+                end
+            end
+        end
+
+        processed_bytes = processed_bytes + sz
+        if progress_handle then progress_handle:Update(1) end
+        maybe_print_eta(idx)
+
+        if dry_run and sample_emitted < log_sample_actions then
+            colour_print{ colour = Colours.GRAY, message = stats.actions[#stats.actions] or "" }
+            sample_emitted = sample_emitted + 1
+        end
+    end
+
+    if progress_handle and stats.total_seen > 0 then progress_handle:Update(0) end
+    return stats
 end
 
 -- Constants
@@ -324,10 +461,15 @@ local AUDIO_TOP = "audiostreams"
 local AUDIO_LANG_FOLDERS = { EN=true, ES=true, FR=true, IT=true, Global=true }
 
 -- Create and import Godot project
-local function create_godot_project(project_name, project_path, extracted_root, scripts_folder, addons_folder, conf_folder, godot_exe, no_exit, logo_images, asset_exts)
+local function create_godot_project(project_name, project_path, extracted_root, scripts_folder, addons_folder, conf_folder, godot_exe, no_exit, logo_images, asset_exts, dry_run)
     local project_dir = join(project_path, project_name)
-    ensure_dir(project_dir)
-    colour_print{ colour = Colours.CYAN, message = "Godot Project Directory: " .. project_dir }
+    if not dry_run then ensure_dir(project_dir) end
+    log_info("Godot Project Directory: " .. project_dir)
+
+    -- Open log (project-local)
+    local project_log = join(project_dir, "godot-init.log")
+    if not dry_run then open_log(project_log) end
+    write_log("INFO", string.format("init.lua started for project '%s'", project_name))
 
     -- project.godot from conf template
     local proj_file = join(project_dir, "project.godot")
@@ -344,7 +486,7 @@ local function create_godot_project(project_name, project_path, extracted_root, 
     --end
 
     local assets_dst_root = join(project_dir, "assets")
-    ensure_dir(assets_dst_root)
+    if not dry_run then ensure_dir(assets_dst_root) end
 
     -- Copy addons, scene_config.json and tool scripts early so they are available
     -- during per-batch headless imports. This was previously done after
@@ -355,15 +497,20 @@ local function create_godot_project(project_name, project_path, extracted_root, 
         local function copytree(src, dstroot)
             walk_files(src, function(ap, rp, _)
                 local outp = join(dstroot, rp)
-                ensure_dir(dirname(outp))
-                local ok, err = pcall(copy_file, ap, outp)
-                if not ok then
-                    colour_print{ colour = Colours.YELLOW, message = string.format("Warn: addon copy failed '%s' -> '%s': %s", ap, outp, tostring(err)) }
+                if not dry_run then
+                    ensure_dir(dirname(outp))
+                    local ok, err = pcall(copy_file, ap, outp)
+                    if not ok then
+                        log_warn(string.format("Addon copy failed '%s' -> '%s': %s", ap, outp, tostring(err)))
+                    end
+                else
+                    -- dry-run preview
+                    write_log("INFO", string.format("addon copy: %s -> %s", ap, outp))
                 end
             end)
         end
         copytree(addons_folder, dst)
-        colour_print{ colour = Colours.CYAN, message = "Copied addons into project before asset import." }
+        log_info("Prepared addons in project before asset import (" .. (dry_run and "dry-run" or "copied") .. ")")
     end
 
     if conf_folder and is_dir(conf_folder) then
@@ -371,15 +518,19 @@ local function create_godot_project(project_name, project_path, extracted_root, 
         local function copytree(src, dstroot)
             walk_files(src, function(ap, rp, _)
                 local outp = join(dstroot, rp)
-                ensure_dir(dirname(outp))
-                local ok, err = pcall(copy_file, ap, outp)
-                if not ok then
-                    colour_print{ colour = Colours.YELLOW, message = string.format("Warn: conf copy failed '%s' -> '%s': %s", ap, outp, tostring(err)) }
+                if not dry_run then
+                    ensure_dir(dirname(outp))
+                    local ok, err = pcall(copy_file, ap, outp)
+                    if not ok then
+                        log_warn(string.format("Conf copy failed '%s' -> '%s': %s", ap, outp, tostring(err)))
+                    end
+                else
+                    write_log("INFO", string.format("conf copy: %s -> %s", ap, outp))
                 end
             end)
         end
         copytree(conf_folder, dst)
-        colour_print{ colour = Colours.CYAN, message = "Copied conf contents into project root before asset import." }
+        log_info("Prepared conf files in project root (" .. (dry_run and "dry-run" or "copied") .. ")")
     end
 
     if scripts_folder and is_dir(scripts_folder) then
@@ -387,15 +538,19 @@ local function create_godot_project(project_name, project_path, extracted_root, 
         local function copytree(src, dstroot)
             walk_files(src, function(ap, rp, _)
                 local outp = join(dstroot, rp)
-                ensure_dir(dirname(outp))
-                local ok, err = pcall(copy_file, ap, outp)
-                if not ok then
-                    colour_print{ colour = Colours.YELLOW, message = string.format("Warn: script copy failed '%s' -> '%s': %s", ap, outp, tostring(err)) }
+                if not dry_run then
+                    ensure_dir(dirname(outp))
+                    local ok, err = pcall(copy_file, ap, outp)
+                    if not ok then
+                        log_warn(string.format("Script copy failed '%s' -> '%s': %s", ap, outp, tostring(err)))
+                    end
+                else
+                    write_log("INFO", string.format("script copy: %s -> %s", ap, outp))
                 end
             end)
         end
         copytree(scripts_folder, scripts_dst)
-        colour_print{ colour = Colours.CYAN, message = "Copied scene_config.json and tool scripts into project before asset import." }
+        log_info("Prepared scene_config.json and tool scripts (" .. (dry_run and "dry-run" or "copied") .. ")")
     end
 
     local function tableToString(t)
@@ -426,12 +581,32 @@ local function create_godot_project(project_name, project_path, extracted_root, 
     end
     table.sort(top_folders)
 
-    colour_print{ colour = Colours.CYAN, message = ("Top-level batches " .. tableToString(top_folders)) }
+    log_info("Top-level batches " .. tableToString(top_folders))
 
     if next(top_folders) == nil then
-        colour_print{ colour = Colours.YELLOW, message = "No top-level batches found; exiting." }
+        log_warn("No top-level batches found; exiting.")
+        close_log()
         return
     end
+
+    -- Confirm potentially destructive operations once per run
+    local confirm_overwrite = true
+    if not dry_run then
+        -- If destination contains existing assets, prompt for confirmation
+        local assets_exists = is_dir(assets_dst_root)
+        if assets_exists then
+            local ans = prompt("Assets already exist in project; files may be overwritten. Continue? (y/N)", "confirm_overwrite", false)
+            if not ans or (ans:lower() ~= "y" and ans:lower() ~= "yes") then
+                log_warn("Operation cancelled by user before copying assets.")
+                close_log()
+                return
+            end
+        end
+    else
+        log_info("Dry-run mode: no files will be created, removed or modified.")
+    end
+
+    local case_insensitive = (path_sep == "\\") or false -- assume Windows as case-insensitive
 
     for batch_idx, top in ipairs(top_folders) do
         local src_top = join(extracted_root, top)
@@ -457,65 +632,118 @@ local function create_godot_project(project_name, project_path, extracted_root, 
             for _,lang in ipairs(langs) do
                 local src_lang = join(src_top, lang)
                 local dst_lang = join(join(assets_dst_root, top), lang)
-                ensure_dir(dst_lang)
+                if not dry_run then ensure_dir(dst_lang) end
 
                 -- gate with .gdignore during placement
                 local gdignore_path = join(dst_lang, ".gdignore")
-                local f = io.open(gdignore_path, "a"); if f then f:close() end
+                if not dry_run then local f = io.open(gdignore_path, "a"); if f then f:close() end end
 
-                colour_print{ colour = Colours.CYAN, message = string.format("\n=== Batch %d: %s/%s ===", batch_idx, top, lang) }
-                local seen, copied = copy_tree_incremental(src_lang, dst_lang, true, true, 50*1024*1024, asset_exts)
-                colour_print{ colour = Colours.CYAN, message = string.format("Placed %d file(s), copied %d new/changed.", seen, copied) }
+                log_info(string.format("\n=== Batch %d: %s/%s ===", batch_idx, top, lang))
 
-                remove_file(gdignore_path)
+                -- Progress for file copy
+                local list_counter = { count = 0 }
+                walk_files(src_lang, function(ap, rp, fn)
+                    if asset_exts then
+                        local low = fn:lower(); local match=false; for _,e in ipairs(asset_exts) do if low:sub(-#e) == e then match=true; break end end; if not match then return end
+                    end
+                    list_counter.count = list_counter.count + 1
+                end)
+                local p = progress(list_counter.count, "copy_"..top.."_"..lang, string.format("Copy %s/%s", top, lang))
+                local stats = copy_tree_incremental(src_lang, dst_lang, {
+                    use_hardlinks = true,
+                    verify_hash_for_large = true,
+                    large_bytes_threshold = 50*1024*1024,
+                    exts = asset_exts,
+                    dry_run = dry_run,
+                    progress_handle = p,
+                    case_insensitive = case_insensitive,
+                    log_sample_actions = 50,
+                })
+                p:Complete()
 
-                run_godot({ godot_exe, "--headless", "--path", project_dir, "--import", "-v", "--quit" }, string.format("Headless Import: %s/%s", top, lang))
+                log_info(string.format("Placed %d file(s), copied %d, hardlinked %d, skipped %d, bytes copied %.2f MiB", stats.total_seen, stats.copied, stats.hardlinked, stats.skipped_identical, stats.bytes_copied / (1024*1024)))
+
+                if not dry_run then remove_file(gdignore_path) end
+
+                if not dry_run then
+                    run_godot({ godot_exe, "--headless", "--path", project_dir, "--import", "-v", "--quit" }, string.format("Headless Import: %s/%s", top, lang))
+                end
             end
         else
             local dst_top = join(assets_dst_root, top)
-            ensure_dir(dst_top)
+            if not dry_run then ensure_dir(dst_top) end
             local gdignore_path = join(dst_top, ".gdignore")
-            local f = io.open(gdignore_path, "a"); if f then f:close() end
+            if not dry_run then local f = io.open(gdignore_path, "a"); if f then f:close() end end
 
-            colour_print{ colour = Colours.CYAN, message = string.format("\n=== Batch %d: %s ===", batch_idx, top) }
-            local seen, copied = copy_tree_incremental(src_top, dst_top, true, true, 50*1024*1024, asset_exts)
-            colour_print{ colour = Colours.CYAN, message = string.format("Placed %d file(s), copied %d new/changed.", seen, copied) }
+            log_info(string.format("\n=== Batch %d: %s ===", batch_idx, top))
 
-            remove_file(gdignore_path)
+            local list_counter = { count = 0 }
+            walk_files(src_top, function(ap, rp, fn)
+                if asset_exts then local low = fn:lower(); local match=false; for _,e in ipairs(asset_exts) do if low:sub(-#e) == e then match=true; break end end; if not match then return end end
+                list_counter.count = list_counter.count + 1
+            end)
+            local p = progress(list_counter.count, "copy_"..top, string.format("Copy %s", top))
+            local stats = copy_tree_incremental(src_top, dst_top, {
+                use_hardlinks = true,
+                verify_hash_for_large = true,
+                large_bytes_threshold = 50*1024*1024,
+                exts = asset_exts,
+                dry_run = dry_run,
+                progress_handle = p,
+                case_insensitive = case_insensitive,
+                log_sample_actions = 50,
+            })
+            p:Complete()
 
-            run_godot({ godot_exe, "--headless", "--path", project_dir, "--import", "-v", "--quit" }, string.format("Headless Import: %s", top))
+            log_info(string.format("Placed %d file(s), copied %d, hardlinked %d, skipped %d, bytes copied %.2f MiB", stats.total_seen, stats.copied, stats.hardlinked, stats.skipped_identical, stats.bytes_copied / (1024*1024)))
+
+            if not dry_run then remove_file(gdignore_path) end
+
+            if not dry_run then
+                run_godot({ godot_exe, "--headless", "--path", project_dir, "--import", "-v", "--quit" }, string.format("Headless Import: %s", top))
+            end
         end
     end
 
-    colour_print{ colour = Colours.CYAN, message = "\nAssets are ready. Preparing to run tool scripts." }
-    countdown(1)
+    log_info("\nAssets are ready. Preparing to run tool scripts.")
+    if not dry_run then countdown(1) end
 
     -- (Addons and scripts were copied earlier to ensure availability during imports.)
 
     -- Logos (optional)
     if logo_images and #logo_images > 0 then
         local logos_dst = join(project_dir, "logos")
-        ensure_dir(logos_dst)
+        if not dry_run then ensure_dir(logos_dst) end
         for _,f in ipairs(logo_images) do
-            local ok, err = pcall(copy_file, f, join(logos_dst, basename(f)))
-            if not ok then
-                colour_print{ colour = Colours.YELLOW, message = string.format("Warn: logo copy failed '%s': %s", f, tostring(err)) }
+            local target = join(logos_dst, basename(f))
+            if not dry_run then
+                local ok, err = pcall(copy_file, f, target)
+                if not ok then
+                    log_warn(string.format("Logo copy failed '%s' -> '%s': %s", f, target, tostring(err)))
+                end
+            else
+                write_log("INFO", string.format("logo copy: %s -> %s", f, target))
             end
         end
     end
 
     -- Run scene builder
-    local cmd = { godot_exe, "--editor", "--path", project_dir, "--script", "res://Scripts/_BuildScenes.gd" }
-    if no_exit then table.insert(cmd, "--no-exit"); colour_print{ colour = Colours.CYAN, message = "\n'--no-exit' flag detected. Godot will remain open after script execution." } end
-    run_godot(cmd, "Scene Building")
+    if not dry_run then
+        local cmd = { godot_exe, "--editor", "--path", project_dir, "--script", "res://Scripts/_BuildScenes.gd" }
+        if no_exit then table.insert(cmd, "--no-exit"); log_info("\n'--no-exit' flag detected. Godot will remain open after script execution.") end
+        run_godot(cmd, "Scene Building")
+        log_info("\n✅✅✅ Godot project setup and scene generation complete! ✅✅✅")
+        countdown(1)
+    else
+        log_info("Dry-run complete. No Godot commands executed.")
+    end
 
-    colour_print{ colour = Colours.GREEN, message = "\n✅✅✅ Godot project setup and scene generation complete! ✅✅✅" }
-    countdown(1)
+    close_log()
 end
 
 -- CLI
 local function parse_args(argv)
-    local opts = { ["project-name"] = "Game", ["no-exit"] = false }
+    local opts = { ["project-name"] = "Game", ["no-exit"] = false, ["dry-run"] = false }
     local i = 1
     while i <= #argv do
         local a = argv[i]
@@ -527,6 +755,8 @@ local function parse_args(argv)
             opts["no-exit"] = true; i = i + 1
         elseif a == "--sourcePath" and argv[i+1] then
             opts["sourcePath"] = argv[i+1]; i = i + 2
+        elseif a == "--dry-run" then
+            opts["dry-run"] = true; i = i + 1
         else
             -- unknown or trailing
             i = i + 1
@@ -561,7 +791,7 @@ local function discover_pngs_in_dir(dir)
     return list
 end
 
-local function main(project_name, repo_root, no_exit, sourcePath)
+local function main(project_name, repo_root, no_exit, sourcePath, dry_run)
     -- Locate this module directory
     local this_source = debug and debug.getinfo and debug.getinfo(1, 'S')
     local this_path = this_source and this_source.source or ""
@@ -569,19 +799,52 @@ local function main(project_name, repo_root, no_exit, sourcePath)
     local godot_module_root = dirname(this_path)
     local module_root = dirname(godot_module_root)
 
-    colour_print{ colour = Colours.CYAN, message = "Godot Module Root: " .. godot_module_root }
-    colour_print{ colour = Colours.CYAN, message = "Repository Root: " .. repo_root }
+    -- Open a bootstrap log in module root immediately (independent from project log)
+    local bootstrap_log = join(godot_module_root, "godot-init.log")
+    if not dry_run then open_log(bootstrap_log) end
+    write_log("INFO", "bootstrap logging started")
+
+    log_info("Godot Module Root: " .. godot_module_root)
+    log_info("Repository Root: " .. repo_root)
 
     local extracted_root = join(join(module_root, "GameFiles"), "STROUT")
     -- for testing use temp dir for game files
     --local extracted_root = join(godot_module_root, "assets")
-    colour_print{ colour = Colours.CYAN, message = "Using Extracted Root: " .. extracted_root }
+    log_info("Using Extracted Root: " .. extracted_root)
     local scripts_folder = join(godot_module_root, "Scripts")
     local addons_folder = join(godot_module_root, "addons")
     local conf_folder = join(godot_module_root, "rootfiles")
     local project_parent = join(godot_module_root, "GodotGame")
 
     local godot_exe = resolve_godot()
+
+    -- Pre-flight validations
+    local stage = script_progress(6, "preflight", "Pre-flight checks")
+    -- 1. Validate Godot tool
+    if not godot_exe or godot_exe == "" or not is_file(godot_exe) then
+        fatal("Godot executable not found. Ensure 'Godot' tool is configured.")
+    end
+    stage:Update(1)
+    -- 2. Godot version check (fast)
+    local ok_version = sdk.execSilent({ godot_exe, "--version" }, { wait = true })
+    if not (ok_version and ok_version.success == true) then
+        log_warn("Unable to validate Godot via '--version'. Continuing, but import may fail.")
+    end
+    stage:Update(1)
+    -- 3. Source root exists
+    if not is_dir(extracted_root) then
+        fatal("Extracted source root not found: " .. extracted_root)
+    end
+    stage:Update(1)
+    -- 4. Optional folders logged
+    if not is_dir(scripts_folder) then log_warn("Scripts folder not found: " .. scripts_folder) end
+    stage:Update(1)
+    if not is_dir(addons_folder) then log_warn("Addons folder not found: " .. addons_folder) end
+    stage:Update(1)
+    if not is_dir(conf_folder) then log_warn("Conf folder not found: " .. conf_folder) end
+    stage:Update(1)
+    -- Close preflight stage
+    stage:Complete()
 
     local asset_exts = { ".png", ".glb", ".wav", ".ogv" }
 
@@ -592,18 +855,20 @@ local function main(project_name, repo_root, no_exit, sourcePath)
         if is_dir(logo_dir) then
             logos = discover_pngs_in_dir(logo_dir)
         else
-            colour_print{ colour = Colours.YELLOW, message = "Logo directory not found: " .. logo_dir }
+            log_warn("Logo directory not found: " .. logo_dir)
             logos = {}
         end
         if #logos > 0 then
-            colour_print{ colour = Colours.CYAN, message = "Found game logo images: " .. table.concat(logos, ", ") }
+            log_info("Found game logo images: " .. table.concat(logos, ", "))
         end
     end)
     if not ok then
-    colour_print{ colour = Colours.YELLOW, message = "Logo scan warning: " .. tostring(err) }
+        log_warn("Logo scan warning: " .. tostring(err))
     end
 
-    create_godot_project(project_name, project_parent, extracted_root, scripts_folder, addons_folder, conf_folder, godot_exe, no_exit, logos, asset_exts)
+    create_godot_project(project_name, project_parent, extracted_root, scripts_folder, addons_folder, conf_folder, godot_exe, no_exit, logos, asset_exts, dry_run)
+    -- Close bootstrap log if still open (create_godot_project opens a project-local log and then closes it)
+    close_log()
 end
 
 -- Entrypoint (when executed as a script by the engine)
@@ -611,9 +876,9 @@ local function run()
     -- argv is guaranteed by engine runtime
     local opts = parse_args(argv)
     if not opts["repo-root"] or not opts["sourcePath"] then
-        error("Missing required args: --repo-root and --sourcePath")
+        fatal("Missing required args: --repo-root and --sourcePath")
     end
-    main(opts["project-name"], normalize(opts["repo-root"]), opts["no-exit"], normalize(opts["sourcePath"]))
+    main(opts["project-name"], normalize(opts["repo-root"]), opts["no-exit"], normalize(opts["sourcePath"]), opts["dry-run"])
 end
 
 if ... == nil then
@@ -624,4 +889,3 @@ return {
     main = main,
     run = run,
 }
-

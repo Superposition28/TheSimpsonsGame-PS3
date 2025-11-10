@@ -1,6 +1,3 @@
-local lfs = require("lfs")
-local sdk = rawget(_G, "sdk") or {}
-local sqlite = rawget(_G, "sqlite")
 if not sqlite then
     error("sqlite module is not available; ensure LuaScriptAction exposes sqlite helpers")
 end
@@ -28,17 +25,8 @@ local Colours = {
 
 local VERBOSE = false
 
-local function colour_print(opts)
-    opts = opts or {}
-    if sdk and sdk.colour_print then
-        sdk.colour_print(opts)
-    else
-        print(opts.message or "")
-    end
-end
-
 local function log(colour, message)
-    colour_print({ colour = colour or Colours.DEFAULT, message = string.format("[%s] %s", PREFIX, message or "") })
+    sdk.colour_print({ colour = colour or Colours.DEFAULT, message = string.format("[%s] %s", PREFIX, message or "") })
 end
 
 local function normalize_separators(path)
@@ -86,6 +74,37 @@ local function parent_dir(path)
     return nil
 end
 
+local function is_absolute(path)
+    if not path then
+        return false
+    end
+    if path:match("^%a:[/\\]") then
+        return true
+    end
+    if path:sub(1, 2) == "\\\\" then
+        return true
+    end
+    if path:sub(1, 1) == "/" then
+        return true
+    end
+    return false
+end
+local function absolute_path(path)
+    if not path then
+        return path
+    end
+    -- Use sdk.realpath directly (always available in engine runtime)
+    local resolved = sdk.realpath(path)
+    if resolved and #resolved > 0 then
+        return normalize_separators(resolved)
+    end
+    if is_absolute(path) then
+        return normalize_separators(path)
+    end
+    local cwd = lfs.currentdir()
+    return normalize_separators(cwd .. path_sep .. path)
+end
+
 local PreinstancedFileProcessor = {}
 PreinstancedFileProcessor.__index = PreinstancedFileProcessor
 
@@ -100,8 +119,45 @@ function PreinstancedFileProcessor.new(opts)
     return self
 end
 
+
+local function join(...)
+    local parts = { ... }
+    local buffer = {}
+    for index = 1, #parts do
+        local part = parts[index]
+        if part and part ~= "" then
+            if type(part) ~= 'string' then
+                part = tostring(part)
+            end
+            part = normalize_separators(part)
+            if index > 1 then
+                part = part:gsub("^" .. path_sep .. "+", "")
+            end
+            if index < #parts then
+                part = part:gsub(path_sep .. "+$", "")
+            end
+            table.insert(buffer, part)
+        end
+    end
+    return table.concat(buffer, path_sep)
+end
+
+local function iterate_files(root_dir, visitor)
+    for entry in lfs.dir(root_dir) do
+        if entry ~= "." and entry ~= ".." then
+            local full_path = join(root_dir, entry)
+            local attrs = lfs.attributes(full_path)
+            if attrs and attrs.mode == "directory" then
+                iterate_files(full_path, visitor)
+            elseif attrs and attrs.mode == "file" then
+                visitor(full_path, entry)
+            end
+        end
+    end
+end
+
 function PreinstancedFileProcessor:process_files()
-    if not (sdk.is_dir and sdk.is_dir(self.input_dir)) then
+    if not sdk.is_dir(self.input_dir) then
         log(Colours.RED, string.format("InputDirectory '%s' is not set or does not exist.", self.input_dir))
         error(string.format("InputDirectory '%s' is not set or does not exist.", self.input_dir))
     end
@@ -109,13 +165,13 @@ function PreinstancedFileProcessor:process_files()
         log(Colours.RED, "BlendDirectory is not set.")
         error("BlendDirectory is not set.")
     end
-    ensure_directory(self.blend_dir)
+    sdk.ensure_dir(self.blend_dir)
     if not self.glb_dir then
         log(Colours.RED, "GLBOutputDirectory is not set.")
         error("GLBOutputDirectory is not set.")
     end
-    ensure_directory(self.glb_dir)
-    if not (sdk.is_file and sdk.is_file(self.blank_blend_source)) then
+    sdk.ensure_dir(self.glb_dir)
+    if not sdk.is_file(self.blank_blend_source) then
         log(Colours.RED, string.format("BlankBlendSource '%s' is not set or does not exist.", self.blank_blend_source))
         error(string.format("BlankBlendSource '%s' is not set or does not exist.", self.blank_blend_source))
     end
@@ -147,8 +203,8 @@ function PreinstancedFileProcessor:process_files()
         local blend_dest_dir = rel_dir and join(self.blend_dir, rel_dir) or self.blend_dir
         local glb_dest_dir = rel_dir and join(self.glb_dir, rel_dir) or self.glb_dir
 
-        ensure_directory(blend_dest_dir)
-        ensure_directory(glb_dest_dir)
+        sdk.ensure_dir(blend_dest_dir)
+        sdk.ensure_dir(glb_dest_dir)
 
         -- Derive base name without using complex patterns
         local fn_ns = normalize_separators(preinst_path)
@@ -166,7 +222,7 @@ function PreinstancedFileProcessor:process_files()
         local blend_dest_filename = base_name .. ".blend"
         local blend_dest_full_path = join(blend_dest_dir, blend_dest_filename)
 
-        if not (sdk.is_file and sdk.is_file(blend_dest_full_path)) then
+        if not sdk.is_file(blend_dest_full_path) then
             local copied = sdk.copy_file and sdk.copy_file(self.blank_blend_source, blend_dest_full_path, false)
             if copied then
                 if self.verbose then
@@ -175,85 +231,17 @@ function PreinstancedFileProcessor:process_files()
             else
                 log(Colours.RED, string.format("Error copying blank blend file to '%s'", blend_dest_full_path))
                 if self.debug_mode_enabled then
-                    sleep(1)
+                    sdk.sleep(1)
                 end
             end
         end
 
         if self.debug_mode_enabled then
-            sleep(0.05)
+            sdk.sleep(0.05)
         end
     end
 
     log(Colours.GREEN, string.format("Total .preinstanced files processed for blend/glb structure setup: %d", #files))
-end
-
-local function sleep(seconds)
-    if not seconds or seconds <= 0 then
-        return
-    end
-    if sdk and sdk.sleep then
-        sdk.sleep(seconds)
-    else
-        local start_clock = os.clock()
-        while os.clock() - start_clock < seconds do
-        end
-    end
-end
-
-local function is_absolute(path)
-    if not path then
-        return false
-    end
-    if path:match("^%a:[/\\]") then
-        return true
-    end
-    if path:sub(1, 2) == "\\\\" then
-        return true
-    end
-    if path:sub(1, 1) == "/" then
-        return true
-    end
-    return false
-end
-
-local function absolute_path(path)
-    if not path then
-        return path
-    end
-    if sdk and sdk.realpath then
-        local resolved = sdk.realpath(path)
-        if resolved and #resolved > 0 then
-            return normalize_separators(resolved)
-        end
-    end
-    if is_absolute(path) then
-        return normalize_separators(path)
-    end
-    local cwd = lfs.currentdir()
-    return normalize_separators(cwd .. path_sep .. path)
-end
-
-local function join(...)
-    local parts = { ... }
-    local buffer = {}
-    for index = 1, #parts do
-        local part = parts[index]
-        if part and part ~= "" then
-            if type(part) ~= 'string' then
-                part = tostring(part)
-            end
-            part = normalize_separators(part)
-            if index > 1 then
-                part = part:gsub("^" .. path_sep .. "+", "")
-            end
-            if index < #parts then
-                part = part:gsub(path_sep .. "+$", "")
-            end
-            table.insert(buffer, part)
-        end
-    end
-    return table.concat(buffer, path_sep)
 end
 
 local function extract_map_subdirectory(full_path, marker)
@@ -323,40 +311,20 @@ local function init_db(db_file_path)
     return db
 end
 
-local function iterate_files(root_dir, visitor)
-    for entry in lfs.dir(root_dir) do
-        if entry ~= "." and entry ~= ".." then
-            local full_path = join(root_dir, entry)
-            local attrs = lfs.attributes(full_path)
-            if attrs and attrs.mode == "directory" then
-                iterate_files(full_path, visitor)
-            elseif attrs and attrs.mode == "file" then
-                visitor(full_path, entry)
-            end
-        end
-    end
-end
 
-local function ensure_directory(path)
-    if sdk and sdk.ensure_dir then
-        sdk.ensure_dir(path)
-    else
-        lfs.mkdir(path)
-    end
-end
 
 local function generate_asset_mapping(db, root_drive, preinstanced_root, blend_root, marker, glb_root, check_existence)
     check_existence = not not check_existence
 
-    if not (sdk.is_dir and sdk.is_dir(preinstanced_root)) then
+    if not sdk.is_dir(preinstanced_root) then
         error(string.format("Preinstanced root directory not found: %s", preinstanced_root))
     end
-    if not (sdk.is_dir and sdk.is_dir(blend_root)) then
+    if not sdk.is_dir(blend_root) then
         error(string.format("Blend root directory not found: %s", blend_root))
     end
-    if glb_root and not (sdk.is_dir and sdk.is_dir(glb_root)) then
+    if glb_root and not sdk.is_dir(glb_root) then
         log(Colours.CYAN, string.format("GLB root directory %s not found, creating it.", glb_root))
-        ensure_directory(glb_root)
+        sdk.ensure_dir(glb_root)
     end
 
     local assets_processed = 0
@@ -381,7 +349,7 @@ local function generate_asset_mapping(db, root_drive, preinstanced_root, blend_r
             glb_full = join(glb_root_abs, glb_rel)
         end
 
-        if check_existence and (not (sdk.is_file and sdk.is_file(blend_full))) then
+        if check_existence and (not sdk.is_file(blend_full)) then
             log(Colours.YELLOW, string.format("Warning: Corresponding blend file not found: %s", blend_full))
             return
         end
@@ -419,11 +387,11 @@ local function create_symlink_entry(src, dst, is_dir, debug_sleep_duration)
     end
 
     if is_dir then
-        if not (sdk.is_dir and sdk.is_dir(src)) then
+        if not sdk.is_dir(src) then
             error(string.format("Source directory for symlink does not exist: %s", tostring(src)))
         end
     else
-        if not (sdk.is_file and sdk.is_file(src)) then
+        if not sdk.is_file(src) then
             error(string.format("Source file for symlink does not exist: %s", tostring(src)))
         end
     end
@@ -459,7 +427,7 @@ local function create_symlink_entry(src, dst, is_dir, debug_sleep_duration)
     local msg = string.format("Failed to create symlink %s -> %s. Ensure Developer Mode or elevated privileges are enabled.", dst, src)
     log(Colours.RED, msg)
     if debug_sleep_duration and debug_sleep_duration > 0 then
-        sleep(debug_sleep_duration)
+        sdk.sleep(debug_sleep_duration)
     end
     error(string.format("error : s%", msg))
 end
@@ -555,7 +523,7 @@ local function create_symbolic_links(db, root_drive, debug_mode_enabled)
             log(Colours.YELLOW, string.format("Map subdirectory '%s' for asset %s is not suitable for symlink creation. Skipping.", tostring(map_subdir), tostring(identifier)))
         else
             local target_base = join(root_drive, map_subdir)
-            ensure_directory(target_base)
+            sdk.ensure_dir(target_base)
 
             local symlink_updates = {}
 
@@ -644,7 +612,7 @@ function PreinstancedFileProcessor.new(opts)
 end
 
 function PreinstancedFileProcessor:process_files()
-    if not (sdk.is_dir and sdk.is_dir(self.input_dir)) then
+    if not sdk.is_dir(self.input_dir) then
         log(Colours.RED, string.format("InputDirectory '%s' is not set or does not exist.", self.input_dir))
         error(string.format("InputDirectory '%s' is not set or does not exist.", self.input_dir))
     end
@@ -652,13 +620,13 @@ function PreinstancedFileProcessor:process_files()
         log(Colours.RED, "BlendDirectory is not set.")
         error("BlendDirectory is not set.")
     end
-    ensure_directory(self.blend_dir)
+    sdk.ensure_dir(self.blend_dir)
     if not self.glb_dir then
         log(Colours.RED, "GLBOutputDirectory is not set.")
         error("GLBOutputDirectory is not set.")
     end
-    ensure_directory(self.glb_dir)
-    if not (sdk.is_file and sdk.is_file(self.blank_blend_source)) then
+    sdk.ensure_dir(self.glb_dir)
+    if not sdk.is_file(self.blank_blend_source) then
         log(Colours.RED, string.format("BlankBlendSource '%s' is not set or does not exist.", self.blank_blend_source))
         error(string.format("BlankBlendSource '%s' is not set or does not exist.", self.blank_blend_source))
     end
@@ -690,8 +658,8 @@ function PreinstancedFileProcessor:process_files()
         local blend_dest_dir = rel_dir and join(self.blend_dir, rel_dir) or self.blend_dir
         local glb_dest_dir = rel_dir and join(self.glb_dir, rel_dir) or self.glb_dir
 
-        ensure_directory(blend_dest_dir)
-        ensure_directory(glb_dest_dir)
+        sdk.ensure_dir(blend_dest_dir)
+        sdk.ensure_dir(glb_dest_dir)
 
         -- Derive base name without heavy patterns
         local fn_ns = normalize_separators(preinst_path)
@@ -709,7 +677,7 @@ function PreinstancedFileProcessor:process_files()
         local blend_dest_filename = base_name .. ".blend"
         local blend_dest_full_path = join(blend_dest_dir, blend_dest_filename)
 
-        if not (sdk.is_file and sdk.is_file(blend_dest_full_path)) then
+        if not sdk.is_file(blend_dest_full_path) then
             local copied = sdk.copy_file and sdk.copy_file(self.blank_blend_source, blend_dest_full_path, false)
             if copied then
                 if self.verbose then
@@ -718,13 +686,13 @@ function PreinstancedFileProcessor:process_files()
             else
                 log(Colours.RED, string.format("Error copying blank blend file to '%s'", blend_dest_full_path))
                 if self.debug_mode_enabled then
-                    sleep(1)
+                    sdk.sleep(1)
                 end
             end
         end
 
         if self.debug_mode_enabled then
-            sleep(0.05)
+            sdk.sleep(0.05)
         end
     end
 
@@ -750,9 +718,9 @@ local function run(args)
 
     local database_output_directory = absolute_path(args.output_dir)
     log(Colours.CYAN, string.format("Database Output Directory: %s", database_output_directory))
-    ensure_directory(database_output_directory)
+    sdk.ensure_dir(database_output_directory)
 
-    local db_filename = join(database_output_directory, "asset_map.sqlite")
+    local db_filename = args.db_file_path
     log(Colours.CYAN, string.format("Database file will be at: %s", db_filename))
 
     local root_drive = absolute_path(args.root_drive)
@@ -784,7 +752,7 @@ local function run(args)
         db = init_db(db_filename)
         log(Colours.GREEN, string.format("Database initialized/opened at: %s", db_filename))
         if debug_mode_enabled then
-            sleep(2)
+            sdk.sleep(2)
         end
 
         log(Colours.CYAN, "--- Step 1: Processing Preinstanced Files (Copy blank blends, create dir structure) ---")
@@ -797,17 +765,17 @@ local function run(args)
             verbose = VERBOSE
         })
         if debug_mode_enabled then
-            sleep(2)
+            sdk.sleep(2)
         end
         processor:process_files()
         log(Colours.GREEN, "--- Step 1: Completed ---")
         if debug_mode_enabled then
-            sleep(2)
+            sdk.sleep(2)
         end
 
         log(Colours.CYAN, string.format("--- Step 2: Preparing Symbolic Link Root Directory: %s ---", root_drive))
         if sdk.path_exists and sdk.path_exists(root_drive) then
-            if not (sdk.is_dir and sdk.is_dir(root_drive)) then
+            if not sdk.is_dir(root_drive) then
                 error(string.format("Symlink root path %s exists but is not a directory. Please resolve this.", root_drive))
             end
             log(Colours.CYAN, string.format("Symlink root directory %s already exists. Proceeding.", root_drive))
@@ -815,30 +783,30 @@ local function run(args)
                 error(string.format("Could not remove existing directory %s", root_drive))
             end
         end
-        ensure_directory(root_drive)
+        sdk.ensure_dir(root_drive)
         log(Colours.GREEN, string.format("Root directory for symbolic links ensured: %s", root_drive))
         if debug_mode_enabled then
-            sleep(2)
+            sdk.sleep(2)
         end
 
         log(Colours.CYAN, "--- Step 3: Generating Asset Map & Populating Database ---")
         if debug_mode_enabled then
-            sleep(2)
+            sdk.sleep(2)
         end
         local asset_count = generate_asset_mapping(db, root_drive, preinstanced_dir, blend_dir, marker, glb_dir, false)
         log(Colours.GREEN, string.format("Generated and stored map for %d assets in the database.", asset_count))
         if debug_mode_enabled then
-            sleep(2)
+            sdk.sleep(2)
         end
 
         log(Colours.CYAN, string.format("--- Step 4: Creating Symbolic Links in: %s ---", root_drive))
         if debug_mode_enabled then
-            sleep(2)
+            sdk.sleep(2)
         end
         create_symbolic_links(db, root_drive, debug_mode_enabled)
         log(Colours.GREEN, "--- Step 4: Symbolic links creation and DB update process completed. ---")
         if debug_mode_enabled then
-            sleep(2)
+            sdk.sleep(2)
         end
     end)
 

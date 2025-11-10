@@ -5,21 +5,10 @@ Purpose:
 - Prepare the audio source directory by grouping subfolders into 'EN' and 'Global'.
 - Skips language-specific folders in a blacklist.
 
-Behavior parity with SetupAudioDir.py:
-- Validates provided source directory path.
-- Creates 'EN' and 'Global' subdirectories if missing.
-- Moves top-level subdirectories (except EN/Global and language code folders) into the target bucket:
-  - If the name is in the hardcoded Global set -> move under Global/<name>
-  - Otherwise -> move under EN/<name>
-- Prints progress and a final summary with counts.
-
-Runtime:
-- Integrates with RemakeEngine's Lua runtime (MoonSharp) and uses global 'sdk' helpers when available.
-- Accepts the source dir as argv[1]; if missing, prompts the user.
+Runtime guarantees: lfs, sdk, argv are provided by engine
 ]]
 
 local lfs = require("lfs")
-local sdk = rawget(_G, "sdk")
 
 -- small path helpers
 local path_sep = package.config:sub(1,1) or "/"
@@ -41,86 +30,21 @@ local function normalize(p)
 	return p
 end
 local function is_dir(p)
-	if sdk and sdk.is_dir then return sdk.is_dir(p) end
-	local a = lfs.attributes(p)
-	return a and a.mode == "directory" or false
+	return sdk.is_dir(p)
 end
 local function path_exists(p)
-	if sdk and sdk.path_exists then return sdk.path_exists(p) end
-	return lfs.attributes(p) ~= nil
+	return sdk.path_exists(p)
 end
 local function ensure_dir(p)
-	if sdk and sdk.ensure_dir then return sdk.ensure_dir(p) end
-	-- basic fallback
-	local ok = lfs.mkdir(p)
-	if ok then return true end
-	-- try to create parents
-	local parts = {}
-	for part in p:gmatch("[^/\\]+") do table.insert(parts, part) end
-	local cur = (p:sub(1,1) == "/" or p:match("^%a:[/\\]")) and p:sub(1,1) or ""
-	for i=1,#parts do
-		cur = (cur == "" and parts[i]) or join(cur, parts[i])
-		lfs.mkdir(cur)
-	end
-	return is_dir(p)
+	return sdk.ensure_dir(p)
 end
 local function move_dir(src, dst)
-	-- Prefer engine fast move if available
-	if sdk and sdk.move_dir then
-		local ok = sdk.move_dir(src, dst, false)
-		if ok then return true end
-	end
-	-- fallback: try os.rename (same volume)
-	if os.rename(src, dst) then return true end
-	-- fallback: copy then remove
-	local function copy_tree(s, d)
-		ensure_dir(d)
-		for name in lfs.dir(s) do
-			if name ~= "." and name ~= ".." then
-				local sp = join(s, name)
-				local dp = join(d, name)
-				local attr = lfs.attributes(sp)
-				if attr and attr.mode == "directory" then
-					if not copy_tree(sp, dp) then return false end
-				else
-					local inF = io.open(sp, "rb"); if not inF then return false end
-					local data = inF:read("*a"); inF:close()
-					local outF = io.open(dp, "wb"); if not outF then return false end
-					outF:write(data); outF:close()
-				end
-			end
-		end
-		return true
-	end
-	local function remove_tree(p)
-		for name in lfs.dir(p) do
-			if name ~= "." and name ~= ".." then
-				local child = join(p, name)
-				local attr = lfs.attributes(child)
-				if attr and attr.mode == "directory" then
-					remove_tree(child)
-				else
-					os.remove(child)
-				end
-			end
-		end
-		lfs.rmdir(p)
-	end
-	if copy_tree(src, dst) then
-		remove_tree(src)
-		return true
-	end
-	return false
+	return sdk.move_dir(src, dst, false)
 end
 
--- Colour print via SDK if available
+-- Colour print via SDK (guaranteed by engine runtime)
 local function cprint(colour, message)
-	if sdk and (sdk.colour_print or sdk.color_print) then
-		local fn = sdk.colour_print or sdk.color_print
-		fn({ colour = colour or "default", message = message or "", newline = true })
-	else
-		print(message)
-	end
+	sdk.colour_print({ colour = colour or "default", message = message or "", newline = true })
 end
 
 -- Hardcoded Language Blacklist and Global Dirs (mirrors Python script)
@@ -139,28 +63,25 @@ local global_dirs = {
 local function lower(s) return s and string.lower(s) or s end
 
 local function parse_argv()
-	-- MoonSharp exposes C# array as userdata; try safe indexing
-	local a = rawget(_G, "argv")
-	if a ~= nil then
-		local ok, v = pcall(function() return a[1] end)
-		if ok and type(v) == "string" and v ~= "" then return v end
-		-- some launchers may pass 0-based; try [0]
-		ok, v = pcall(function() return a[0] end)
-		if ok and type(v) == "string" and v ~= "" then return v end
+	-- Engine guarantees argv global; try index 1 first, then 0 for compatibility
+	if argv and argv[1] and type(argv[1]) == "string" and argv[1] ~= "" then
+		return argv[1]
+	end
+	if argv and argv[0] and type(argv[0]) == "string" and argv[0] ~= "" then
+		return argv[0]
 	end
 	return nil
 end
 
-local function prompt(msg)
-	io.write(msg .. "\n")
-	io.flush()
-	return io.read()
+local function get_user_input(msg)
+	-- Use engine's global prompt() function
+	return prompt(msg, "audio_dir_prompt", false)
 end
 
 local function main()
 	local input = parse_argv()
 	if not input or input == "" then
-		input = prompt("Enter Audio Source Directory path:") or ""
+		input = get_user_input("Enter Audio Source Directory path:") or ""
 	end
 
 	input = normalize(input)

@@ -2,10 +2,11 @@
 -- Initializes source files by optionally copying/moving them to a local workspace
 -- to avoid modifying originals (unless the user chooses to use-in-place).
 -- Uses a module-local config.toml ([[placeholders]]) with only SourcePath persisted.
+--
+-- Runtime guarantees: lfs, sdk, prompt() global are provided by engine
 
 local lfs = require("lfs")
 local path_sep = package.config:sub(1,1)
-local sdk = rawget(_G, "sdk")
 
 local Colours = {
     DEFAULT = "default",
@@ -26,18 +27,14 @@ local Colours = {
     DARKRED = "darkred"
 }
 
---- Print a coloured message via SDK if available; falls back to print().
+--- Print a coloured message via SDK (guaranteed by engine runtime)
 -- @param opts table { colour: string, message: string }
 -- @usage colour_print{ colour = Colours.GREEN, message = "Done" }
 local function colour_print(opts)
     opts = opts or {}
     local colour = opts.colour or Colours.DEFAULT
     local message = opts.message or ""
-    if sdk and sdk.colour_print then
-        sdk.colour_print({ colour = colour, message = message, newline = true })
-    else
-        print(message)
-    end
+    sdk.colour_print({ colour = colour, message = message, newline = true })
 end
 
 local function join(a, b)
@@ -96,13 +93,11 @@ local function is_absolute(p)
 end
 
 local function is_dir(path)
-    local attr = lfs.attributes(path)
-    return attr and attr.mode == "directory"
+    return sdk.is_dir(path)
 end
 
 local function file_exists(path)
-    local attr = lfs.attributes(path)
-    return attr ~= nil
+    return sdk.path_exists(path)
 end
 
 local function list_subdirs(path)
@@ -120,25 +115,9 @@ local function list_subdirs(path)
     return dirs
 end
 
--- Input helper compatible with RemakeEngine's embedded Lua environment
+-- Input helper using engine's guaranteed prompt() global
 local function get_input(msg, id)
-    -- Prefer engine-provided global prompt() if available
-    local global_prompt = rawget(_G, "prompt")
-    if type(global_prompt) == "function" then
-        return global_prompt(msg, id or "tsg_init", false)
-    end
-    -- Fallback to sdk.prompt if exposed
-    if sdk and type(sdk.prompt) == "function" then
-        return sdk.prompt(msg, id or "tsg_init", false)
-    end
-    -- Last resort: try standard io (may be sandboxed/absent)
-    if io and type(io.write) == "function" then io.write(msg .. "\n") end
-    if io and type(io.flush) == "function" then io.flush() end
-    if io and type(io.read) == "function" then
-        local ok, line = pcall(io.read, "*l")
-        if ok then return line end
-    end
-    return nil
+    return prompt(msg, id or "tsg_init", false)
 end
 
 -- TODO: change to get dir names from config/RenameMap.db
@@ -185,15 +164,16 @@ local function check_dirs_exist_verbose(base_path, required_dirs, list_name)
     return false
 end
 
--- TOML helpers via engine SDK
+-- TOML helpers via engine SDK (guaranteed by runtime)
 local function read_placeholders(cfg_path)
-    if not sdk or not sdk.toml_read_file then return {} end
+    if not sdk.toml_read_file then
+        error("SDK toml_read_file not available - engine integrity issue")
+    end
     local doc = sdk.toml_read_file(cfg_path)
     if not doc then return {} end
     -- Accept either tables or arrays-of-tables for 'placeholders'
     local ph = doc["placeholders"]
     if type(ph) == "table" then
-        -- If it's an array-of-tables, take the first
         if ph[1] and type(ph[1]) == "table" then
             return ph[1]
         end
@@ -203,7 +183,9 @@ local function read_placeholders(cfg_path)
 end
 
 local function write_placeholders(cfg_path, new_placeholders)
-    if not sdk or not sdk.toml_write_file then return end
+    if not sdk.toml_write_file then
+        error("SDK toml_write_file not available - engine integrity issue")
+    end
     local doc = {}
     -- Write as array-of-tables to mirror previous structure [[placeholders]]
     doc["placeholders"] = { new_placeholders }
@@ -227,43 +209,18 @@ local function count_files(path)
     return count
 end
 
--- ensure_dir: create directory (and parents) if needed
-local ensure_dir -- forward decl
-ensure_dir = function(path)
-    local target = normalize(path)
-    if is_dir(target) then return true end
-    if lfs and type(lfs.mkdir) == "function" then
-        -- attempt to create parent first
-        local parent = dirname(target)
-        if parent and parent ~= target and not is_dir(parent) then
-            ensure_dir(parent)
-        end
-        local ok = lfs.mkdir(target)
-        if ok then return true end
-    end
-    -- fallback to shell mkdir for deep paths
-    local cmd
-    if path_sep == "\\" then
-        cmd = string.format('cmd /C mkdir "%s"', target)
-    else
-        cmd = string.format('mkdir -p "%s"', target)
-    end
-    local _ = os.execute(cmd)
-    return is_dir(target)
+-- ensure_dir: create directory using SDK (guaranteed by engine runtime)
+local function ensure_dir(path)
+    return sdk.ensure_dir(normalize(path))
 end
 
--- copy a file (binary)
+-- copy a file using SDK (guaranteed by engine runtime)
 local function copy_file(src, dst)
     ensure_dir(dirname(dst))
-    local infile = assert(io.open(src, "rb"))
-    local data = infile:read("*a")
-    infile:close()
-    local outfile = assert(io.open(dst, "wb"))
-    outfile:write(data)
-    outfile:close()
+    return sdk.copy_file(src, dst, true)
 end
 
--- copy a directory tree with simple progress
+-- copy a directory tree using SDK with progress tracking
 local function copy_tree(src, dst, total, state)
     for file in lfs.dir(src) do
         if file ~= "." and file ~= ".." then
@@ -277,26 +234,15 @@ local function copy_tree(src, dst, total, state)
                 copy_file(src_path, dst_path)
                 state.count = state.count + 1
                 local progress = (total > 0) and ((state.count / total) * 100) or 100
-                if io and type(io.write) == "function" then
-                    io.write(string.format("\rCopying... %d/%d files (%.1f%%) ", state.count, total, progress))
-                    if type(io.flush) == "function" then io.flush() end
-                elseif sdk and sdk.color_print then
-                    sdk.color_print({ color = 'yellow', message = string.format("Copying... %d/%d", state.count, total), newline = false })
-                end
+                sdk.color_print({ color = 'yellow', message = string.format("Copying... %d/%d files (%.1f%%) ", state.count, total, progress), newline = false })
             end
         end
     end
 end
 
--- move a directory tree using shell
+-- move a directory using SDK (guaranteed by engine runtime)
 local function move_tree(src, dst)
-    local cmd
-    if path_sep == "\\" then
-        cmd = string.format('cmd /C move "%s" "%s"', src, dst)
-    else
-        cmd = string.format('mv "%s" "%s"', src, dst)
-    end
-    return os.execute(cmd)
+    return sdk.move_dir(src, dst, false)
 end
 
 -- Check if a folder contains USRDIR, PARAM.SFO, and at least one PNG (PS3_GAME folder structure)

@@ -43,14 +43,13 @@ Notes
     - Subprocess output is always logged; consider gating by verbose in future
 ]]
 
-local sdk = rawget(_G, "sdk") or {}
-local sqlite = rawget(_G, "sqlite")
+
 if not sqlite then
     error("sqlite module is not available; ensure LuaScriptAction exposes sqlite helpers")
 end
--- allow either blocking run_process or non-blocking spawn_process
-if not (sdk.run_process or sdk.spawn_process) then
-    error("sdk.run_process or sdk.spawn_process helper is required for BlenderCore.lua")
+-- run_process is always available in engine runtime
+if not sdk.run_process then
+    error("sdk.run_process helper is required for BlenderCore.lua")
 end
 
 -- host OS path separator (first character of package.config)
@@ -78,21 +77,11 @@ local Colours = {
 local PREFIX = "BlenderCore"
 local VERBOSE = false
 
---- Print with colour support if available.
--- @param opts table { colour: string, message: string }
-local function colour_print(opts)
-    if sdk and sdk.colour_print then
-        sdk.colour_print(opts)
-    else
-        print(opts.message)
-    end
-end
-
 --- Log a message with a module prefix and an optional colour.
 -- @param colour string|nil
 -- @param message string
 local function log(colour, message)
-    colour_print({ colour = colour or Colours.DEFAULT, message = string.format("[%s] %s", PREFIX, message or "") })
+    sdk.colour_print({ colour = colour or Colours.DEFAULT, message = string.format("[%s] %s", PREFIX, message or "") })
 end
 
 --- Normalize path separators to match the host OS.
@@ -132,27 +121,14 @@ local function join(...)
     return table.concat(buffer, path_sep)
 end
 
---- Ensure a directory exists (no-op without sdk.ensure_dir).
-local function ensure_directory(path)
-    if sdk.ensure_dir then
-        sdk.ensure_dir(path)
-    end
-end
-
---- Return true when path exists (false if no helper available).
+--- Return true when path exists.
 local function path_exists(path)
-    if sdk.path_exists then
-        return sdk.path_exists(path)
-    end
-    return false
+    return sdk.path_exists(path)
 end
 
---- Return true when path is a file (false if no helper available).
+--- Return true when path is a file.
 local function is_file(path)
-    if sdk.is_file then
-        return sdk.is_file(path)
-    end
-    return false
+    return sdk.is_file(path)
 end
 
 --- Create and return a temporary directory path for per-run addon files.
@@ -163,9 +139,9 @@ local function make_temp_dir(prefix)
     prefix = prefix or "blender_addon_"
     -- Use a workspace-local temp root to avoid relying on os.tmpname (not available in sandbox)
     local temp_root = join("TMP", "blender_temp")
-    ensure_directory(temp_root)
+    sdk.ensure_dir(temp_root)
     local dir = join(temp_root, prefix .. tostring(os.time()) .. "_" .. tostring(math.random(100000, 999999)))
-    ensure_directory(dir)
+    sdk.ensure_dir(dir)
     return dir
 end
 
@@ -389,7 +365,7 @@ function BlenderCore.main(opts)
     db_path = normalize_separators(db_path)
     if not db_path or db_path == "" then
         error("DB file path must be specified in opts.db_file_path")
-        exit(1)
+        os.exit(1)
     end
 
     local main_db_path = opts.main_db and normalize_separators(opts.main_db) or ""
@@ -404,7 +380,7 @@ function BlenderCore.main(opts)
     log(Colours.CYAN, string.format("Using Blender executable: %s", blender_exe_path))
     if not game_root_path then
         error("Game root path must be specified in opts.game_root_path")
-        exit(1)
+        os.exit(1)
     end
     log(Colours.CYAN, string.format("Using game root path: %s", game_root_path))
 
@@ -558,7 +534,7 @@ function BlenderCore.main(opts)
                         if sdk.remove_dir then pcall(sdk.remove_dir, info.temp_dir) end
 
                         -- log captured output grouped by asset
-                        if (stderr and #pol.stderr > 0) or (pol.stdout and #pol.stdout > 0) then
+                        if (pol.stderr and #pol.stderr > 0) or (pol.stdout and #pol.stdout > 0) then
                             log(Colours.DARKGRAY, string.format("\n--- Output for Asset ID: %s (PID %s) ---", info.asset.identifier, tostring(pid)))
                             if pol.stdout and #pol.stdout > 0 then log(Colours.GRAY, pol.stdout) end
                             if pol.stderr and #pol.stderr > 0 then log(Colours.YELLOW, pol.stderr) end

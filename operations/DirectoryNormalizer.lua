@@ -12,25 +12,11 @@ Goals
 - Copy files (default) or dry-run preview; configurable via args.
 - Broaden supported file types (default: all files); allow filtering with --ext.
 
-Usage (as called from operations.toml):
-  lua {{Game_Root}}/operations/DirectoryNormalizer.lua
-      <source_dir> <output_dir>
-      --rules <path_to_rules_json>
-      --action copy
-      [--ignore <dir> ...]
-      [--dry-run]
-      [--ext ".preinstanced,.dff,.rws"]
-
-Notes
-- Uses SDK helpers where available (sdk.ensure_dir, sdk.copy_file, sdk.sha1_file, sdk.colour_print, etc.).
-- To compute the SHA1(key) of an arbitrary string (original relative path), this script writes the
-  string into a small temporary file within the output root and calls sdk.sha1_file on it. This keeps
-  behavior identical to the Python script (Base32(SHA1(s))[:10]).
+Runtime guarantees: lfs, dkjson, sdk, argv are provided by engine
 ]]
 
 local dkjson = require("dkjson")
 local lfs = require("lfs")
-local sdk = rawget(_G, "sdk")
 
 -- Small utilities -----------------------------------------------------------
 local path_sep = package.config:sub(1,1) or "/"
@@ -71,13 +57,11 @@ local function split_path(p)
 end
 
 local function ensure_dir(p)
-    if sdk and sdk.ensure_dir then return sdk.ensure_dir(p) end
-    return lfs.mkdir(p)
+    return sdk.ensure_dir(p)
 end
 
 local function path_exists(p)
-    if sdk and sdk.path_exists then return sdk.path_exists(p) end
-    return lfs.attributes(p) ~= nil
+    return sdk.path_exists(p)
 end
 
 local function read_all_text(path)
@@ -93,12 +77,7 @@ local function write_all_text(path, data)
 end
 
 local function colour_print(colour, message)
-    if sdk and (sdk.colour_print or sdk.color_print) then
-        local fn = sdk.colour_print or sdk.color_print
-        fn({ colour = colour or "default", message = message or "", newline = true })
-    else
-        print(message)
-    end
+    sdk.colour_print({ colour = colour or "default", message = message or "", newline = true })
 end
 
 -- JSON helpers --------------------------------------------------------------
@@ -146,10 +125,10 @@ local function short_key_from_string(s, length, tmp_dir)
     length = length or 10
     local tmp = join(tmp_dir, "key.tmp")
     write_all_text(tmp, s)
-    local hex = sdk and sdk.sha1_file and sdk.sha1_file(tmp)
+    local hex = sdk.sha1_file(tmp)
     if not hex or hex == "" then
-        -- Fallback to MD5 text if sha1_file failed for any reason
-        hex = (sdk and sdk.md5 and sdk.md5(s)) or ""
+        -- Fallback to MD5 if SHA1 fails (should never happen with engine SDK)
+        hex = sdk.md5(s) or ""
     end
     if hex == "" then return "0000000000" end
     local bin = hex_to_bytes(hex)
@@ -703,11 +682,10 @@ local function copy_with_collision_handling(src, dst)
             i = i + 1
         until not path_exists(target)
     end
-    return (sdk and sdk.copy_file and sdk.copy_file(src, target, false)) or false
+    return sdk.copy_file(src, target, false)
 end
 
 local function main()
-    local argv = rawget(_G, "argv") or {}
     local args = parse_args(argv)
     if not args.src or args.src == "" then error("source dir missing") end
     if not args.dst or args.dst == "" then error("output dir missing") end
@@ -727,7 +705,7 @@ local function main()
         if should_include_file(f, args.exts) then table.insert(files, f) end
     end
 
-    local prog = (rawget(_G, "progress") and progress(#files, "normalize", "Normalizing directory")) or nil
+    local prog = progress(#files, "normalize", "Normalizing directory")
     local ok, err = pcall(function()
         local mapping_rows = {}
         local per_base = {}

@@ -23,9 +23,6 @@ Environment
 --]]
 
 local function main()
-    -- Resolve host SDK lazily to avoid top-level side effects
-    local sdk = rawget(_G, "sdk") or {}
-
     -- Path separator for current platform ("/" on Unix, "\\" on Windows)
     local path_sep = package.config:sub(1, 1)
     -- Log prefix so messages are easy to filter downstream
@@ -50,18 +47,9 @@ local function main()
         DARKRED = "darkred"
     }
 
-    -- Print via SDK (if available) to preserve colour, otherwise fallback to plain print
-    local function colour_print(opts)
-        if sdk and sdk.colour_print then
-            sdk.colour_print(opts)
-        else
-            print(opts.message)
-        end
-    end
-
-    -- Convenience logger that prepends a prefix and colourizes output (when supported)
+    -- Convenience logger that prepends a prefix and colourizes output
     local function log(colour, message)
-        colour_print({ colour = colour or Colours.DEFAULT, message = string.format("[%s] %s", PREFIX, message or "") })
+        sdk.colour_print({ colour = colour or Colours.DEFAULT, message = string.format("[%s] %s", PREFIX, message or "") })
     end
 
     -- Normalize path separators in a single string to the current platform
@@ -342,8 +330,8 @@ local function main()
         if not fh then
             error(string.format("Failed to open module '%s': %s", path, tostring(open_err)))
         end
-        local src = fh.read("*a")
-        fh.close()
+        local src = fh:read("*a")
+        fh:close()
         local chunk, err = load(src, "@" .. path, "t", _ENV)
         if not chunk then
             error(string.format("Failed to compile module '%s': %s", path, err))
@@ -368,22 +356,6 @@ local function main()
         return nil, path
     end
 
-    -- Ensure a directory exists; prefer SDK helper if available to mirror host behavior
-    local function ensure_directory(path)
-        if sdk.ensure_dir then
-            sdk.ensure_dir(path)
-        else
-            -- fallback to lfs.mkdir (shim provided by engine)
-            local ok_mkdir, lfs_or_err = pcall(function()
-                local lfs = require("lfs")
-                return lfs
-            end)
-            if ok_mkdir and lfs_or_err and lfs_or_err.mkdir then
-                lfs_or_err.mkdir(path)
-            end
-        end
-    end
-
     local function tableToString(t)
         if next(t) == nil then
             return "none"
@@ -399,15 +371,14 @@ local function main()
         return "{" .. table.concat(result, ", ") .. "}"
     end
 
-    -- argv may be injected by host; fall back to empty table for plain Lua
-    local argv = rawget(_G, "argv") or {}
-    -- Quick diagnostic: print raw argv as seen by this script (non-coloured)
+
+    -- Quick diagnostic: print raw argv as seen by this script
     do
         local buf = {}
         for idx = 1, #argv do
             table.insert(buf, tostring(argv[idx]))
         end
-        colour_print({ colour = Colours.GRAY, message = string.format("[" .. PREFIX .. "] raw argv: %s", table.concat(buf, ", ")) })
+        sdk.colour_print({ colour = Colours.GRAY, message = string.format("[" .. PREFIX .. "] raw argv: %s", table.concat(buf, ", ")) })
     end
 
     local cli = parse_arguments(argv)
@@ -494,7 +465,7 @@ local function main()
     local marker = preinstanced_dir and (preinstanced_dir .. path_sep) or ""
 
     -- Ensure output folder exists before any writes
-    ensure_directory(output_dir)
+    sdk.ensure_dir(output_dir)
 
     -- Load phase modules (must export a `main(opts)` function)
     local BlenderInit = load_module(join(output_dir, "BlenderInit.lua"))
@@ -510,7 +481,8 @@ local function main()
         blank_blend_source = blank_blend_source,
         marker = marker,
         debug_sleep = cli.debug_sleep,
-        verbose = cli.verbose
+        verbose = cli.verbose,
+        db_file_path = join(cli.game_root, "GameFiles", "asset_map.sqlite"),
     }
 
     -- Phase 1: setup, link creation, and environment preparation
@@ -542,7 +514,7 @@ local function main()
         debug_sleep = cli.debug_sleep,
         export = cli.export,
         export_formats = cli.formats,
-        db_file_path = join(output_dir, "asset_map.sqlite"),
+        db_file_path = join(cli.game_root, "GameFiles", "asset_map.sqlite"),
         main_db = cli.main_db,
         blender_exe_path = blender_exe_path,
         game_root = cli.game_root
