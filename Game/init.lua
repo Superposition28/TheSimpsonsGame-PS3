@@ -13,11 +13,8 @@ Dependencies provided by engine: lfs (shim), dkjson (shim), global `sdk` (Engine
 
 local lfs = require("lfs")
 local path_sep = package.config:sub(1,1)
-local sdk = rawget(_G, "sdk")
 
--- Colours (match engine SDK names)
-local PREFIX = "Godot Init"
--- Console colour names (used only if host SDK supports coloured printing)
+-- Console colour names
 local Colours = {
     DEFAULT = "default",
     WHITE = "white",
@@ -37,13 +34,9 @@ local Colours = {
     DARKRED = "darkred"
 }
 
--- Print via SDK (if available) to preserve colour, otherwise fallback to plain print
+-- Print via SDK colour_print (guaranteed by engine runtime)
 local function colour_print(opts)
-    if sdk and sdk.colour_print then
-        sdk.colour_print(opts)
-    else
-        print(opts.message)
-    end
+    sdk.colour_print(opts)
 end
 
 -- Small utils
@@ -75,52 +68,25 @@ local function basename(p)
 end
 
 local function ensure_dir(p)
-    local target = normalize(p)
-    local attr = lfs.attributes(target)
-    if attr and attr.mode == "directory" then return true end
-    -- try lfs.mkdir first (single level)
-    local ok = false
-    if lfs.mkdir then ok = lfs.mkdir(target) and true or false end
-    if ok then return true end
-    -- fallback to engine SDK (no shell execution)
-    if sdk and type(sdk.ensure_dir) == "function" then
-        return sdk.ensure_dir(target) == true
-    end
-    return false
+    return sdk.ensure_dir(normalize(p))
 end
 
 local function file_exists(p)
-    local a = lfs.attributes(p)
-    return a ~= nil
+    return sdk.path_exists(p)
 end
 
 local function is_dir(p)
-    local a = lfs.attributes(p)
-    return a and a.mode == "directory"
+    return sdk.is_dir(p)
 end
 
 local function is_file(p)
-    local a = lfs.attributes(p)
-    return a and a.mode == "file"
+    return sdk.is_file(p)
 end
 
 local function get_file_size(p)
     local a = lfs.attributes(p)
     if a and a.mode == "file" then return a.size end
     return nil
-end
-
--- Create a temporary file path (tries to use system temp on Windows)
-local function tmpfile(suffix)
-    local name = os.tmpname()
-    if path_sep == "\\" then
-        -- Ensure it's in a writable temp directory
-        local t = (os.getenv and (os.getenv("TMP") or os.getenv("TEMP"))) or "."
-        local base = basename(name)
-        name = join(t, base)
-    end
-    if suffix then name = name .. suffix end
-    return normalize(name)
 end
 
 -- May return false on missing; true if size equal and (if available) mtime comparable
@@ -136,16 +102,9 @@ local function nearly_same_file(src, dst)
     return true
 end
 
--- Compute SHA1 by shelling out where possible; returns lowercase hex string or nil on failure
+-- Compute SHA1; returns lowercase hex string or nil on failure
 local function sha1(path)
-    path = normalize(path)
-    if sdk and type(sdk.sha1_file) == "function" then
-        local ok, res = pcall(function() return sdk.sha1_file(path) end)
-        if ok and type(res) == "string" and #res >= 40 then
-            return res
-        end
-    end
-    return nil
+    return sdk.sha1_file(normalize(path))
 end
 
 -- Compare two files for exact equality.
@@ -175,13 +134,8 @@ end
 local function countdown(sec)
     sec = tonumber(sec) or 0
     while sec > 0 do
-    colour_print{ colour = Colours.CYAN, message = string.format("Waiting... %d seconds remaining.", sec) }
-        local ossleep = rawget(os, "sleep")
-        if type(ossleep) == "function" then ossleep(1) else
-            -- busy-wait fallback (MoonSharp may not support socket.sleep)
-            local t0 = os.time()
-            repeat until os.time() > t0
-        end
+        colour_print{ colour = Colours.CYAN, message = string.format("Waiting... %d seconds remaining.", sec) }
+        sdk.sleep(1)
         sec = sec - 1
     end
 end
@@ -217,36 +171,14 @@ local function run_cmd(args, opts)
     opts = opts or {}
     local cmdline = build_cmdline(args)
     colour_print{ colour = Colours.CYAN, message = "Exec: " .. cmdline }
-    if sdk and sdk.exec then
-        local res = sdk.exec(args, {
-            cwd = opts.cwd,
-            env = opts.env,
-            new_terminal = opts.new_terminal == true,
-            keep_open = opts.keep_open == true,
-            wait = opts.wait ~= false,
-        })
-        return res and res.success == true
-    end
-    -- Fallback if exec not available
-    if io.popen then
-        local shell_cmd
-        if path_sep == "\\" then
-            shell_cmd = 'cmd /C ' .. cmdline .. ' 2>&1'
-        else
-            shell_cmd = cmdline .. ' 2>&1'
-        end
-        local p = io.popen(shell_cmd)
-        if not p then return false end
-        for line in p:lines() do
-            colour_print{ colour = Colours.CYAN, message = line }
-        end
-        local ok, why, code = p:close()
-        if ok == true then return true end
-        if type(ok) == "number" then return ok == 0 end
-        if why == "exit" and tonumber(code) == 0 then return true end
-        return false
-    end
-    return os.execute(cmdline) == 0
+    local res = sdk.exec(args, {
+        cwd = opts.cwd,
+        env = opts.env,
+        new_terminal = opts.new_terminal == true,
+        keep_open = opts.keep_open == true,
+        wait = opts.wait ~= false,
+    })
+    return res and res.success == true
 end
 
 -- Godot helper
@@ -265,80 +197,23 @@ end
 -- File ops
 local function copy_file(src, dst)
     ensure_dir(dirname(dst))
-    local function lua_copy()
-        local inf = assert(io.open(src, "rb"))
-        local outf = assert(io.open(dst, "wb"))
-        local chunk = 1024 * 1024 -- 1 MiB
-        while true do
-            local data = inf:read(chunk)
-            if not data or #data == 0 then break end
-            outf:write(data)
-        end
-        inf:close(); outf:close()
-        return true
-    end
-
-    local function safe_remove(path)
-        if sdk and type(sdk.remove_file) == "function" then
-            pcall(function() sdk.remove_file(path) end)
-        else
-            pcall(function() os.remove(path) end)
-        end
-    end
-
-    local used_sdk = false
-    -- Prefer SDK file copy (uses .NET File.Copy) when available
-    if sdk and type(sdk.copy_file) == "function" then
-        local ok_call, ok = pcall(function() return sdk.copy_file(src, dst, true) end)
-        used_sdk = true
-        if ok_call and ok == true and files_equal(src, dst) then
-            return
-        end
-        -- SDK path failed or produced mismatch; fall back to Lua copy
-        safe_remove(dst)
-        local ok2, err2 = pcall(lua_copy)
-        if not ok2 then error("Lua copy failed: " .. tostring(err2)) end
-        if not files_equal(src, dst) then
-            error(string.format("Copy validation failed (SDK->Lua): '%s' -> '%s'", src, dst))
-        end
+    -- Use SDK copy_file (guaranteed by engine runtime)
+    local ok = sdk.copy_file(src, dst, true)
+    if ok and files_equal(src, dst) then
         return
-    end
-
-    -- No SDK copy available; do Lua copy then validate, try SDK as a last resort if present later
-    local ok_lua, err_lua = pcall(lua_copy)
-    if not ok_lua then error("Lua copy failed: " .. tostring(err_lua)) end
-    if files_equal(src, dst) then return end
-    -- If SDK appears after, try it
-    if sdk and type(sdk.copy_file) == "function" and not used_sdk then
-        safe_remove(dst)
-        local ok_call2, ok2 = pcall(function() return sdk.copy_file(src, dst, true) end)
-        if ok_call2 and ok2 == true and files_equal(src, dst) then return end
     end
     error(string.format("Copy validation failed: '%s' -> '%s'", src, dst))
 end
 
 local function remove_file(path)
-    if sdk and type(sdk.remove_file) == "function" then
-        sdk.remove_file(path)
-        return
-    end
-    -- fallback to Lua: best-effort via io
-    if is_file(path) then
-        pcall(function() os.remove(path) end)
-    end
+    sdk.remove_file(path)
 end
 
 local function try_hardlink(src, dst)
     -- returns true on success, false otherwise
     remove_file(dst)
     ensure_dir(dirname(dst))
-    if sdk and type(sdk.create_hardlink) == "function" then
-        local ok = false
-        local ok_call, res = pcall(function() return sdk.create_hardlink(src, dst) end)
-        if ok_call then ok = res == true end
-        return ok
-    end
-    return false
+    return sdk.create_hardlink(src, dst) == true
 end
 
 -- Walk a directory tree (breadth-first) and call cb(absPath, relPath, filename) for each file
@@ -661,13 +536,8 @@ local function parse_args(argv)
 end
 
 local function resolve_godot()
-    -- Prefer engine tool resolver if available; fall back to environment
-    local tool_fn = rawget(_G, "tool")
-    if type(tool_fn) == "function" then
-        local p = tool_fn("Godot")
-        if p and p ~= "" then return p end
-    end
-    error("Godot executable not found via tool resolver or GODOT env var")
+    -- Engine tool resolver is guaranteed by runtime
+    return tool("Godot")
 end
 
 -- Discover PNG files only in the specified directory (non-recursive)
@@ -738,15 +608,14 @@ end
 
 -- Entrypoint (when executed as a script by the engine)
 local function run()
-    local args = rawget(_G, "argv") or {}
-    local opts = parse_args(args)
+    -- argv is guaranteed by engine runtime
+    local opts = parse_args(argv)
     if not opts["repo-root"] or not opts["sourcePath"] then
         error("Missing required args: --repo-root and --sourcePath")
     end
     main(opts["project-name"], normalize(opts["repo-root"]), opts["no-exit"], normalize(opts["sourcePath"]))
 end
 
--- If invoked directly, run; otherwise return functions for requiring as a module
 if ... == nil then
     run()
 end
@@ -755,3 +624,4 @@ return {
     main = main,
     run = run,
 }
+

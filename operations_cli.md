@@ -217,7 +217,9 @@ Tools/Blender/blender-4.0.2-windows-x64/blender.exe \
  --game_module ".\EngineApps\Games\TheSimpsonsGame-PS3\"
  --script_type "lua"
  --script "{{Game_Root}}/Game/init.lua"
- --args '["--project-name", "SimpsonsGamePS3", "--repo-root", "{{Project_Root}}", "--sourcePath", "{{Game_Root}}/SourceFlat"]'
+ --args '["--project-name", "SimpsonsGamePS3",
+	"--repo-root", "{{Project_Root}}",
+	"--sourcePath", "{{Game_Root}}/GameFiles/{{STROUT}}"]'
 ```
 
 ```pwsh

@@ -299,12 +299,69 @@ local function move_tree(src, dst)
     return os.execute(cmd)
 end
 
+-- Check if a folder contains USRDIR, PARAM.SFO, and at least one PNG (PS3_GAME folder structure)
+local function is_ps3_game_folder(path)
+    if not is_dir(path) then return false end
+    local has_usrdir = is_dir(join(path, "USRDIR"))
+    local has_sfo = file_exists(join(path, "PARAM.SFO"))
+    local has_png = false
+    -- Check for any PNG file
+    if lfs then
+        for file in lfs.dir(path) do
+            if file:match("%.png$") or file:match("%.PNG$") then
+                has_png = true
+                break
+            end
+        end
+    end
+    return has_usrdir and has_sfo and has_png
+end
+
+-- Validate and resolve the source path, checking multiple possible locations for USRDIR
+-- Returns: ok (bool), usrdir_path (for validation), folder_to_copy (the PS3_GAME parent folder)
+-- Handles paths that point to:
+--   - Direct USRDIR folder (D:\PS3_GAME\USRDIR) -> copy parent PS3_GAME
+--   - PS3_GAME folder containing USRDIR (D:\PS3_GAME) -> copy this folder
+--   - Root disc folder containing PS3_GAME (D:\) -> find and copy PS3_GAME subfolder
 local function validate_source_path(path)
-    if not path or path == "" or not is_dir(path) then return false, path end
+    if not path or path == "" or not is_dir(path) then return false, path, path end
+    
+    -- Check if path itself is USRDIR (has game directories)
+    local ok = check_dirs_exist(path, USRDIR_DIRS_ORIGINAL) or check_dirs_exist(path, USRDIR_DIRS)
+    if ok then
+        -- This is the USRDIR folder, so copy its parent (PS3_GAME)
+        local parent = dirname(path)
+        if is_ps3_game_folder(parent) then
+            return true, path, parent
+        end
+        -- Fallback if parent doesn't have PS3_GAME structure
+        return true, path, path
+    end
+    
+    -- Check if path contains USRDIR subfolder (this is PS3_GAME folder)
     local usrdir = join(path, "USRDIR")
-    local check_path = is_dir(usrdir) and usrdir or path
-    local ok = check_dirs_exist(check_path, USRDIR_DIRS_ORIGINAL) or check_dirs_exist(check_path, USRDIR_DIRS)
-    return ok, check_path
+    if is_dir(usrdir) then
+        ok = check_dirs_exist(usrdir, USRDIR_DIRS_ORIGINAL) or check_dirs_exist(usrdir, USRDIR_DIRS)
+        if ok and is_ps3_game_folder(path) then
+            -- This is the PS3_GAME folder itself, copy this folder
+            return true, usrdir, path
+        end
+    end
+    
+    -- Check path/PS3_GAME/USRDIR (for disc root like D:\)
+    local ps3_game = join(path, "PS3_GAME")
+    if is_dir(ps3_game) then
+        local ps3_usrdir = join(ps3_game, "USRDIR")
+        if is_dir(ps3_usrdir) then
+            ok = check_dirs_exist(ps3_usrdir, USRDIR_DIRS_ORIGINAL) or check_dirs_exist(ps3_usrdir, USRDIR_DIRS)
+            if ok and is_ps3_game_folder(ps3_game) then
+                -- Found PS3_GAME subfolder, copy that folder
+                return true, ps3_usrdir, ps3_game
+            end
+        end
+    end
+    
+    return false, path, path
 end
 
 local function main()
@@ -340,9 +397,9 @@ local function main()
 
     -- ensure type placeholder exists if not set
     if placeholders["Type"] == nil then
-        placeholders["Type"] = "full"
+        placeholders["Type"] = "Full"
         write_placeholders(cfg_path,placeholders)
-        colour_print{colour=Colours.GREEN, message="Initialized placeholders.Type = \"full\""}
+        colour_print{colour=Colours.GREEN, message="Initialized placeholders.Type = \"Full\""}
     end
 
     -- ensure out placeholder exists if not set
@@ -386,11 +443,13 @@ local function main()
     if existing and existing ~= "" then
         existing = normalize(existing)
         copy_source_root = existing
-        local ok, resolved = validate_source_path(existing)
+        local ok, resolved, folder_to_copy = validate_source_path(existing)
         if ok then
             path_from_config = normalize(resolved)
+            copy_source_root = folder_to_copy -- Update to use the folder that should be copied
             if path_from_config ~= existing then
                 colour_print{colour=Colours.YELLOW, message="Detected USRDIR under provided path; using '" .. path_from_config .. "' as source root."}
+                colour_print{colour=Colours.CYAN, message="Will copy folder: '" .. basename(copy_source_root) .. "'"}
             end
         else
             colour_print{colour=Colours.YELLOW, message="Existing SourcePath is not valid. You'll be prompted to set a valid one."}
@@ -408,12 +467,13 @@ local function main()
         end
         input = normalize(is_absolute(input) and input or join(lfs.currentdir(), input))
         if is_dir(input) then
-            local ok, resolved = validate_source_path(input)
+            local ok, resolved, folder_to_copy = validate_source_path(input)
             if ok then
                 path_from_config = normalize(resolved)
-                copy_source_root = input -- preserve exactly what the user provided for copy/move
+                copy_source_root = folder_to_copy -- Use the folder that should be copied
                 if path_from_config ~= input then
                     colour_print{colour=Colours.YELLOW, message="Detected USRDIR under provided path; using '" .. path_from_config .. "' as source root."}
+                    colour_print{colour=Colours.CYAN, message="Will copy folder: '" .. basename(copy_source_root) .. "'"}
                 end
             else
                 colour_print{colour=Colours.RED, message="The provided path does not look like a valid game root/USRDIR. Please try again."}
@@ -439,17 +499,48 @@ local function main()
         if not file_exists(local_data_path) then
             colour_print{colour=Colours.YELLOW, message="\nChoose how to use the source files:"}
             local display_name = basename(copy_source_root or path_from_config)
-            colour_print{colour=Colours.CYAN, message="  1) Copy folder '" .. display_name .. "' into local '" .. basename(local_data_path) .. "' (Recommended, Safe)"}
-            colour_print{colour=Colours.CYAN, message="  2) Move folder '" .. display_name .. "' into local '" .. basename(local_data_path) .. "' (Warning: Deletes originals)"}
-            colour_print{colour=Colours.CYAN, message="  3) Use original path '" .. display_name .. "' directly (Warning: Tools may modify original files)"}
+            
+            -- Check if source path is writable (not read-only like an ISO)
+            local source_is_writable = sdk and sdk.is_writable and sdk.is_writable(copy_source_root or path_from_config) or false
+            
+            -- Build options based on writability
+            local options = {}
+            table.insert(options, {id = "1", label = "Copy folder '" .. display_name .. "' into local '" .. basename(local_data_path) .. "' (Recommended, Safe)"})
+            
+            if source_is_writable then
+                table.insert(options, {id = "2", label = "Move folder '" .. display_name .. "' into local '" .. basename(local_data_path) .. "' (Warning: Deletes originals)"})
+                table.insert(options, {id = "3", label = "Use original path '" .. display_name .. "' directly (Warning: Tools may modify original files)"})
+            else
+                colour_print{colour=Colours.YELLOW, message="  Note: Source is read-only (e.g., ISO/disc). Only copy option is available."}
+            end
+            
+            -- Display options
+            for _, opt in ipairs(options) do
+                colour_print{colour=Colours.CYAN, message="  " .. opt.id .. ") " .. opt.label}
+            end
+            
+            -- Build valid choices string
+            local valid_choices = {}
+            for _, opt in ipairs(options) do
+                table.insert(valid_choices, opt.id)
+            end
+            local choices_str = table.concat(valid_choices, ", ")
+            if #valid_choices == 1 then
+                choices_str = valid_choices[1]
+            elseif #valid_choices == 2 then
+                choices_str = valid_choices[1] .. " or " .. valid_choices[2]
+            else
+                choices_str = table.concat(valid_choices, ", ", 1, #valid_choices - 1) .. ", or " .. valid_choices[#valid_choices]
+            end
 
             while true do
-                local choice = (prompt("Enter your choice (1, 2, or 3):") or ""):match("^%s*(.-)%s*$")
+                local choice = (prompt("Enter your choice (" .. choices_str .. "):") or ""):match("^%s*(.-)%s*$")
                 if choice == '1' then
                     local src = normalize(copy_source_root or path_from_config)
-                    local dst = local_data_path
-                    colour_print{colour=Colours.BLUE, message="Copying contents of folder '" .. basename(src) .. "' into '" .. dst .. "'..."}
-                    ensure_dir(dst)
+                    local src_name = basename(src)
+                    local dst = join(local_data_path, src_name) -- Nest the folder inside Source
+                    colour_print{colour=Colours.BLUE, message="Copying folder '" .. src_name .. "' into '" .. local_data_path .. "'..."}
+                    ensure_dir(local_data_path)
                     local copied = false
                     if sdk and sdk.copy_dir then
                         -- Use engine SDK to bypass sandbox file IO restrictions
@@ -463,19 +554,22 @@ local function main()
                     if not copied then
                         local total = count_files(src)
                         local state = { count = 0 }
-                        -- copy contents of src directly into dst (no extra nesting)
+                        ensure_dir(dst)
+                        -- copy entire folder to dst preserving structure
                         copy_tree(src, dst, total, state)
                     end
                     if io and type(io.write) == "function" then io.write("\n") end
                     if io and type(io.flush) == "function" then io.flush() end
                     colour_print{colour=Colours.GREEN, message="Copy complete."}
-                    if is_dir(join(dst, "USRDIR")) then
-                        effective_source_path = join(dst, "USRDIR")
+                    -- Set effective_source_path to the USRDIR inside the copied folder
+                    local copied_usrdir = join(dst, "USRDIR")
+                    if is_dir(copied_usrdir) then
+                        effective_source_path = copied_usrdir
                     else
                         effective_source_path = dst
                     end
                     break
-                elseif choice == '2' then
+                elseif choice == '2' and source_is_writable then
                     local src = normalize(copy_source_root or path_from_config)
                     local target_dir = join(local_data_path, basename(src))
                     colour_print{colour=Colours.YELLOW, message="Moving folder '" .. basename(src) .. "' into '" .. local_data_path .. "'..."}
@@ -490,8 +584,10 @@ local function main()
                     if ok_move then
                         local moved_dir = target_dir
                         colour_print{colour=Colours.GREEN, message="Move complete."}
-                        if is_dir(join(moved_dir, "USRDIR")) then
-                            effective_source_path = join(moved_dir, "USRDIR")
+                        -- Set effective_source_path to the USRDIR inside the moved folder
+                        local moved_usrdir = join(moved_dir, "USRDIR")
+                        if is_dir(moved_usrdir) then
+                            effective_source_path = moved_usrdir
                         elseif ends_with_usrdir(moved_dir) then
                             effective_source_path = moved_dir
                         else
@@ -501,12 +597,12 @@ local function main()
                     else
                         colour_print{colour=Colours.RED, message="Move failed. Please check permissions/paths and try again."}
                     end
-                elseif choice == '3' then
+                elseif choice == '3' and source_is_writable then
                     colour_print{colour=Colours.YELLOW, message="Using original path directly."}
                     effective_source_path = path_from_config
                     break
                 else
-                    colour_print{colour=Colours.YELLOW, message="Invalid choice. Please enter 1, 2, or 3."}
+                    colour_print{colour=Colours.YELLOW, message="Invalid choice. Please enter " .. choices_str .. "."}
                 end
             end
         else

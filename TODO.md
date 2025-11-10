@@ -83,7 +83,8 @@ Select a game:
   Download module...
   Exit
 
-
+progress bar issue
+ if console window is too tall it will print many progress bars that all actually work, but are partial repeats of the same bar
 
 Tools-Downloader:
 

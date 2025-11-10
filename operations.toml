@@ -39,7 +39,7 @@ args = [
 [[operation]]
 id = 2
 Name = "Download Required Tools"
-run-all = false
+run-all = true
 depends-on = [0]
 script_type = "engine"
 script = "download_tools"
@@ -272,7 +272,7 @@ validation = { required = true, message = "You must select at least one format."
 [[operation]]
 id = 12
 Name = "Convert Videos (.vp6 -> .ogv)"
-run-all = false
+run-all = true
 depends-on = [0,2] # depends on ffmpeg being downloaded
 script_type = "engine"
 script = "format-convert"
@@ -292,7 +292,7 @@ args = [
 [[operation]]
 id = 13
 Name = "Convert Audio (.snu -> .wav)"
-run-all = false
+run-all = true
 depends-on = [0,2] # depends on vgmstream being downloaded, could depend on audio reorg but that is technically optional
 script_type = "engine"
 script = "format-convert"
@@ -313,7 +313,7 @@ args = [
 [[operation]]
 id = 14
 Name = "Validate all game files"
-run-all = false
+run-all = true
 depends-on = [0]
 script_type = "engine"
 script = "validate-files"
@@ -336,7 +336,11 @@ run-all = false
 depends-on = [0,6,8,9,11,12,13,14]
 script_type = "lua"
 script = "{{Game_Root}}/Game/init.lua"
-args = ["--project-name", "SimpsonsGamePS3", "--repo-root", "{{Project_Root}}", "--sourcePath", "{{Game_Root}}/GameFiles/{{STROUT}}"]
+args = [
+	"--project-name", "SimpsonsGamePS3",
+	"--repo-root", "{{Project_Root}}",
+	"--sourcePath", "{{Game_Root}}/GameFiles/{{STROUT}}"
+]
 
 ## the HARD part but its menus, and UI this time
 [[operation]]
@@ -346,6 +350,10 @@ run-all = false
 depends-on = [0,6,8,9,11,12,13,14]
 script_type = "lua"
 script = "{{Project_Root}}/EngineApps/Games/TheSimpsonsGame-PS3/Game.Menu/init.lua"
-args = ["--project-name", "SimpsonsGamePS3", "--repo-root", "{{Project_Root}}", "--sourcePath", "{{Game_Root}}/GameFiles/{{STROUT}}"]
+args = [
+	"--project-name", "SimpsonsGamePS3",
+	"--repo-root", "{{Project_Root}}",
+	"--sourcePath", "{{Game_Root}}/GameFiles/{{STROUT}}"
+]
 
 ## more HARD parts to come?...
