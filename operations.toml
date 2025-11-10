@@ -335,7 +335,7 @@ Name = "generate Godot Game (EXPERIMENTAL)"
 run-all = false
 depends-on = [0,6,8,9,11,12,13,14]
 script_type = "lua"
-script = "{{Game_Root}}/Game/godot-init-V0.4.1.lua"
+script = "{{Game_Root}}/Godot/Game/godot-init-V0.4.2.lua"
 args = [
 	"--project-name", "SimpsonsGamePS3",
 	"--repo-root", "{{Project_Root}}",
@@ -349,7 +349,7 @@ Name = "GODOT - Generate Menu's (EXPERIMENTAL)"
 run-all = false
 depends-on = [0,6,8,9,11,12,13,14]
 script_type = "lua"
-script = "{{Project_Root}}/EngineApps/Games/TheSimpsonsGame-PS3/Game.Menu/godot-init-V0.4.1.lua"
+script = "{{Project_Root}}/EngineApps/Games/TheSimpsonsGame-PS3/Godot/Game.Menu/godot-init-V0.4.2.lua"
 args = [
 	"--project-name", "SimpsonsGamePS3",
 	"--repo-root", "{{Project_Root}}",
@@ -363,7 +363,7 @@ Name = "tests"
 run-all = false
 depends-on = []
 script_type = "lua"
-script = "{{Project_Root}}/EngineApps/Games/TheSimpsonsGame-PS3/Game.Dev/godot-init-V0.4.1.lua"
+script = "{{Project_Root}}/EngineApps/Games/TheSimpsonsGame-PS3/Godot/Game.Dev/godot-init-V0.4.2.lua"
 args = [
 	"--project-name", "Test",
 	"--repo-root", "{{Project_Root}}",

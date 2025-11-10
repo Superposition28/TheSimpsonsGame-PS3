@@ -233,3 +233,14 @@ dotnet run -c Debug
  --args '["--project-name", "SimpsonsGamePS3", "--repo-root", "{{Project_Root}}", "--sourcePath", "{{Game_Root}}/EngineApps/GameFiles/STROUT"]'
 ```
 
+```pwsh
+dotnet run -c Debug
+ --project EngineNet
+ --framework net9.0
+ --
+ --game_module "EngineApps\Games\TheSimpsonsGame-PS3\"
+ --script_type "lua"
+ --script "{{Project_Root}}/EngineApps/Games/TheSimpsonsGame-PS3/Godot/Game.Dev/godot-init-V0.4.2.lua"
+ --args '["--project-name", "Test", "--repo-root", "{{Project_Root}}", "--sourcePath", "{{Game_Root}}/GameFiles/{{STROUT}}"]'
+```
+

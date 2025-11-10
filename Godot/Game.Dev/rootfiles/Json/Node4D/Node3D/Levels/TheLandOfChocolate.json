@@ -19,19 +19,10 @@
                 {
                     "name": "Zone01_Terrain",
                     "index": {
-                        "index_id": 2189,
-                        "index_source_file_name": "lodmodel1.rws.PS3.glb",
-                        "index_source_path": "loc/loc/zone01_str/build/PS3/pal_en/assets/environs/loc/loc/zone01/export/terrain/lodmodel1.rws.PS3.glb",
-                        "index_file_hash": "bfa26bea3bd6317e7a6bc0b7e1f39a3b4239670cc633e5cc5218b07bff9c0384",
-
                         "id": 1635,
                         "uuid": "daa8b5c220f3778b_4a52853376049cdc",
-                        "source_file_name": "pal_en_loc_terrain__Kf72avhpjntlodmodel1.rws.PS3.glb",
-                        "source_path": "Map_3-01_LandOfChocolate/zone01/environs/terrain/pal_en_loc_terrain__Kf72avhpjntlodmodel1.rws.PS3.glb",
-                        "original_path": "Map_3-01_LandOfChocolate/loc/zone01_str/build/PS3/pal_en/assets/environs/loc/loc/zone01/export/terrain/lodmodel1.rws.PS3.glb",
                         "file_hash": "daa8b5c220f3778bad5cc008f7e6f1b7316f3bd0b375ff4f9f359df15a8933f5",
                         "path_hash": "4a52853376049cdc36a1e28583649fa4"
-
                     },
                     "collision": {
                         "enabled": true,
