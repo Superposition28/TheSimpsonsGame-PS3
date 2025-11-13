@@ -54,6 +54,10 @@ def parse_args():
         '--output-json-dir', dest='output_json_dir', default="A:\\RemakeEngine\\EngineApps\\Games\\TheSimpsonsGame-PS3\\config\\index-index",
         help='Directory for JSON files (default: <config-dir>/index-index)'
     )
+    parser.add_argument(
+        '--stats', dest='print_stats', action='store_true',
+        help='Print per-table statistics (UUID/FileHash presence across DBs) and exit'
+    )
     return parser.parse_args()
 
 
@@ -202,6 +206,91 @@ def read_table_rows(db_path: str, table: str) -> Iterable[sqlite3.Row]:
             yield row
     finally:
         conn.close()
+
+
+def print_stats(config_dir: str):
+    """Print statistics per table about how often UUIDs or file hashes appear in all DBs.
+
+    For each table, reports:
+      - Row counts per DB
+      - Unique UUIDs across all DBs and how many are present in every DB
+      - Unique file hashes across all DBs and how many are present in every DB
+      - Rows missing UUID or file hash per DB
+    """
+    # Discover DB files
+    pattern = os.path.join(config_dir, 'GameFilesIndex_*.db')
+    db_files = sorted(glob.glob(pattern))
+    if not db_files:
+        raise RuntimeError(f"No DB files found in {config_dir} with pattern GameFilesIndex_*.db")
+
+    db_names = [os.path.basename(p) for p in db_files]
+    print(f"Discovered {len(db_files)} DBs:")
+    for n in db_names:
+        print(f" - {n}")
+
+    num_dbs = len(db_files)
+
+    for table in REL_TABLES:
+        # Per-DB counters
+        row_counts_by_db: Dict[str, int] = {os.path.basename(p): 0 for p in db_files}
+        missing_uuid_by_db: Dict[str, int] = {os.path.basename(p): 0 for p in db_files}
+        missing_fh_by_db: Dict[str, int] = {os.path.basename(p): 0 for p in db_files}
+
+        # Global presence maps
+        uuid_to_dbs: Dict[str, set] = {}
+        fh_to_dbs: Dict[str, set] = {}
+
+        # Scan rows
+        for db_path in db_files:
+            db_name = os.path.basename(db_path)
+            for row in read_table_rows(db_path, table):
+                row_counts_by_db[db_name] += 1
+
+                # UUID presence
+                try:
+                    uu = row['uuid'] if 'uuid' in row.keys() else None
+                except Exception:
+                    uu = None
+                if uu:
+                    s = uuid_to_dbs.setdefault(str(uu), set())
+                    s.add(db_name)
+                else:
+                    missing_uuid_by_db[db_name] += 1
+
+                # File hash presence
+                try:
+                    fh = row['file_hash'] if 'file_hash' in row.keys() else None
+                except Exception:
+                    fh = None
+                if fh:
+                    s2 = fh_to_dbs.setdefault(str(fh), set())
+                    s2.add(db_name)
+                else:
+                    missing_fh_by_db[db_name] += 1
+
+        # Aggregate
+        total_unique_uuids = len(uuid_to_dbs)
+        total_unique_fhs = len(fh_to_dbs)
+        uuids_in_all = sum(1 for s in uuid_to_dbs.values() if len(s) == num_dbs)
+        fhs_in_all = sum(1 for s in fh_to_dbs.values() if len(s) == num_dbs)
+
+        # Print
+        print("\n=== Stats:", table, "===")
+        print("Rows per DB:")
+        for n in db_names:
+            print(f"  {n}: {row_counts_by_db.get(n, 0)}")
+        print("UUIDs:")
+        pct_uu_all = (uuids_in_all / total_unique_uuids * 100.0) if total_unique_uuids else 0.0
+        print(f"  unique={total_unique_uuids}, in_all_dbs={uuids_in_all} ({pct_uu_all:.1f}%)")
+        print("  missing_rows_per_db:")
+        for n in db_names:
+            print(f"    {n}: {missing_uuid_by_db.get(n, 0)}")
+        print("FileHashes:")
+        pct_fh_all = (fhs_in_all / total_unique_fhs * 100.0) if total_unique_fhs else 0.0
+        print(f"  unique={total_unique_fhs}, in_all_dbs={fhs_in_all} ({pct_fh_all:.1f}%)")
+        print("  missing_rows_per_db:")
+        for n in db_names:
+            print(f"    {n}: {missing_fh_by_db.get(n, 0)}")
 
 
 def build_index_index(config_dir: str, output_dir: str, collapsed: bool = False):
@@ -410,7 +499,10 @@ def main():
     output_json_dir = args.output_json_dir or os.path.join(config_dir, 'index-index')
 
     try:
-        build_index_index(config_dir, output_json_dir, collapsed=False)
+        if args.print_stats:
+            print_stats(config_dir)
+        else:
+            build_index_index(config_dir, output_json_dir, collapsed=False)
     except Exception as e:
         print(f"FATAL (index-index): {e}", file=sys.stderr)
         sys.exit(4)
