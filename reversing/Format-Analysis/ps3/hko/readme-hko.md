@@ -1,3 +1,6 @@
+A:\RemakeEngine\EngineApps\Games\TheSimpsonsGame-PS3\GameFiles\STROUT\Assets_2_Characters_Simpsons\GlobalFolder\chars\marge_mm2_h2_mtp_str\build\PS3\pal_en\assets\shared\collision\marge.acs.PS3
+A:\RemakeEngine\EngineApps\Games\TheSimpsonsGame-PS3\GameFiles\STROUT\Assets_2_Characters_Simpsons\GlobalFolder\chars\marge_mm2_h2_mtp_str\build\PS3\pal_en\assets\shared\collision\char_collision_spheres.hko.PS3
+
 
 #### `.hko.ps3` — Havok Physics Files (PS3 Version)
 
@@ -78,3 +81,11 @@ Full parsing of `.hko.ps3` files would require either:
 
 *   Havok 4.1.0-r1 SDK tools (very rare now)
 *   Custom reverse engineering based on public Havok 4.x documentation
+
+
+
+---
+related extensions:
+* `.hkt.PS3` all regular collision files have this extension
+* `.hko.PS3` all animated collision files have this extension, and all character collision spheres use this extension
+* `.acs.PS3` always contained within collision folders (or subfolders of it) often alongside `.hko.PS3` files
