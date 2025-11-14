@@ -569,9 +569,9 @@ def _ensure_material_for_texture(tex_name: str, resolved_paths: dict[str, str]) 
         return None
 
 def _create_materials_for_all_textures(links: dict[int, list[str]], resolved_paths: dict[str, str]) -> None:
-    #all_names: set[str] = set()
-    #for names in links.values():
-    #    all_names.update(names)
+    all_names: set[str] = set()
+    for names in links.values():
+        all_names.update(names)
     if not all_names:
         return
     bPrinter(f"[Material] Creating materials for {len(all_names)} texture(s).")
@@ -620,7 +620,7 @@ class SimpGameImport(bpy.types.Operator, ImportHelper):
         bPrinter("\n--- Texture String Pass ---", to_blender_editor=True)
         texture_links_by_mesh_offset, texture_paths_by_name, all_found_tex_names = build_texture_mesh_links(tmpRead)
         # Create materials up-front for all discovered textures
-        _create_materials_for_all_textures(all_found_tex_names, texture_paths_by_name)
+        #_create_materials_for_all_textures(all_found_tex_names, texture_paths_by_name)
 
         # --- Log all found texture strings and their resolved paths ---
         bPrinter("\n--- All Found Texture Strings & DB Paths ---", to_blender_editor=True)
