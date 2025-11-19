@@ -106,7 +106,8 @@ local function main()
             blend_dir = nil,
             blank_blend_source = nil,
             root_drive = nil,
-            main_db = nil
+            main_db = nil,
+            asset_map_db = nil
         }
         -- Byte-wise helpers to avoid Lua pattern engine entirely
         local function is_space_byte(b)
@@ -317,6 +318,17 @@ local function main()
                     end
                 end
                 result.main_db = clean_value(value)
+            elseif option_name == "--asset-map-db" or option_name == "--asset_map_db" then
+                local value = inline_value
+                if value == nil or #value == 0 then
+                    i = i + 1
+                    if i <= #args then
+                        value = args[i]
+                    else
+                        error("Expected value after --asset-map-db")
+                    end
+                end
+                result.asset_map_db = clean_value(value)
             end
             i = i + 1
         end
@@ -401,6 +413,8 @@ local function main()
     log(Colours.BLUE, string.format("cli arg blend_dir: %s", tostring(cli.blend_dir)))
     log(Colours.BLUE, string.format("cli arg blank_blend_source: %s", tostring(cli.blank_blend_source)))
     log(Colours.BLUE, string.format("cli arg root_drive: %s", tostring(cli.root_drive)))
+    log(Colours.BLUE, string.format("cli arg main_db: %s", tostring(cli.main_db)))
+    log(Colours.BLUE, string.format("cli arg asset_map_db: %s", tostring(cli.asset_map_db)))
 
     -- Establish working directory for resolving relative project paths
     local lfs = require("lfs")
@@ -482,7 +496,7 @@ local function main()
         marker = marker,
         debug_sleep = cli.debug_sleep,
         verbose = cli.verbose,
-        db_file_path = join(cli.game_root, "GameFiles", "asset_map.sqlite"),
+        db_file_path = join(cli.asset_map_db),
     }
 
     -- Phase 1: setup, link creation, and environment preparation
@@ -514,7 +528,7 @@ local function main()
         debug_sleep = cli.debug_sleep,
         export = cli.export,
         export_formats = cli.formats,
-        db_file_path = join(cli.game_root, "GameFiles", "asset_map.sqlite"),
+        db_file_path = join(cli.asset_map_db),
         main_db = cli.main_db,
         blender_exe_path = blender_exe_path,
         game_root = cli.game_root

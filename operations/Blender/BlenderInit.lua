@@ -1,3 +1,5 @@
+lfs = require('lfs')
+
 if not sqlite then
     error("sqlite module is not available; ensure LuaScriptAction exposes sqlite helpers")
 end
@@ -101,6 +103,10 @@ local function absolute_path(path)
     if is_absolute(path) then
         return normalize_separators(path)
     end
+    -- Ensure lfs module is loaded for currentdir
+    if not lfs then
+        lfs = require('lfs')
+    end
     local cwd = lfs.currentdir()
     return normalize_separators(cwd .. path_sep .. path)
 end
@@ -143,6 +149,11 @@ local function join(...)
 end
 
 local function iterate_files(root_dir, visitor)
+    if not sdk.is_dir(root_dir) then
+        log(Colours.RED, string.format("Directory '%s' does not exist for iteration.", root_dir))
+        return
+    end
+
     for entry in lfs.dir(root_dir) do
         if entry ~= "." and entry ~= ".." then
             local full_path = join(root_dir, entry)
@@ -495,7 +506,7 @@ local function verify_symlink(link_folder_path, src_folder_path, asset_id, link_
         error(msg)
     end
 
-    if VERBOSE then
+    if VERBOSE and DEBUG then
         log(Colours.GREEN, string.format("Verified %s symlink for %s: %s -> %s", link_type_name, tostring(asset_id), tostring(link_folder_path), tostring(want)))
     end
     return true
@@ -733,6 +744,13 @@ local function run(args)
     log(Colours.CYAN, string.format("Debug Mode Enabled: %s", tostring(debug_mode_enabled)))
 
     local db
+    -- Ensure parent directory for DB file exists
+    local db_dir = parent_dir(db_filename)
+    if db_dir and not sdk.is_dir(db_dir) then
+        log(Colours.CYAN, string.format("Ensuring database directory exists: %s", db_dir))
+        sdk.ensure_dir(db_dir)
+    end
+
     local ok, err = pcall(function()
         log(Colours.CYAN, "--- Initializing Database ---")
         if sdk.path_exists and sdk.path_exists(db_filename) and debug_mode_enabled then
@@ -743,13 +761,41 @@ local function run(args)
         end
 
         if (sdk.path_exists(db_filename) and not debug_mode_enabled) then
-            -- db exists, assume its correct and skip re-initialization
-            log(Colours.CYAN, string.format("Database file %s already exists; skipping initialization.", db_filename))
+            -- db exists, check if tables are empty before skipping re-initialization
+            local temp_db = init_db(db_filename)
+            local row_count = temp_db.query("SELECT COUNT(*) as count FROM asset_map")[1].count
+            temp_db.close()
+            temp_db = nil
+            
+            if row_count == 0 then
+                log(Colours.YELLOW, string.format("Database file %s exists but asset_map table is empty; deleting and re-initializing.", db_filename))
+                
+                -- Force garbage collection to ensure file handles are released
+                if collectgarbage then
+                    collectgarbage("collect")
+                end
+                
+                -- Small delay to allow OS to release file locks
+                if sdk.sleep then
+                    sdk.sleep(0.1)
+                end
+                
+                local delete_success = sdk.remove_file and sdk.remove_file(db_filename)
+                if not delete_success then
+                    log(Colours.RED, string.format("Failed to delete empty database file: %s. File may be locked. Attempting to continue anyway.", db_filename))
+                    -- Try to proceed anyway - init_db might overwrite it
+                end
+                
+                db = init_db(db_filename)
+                log(Colours.GREEN, string.format("Empty database deleted and re-initialized at: %s", db_filename))
+            else
+                log(Colours.CYAN, string.format("Database file %s already exists with %d records; skipping re-initialization.", db_filename, row_count))
+                db = init_db(db_filename)
+                return
+            end
+        else
             db = init_db(db_filename)
-            return
         end
-
-        db = init_db(db_filename)
         log(Colours.GREEN, string.format("Database initialized/opened at: %s", db_filename))
         if debug_mode_enabled then
             sdk.sleep(2)

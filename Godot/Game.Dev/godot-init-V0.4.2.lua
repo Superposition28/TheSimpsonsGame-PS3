@@ -732,7 +732,7 @@ local function main(project_name, Project_Root, Game_Root, no_exit, sourcePath, 
     -- Close preflight stage
     stage:Complete()
 
-    local asset_exts = { ".png", ".glb", ".wav", ".ogv" }
+    local asset_exts = { ".png", ".glb", ".wav", ".ogv", ".graph" }
 
     local logos = get_logos(iconPath)
 
@@ -765,10 +765,23 @@ local function run()
         end
     end
 
-    if not opts["repo-root"] or not opts["sourcePath"] or not opts["game-root"] or not opts["iconPath"] then
-        fatal("Missing required args: --repo-root or --sourcePath or --game-root or --iconPath")
+    if not opts["repo-root"] then
+        fatal("Missing required arg --repo-root")
         return
     end
+    if not opts["sourcePath"] then
+        fatal("Missing required arg --sourcePath")
+        return
+    end
+    if not opts["game-root"] or not opts["iconPath"] then
+        fatal("Missing required arg --game-root")
+        return
+    end
+    if not opts["iconPath"] then
+        fatal("Missing required arg --iconPath")
+        return
+    end
+
     main(opts["project-name"], normalize(opts["repo-root"]), normalize(opts["game-root"]), opts["no-exit"], normalize(opts["sourcePath"]), normalize(opts["iconPath"]))
 end
 

@@ -95,11 +95,11 @@ local function main()
 		os.exit(1)
 	end
 
-	-- check if input dir contains audiostreams/ folder or the Assets_1_Audio_Streams/ folder
+	-- check if input dir contains audiostreams/ folder or the A1_Audio/ folder
 	if path_exists(join(input, "audiostreams")) then
 		input = join(input, "audiostreams")
-	elseif path_exists(join(input, "Assets_1_Audio_Streams")) then
-		input = join(input, "Assets_1_Audio_Streams")
+	elseif path_exists(join(input, "A1_Audio")) then
+		input = join(input, "A1_Audio")
 	end
 
 	local en_dir_name = "EN"

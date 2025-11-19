@@ -28,7 +28,7 @@ Source/
 /GameFiles/
 **/STROUT/
 # temporary symlinks for 3d assets blender processing, blender 4.0 cannot handle long paths, if the import script is updated to run on 4.0+ this may be removable
-TMP_TSG_LNKS/
+TMP_TSG_LNKS**/
 
 # Python cache files
 __pycache__/
@@ -37,7 +37,7 @@ __pycache__/
 
 config/old/
 dev-tools/old/
-
+indexer/oldd/
 test/
 .1gitignore
 

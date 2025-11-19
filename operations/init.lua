@@ -1,7 +1,11 @@
 -- RemakeEngine Module Init (The Simpsons Game - PS3)
 -- Initializes source files by optionally copying/moving them to a local workspace
 -- to avoid modifying originals (unless the user chooses to use-in-place).
--- Uses a module-local config.toml ([[placeholders]]) with only SourcePath persisted.
+-- Uses a module-local config.toml ([[placeholders]]) with path components:
+--   MainSourcePath: Full path to USRDIR (e.g., A:\...\Source\EU\PS3_GAME\USRDIR)
+--   SourcePath: Base Source directory (e.g., A:\...\Source)
+--   PostSourcePath: Relative path from Source to USRDIR (e.g., EU\PS3_GAME\USRDIR)
+-- Supports regions: US, EU, or Both (prompts for both, stores EU as primary)
 --
 -- Runtime guarantees: lfs, sdk, prompt() global are provided by engine
 
@@ -71,7 +75,7 @@ local function normalize_region(value)
     local region = trim(value)
     if not region or region == "" then return nil end
     region = region:upper()
-    if region == "US" or region == "EU" then
+    if region == "US" or region == "EU" or region == "BOTH" then
         return region
     end
     return nil
@@ -90,6 +94,24 @@ local function is_absolute(p)
     if p:sub(1,2) == "\\\\" then return true end -- UNC
     if p:sub(1,1) == "/" then return true end -- Unix root
     return false
+end
+
+-- Calculate relative path from base to target
+local function get_relative_path(base, target)
+    if not base or not target then return target end
+    base = normalize(base)
+    target = normalize(target)
+    local sep = path_sep or "/"
+    
+    -- Ensure both paths end consistently for comparison
+    if base:sub(-1) ~= sep then base = base .. sep end
+    
+    -- Check if target starts with base
+    if target:sub(1, #base):lower() == base:lower() then
+        return target:sub(#base + 1)
+    end
+    
+    return target
 end
 
 local function is_dir(path)
@@ -121,6 +143,7 @@ local function get_input(msg, id)
 end
 
 -- TODO: change to get dir names from config/RenameMap.db
+-- TODO, this other todo is nolonger needed, TODO: the tool lonoger changes the source files and renames after str extraction only making this USRDIR_DIRS unecessary
 
 -- Required directory sets (either original or USRDIR layout is accepted)
 local USRDIR_DIRS = {
@@ -315,13 +338,12 @@ local function main()
     local this_file_path = debug.getinfo(1, 'S').source:sub(2)
     local module_dir = (this_file_path:match("(.+)[/\\][^/\\]+[/\\][^/\\]+$") or ".")
     local cfg_path = join(module_dir, "config.toml")
-    local local_data_path = normalize(join(module_dir, "Source"))
 
     -- Ensure config.toml exists with a placeholders block
     if not file_exists(cfg_path) then
         colour_print{colour=Colours.YELLOW, message="Config not found. Creating: " .. cfg_path}
         -- Include isRenamed = "notRenamed" by default
-        write_placeholders(cfg_path, { SourcePath = "", Region = "", isRenamed = "notRenamed" })
+        write_placeholders(cfg_path, { MainSourcePath = "", SourcePath = "", PostSourcePath = "", Region = "", isRenamed = "notRenamed" })
         colour_print{colour=Colours.GREEN, message="Created config.toml with default placeholders."}
     end
 
@@ -332,6 +354,13 @@ local function main()
         placeholders["isRenamed"] = "notRenamed"
         write_placeholders(cfg_path, placeholders)
         colour_print{colour=Colours.GREEN, message="Initialized placeholders.isRenamed = \"notRenamed\""}
+    end
+
+
+    if placeholders["num"] == nil then
+        placeholders["num"] = "1"
+        write_placeholders(cfg_path, placeholders)
+        colour_print{colour=Colours.GREEN, message="Initialized placeholders.num = \"1\""}
     end
 
     -- ensure audio_state placeholder exists if not set to audio_og
@@ -359,34 +388,116 @@ local function main()
     if region then
         placeholders["Region"] = region
     else
-        colour_print{colour=Colours.YELLOW, message="No valid Region set in config.toml. You'll be prompted to set one (US or EU)."}
+        colour_print{colour=Colours.YELLOW, message="No valid Region set in config.toml. You'll be prompted to set one (US, EU, or Both)."}
                 while true do
-            local input = get_input("Enter the game region (US or EU) and press Enter (leave blank to cancel):", "tsg_region")
+            local input = get_input("Enter the game region (US, EU, or Both) and press Enter (leave blank to cancel):", "tsg_region")
             if not input or input == "" then
                 colour_print{colour=Colours.RED, message="Initialization aborted: no valid Region provided."}
-                colour_print{colour=Colours.YELLOW, message="Please update '" .. cfg_path .. "' with Region = \"US\" or \"EU\" and re-run this initializer."}
+                colour_print{colour=Colours.YELLOW, message="Please update '" .. cfg_path .. "' with Region = \"US\", \"EU\", or \"Both\" and re-run this initializer."}
                 return false
             end
             local normalized = normalize_region(input)
             if normalized then
                 region = normalized
-                placeholders["Region"] = region
+                if region == "BOTH" then
+                    placeholders["Region"] = "EU" -- store EU as primary for "Both"
+                else
+                    placeholders["Region"] = region
+                end
                 write_placeholders(cfg_path, placeholders)
                 colour_print{colour=Colours.GREEN, message="Set Region to '" .. region .. "'."}
                 break
             else
-                colour_print{colour=Colours.RED, message="Invalid region. Please enter 'US' or 'EU'."}
+                colour_print{colour=Colours.RED, message="Invalid region. Please enter 'US', 'EU', or 'Both'."}
             end
         end
     end
 
+    -- Define local_data_path AFTER region is known
+    -- For "Both" region, create separate EU and US directories, but use EU as primary
+    local local_data_path_eu = normalize(join(join(module_dir, "Source"), "EU"))
+    local local_data_path_us = normalize(join(join(module_dir, "Source"), "US"))
+    local local_data_path = (region == "BOTH") and local_data_path_eu or normalize(join(join(module_dir, "Source"), region))
+
     colour_print(placeholders)
-    local existing = placeholders["SourcePath"]
+    local existing = placeholders["MainSourcePath"]
     local copy_source_root = nil -- exact folder provided by user (or existing), used for copy/move semantics
 
-    -- Phase A: If existing SourcePath is invalid/missing, prompt user to provide a valid path
+    -- Phase A: If existing MainSourcePath is invalid/missing, prompt user to provide a valid path
     local path_from_config = nil
-    if existing and existing ~= "" then
+    local path_from_config_us = nil -- For "Both" region only
+    
+    -- Handle "Both" region - need to get both EU and US paths
+    if region == "BOTH" then
+        colour_print{colour=Colours.CYAN, message="\n--- Setting up BOTH regions (EU and US) ---"}
+        colour_print{colour=Colours.YELLOW, message="You will be prompted to provide paths for both EU and US versions."}
+        colour_print{colour=Colours.YELLOW, message="The EU version will be used as the primary source path."}
+        
+        -- Get EU path
+        colour_print{colour=Colours.MAGENTA, message="\n--- EU Version ---"}
+        while not path_from_config do
+            local input = prompt("Enter the path to your EU game root (this folder should contain a folder named USRDIR) and press Enter (leave blank to cancel):")
+            if not input or input == "" then
+                colour_print{colour=Colours.RED, message="Initialization aborted: no valid EU path provided."}
+                return false
+            end
+            -- Trim and normalize the input path
+            input = trim(input)
+            input = normalize(is_absolute(input) and input or join(lfs.currentdir(), input))
+            colour_print{colour=Colours.CYAN, message="Checking path: '" .. input .. "'"}
+            if is_dir(input) then
+                local ok, resolved, folder_to_copy = validate_source_path(input)
+                if ok then
+                    path_from_config = normalize(resolved)
+                    copy_source_root = folder_to_copy
+                    colour_print{colour=Colours.GREEN, message="EU path validated: '" .. path_from_config .. "'"}
+                    if path_from_config ~= input then
+                        colour_print{colour=Colours.CYAN, message="Will copy folder: '" .. basename(copy_source_root) .. "'"}
+                    end
+                else
+                    colour_print{colour=Colours.RED, message="The provided path does not look like a valid game root/USRDIR. Please try again."}
+                end
+            else
+                colour_print{colour=Colours.RED, message="The provided path is not a directory. Please try again."}
+            end
+        end
+        
+        -- Get US path
+        colour_print{colour=Colours.MAGENTA, message="\n--- US Version ---"}
+        local copy_source_root_us = nil
+        while not path_from_config_us do
+            local input = prompt("Enter the path to your US game root (this folder should contain a folder named USRDIR) and press Enter (leave blank to cancel):")
+            if not input or input == "" then
+                colour_print{colour=Colours.RED, message="Initialization aborted: no valid US path provided."}
+                return false
+            end
+            -- Trim and normalize the input path
+            input = trim(input)
+            input = normalize(is_absolute(input) and input or join(lfs.currentdir(), input))
+            colour_print{colour=Colours.CYAN, message="Checking path: '" .. input .. "'"}
+            if is_dir(input) then
+                local ok, resolved, folder_to_copy = validate_source_path(input)
+                if ok then
+                    path_from_config_us = normalize(resolved)
+                    copy_source_root_us = folder_to_copy
+                    colour_print{colour=Colours.GREEN, message="US path validated: '" .. path_from_config_us .. "'"}
+                    if path_from_config_us ~= input then
+                        colour_print{colour=Colours.CYAN, message="Will copy folder: '" .. basename(copy_source_root_us) .. "'"}
+                    end
+                else
+                    colour_print{colour=Colours.RED, message="The provided path does not look like a valid game root/USRDIR. Please try again."}
+                end
+            else
+                colour_print{colour=Colours.RED, message="The provided path is not a directory. Please try again."}
+            end
+        end
+        
+        -- Store US source root for later copy/move operation
+        placeholders["_temp_us_source_root"] = copy_source_root_us
+        placeholders["_temp_us_path"] = path_from_config_us
+    else
+        -- Single region mode (existing logic)
+        if existing and existing ~= "" then
         existing = normalize(existing)
         copy_source_root = existing
         local ok, resolved, folder_to_copy = validate_source_path(existing)
@@ -398,52 +509,61 @@ local function main()
                 colour_print{colour=Colours.CYAN, message="Will copy folder: '" .. basename(copy_source_root) .. "'"}
             end
         else
-            colour_print{colour=Colours.YELLOW, message="Existing SourcePath is not valid. You'll be prompted to set a valid one."}
+            colour_print{colour=Colours.YELLOW, message="Existing MainSourcePath is not valid. You'll be prompted to set a valid one."}
         end
-    else
-        colour_print{colour=Colours.YELLOW, message="No SourcePath set in config.toml. You'll be prompted to set one."}
-    end
+        else
+            colour_print{colour=Colours.YELLOW, message="No MainSourcePath set in config.toml. You'll be prompted to set one."}
+        end
 
-    while not path_from_config do
-        local input = prompt("Enter the path to your game root (this folder should contain a folder named USRDIR) and press Enter (leave blank to cancel):")
-        if not input or input == "" then
-            colour_print{colour=Colours.RED, message="Initialization aborted: no valid SourcePath is configured and no input was provided."}
-            colour_print{colour=Colours.YELLOW, message="Please update '" .. cfg_path .. "' with a valid SourcePath and re-run this initializer."}
-            return false
-        end
-        input = normalize(is_absolute(input) and input or join(lfs.currentdir(), input))
-        if is_dir(input) then
-            local ok, resolved, folder_to_copy = validate_source_path(input)
-            if ok then
-                path_from_config = normalize(resolved)
-                copy_source_root = folder_to_copy -- Use the folder that should be copied
-                if path_from_config ~= input then
-                    colour_print{colour=Colours.YELLOW, message="Detected USRDIR under provided path; using '" .. path_from_config .. "' as source root."}
-                    colour_print{colour=Colours.CYAN, message="Will copy folder: '" .. basename(copy_source_root) .. "'"}
+        while not path_from_config do
+            local input = prompt("Enter the path to your game root (this folder should contain a folder named USRDIR) and press Enter (leave blank to cancel):")
+            if not input or input == "" then
+                colour_print{colour=Colours.RED, message="Initialization aborted: no valid MainSourcePath is configured and no input was provided."}
+                colour_print{colour=Colours.YELLOW, message="Please update '" .. cfg_path .. "' with a valid MainSourcePath and re-run this initializer."}
+                return false
+            end
+            -- Trim and normalize the input path
+            input = trim(input)
+            input = normalize(is_absolute(input) and input or join(lfs.currentdir(), input))
+            colour_print{colour=Colours.CYAN, message="Checking path: '" .. input .. "'"}
+            if is_dir(input) then
+                local ok, resolved, folder_to_copy = validate_source_path(input)
+                if ok then
+                    path_from_config = normalize(resolved)
+                    copy_source_root = folder_to_copy -- Use the folder that should be copied
+                    if path_from_config ~= input then
+                        colour_print{colour=Colours.YELLOW, message="Detected USRDIR under provided path; using '" .. path_from_config .. "' as source root."}
+                        colour_print{colour=Colours.CYAN, message="Will copy folder: '" .. basename(copy_source_root) .. "'"}
+                    end
+                else
+                    colour_print{colour=Colours.RED, message="The provided path does not look like a valid game root/USRDIR. Please try again."}
                 end
             else
-                colour_print{colour=Colours.RED, message="The provided path does not look like a valid game root/USRDIR. Please try again."}
+                colour_print{colour=Colours.RED, message="The provided path is not a directory. Please try again."}
             end
-        else
-            colour_print{colour=Colours.RED, message="The provided path is not a directory. Please try again."}
         end
     end
 
     -- Phase B: Offer to Copy/Move/Use-in-place into local workspace under the module
     colour_print{colour=Colours.MAGENTA, message="\n--- Source Path Handling ---"}
-    colour_print{colour=Colours.CYAN, message="Validated source path: '" .. path_from_config .. "'"}
+    colour_print{colour=Colours.CYAN, message="Validated source path (EU): '" .. path_from_config .. "'"}
+    if path_from_config_us then
+        colour_print{colour=Colours.CYAN, message="Validated source path (US): '" .. path_from_config_us .. "'"}
+    end
     colour_print{colour=Colours.CYAN, message="Local project data path: '" .. local_data_path .. "'"}
 
     local effective_source_path = path_from_config
+    local effective_source_path_us = nil
 
     -- If SourcePath is already inside local_data_path, assume it was set to local previously
     local function starts_with(a, b)
         return a:sub(1, #b):lower() == b:lower()
     end
 
+    -- Process EU files (always)
     if not starts_with(path_from_config, local_data_path) then
         if not file_exists(local_data_path) then
-            colour_print{colour=Colours.YELLOW, message="\nChoose how to use the source files:"}
+            colour_print{colour=Colours.YELLOW, message="\n" .. (region == "BOTH" and "EU Region - " or "") .. "Choose how to use the source files:"}
             local display_name = basename(copy_source_root or path_from_config)
             
             -- Check if source path is writable (not read-only like an ISO)
@@ -574,9 +694,147 @@ local function main()
         effective_source_path = path_from_config
     end
 
-    -- Persist the effective SourcePath in config.toml
+    -- Process US files if region is "Both"
+    if region == "BOTH" and path_from_config_us then
+        local us_source_root = placeholders["_temp_us_source_root"]
+        local us_path = placeholders["_temp_us_path"]
+        
+        if not starts_with(us_path, local_data_path_us) then
+            if not file_exists(local_data_path_us) then
+                colour_print{colour=Colours.YELLOW, message="\nUS Region - Choose how to use the source files:"}
+                local display_name_us = basename(us_source_root or us_path)
+                
+                local source_is_writable_us = sdk and sdk.is_writable and sdk.is_writable(us_source_root or us_path) or false
+                
+                local options_us = {}
+                table.insert(options_us, {id = "1", label = "Copy folder '" .. display_name_us .. "' into local 'US' (Recommended, Safe)"})
+                
+                if source_is_writable_us then
+                    table.insert(options_us, {id = "2", label = "Move folder '" .. display_name_us .. "' into local 'US' (Warning: Deletes originals)"})
+                    table.insert(options_us, {id = "3", label = "Use original path '" .. display_name_us .. "' directly (Warning: Tools may modify original files)"})
+                else
+                    colour_print{colour=Colours.YELLOW, message="  Note: Source is read-only (e.g., ISO/disc). Only copy option is available."}
+                end
+                
+                for _, opt in ipairs(options_us) do
+                    colour_print{colour=Colours.CYAN, message="  " .. opt.id .. ") " .. opt.label}
+                end
+                
+                local valid_choices_us = {}
+                for _, opt in ipairs(options_us) do
+                    table.insert(valid_choices_us, opt.id)
+                end
+                local choices_str_us = table.concat(valid_choices_us, ", ")
+                if #valid_choices_us == 1 then
+                    choices_str_us = valid_choices_us[1]
+                elseif #valid_choices_us == 2 then
+                    choices_str_us = valid_choices_us[1] .. " or " .. valid_choices_us[2]
+                else
+                    choices_str_us = table.concat(valid_choices_us, ", ", 1, #valid_choices_us - 1) .. ", or " .. valid_choices_us[#valid_choices_us]
+                end
+
+                while true do
+                    local choice = (prompt("Enter your choice for US region (" .. choices_str_us .. "):") or ""):match("^%s*(.-)%s*$")
+                    if choice == '1' then
+                        local src = normalize(us_source_root or us_path)
+                        local src_name = basename(src)
+                        local dst = join(local_data_path_us, src_name)
+                        colour_print{colour=Colours.BLUE, message="Copying US folder '" .. src_name .. "' into '" .. local_data_path_us .. "'..."}
+                        ensure_dir(local_data_path_us)
+                        local copied = false
+                        if sdk and sdk.copy_dir then
+                            local ok = sdk.copy_dir(src, dst, true)
+                            if not ok then
+                                colour_print{colour=Colours.RED, message="Copy via SDK failed. Falling back to Lua copy (may be restricted)."}
+                            else
+                                copied = true
+                            end
+                        end
+                        if not copied then
+                            local total = count_files(src)
+                            local state = { count = 0 }
+                            ensure_dir(dst)
+                            copy_tree(src, dst, total, state)
+                        end
+                        if io and type(io.write) == "function" then io.write("\n") end
+                        if io and type(io.flush) == "function" then io.flush() end
+                        colour_print{colour=Colours.GREEN, message="US copy complete."}
+                        local copied_usrdir = join(dst, "USRDIR")
+                        if is_dir(copied_usrdir) then
+                            effective_source_path_us = copied_usrdir
+                        else
+                            effective_source_path_us = dst
+                        end
+                        break
+                    elseif choice == '2' and source_is_writable_us then
+                        local src = normalize(us_source_root or us_path)
+                        local target_dir = join(local_data_path_us, basename(src))
+                        colour_print{colour=Colours.YELLOW, message="Moving US folder '" .. basename(src) .. "' into '" .. local_data_path_us .. "'..."}
+                        ensure_dir(local_data_path_us)
+                        local ok_move = false
+                        if sdk and sdk.move_dir then
+                            ok_move = sdk.move_dir(src, target_dir, true)
+                        else
+                            ok_move = move_tree(src, local_data_path_us)
+                        end
+                        if ok_move then
+                            colour_print{colour=Colours.GREEN, message="US move complete."}
+                            local moved_usrdir = join(target_dir, "USRDIR")
+                            if is_dir(moved_usrdir) then
+                                effective_source_path_us = moved_usrdir
+                            elseif ends_with_usrdir(target_dir) then
+                                effective_source_path_us = target_dir
+                            else
+                                effective_source_path_us = target_dir
+                            end
+                            break
+                        else
+                            colour_print{colour=Colours.RED, message="US move failed. Please check permissions/paths and try again."}
+                        end
+                    elseif choice == '3' and source_is_writable_us then
+                        colour_print{colour=Colours.YELLOW, message="Using original US path directly."}
+                        effective_source_path_us = us_path
+                        break
+                    else
+                        colour_print{colour=Colours.YELLOW, message="Invalid choice. Please enter " .. choices_str_us .. "."}
+                    end
+                end
+            else
+                local direct_usrdir_us = join(local_data_path_us, "USRDIR")
+                if is_dir(direct_usrdir_us) then
+                    effective_source_path_us = direct_usrdir_us
+                else
+                    local subs = list_subdirs(local_data_path_us)
+                    if #subs == 1 then
+                        local only = join(local_data_path_us, subs[1])
+                        if is_dir(join(only, "USRDIR")) then
+                            effective_source_path_us = join(only, "USRDIR")
+                        else
+                            effective_source_path_us = only
+                        end
+                    else
+                        effective_source_path_us = local_data_path_us
+                    end
+                end
+            end
+        else
+            effective_source_path_us = us_path
+        end
+        
+        -- Clean up temporary placeholders
+        placeholders["_temp_us_source_root"] = nil
+        placeholders["_temp_us_path"] = nil
+    end
+
+    -- Persist the effective SourcePath in config.toml as three components (EU path is primary)
     colour_print{colour=Colours.YELLOW, message="  Updating config.toml with effective Source Path..."}
-    placeholders["SourcePath"] = effective_source_path
+    local base_source_dir = normalize(join(module_dir, "Source"))
+    -- Calculate PostSourcePath relative to the region folder, not the Source folder
+    local post_source_relative = get_relative_path(local_data_path, effective_source_path)
+    
+    placeholders["MainSourcePath"] = effective_source_path
+    placeholders["SourcePath"] = base_source_dir
+    placeholders["PostSourcePath"] = post_source_relative
     write_placeholders(cfg_path, placeholders)
     colour_print{colour=Colours.GREEN, message="  Config updated."}
 
@@ -593,7 +851,13 @@ local function main()
     end
 
     if found_original or found_usrdir then
-        placeholders["SourcePath"] = path_to_validate
+        local base_source_dir = normalize(join(module_dir, "Source"))
+        -- Calculate PostSourcePath relative to the region folder, not the Source folder
+        local post_source_relative = get_relative_path(local_data_path, path_to_validate)
+        
+        placeholders["MainSourcePath"] = path_to_validate
+        placeholders["SourcePath"] = base_source_dir
+        placeholders["PostSourcePath"] = post_source_relative
         write_placeholders(cfg_path, placeholders)
         colour_print{colour=Colours.GREEN, message="Success: Source validated and saved: " .. path_to_validate}
         return true

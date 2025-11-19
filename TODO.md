@@ -156,7 +156,7 @@ operations to run in order to produce each of the different index db's
   to make this db:EngineApps\Games\TheSimpsonsGame-PS3\config\GameFilesIndex_EU_Full-audio_og-notRenamed.db
  GameFilesIndex_EU_Full-audio_og-notRenamed.db:: -- full means it scans the full structure both source and extracted files
   (Skipped) -- Validate Source Game Files and Folders
-> (ran)     -- Download Required Tools
+  (Skipped) -- Download Required Tools
   (Skipped) -- Rename base folders
   (Skipped) -- Reorganize Audio Files
   (Skipped) -- re-Validate Source Game Files and Folders
@@ -195,7 +195,8 @@ operations to run in order to produce each of the different index db's
 
   ## this will be the main run-all sequence
 
-  using PS A:\RemakeEngine> python EngineApps\Games\TheSimpsonsGame-PS3\dev-tools\indexer\main.py --Type Full --region EU --AudioReorg audio_reorg --renamedBaseDirs isRenamed
+  using PS A:\RemakeEngine> python EngineApps\Games\TheSimpsonsGame-PS3\dev-tools\indexer\Full\main-V5.py --Type Full --region EU --AudioReorg audio_reorg --renamedBaseDirs isRenamed
+  or A:\RemakeEngine> python EngineApps\Games\TheSimpsonsGame-PS3\dev-tools\indexer\Full\main-V5.py --Type Full --region US --AudioReorg audio_reorg --renamedBaseDirs isRenamed
   to make this db:EngineApps\Games\TheSimpsonsGame-PS3\config\GameFilesIndex_EU_Full-audio_reorg-isRenamed.db
  GameFilesIndex_EU_Full-audio_reorg-isRenamed.db -- as before but audio_reorg means audio files reorganized into en and global folders.
   (Skipped) -- Validate Source Game Files and Folders

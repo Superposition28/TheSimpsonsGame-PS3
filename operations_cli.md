@@ -75,15 +75,28 @@ dotnet run -c Release
 
 -   Name: "flatten folder structure"
 ```pwsh
- dotnet run -c Release
+dotnet run -c Release
  --project EngineNet
  --framework net9.0
  --
  --game_module ".\EngineApps\Games\TheSimpsonsGame-PS3\"
- --script_type "engine"
- --script "flatten"
- --args ["{{Game_Root}}/GameFiles/STROUT", "{{Game_Root}}/GameFiles/ExtractedOut", "--rules", "{{Game_Root}}/config/PathRules.json", "--separator", "^", "--action", "move"]
+ --script_type lua
+ --script "{{Game_Root}}/operations/DirectoryNormalizer.lua"
+ --args '[
+  "{{Game_Root}}/GameFiles/{{STROUT}}",
+  "{{Game_Root}}/GameFiles/{{STROUT}}_Normalized",
+  "--rules", "{{Game_Root}}/config/DirectoryNormalizer.rules.json",
+  "--action", "copy",
+  "--ignore", "Assets_1_Audio_Streams",
+  "--ignore", "audiostreams",
+  "--ignore", "Assets_1_Video_Movies",
+  "--ignore", "movies"
+]'
 ```
+
+dotnet run -c Release --project EngineNet --framework net9.0 -- --game_module ".\EngineApps\Games\TheSimpsonsGame-PS3\" --script_type lua --script "{{Game_Root}}/operations/DirectoryNormalizer.lua" --args '["{{Game_Root}}/GameFiles/STROUT", "{{Game_Root}}/GameFiles/STROUT_Normalized", "--action", "copy", "--ignore", "Assets_1_Audio_Streams", "--ignore", "audiostreams", "--ignore", "Assets_1_Video_Movies", "--ignore", "movies", "--ignore", "Map_3-02_BartmanBegins", "--ignore", "Map_3-03_HungryHungryHomer", "--ignore", "Map_3-04_TreeHugger", "--ignore", "Map_3-05_MobRules", "--ignore", "Map_3-06_EnterTheCheatrix", "--ignore", "Map_3-07_DayOfTheDolphin", "--ignore", "Map_3-08_TheColossalDonut", "--ignore", "Map_3-09_Invasion", "--ignore", "Map_3-10_BargainBin", "--ignore", "Map_3-11_NeverQuest", "--ignore", "Map_3-12_GrandTheftScratchy", "--ignore", "Map_3-13_MedalOfHomer", "--ignore", "Map_3-14_BigSuperHappy", "--ignore", "Map_3-15_Rhymes", "--ignore", "Map_3-16_MeetThyPlayer", "--ignore", "Assets_2_Characters_Simpsons", "--ignore", "Assets_2_Frontend", "--ignore", "Map_3-00_GameHub", "--ignore", "Map_3-00_SprHub"]'
+
+
 
 -   Name: "validate flattened source game files"
 ```pwsh
