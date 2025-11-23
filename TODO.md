@@ -1,8 +1,4 @@
-
-
-
-
-
+# Module TODO List
 
 
 godot::
@@ -38,73 +34,6 @@ Validating final source location: 'A:\RemakeEngine\EngineApps\Games\TheSimpsonsG
 All 23 required 'USRDIR_DIRS_ORIGINAL' subdirectories found in 'A:\RemakeEngine\EngineApps\Games\TheSimpsonsGame-PS3\Source\USRDIR'.
 Success: Source validated and saved: A:\RemakeEngine\EngineApps\Games\TheSimpsonsGame-PS3\Source\USRDIR
 ```
-
-
-engine:
-
-add parallel execution support for operations, based on operation dependencies
-eg
-these three operations can run in parallel after extract archives is complete, as the audio and video conversions have no requirements or dependencies on any previous operations including extract archives as they are not stored in archives
-> -- Convert Models (.preinstanced -> .blend)
-> -- Convert Videos (.vp6 -> .ogv)
-> -- Convert Audio (.snu -> .wav)
-blender convert is dependent on extract and txd operations completing first, txd is also dependent on extract completing first
-
-add operation ID's to the operation config to uniquely identify each operation
-
-
-
-add placeholder resolution for operation Names
-
-engine git module downloader: tui issue:
-when downloading TheSimpsonsGame-PS3 module, the tui does not correctly handle the print event from the git tool resulting in this output:
-Select a module to download:
-  SimpsonsHitAndRun
-  TheSimpsonsGame-PS2
-> TheSimpsonsGame-PS3
-  TheSimpsonsRoadRage-PS2
-  Back
-@@REMAKE@@ {"event":"print","message":"[ENGINE-GitTools] ","color":null,"newline":false}
-@@REMAKE@@ {"event":"print","message":"Downloading \u0027TheSimpsonsGame-PS3\u0027 from \u0027https://github.com/Superposition28/TheSimpsonsGame-PS3.git\u0027...","color":null,"newline":true}
-@@REMAKE@@ {"event":"print","message":"[ENGINE-GitTools] ","color":null,"newline":false}
-@@REMAKE@@ {"event":"print","message":"Target directory: \u0027A:\\RemakeEngine\\EngineApps\\Games\\TheSimpsonsGame-PS3\u0027","color":null,"newline":true}
-@@REMAKE@@ {"event":"print","message":"[ENGINE-GitTools] ","color":null,"newline":false}
-@@REMAKE@@ {"event":"print","message":"Cloning into \u0027A:\\RemakeEngine\\EngineApps\\Games\\TheSimpsonsGame-PS3\u0027...","color":null,"newline":true}
-
-:: engine tui displays the uninstalled modules in the main menu list only after entering and exiting the git module downloader menu:
-Select a game:
-> demo  [registered, installed, unbuilt]
-  TheSimpsonsGame-PS3  [registered, installed, unbuilt]
-  TheSimpsonsGame-PS2  [registered, uninstalled]
-  SimpsonsHitAndRun  [registered, uninstalled]
-  TheSimpsonsRoadRage-PS2  [registered, uninstalled]
-  TheSimpsonsGame-PS3-Dev  [installed, unverified, unbuilt]
-  ---------------
-  Download module...
-  Exit
-
-progress bar issue
- if console window is too tall it will print many progress bars that all actually work, but are partial repeats of the same bar
-
-Tools-Downloader:
-
-vgmstream-cli has no checksum
-when re-runing the downloader with no force redownload, it always redownloads despite the file existing already in both the tools and tmp downloads, but then stops when it find the exe in the tools folder, its checking the exe path after it determines what the file is named, which it can only know after downloading it first, so it always downloads again even if its already there
-
-
-the Loading bar does not render correctly, often showing many empty lines and/or printing the bar on multiple lines
-this may also occur in other tools, and is likly connected to console size W and/or H, like in vs code terminal
-
-
-
-flatten:
-the flatten structure script (C#) needs to be updated to be more like this py script 'reversing\Source\Format-Analysis\preinstanced\scripts\flatten.py' or maybe it was 'reversing\Format-Analysis\preinstanced\flatten2.py'
-
-
-Texture Extraction:
-the texture extraction script needs to be updated to correctly write dds header data, some don't have the file size written correctly
-add support for exporting to png format directly from dds files to not require an external tool to convert dds to png
-
 
 
 Indexer:
@@ -149,175 +78,88 @@ the index needs to handle the case where audio files are moved into en and globa
 
 TMP::
 
-operations to run in order to produce each of the different index db's
+## Universal Permutation Indexer V7
+The indexer automatically builds and indexes multiple permutations of the game files by:
+1. Configuring the engine with placeholders (Region, Type, audio_state, isRenamed, STROUT)
+2. Running the required operations in sequence
+3. Indexing the resulting files into UniversalIndex.db
 
- ## COMPLETED the Following for EU region
- using PS A:\RemakeEngine> python EngineApps\Games\TheSimpsonsGame-PS3\dev-tools\indexer\main.py --Type Full --region EU --AudioReorg audio_og --renamedBaseDirs notRenamed
-  to make this db:EngineApps\Games\TheSimpsonsGame-PS3\config\GameFilesIndex_EU_Full-audio_og-notRenamed.db
- GameFilesIndex_EU_Full-audio_og-notRenamed.db:: -- full means it scans the full structure both source and extracted files
-  (Skipped) -- Validate Source Game Files and Folders
-  (Skipped) -- Download Required Tools
-  (Skipped) -- Rename base folders
-  (Skipped) -- Reorganize Audio Files
-  (Skipped) -- re-Validate Source Game Files and Folders
-> (ran)     -- Extract Archives (.STR)
-  (Skipped) -- flatten folder structure
-> (ran)     -- Extract Textures (.txd -> .dds)
-> (ran)     -- Convert Textures (.dds -> .png)
-  (Skipped) -- validate extracted game files
-> (ran)     -- Convert Models (.preinstanced -> .blend)
-> (ran)     -- Convert Videos (.vp6 -> .ogv)
-> (ran)     -- Convert Audio (.snu -> .wav)
-  (Skipped) -- Validate all game files
-  (Skipped) -- generate Godot Game (EXPERIMENTAL)
-  (Skipped) -- GODOT - Generate Menu's (EXPERIMENTAL)
+Run with: `python EngineApps\Games\TheSimpsonsGame-PS3\indexer\indexv7.py`
 
- using PS A:\RemakeEngine> python EngineApps\Games\TheSimpsonsGame-PS3\dev-tools\indexer\main.py --Type Full --region EU --AudioReorg audio_og --renamedBaseDirs isRenamed
-  to make this db:EngineApps\Games\TheSimpsonsGame-PS3\config\GameFilesIndex_EU_Full-audio_og-isRenamed.db
- GameFilesIndex_EU_Full-audio_og-isRenamed.db: -- full means it scans the full structure both source and extracted files
-  (Skipped) -- Validate Source Game Files and Folders
-> (ran)     -- Download Required Tools
-> (ran)     -- Rename base folders
-  (Skipped) -- Reorganize Audio Files
-  (Skipped) -- re-Validate Source Game Files and Folders
-> (ran)     -- Extract Archives (.STR)
-  (Skipped) -- flatten folder structure
-> (ran)     -- Extract Textures (.txd -> .dds)
-> (ran)     -- Convert Textures (.dds -> .png)
-  (Skipped) -- validate extracted game files
-> (ran)     -- Convert Models (.preinstanced -> .blend)
-> (ran)     -- Convert Videos (.vp6 -> .ogv)
-> (ran)     -- Convert Audio (.snu -> .wav)
-  (Skipped) -- Validate all game files
-  (Skipped) -- generate Godot Game (EXPERIMENTAL)
-  (Skipped) -- GODOT - Generate Menu's (EXPERIMENTAL)
+### Permutations Built and Indexed:
 
+#### 1. EU_Full_audio_og_notRenamed
+Config: Region=EU, Type=Full, audio_state=audio_og, isRenamed=notRenamed, STROUT=STROUT
+Operations Run (in order):
+> Op 6  -- Extract Archives (.STR)
+> Op 12 -- Convert Videos (.vp6 -> .ogv)
+> Op 13 -- Convert Audio (.snu -> .wav)
+> Op 8  -- Extract Textures (.txd -> .dds)
+> Op 9  -- Convert Textures (.dds -> .png)
+> Op 11 -- Convert Models (.preinstanced -> .blend)
 
-  ## this will be the main run-all sequence
+dotnet commands:
+```pwsh
+# Op 6: Extract Archives
+dotnet run -c Release --project EngineNet --framework net9.0 -- --game_module "A:\RemakeEngine\EngineApps\Games\TheSimpsonsGame-PS3" --script_type bms --script "{{Game_Root}}/operations/simpsons_str.bms" --set "input={{SourcePath}}/{{Region}}/{{PostSourcePath}}" --set "output={{Game_Root}}/GameFiles/STROUT-{{Region}}_{{Type}}-{{audio_state}}-{{isRenamed}}" --set "extension=.str"
 
-  using PS A:\RemakeEngine> python EngineApps\Games\TheSimpsonsGame-PS3\dev-tools\indexer\Full\main-V5.py --Type Full --region EU --AudioReorg audio_reorg --renamedBaseDirs isRenamed
-  or A:\RemakeEngine> python EngineApps\Games\TheSimpsonsGame-PS3\dev-tools\indexer\Full\main-V5.py --Type Full --region US --AudioReorg audio_reorg --renamedBaseDirs isRenamed
-  to make this db:EngineApps\Games\TheSimpsonsGame-PS3\config\GameFilesIndex_EU_Full-audio_reorg-isRenamed.db
- GameFilesIndex_EU_Full-audio_reorg-isRenamed.db -- as before but audio_reorg means audio files reorganized into en and global folders.
-  (Skipped) -- Validate Source Game Files and Folders
-> (ran)     -- Download Required Tools
-> (ran)     -- Rename base folders
-> (ran)     -- Reorganize Audio Files
-  (Skipped) -- re-Validate Source Game Files and Folders
-> (ran)     -- Extract Archives (.STR)
-  (Skipped) -- flatten folder structure
-> (ran)     -- Extract Textures (.txd -> .dds)
-> (ran)     -- Convert Textures (.dds -> .png)
-  (Skipped) -- validate extracted game files
-> (ran)     -- Convert Models (.preinstanced -> .blend)
-> (ran)     -- Convert Videos (.vp6 -> .ogv)
-> (ran)     -- Convert Audio (.snu -> .wav)
-  (Skipped) -- Validate all game files
-  (Skipped) -- generate Godot Game (EXPERIMENTAL)
-  (Skipped) -- GODOT - Generate Menu's (EXPERIMENTAL)
+# Op 12: Convert Videos
+dotnet run -c Release --project EngineNet --framework net9.0 -- --game_module "A:\RemakeEngine\EngineApps\Games\TheSimpsonsGame-PS3" --script_type engine --script "format-convert" --args '["-m","ffmpeg","--type","video","-s","{{SourcePath}}/{{Region}}/{{PostSourcePath}}","-t","{{Game_Root}}/GameFiles/{{STROUT}}-{{Region}}_{{Type}}-{{audio_state}}-{{isRenamed}}","-i",".vp6","-o",".ogv"]'
 
- ## TODO the Following for EU region
+# Op 13: Convert Audio
+dotnet run -c Release --project EngineNet --framework net9.0 -- --game_module "A:\RemakeEngine\EngineApps\Games\TheSimpsonsGame-PS3" --script_type engine --script "format-convert" --args '["-m","vgmstream","--type","audio","-s","{{SourcePath}}/{{Region}}/{{PostSourcePath}}","-t","{{Game_Root}}/GameFiles/{{STROUT}}-{{Region}}_{{Type}}-{{audio_state}}-{{isRenamed}}","-i",".snu","-o",".wav","--godot-compatible"]'
 
- using PS A:\RemakeEngine> python EngineApps\Games\TheSimpsonsGame-PS3\dev-tools\indexer\main.py --Type Full --region EU --AudioReorg audio_reorg --renamedBaseDirs notRenamed
-  to make this db:EngineApps\Games\TheSimpsonsGame-PS3\config\GameFilesIndex_EU_Full-audio_reorg-notRenamed.db
- GameFilesIndex_EU_Full-audio_reorg-notRenamed.db -- as before but audio_reorg means audio files reorganized into en and global folders.
-  (Skipped) -- Validate Source Game Files and Folders
-> (ran)     -- Download Required Tools
-  (Skipped) -- Rename base folders
-> (ran)     -- Reorganize Audio Files
-  (Skipped) -- re-Validate Source Game Files and Folders
-> (ran)     -- Extract Archives (.STR)
-  (Skipped) -- flatten folder structure
-> (ran)     -- Extract Textures (.txd -> .dds)
-> (ran)     -- Convert Textures (.dds -> .png)
-  (Skipped) -- validate extracted game files
-> (ran)     -- Convert Models (.preinstanced -> .blend)
-> (ran)     -- Convert Videos (.vp6 -> .ogv)
-> (ran)     -- Convert Audio (.snu -> .wav)
-  (Skipped) -- Validate all game files
-  (Skipped) -- generate Godot Game (EXPERIMENTAL)
-  (Skipped) -- GODOT - Generate Menu's (EXPERIMENTAL)
+# Op 8: Extract Textures
+dotnet run -c Release --project EngineNet --framework net9.0 -- --game_module "A:\RemakeEngine\EngineApps\Games\TheSimpsonsGame-PS3" --script_type engine --script "format-extract" --args '["{{Game_Root}}/GameFiles/{{STROUT}}-{{Region}}_{{Type}}-{{audio_state}}-{{isRenamed}}"]'
 
+# Op 9: Convert Textures
+dotnet run -c Release --project EngineNet --framework net9.0 -- --game_module "A:\RemakeEngine\EngineApps\Games\TheSimpsonsGame-PS3" --script_type engine --script "format-convert" --args '["--source","{{Game_Root}}/GameFiles/{{STROUT}}-{{Region}}_{{Type}}-{{audio_state}}-{{isRenamed}}","--target","{{Game_Root}}/GameFiles/{{STROUT}}-{{Region}}_{{Type}}-{{audio_state}}-{{isRenamed}}","--input-ext",".dds","--output-ext",".png"]'
 
-  using PS A:\RemakeEngine> python EngineApps\Games\TheSimpsonsGame-PS3\dev-tools\indexer\main.py --Type FullFlattened --region EU --AudioReorg audio_og --renamedBaseDirs notRenamed
-  to make this db:EngineApps\Games\TheSimpsonsGame-PS3\config\GameFilesIndex_EU_FullFlattened-audio_og-notRenamed.db
- GameFilesIndex_EU_FullFlattened-audio_og-notRenamed.db -- full means it scans the full structure both source and extracted files flattened means the folder structure is flattened
-  (Skipped) -- Validate Source Game Files and Folders
-> (ran)     -- Download Required Tools
-  (Skipped) -- Rename base folders
-  (Skipped) -- Reorganize Audio Files
-  (Skipped) -- re-Validate Source Game Files and Folders
-> (ran)     -- Extract Archives (.STR)
-> (ran)     -- flatten folder structure
-> (ran)     -- Extract Textures (.txd -> .dds)
-> (ran)     -- Convert Textures (.dds -> .png)
-  (Skipped) -- validate extracted game files
-> (ran)     -- Convert Models (.preinstanced -> .blend)
-> (ran)     -- Convert Videos (.vp6 -> .ogv)
-> (ran)     -- Convert Audio (.snu -> .wav)
-  (Skipped) -- Validate all game files
-  (Skipped) -- generate Godot Game (EXPERIMENTAL)
-  (Skipped) -- GODOT - Generate Menu's (EXPERIMENTAL)
+# Op 11: Convert Models
+dotnet run -c Release --project EngineNet --framework net9.0 -- --game_module "A:\RemakeEngine\EngineApps\Games\TheSimpsonsGame-PS3" --script_type lua --script "{{Game_Root}}/operations/Blender/run.lua" --args '["--game-root","{{Game_Root}}","--base-dir","{{Game_Root}}","--operations-dir","{{Game_Root}}/operations","--blender-dir","{{Game_Root}}/operations/Blender","--preinstanced-dir","{{Game_Root}}/GameFiles/{{STROUT}}-{{Region}}_{{Type}}-{{audio_state}}-{{isRenamed}}","--blend-dir","{{Game_Root}}/GameFiles/{{STROUT}}-{{Region}}_{{Type}}-{{audio_state}}-{{isRenamed}}","--blank-blend","{{Game_Root}}/blank.blend","--root-drive","{{Game_Root}}/TMP_TSG_LNKS-{{Region}}_{{Type}}-{{audio_state}}-{{isRenamed}}","--main-db","{{Game_Root}}/config/GameFilesIndex_{{Region}}_{{Type}}-{{audio_state}}-{{isRenamed}}.db","--asset-map-db","{{Game_Root}}/GameFiles/config/{{Region}}_{{Type}}-{{audio_state}}-{{isRenamed}}/AssetMap.sqlite"]'
+```
 
-  using PS A:\RemakeEngine> python EngineApps\Games\TheSimpsonsGame-PS3\dev-tools\indexer\main.py --Type FullFlattened --region EU --AudioReorg audio_og --renamedBaseDirs isRenamed
-  to make this db:EngineApps\Games\TheSimpsonsGame-PS3\config\GameFilesIndex_EU_FullFlattened-audio_og-isRenamed.db
- GameFilesIndex_EU_FullFlattened-audio_og-isRenamed.db -- full means it scans the full structure both source and extracted files flattened means the folder structure is flattened
-  (Skipped) -- Validate Source Game Files and Folders
-> (ran)     -- Download Required Tools
-> (ran)     -- Rename base folders
-  (Skipped) -- Reorganize Audio Files
-  (Skipped) -- re-Validate Source Game Files and Folders
-> (ran)     -- Extract Archives (.STR)
-> (ran)     -- flatten folder structure
-> (ran)     -- Extract Textures (.txd -> .dds)
-> (ran)     -- Convert Textures (.dds -> .png)
-  (Skipped) -- validate extracted game files
-> (ran)     -- Convert Models (.preinstanced -> .blend)
-> (ran)     -- Convert Videos (.vp6 -> .ogv)
-> (ran)     -- Convert Audio (.snu -> .wav)
-  (Skipped) -- Validate all game files
-  (Skipped) -- generate Godot Game (EXPERIMENTAL)
-  (Skipped) -- GODOT - Generate Menu's (EXPERIMENTAL)
+#### 2. EU_Full_audio_og_isRenamed
+Config: Region=EU, Type=Full, audio_state=audio_og, isRenamed=isRenamed, STROUT=STROUT
+Operations Run (in order):
+> Op 6  -- Extract Archives (.STR)
+> Op 12 -- Convert Videos (.vp6 -> .ogv)
+> Op 13 -- Convert Audio (.snu -> .wav)
+> Op 8  -- Extract Textures (.txd -> .dds)
+> Op 9  -- Convert Textures (.dds -> .png)
+> Op 11 -- Convert Models (.preinstanced -> .blend)
+> Op 3  -- Rename base folders
 
-  using PS A:\RemakeEngine> python EngineApps\Games\TheSimpsonsGame-PS3\dev-tools\indexer\main.py --Type FullFlattened --region EU --AudioReorg audio_reorg --renamedBaseDirs notRenamed
-  to make this db:EngineApps\Games\TheSimpsonsGame-PS3\config\GameFilesIndex_EU_FullFlattened-audio_reorg-notRenamed.db
- GameFilesIndex_EU_FullFlattened-audio_reorg-notRenamed.db -- as before but audio_reorg means audio files reorganized into en and global folders.
-  (Skipped) -- Validate Source Game Files and Folders
-> (ran)     -- Download Required Tools
-  (Skipped) -- Rename base folders
-> (ran)     -- Reorganize Audio Files
-  (Skipped) -- re-Validate Source Game Files and Folders
-> (ran)     -- Extract Archives (.STR)
-  (Skipped) -- flatten folder structure
-> (ran)     -- Extract Textures (.txd -> .dds)
-> (ran)     -- Convert Textures (.dds -> .png)
-  (Skipped) -- validate extracted game files
-> (ran)     -- Convert Models (.preinstanced -> .blend)
-> (ran)     -- Convert Videos (.vp6 -> .ogv)
-> (ran)     -- Convert Audio (.snu -> .wav)
-  (Skipped) -- Validate all game files
-  (Skipped) -- generate Godot Game (EXPERIMENTAL)
-  (Skipped) -- GODOT - Generate Menu's (EXPERIMENTAL)
+#### 3. EU_Full_audio_reorg_isRenamed
+Config: Region=EU, Type=Full, audio_state=audio_reorg, isRenamed=isRenamed, STROUT=STROUT
+Operations Run (in order):
+> Op 6  -- Extract Archives (.STR)
+> Op 12 -- Convert Videos (.vp6 -> .ogv)
+> Op 13 -- Convert Audio (.snu -> .wav)
+> Op 8  -- Extract Textures (.txd -> .dds)
+> Op 9  -- Convert Textures (.dds -> .png)
+> Op 11 -- Convert Models (.preinstanced -> .blend)
+> Op 3  -- Rename base folders
+> Op 4  -- Reorganize Audio Files
 
-  using PS A:\RemakeEngine> python EngineApps\Games\TheSimpsonsGame-PS3\dev-tools\indexer\main.py --Type FullFlattened --region EU --AudioReorg audio_reorg --renamedBaseDirs isRenamed
-  to make this db:EngineApps\Games\TheSimpsonsGame-PS3\config\GameFilesIndex_EU_FullFlattened-audio_reorg-isRenamed.db
- GameFilesIndex_EU_FullFlattened-audio_reorg-isRenamed.db -- as before but audio_reorg means audio files reorganized into en and global folders.
-  (Skipped) -- Validate Source Game Files and Folders
-> (ran)     -- Download Required Tools
-> (ran)     -- Rename base folders
-> (ran)     -- Reorganize Audio Files
-  (Skipped) -- re-Validate Source Game Files and Folders
-> (ran)     -- Extract Archives (.STR)
-> (ran)     -- flatten folder structure
-> (ran)     -- Extract Textures (.txd -> .dds)
-> (ran)     -- Convert Textures (.dds -> .png)
-  (Skipped) -- validate extracted game files
-> (ran)     -- Convert Models (.preinstanced -> .blend)
-> (ran)     -- Convert Videos (.vp6 -> .ogv)
-> (ran)     -- Convert Audio (.snu -> .wav)
-  (Skipped) -- Validate all game files
-  (Skipped) -- generate Godot Game (EXPERIMENTAL)
-  (Skipped) -- GODOT - Generate Menu's (EXPERIMENTAL)
+#### 4. EU_FullFlattened_audio_reorg_isRenamed
+Config: Region=EU, Type=FullFlattened, audio_state=audio_reorg, isRenamed=isRenamed, STROUT=STROUT_Normalized
+Operations Run (in order):
+> Op 6  -- Extract Archives (.STR)
+> Op 12 -- Convert Videos (.vp6 -> .ogv)
+> Op 13 -- Convert Audio (.snu -> .wav)
+> Op 8  -- Extract Textures (.txd -> .dds)
+> Op 9  -- Convert Textures (.dds -> .png)
+> Op 11 -- Convert Models (.preinstanced -> .blend)
+> Op 3  -- Rename base folders
+> Op 4  -- Reorganize Audio Files
+> Op 7  -- Normalize folder structure
+
+### Database Output:
+All permutations are indexed into a single UniversalIndex.db containing:
+- `permutations` table: Tracks each build variant with config parameters
+- `assets` table: Unique assets identified by UID (MD5 hash of canonical path)
+- `instances` table: Links assets to specific permutations with file paths
 
 
 

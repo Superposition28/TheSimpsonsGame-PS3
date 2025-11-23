@@ -92,6 +92,70 @@ local function json_encode(obj, indent)
     return dkjson.encode(obj, { indent = indent ~= false })
 end
 
+-- Rename Map Loader --------------------------------------------------------
+local function load_rename_map(db_path)
+    -- Returns a table: { [new_name_lowercase] = old_name }
+    local map = {}
+    
+    if not sdk.path_exists(db_path) then
+        warn(string.format("RenameMap.db not found at: %s", db_path))
+        return map
+    end
+    
+    local db = sqlite.open(db_path)
+    if not db then
+        warn(string.format("Failed to open RenameMap.db: %s", db_path))
+        return map
+    end
+    
+    local ok, rows = pcall(function()
+        return db:query("SELECT old_name, new_name FROM rename_mappings")
+    end)
+    
+    if ok and rows then
+        for _, row in ipairs(rows) do
+            local old_name = row.old_name
+            local new_name = row.new_name
+            if old_name and new_name then
+                map[string.lower(new_name)] = old_name
+            end
+        end
+    else
+        warn("Failed to query RenameMap.db")
+    end
+    
+    db:close()
+    return map
+end
+
+-- Canonical Path Normalizer ------------------------------------------------
+local function normalize_to_canonical(rel_path, rename_map)
+    -- Converts renamed folder names back to their original canonical names
+    -- This ensures consistent UID generation regardless of folder renaming
+    -- Example: "L10_BargainBin/file.dat" -> "bargainbin/file.dat"
+    
+    if not rename_map or not rel_path then
+        return rel_path
+    end
+    
+    local parts = split_path(rel_path)
+    if #parts == 0 then
+        return rel_path
+    end
+    
+    -- Normalize the first folder (base folder) if it's in the rename map
+    local base_folder = parts[1]
+    local base_folder_lower = string.lower(base_folder)
+    
+    if rename_map[base_folder_lower] then
+        -- Replace with canonical (original) name
+        parts[1] = rename_map[base_folder_lower]
+    end
+    
+    -- Reconstruct path with canonical base folder
+    return table.concat(parts, "/")
+end
+
 -- UID Generator (6-char hex from MD5) --------------------------------
 local function get_hex_uid(s, length)
     length = length or 6
@@ -122,7 +186,7 @@ local segments_to_remove = {
 }
 
 -- PASS 1: Apply build path removal, folder rename, and UID
-local function apply_file_rules(original_rel, uid_generator_func)
+local function apply_file_rules(original_rel, uid_generator_func, rename_map)
     local parts = split_path(original_rel)
     if #parts == 0 then return original_rel, "000000" end
 
@@ -180,9 +244,11 @@ local function apply_file_rules(original_rel, uid_generator_func)
     local filename = table.remove(new_parts)
     local new_dir = table.concat(new_parts, path_sep)
 
-    -- REQUIREMENT 1 (UID Source): Get UID from ORIGINAL relative path, but WITHOUT extension
-    local original_rel_stem, _ = multi_ext(original_rel)
-    local uid = uid_generator_func(original_rel_stem, 6)
+    -- CRITICAL FIX: Normalize the ORIGINAL path to canonical form BEFORE UID generation
+    -- This ensures "L10_BargainBin/file.dat" and "bargainbin/file.dat" produce the same UID
+    local canonical_rel = normalize_to_canonical(original_rel, rename_map)
+    local canonical_rel_stem, _ = multi_ext(canonical_rel)
+    local uid = uid_generator_func(canonical_rel_stem, 6)
 
     -- NEW: REQUIREMENT 1 (UID Insertion): Place UID before any file extensions (before first '.')
     local base, rest = filename:match("^(.-)%.(.*)$")
@@ -274,7 +340,7 @@ end
 -- Arg parsing ---------------------------------------------------------------
 local function parse_args(argv)
     local function gets(i) local v = argv[i]; return type(v) == "string" and v or nil end
-    local out = { ignores = {}, dry_run = false }
+    local out = { ignores = {}, dry_run = false, map_db_file = nil }
     out.src = gets(1)
     out.dst = gets(2)
     local i = 3
@@ -286,6 +352,9 @@ local function parse_args(argv)
         elseif a == "--dry-run" then
             out.dry_run = true
             i = i + 1
+        elseif a == "--map-db-file" then
+            out.map_db_file = gets(i+1)
+            i = i + 2
         else
             i = i + 1
         end
@@ -375,6 +444,18 @@ local function main()
     args.src = norm_slashes(args.src)
     args.dst = norm_slashes(args.dst)
 
+    -- Load rename map for canonical UID generation
+    local rename_map = {}
+    if args.map_db_file and args.map_db_file ~= "" then
+        local db_path = norm_slashes(args.map_db_file)
+        print(string.format("Loading rename mappings from: %s", db_path))
+        rename_map = load_rename_map(db_path)
+        print(string.format("Loaded %d rename mappings", 
+            (function() local c=0; for _ in pairs(rename_map) do c=c+1 end; return c end)()))
+    else
+        print("No rename map provided, UIDs will be based on actual folder names")
+    end
+
     ensure_dir(args.dst)
 
     local files = walk_files(args.src, args.ignores)
@@ -396,7 +477,8 @@ local function main()
             local rel = rel_path(full, args.src)
 
             -- Get the target path *before* collapse, and the UID
-            local rel_no_build, uid = apply_file_rules(rel, get_hex_uid)
+            -- CRITICAL: Pass rename_map for canonical UID generation
+            local rel_no_build, uid = apply_file_rules(rel, get_hex_uid, rename_map)
 
             -- Store for Pass 3
             table.insert(file_targets, {

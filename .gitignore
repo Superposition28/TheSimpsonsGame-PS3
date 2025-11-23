@@ -34,10 +34,9 @@ TMP_TSG_LNKS**/
 __pycache__/
 *.pyc
 
-
+GameFiles*/
 config/old/
-dev-tools/old/
-indexer/oldd/
+indexer/old/
 test/
 .1gitignore
 

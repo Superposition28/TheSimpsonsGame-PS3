@@ -74,19 +74,19 @@ default = false
 
 ## ensures all changes have been non breaking
 ## not technically needed, just for testing
-[[operation]]
-id = 5
-Name = "re-Validate Source Game Files and Folders"
-run-all = false
-depends-on = [0]
-script_type = "engine"
-script = "validate-files"
-db = "{{Game_Root}}/config/GameFilesIndex_{{Region}}_{{Type}}-{{audio_state}}-{{isRenamed}}.db"
-args = [
-	"{{SourcePath}}/{{Region}}/{{PostSourcePath}}",
-	"--tables", "str_index:source_path,video_index:source_path,mus_index:source_path,snu_index:source_path",
-	"--required-dirs", "audiostreams||A1_Audio, movies||A1_Video, frontend||A2_Frontend, simpsons_chars||A2_Characters_Simpsons, spr_hub||L00_SprHub, loc||L01_LandOfChocolate, brt||L02_BartmanBegins, eighty_bites||L03_HungryHungryHomer, tree_hugger||L04_TreeHugger, mob_rules||L05_MobRules, cheater||L06_EnterTheCheatrix, dayofthedolphins||L07_DayOfTheDolphin, colossaldonut||L08_TheColossalDonut, dayspringfieldstoodstill||L09_Invasion,bargainbin||L10_BargainBin,gamehub||L00_GameHub,neverquest||L11_NeverQuest,grand_theft_scratchy||L12_GrandTheftScratchy,medal_of_homer||L13_MedalOfHomer,bigsuperhappy||L14_BigSuperHappy,rhymes||L15_Rhymes,meetthyplayer||L16_MeetThyPlayer",
-]
+#[[operation]]
+#id = 5
+#Name = "re-Validate Source Game Files and Folders"
+#run-all = false
+#depends-on = [0]
+#script_type = "engine"
+#script = "validate-files"
+#db = "{{Game_Root}}/config/GameFilesIndex_{{Region}}_{{Type}}-{{audio_state}}-{{isRenamed}}.db"
+#args = [
+#	"{{SourcePath}}/{{Region}}/{{PostSourcePath}}",
+#	"--tables", "str_index:source_path,video_index:source_path,mus_index:source_path,snu_index:source_path",
+#	"--required-dirs", "audiostreams||A1_Audio, movies||A1_Video, frontend||A2_Frontend, simpsons_chars||A2_Characters_Simpsons, spr_hub||L00_SprHub, loc||L01_LandOfChocolate, brt||L02_BartmanBegins, eighty_bites||L03_HungryHungryHomer, tree_hugger||L04_TreeHugger, mob_rules||L05_MobRules, cheater||L06_EnterTheCheatrix, dayofthedolphins||L07_DayOfTheDolphin, colossaldonut||L08_TheColossalDonut, dayspringfieldstoodstill||L09_Invasion,bargainbin||L10_BargainBin,gamehub||L00_GameHub,neverquest||L11_NeverQuest,grand_theft_scratchy||L12_GrandTheftScratchy,medal_of_homer||L13_MedalOfHomer,bigsuperhappy||L14_BigSuperHappy,rhymes||L15_Rhymes,meetthyplayer||L16_MeetThyPlayer",
+#]
 
 ## extract all other files from the archives
 ## .preinstanced, .ps3, .xml, .txd, .lh2, .alb, .ctb, .dat, .graph, .rcm_b, .sbk, .bsp, .smb, .mib, .amb, .uix, .imb, .toc, .msb, .inf, .bin, .aub, .txt, files with no extension

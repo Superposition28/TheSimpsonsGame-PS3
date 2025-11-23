@@ -1,0 +1,27 @@
+schema_version = "1.0.0"
+
+id = "blackened_bones"
+version = "1.0.1"
+name = "Blackened Bones"
+tagline = "Import/Export Havok 4.0.0-r1 HKX files from Super Smash Bros Brawl"
+maintainer = "Exul Anima"
+type = "add-on"
+
+# Blender 5.0 is typically backward compatible with 4.2 extensions, 
+# but you can specify a minimum version here.
+blender_version_min = "4.2.0"
+
+# Files permission is required because your script reads/writes HKX files.
+permissions = [
+  "files"
+]
+
+[url]
+website = "https://github.com/exul-anima/Blackened-Bones/wiki"
+issue_tracker = "https://github.com/exul-anima/Blackened-Bones/issues"
+
+# Build configuration (optional, but good practice)
+[build]
+paths = [
+    ".",
+]

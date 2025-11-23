@@ -25,6 +25,7 @@ import sqlite3
 from pathlib import Path
 from typing import Dict, List, Optional, Set, Tuple
 from dataclasses import dataclass, field, asdict
+from tqdm import tqdm
 
 
 # ============================================================================
@@ -219,8 +220,10 @@ def compute_path_hash(rel_path: str, algo: str = "md5") -> str:
     return hashlib.new(algo, rel_path.encode('utf-8')).hexdigest()
 
 
-def make_uuid(file_hash: str, path_hash: str) -> str:
-    """Create unique UUID for file instance"""
+def make_uuid(file_hash: str, path_hash: str, root_hash: str = "") -> str:
+    """Create unique UUID for file instance (includes root to distinguish versions)"""
+    if root_hash:
+        return f"{file_hash[:12]}_{path_hash[:12]}_{root_hash[:8]}"
     return f"{file_hash[:16]}_{path_hash[:16]}"
 
 
@@ -351,7 +354,7 @@ def load_rename_mappings(db_path: Path) -> Dict[str, str]:
 
 
 # ============================================================================
-# JSON Output Functions
+# Output Functions (JSON - Optional, SQLite - Default)
 # ============================================================================
 
 def save_index_to_json(state: IndexState, output_path: Path, pretty: bool = True):
@@ -444,6 +447,160 @@ def save_index_by_category(state: IndexState, output_dir: Path, prefix: str = ''
                 json.dump(category_output, f, ensure_ascii=False)
 
 
+def create_database_schema(conn: sqlite3.Connection):
+    """
+    Create SQLite database schema for file index.
+    
+    Tables:
+    - files: Main file records
+    - metadata: Statistics and summary information
+    - version_flags: Key-value pairs for file version flags
+    """
+    cursor = conn.cursor()
+    
+    # Main files table
+    cursor.execute('''
+        CREATE TABLE IF NOT EXISTS files (
+            uuid TEXT PRIMARY KEY,
+            uid TEXT NOT NULL,
+            file_type TEXT NOT NULL,
+            extension TEXT NOT NULL,
+            stage TEXT NOT NULL,
+            filename TEXT NOT NULL,
+            rel_path TEXT NOT NULL,
+            abs_path TEXT NOT NULL,
+            file_hash TEXT NOT NULL,
+            path_hash TEXT NOT NULL,
+            size INTEGER NOT NULL,
+            root_type TEXT NOT NULL,
+            region TEXT NOT NULL
+        )
+    ''')
+    
+    # Create indexes for common queries
+    cursor.execute('CREATE INDEX IF NOT EXISTS idx_uid ON files(uid)')
+    cursor.execute('CREATE INDEX IF NOT EXISTS idx_file_type ON files(file_type)')
+    cursor.execute('CREATE INDEX IF NOT EXISTS idx_extension ON files(extension)')
+    cursor.execute('CREATE INDEX IF NOT EXISTS idx_stage ON files(stage)')
+    cursor.execute('CREATE INDEX IF NOT EXISTS idx_file_hash ON files(file_hash)')
+    cursor.execute('CREATE INDEX IF NOT EXISTS idx_region ON files(region)')
+    cursor.execute('CREATE INDEX IF NOT EXISTS idx_type_stage_ext ON files(file_type, stage, extension)')
+    
+    # Version flags table (one-to-many relationship with files)
+    cursor.execute('''
+        CREATE TABLE IF NOT EXISTS version_flags (
+            uuid TEXT NOT NULL,
+            key TEXT NOT NULL,
+            value TEXT NOT NULL,
+            PRIMARY KEY (uuid, key),
+            FOREIGN KEY (uuid) REFERENCES files(uuid)
+        )
+    ''')
+    
+    cursor.execute('CREATE INDEX IF NOT EXISTS idx_vf_uuid ON version_flags(uuid)')
+    
+    # Metadata table
+    cursor.execute('''
+        CREATE TABLE IF NOT EXISTS metadata (
+            key TEXT PRIMARY KEY,
+            value TEXT NOT NULL
+        )
+    ''')
+    
+    conn.commit()
+
+
+def save_index_to_sqlite(state: IndexState, output_path: Path, region: str = None):
+    """
+    Save the index to a SQLite database.
+    
+    Args:
+        state: IndexState containing all file records
+        output_path: Path to the .db file
+        region: Optional region identifier for metadata
+    """
+    # Remove existing database
+    if output_path.exists():
+        output_path.unlink()
+    
+    # Create new database
+    conn = sqlite3.connect(str(output_path))
+    create_database_schema(conn)
+    cursor = conn.cursor()
+    
+    # Insert all file records
+    file_records = []
+    version_flag_records = []
+    
+    for file_type, stages in state.index.items():
+        for stage, extensions in stages.items():
+            for extension, uids in extensions.items():
+                for uid, records in uids.items():
+                    for record in records:
+                        # Main file record
+                        file_records.append((
+                            record.uuid,
+                            record.uid,
+                            record.file_type,
+                            record.extension,
+                            record.stage,
+                            record.filename,
+                            record.rel_path,
+                            record.abs_path,
+                            record.file_hash,
+                            record.path_hash,
+                            record.size,
+                            record.root_type,
+                            record.region
+                        ))
+                        
+                        # Version flags
+                        for key, value in record.version_flags.items():
+                            version_flag_records.append((
+                                record.uuid,
+                                key,
+                                value
+                            ))
+    
+    # Batch insert files
+    cursor.executemany('''
+        INSERT INTO files (uuid, uid, file_type, extension, stage, filename, 
+                          rel_path, abs_path, file_hash, path_hash, size, 
+                          root_type, region)
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+    ''', file_records)
+    
+    # Batch insert version flags
+    if version_flag_records:
+        cursor.executemany('''
+            INSERT INTO version_flags (uuid, key, value)
+            VALUES (?, ?, ?)
+        ''', version_flag_records)
+    
+    # Insert metadata
+    metadata = {
+        'total_files': str(state.total_files),
+        'unique_uids': str(len(state.files_by_uid)),
+        'region': region or 'unknown'
+    }
+    
+    # Add file type counts
+    for file_type, count in state.files_by_type.items():
+        metadata[f'count_{file_type}'] = str(count)
+    
+    # Add region counts
+    for region_name, count in state.files_by_region.items():
+        metadata[f'region_{region_name}'] = str(count)
+    
+    cursor.executemany(
+        'INSERT INTO metadata (key, value) VALUES (?, ?)',
+        list(metadata.items())
+    )
+    
+    conn.commit()
+    conn.close()
+
+
 # ============================================================================
 # Indexing Logic
 # ============================================================================
@@ -474,22 +631,43 @@ def add_to_index(state: IndexState, record: FileRecord):
     state.files_by_type[record.file_type] = state.files_by_type.get(record.file_type, 0) + 1
     state.files_by_region[record.region] = state.files_by_region.get(record.region, 0) + 1
 
+def count_files_in_directory(root_path: Path) -> int:
+    """Count total files in directory for progress bar."""
+    total = 0
+    for _, _, filenames in os.walk(root_path):
+        total += len(filenames)
+    return total
+
+
 def walk_and_index_directory(
     root_path: Path,
     state: IndexState,
     rename_map: Dict[str, str],
-    verbose: bool = False
+    verbose: bool = False,
+    show_progress: bool = True
 ):
     """
     Walk directory tree and index all files.
     """
     root_type, region, version_flags = parse_root_path(root_path)
 
-    if verbose:
-        print(f"\nIndexing: {root_path}")
-        print(f"  Type: {root_type}, Region: {region}, Flags: {version_flags}")
+    print(f"\nIndexing: {root_path}")
+    print(f"  Type: {root_type}, Region: {region}, Flags: {version_flags}")
+
+    # Count files first for progress bar
+    if show_progress:
+        print("  Counting files...")
+        total_files = count_files_in_directory(root_path)
+        print(f"  Found {total_files:,} files to index")
+        pbar = tqdm(total=total_files, unit='file', desc=f"  Indexing", 
+                   bar_format='{desc}: {percentage:3.0f}%|{bar}| {n_fmt}/{total_fmt} [{elapsed}<{remaining}, {rate_fmt}]')
+    else:
+        pbar = None
 
     file_count = 0
+
+    # Compute root hash once for UUID generation
+    root_hash = hashlib.md5(str(root_path).encode('utf-8')).hexdigest()
 
     for dirpath, _, filenames in os.walk(root_path):
         for filename in filenames:
@@ -504,7 +682,7 @@ def walk_and_index_directory(
             # Compute hashes
             file_hash = compute_file_hash(abs_path)
             path_hash = compute_path_hash(str(rel_path))
-            uuid = make_uuid(file_hash, path_hash)
+            uuid = make_uuid(file_hash, path_hash, root_hash)
 
             # Normalize path for UID generation
             normalized_rel = normalize_rel_path(rel_path, root_path, rename_map)
@@ -536,10 +714,16 @@ def walk_and_index_directory(
 
             file_count += 1
 
-            if verbose and file_count % 1000 == 0:
+            # Update progress bar
+            if pbar:
+                pbar.update(1)
+            elif verbose and file_count % 1000 == 0:
                 print(f"  Indexed {file_count} files...")
 
-    if verbose:
+    if pbar:
+        pbar.close()
+        print(f"  Completed: {file_count:,} files indexed")
+    elif verbose:
         print(f"  Total: {file_count} files")
 
 
@@ -560,7 +744,7 @@ def main():
 
     parser.add_argument(
         '--output-dir',
-        default='EngineApps/Games/TheSimpsonsGame-PS3/config',
+        default='EngineApps/Games/TheSimpsonsGame-PS3/config/index',
         help='Directory for output JSON files (will create {Region}_index.json for each region)'
     )
 
@@ -586,7 +770,19 @@ def main():
     parser.add_argument(
         '--compact',
         action='store_true',
-        help='Output compact JSON (no pretty printing)'
+        help='Output compact JSON (no pretty printing, only used with --json)'
+    )
+
+    parser.add_argument(
+        '--json',
+        action='store_true',
+        help='Also export to JSON format (in addition to SQLite)'
+    )
+
+    parser.add_argument(
+        '--no-progress',
+        action='store_true',
+        help='Disable progress bar'
     )
 
     args = parser.parse_args()
@@ -605,22 +801,29 @@ def main():
     # Process each region separately
     if args.roots:
         # Custom roots mode - single index
-        print("Custom roots mode - creating single combined index")
+        print("Custom roots mode - creating single combined database")
         roots = [Path(r).resolve() for r in args.roots]
         state = IndexState()
 
         for root in roots:
             if root.exists():
-                walk_and_index_directory(root, state, rename_map, args.verbose)
+                walk_and_index_directory(root, state, rename_map, args.verbose, show_progress=not args.no_progress)
             else:
                 print(f"Warning: Root does not exist: {root}")
 
-        output_path = output_dir / 'custom_index.json'
-        save_index_to_json(state, output_path, pretty=not args.compact)
+        # Save to SQLite (always)
+        output_path = output_dir / 'custom_index.db'
+        print(f"\nSaving index to SQLite database...")
+        save_index_to_sqlite(state, output_path, region='custom')
 
-        # Save category-specific files
-        print("\nSaving category-specific index files...")
-        save_index_by_category(state, output_dir, prefix='custom', pretty=not args.compact)
+        # Save to JSON (optional)
+        if args.json:
+            json_output_path = output_dir / 'custom_index.json'
+            print(f"Saving index to JSON...")
+            save_index_to_json(state, json_output_path, pretty=not args.compact)
+            
+            print(f"Saving category-specific JSON files...")
+            save_index_by_category(state, output_dir, prefix='custom', pretty=not args.compact)
 
         print(f"\n{'='*60}")
         print("Indexing Complete - Custom Roots")
@@ -628,9 +831,14 @@ def main():
         print(f"Total files: {state.total_files}")
         print(f"Unique UIDs: {len(state.files_by_uid)}")
         print(f"Output: {output_path}")
-        print(f"\nCategory files:")
-        for file_type in state.index.keys():
-            print(f"  - custom_{file_type}_index.json")
+        if args.json:
+            print(f"JSON Output: {json_output_path}")
+            print(f"\nCategory files:")
+            for file_type in state.index.keys():
+                print(f"  - custom_{file_type}_index.json")
+        print(f"\nFiles by type:")
+        for file_type, count in sorted(state.files_by_type.items(), key=lambda x: -x[1]):
+            print(f"  {file_type:20s}: {count:6d}")
     else:
         # Auto-discover mode - separate index per region
         for region in args.regions:
@@ -669,16 +877,21 @@ def main():
             for root in roots:
                 print(f"  - {root}")
             for root in roots:
-                walk_and_index_directory(root, state, rename_map, args.verbose)
+                walk_and_index_directory(root, state, rename_map, args.verbose, show_progress=not args.no_progress)
 
-            # Save to region-specific JSON
-            output_path = output_dir / f'{region}_index.json'
-            print(f"\nSaving {region} index to JSON...")
-            save_index_to_json(state, output_path, pretty=not args.compact)
+            # Save to SQLite (always)
+            output_path = output_dir / f'{region}_index.db'
+            print(f"\nSaving {region} index to SQLite database...")
+            save_index_to_sqlite(state, output_path, region=region)
 
-            # Save category-specific files
-            print(f"Saving {region} category-specific index files...")
-            save_index_by_category(state, output_dir, prefix=region, pretty=not args.compact)
+            # Save to JSON (optional)
+            if args.json:
+                json_output_path = output_dir / f'{region}_index.json'
+                print(f"Saving {region} index to JSON...")
+                save_index_to_json(state, json_output_path, pretty=not args.compact)
+                
+                print(f"Saving {region} category-specific JSON files...")
+                save_index_by_category(state, output_dir, prefix=region, pretty=not args.compact)
 
             # Print statistics
             print(f"\n{'-'*60}")
@@ -690,9 +903,11 @@ def main():
             for file_type, count in sorted(state.files_by_type.items(), key=lambda x: -x[1]):
                 print(f"  {file_type:20s}: {count:6d}")
             print(f"\nOutput: {output_path}")
-            print(f"Category files:")
-            for file_type in state.index.keys():
-                print(f"  - {region}_{file_type}_index.json")
+            if args.json:
+                print(f"JSON Output: {json_output_path}")
+                print(f"Category files:")
+                for file_type in state.index.keys():
+                    print(f"  - {region}_{file_type}_index.json")
 
         print(f"\n{'='*80}")
         print("All Regions Complete")
