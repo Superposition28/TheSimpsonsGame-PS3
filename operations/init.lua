@@ -580,9 +580,11 @@ local function main()
                 colour_print{colour=Colours.YELLOW, message="  Note: Source is read-only (e.g., ISO/disc). Only copy option is available."}
             end
             
-            -- Display options
+            -- Display options and build prompt message
+            local prompt_msg = "Choose how to use the source files:\n"
             for _, opt in ipairs(options) do
                 colour_print{colour=Colours.CYAN, message="  " .. opt.id .. ") " .. opt.label}
+                prompt_msg = prompt_msg .. opt.id .. ") " .. opt.label .. "\n"
             end
             
             -- Build valid choices string
@@ -598,9 +600,11 @@ local function main()
             else
                 choices_str = table.concat(valid_choices, ", ", 1, #valid_choices - 1) .. ", or " .. valid_choices[#valid_choices]
             end
+            
+            prompt_msg = prompt_msg .. "\nEnter your choice (" .. choices_str .. "):"
 
             while true do
-                local choice = (prompt("Enter your choice (" .. choices_str .. "):") or ""):match("^%s*(.-)%s*$")
+                local choice = (prompt(prompt_msg, "Source Option") or ""):match("^%s*(.-)%s*$")
                 if choice == '1' then
                     local src = normalize(copy_source_root or path_from_config)
                     local src_name = basename(src)
@@ -716,8 +720,10 @@ local function main()
                     colour_print{colour=Colours.YELLOW, message="  Note: Source is read-only (e.g., ISO/disc). Only copy option is available."}
                 end
                 
+                local prompt_msg_us = "Choose how to use the US source files:\n"
                 for _, opt in ipairs(options_us) do
                     colour_print{colour=Colours.CYAN, message="  " .. opt.id .. ") " .. opt.label}
+                    prompt_msg_us = prompt_msg_us .. opt.id .. ") " .. opt.label .. "\n"
                 end
                 
                 local valid_choices_us = {}
@@ -732,9 +738,11 @@ local function main()
                 else
                     choices_str_us = table.concat(valid_choices_us, ", ", 1, #valid_choices_us - 1) .. ", or " .. valid_choices_us[#valid_choices_us]
                 end
+                
+                prompt_msg_us = prompt_msg_us .. "\nEnter your choice for US region (" .. choices_str_us .. "):"
 
                 while true do
-                    local choice = (prompt("Enter your choice for US region (" .. choices_str_us .. "):") or ""):match("^%s*(.-)%s*$")
+                    local choice = (prompt(prompt_msg_us, "US Source Option") or ""):match("^%s*(.-)%s*$")
                     if choice == '1' then
                         local src = normalize(us_source_root or us_path)
                         local src_name = basename(src)
