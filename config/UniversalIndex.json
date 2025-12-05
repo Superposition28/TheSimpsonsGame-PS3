@@ -1,0 +1,41 @@
+{
+  "permutations": [
+    {
+      "id": 1,
+      "name": "EU_Full_audio_og_notRenamed",
+      "region": "EU",
+      "build_type": "Full",
+      "audio_state": "audio_og",
+      "renamed_state": "notRenamed",
+      "normalized": 0
+    },
+    {
+      "id": 2,
+      "name": "EU_Full_audio_og_isRenamed",
+      "region": "EU",
+      "build_type": "Full",
+      "audio_state": "audio_og",
+      "renamed_state": "isRenamed",
+      "normalized": 0
+    },
+    {
+      "id": 3,
+      "name": "EU_Full_audio_reorg_isRenamed",
+      "region": "EU",
+      "build_type": "Full",
+      "audio_state": "audio_reorg",
+      "renamed_state": "isRenamed",
+      "normalized": 0
+    },
+    {
+      "id": 4,
+      "name": "EU_FullFlattened_audio_reorg_isRenamed",
+      "region": "EU",
+      "build_type": "FullFlattened",
+      "audio_state": "audio_reorg",
+      "renamed_state": "isRenamed",
+      "normalized": 1
+    }
+  ],
+  "assets": []
+}

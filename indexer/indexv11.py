@@ -29,7 +29,7 @@ RENAME_MAP_PATH = GAME_ROOT / "config" / "RenameMap.db"
 OPS_TOML_PATH = GAME_ROOT / "operations.toml"
 
 # Engine Execution
-DOTNET_CMD = ["dotnet", "run", "-c", "Release", "--project", str(PROJECT_ROOT / "EngineNet"), "--framework", "net9.0", "--"]
+DOTNET_CMD = ["dotnet", "run", "-c", "Release", "--no-build", "--project", str(PROJECT_ROOT / "EngineNet"), "--framework", "net9.0", "--"]
 GAME_MODULE_ARG = ["--game_module", str(GAME_ROOT)]
 
 # Indexing Rules
@@ -269,13 +269,13 @@ class OperationsManager:
                 name = prompt.get('Name')
                 default_val = prompt.get('default')
                 if name: prompt_values[name] = default_val
-                
+
                 condition = prompt.get('condition')
                 if condition and condition in prompt_values and not prompt_values[condition]:
                     continue
-                
+
                 if default_val is None: continue
-                
+
                 p_type = prompt.get('type')
                 if p_type == 'confirm' and default_val is True and 'cli_arg' in prompt:
                     script_args.append(prompt['cli_arg'])
@@ -464,6 +464,11 @@ def main():
     print(f"--- Universal Permutation Indexer v11 ---")
     print(f"Mode: {'GENERATE + INDEX' if args.generate else 'INDEX ONLY'}")
     print(f"Parallel Jobs: {args.jobs}")
+
+    # 0. Build Engine (Once) to prevent race conditions
+    if args.generate:
+        print("Building Engine...")
+        subprocess.run(["dotnet", "build", "-c", "Release", str(PROJECT_ROOT / "EngineNet")], check=True)
 
     # 1. Initialization (Main Process)
     init_db(CONFIG_DB_PATH)

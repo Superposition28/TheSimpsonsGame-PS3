@@ -554,26 +554,26 @@ class OperationsManager:
         # 2. Handle Standard 'args' list + Prompts
         else:
             script_args = op.get('args', []).copy()
-            
+
             # Process prompts for default values
             prompts = op.get('prompts', [])
             prompt_values = {}
-            
+
             for prompt in prompts:
                 name = prompt.get('Name')
                 default_val = prompt.get('default')
-                
+
                 if name:
                     prompt_values[name] = default_val
-                
+
                 # Check condition
                 condition = prompt.get('condition')
                 if condition and condition in prompt_values and not prompt_values[condition]:
                     continue
-                
+
                 if default_val is None:
                     continue
-                    
+
                 p_type = prompt.get('type')
                 if p_type == 'confirm' and default_val is True and 'cli_arg' in prompt:
                     script_args.append(prompt['cli_arg'])
