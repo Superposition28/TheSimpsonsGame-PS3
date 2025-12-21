@@ -7,9 +7,7 @@
 --   PostSourcePath: Relative path from Source to USRDIR (e.g., EU\PS3_GAME\USRDIR)
 -- Supports regions: US, EU, or Both (prompts for both, stores EU as primary)
 --
--- Runtime guarantees: lfs, sdk, prompt() global are provided by engine
 
-local lfs = require("lfs")
 local path_sep = package.config:sub(1,1)
 
 local Colours = {
@@ -102,15 +100,15 @@ local function get_relative_path(base, target)
     base = normalize(base)
     target = normalize(target)
     local sep = path_sep or "/"
-    
+
     -- Ensure both paths end consistently for comparison
     if base:sub(-1) ~= sep then base = base .. sep end
-    
+
     -- Check if target starts with base
     if target:sub(1, #base):lower() == base:lower() then
         return target:sub(#base + 1)
     end
-    
+
     return target
 end
 
@@ -125,13 +123,11 @@ end
 local function list_subdirs(path)
     local dirs = {}
     if not is_dir(path) then return dirs end
-    for f in lfs.dir(path) do
-        if f ~= "." and f ~= ".." then
-            local full = join(path, f)
-            local attr = lfs.attributes(full)
-            if attr and attr.mode == "directory" then
-                table.insert(dirs, f)
-            end
+    for _, f in ipairs(sdk.list_dir(path)) do
+        local full = join(path, f)
+        local attr = sdk.attributes(full)
+        if attr and attr.mode == "directory" then
+            table.insert(dirs, f)
         end
     end
     return dirs
@@ -218,15 +214,13 @@ end
 -- Count files recursively (files only)
 local function count_files(path)
     local count = 0
-    for file in lfs.dir(path) do
-        if file ~= "." and file ~= ".." then
-            local full = join(path, file)
-            local attr = lfs.attributes(full)
-            if attr and attr.mode == "file" then
-                count = count + 1
-            elseif attr and attr.mode == "directory" then
-                count = count + count_files(full)
-            end
+    for _, file in ipairs(sdk.list_dir(path)) do
+        local full = join(path, file)
+        local attr = sdk.attributes(full)
+        if attr and attr.mode == "file" then
+            count = count + 1
+        elseif attr and attr.mode == "directory" then
+            count = count + count_files(full)
         end
     end
     return count
@@ -245,20 +239,18 @@ end
 
 -- copy a directory tree using SDK with progress tracking
 local function copy_tree(src, dst, total, state)
-    for file in lfs.dir(src) do
-        if file ~= "." and file ~= ".." then
-            local src_path = join(src, file)
-            local dst_path = join(dst, file)
-            local attr = lfs.attributes(src_path)
-            if attr and attr.mode == "directory" then
-                ensure_dir(dst_path)
-                copy_tree(src_path, dst_path, total, state)
-            elseif attr and attr.mode == "file" then
-                copy_file(src_path, dst_path)
-                state.count = state.count + 1
-                local progress = (total > 0) and ((state.count / total) * 100) or 100
-                sdk.color_print({ color = 'yellow', message = string.format("Copying... %d/%d files (%.1f%%) ", state.count, total, progress), newline = false })
-            end
+    for _, file in ipairs(sdk.list_dir(src)) do
+        local src_path = join(src, file)
+        local dst_path = join(dst, file)
+        local attr = sdk.attributes(src_path)
+        if attr and attr.mode == "directory" then
+            ensure_dir(dst_path)
+            copy_tree(src_path, dst_path, total, state)
+        elseif attr and attr.mode == "file" then
+            copy_file(src_path, dst_path)
+            state.count = state.count + 1
+            local progress = (total > 0) and ((state.count / total) * 100) or 100
+            sdk.color_print({ color = 'yellow', message = string.format("Copying... %d/%d files (%.1f%%) ", state.count, total, progress), newline = false })
         end
     end
 end
@@ -275,12 +267,10 @@ local function is_ps3_game_folder(path)
     local has_sfo = file_exists(join(path, "PARAM.SFO"))
     local has_png = false
     -- Check for any PNG file
-    if lfs then
-        for file in lfs.dir(path) do
-            if file:match("%.png$") or file:match("%.PNG$") then
-                has_png = true
-                break
-            end
+    for _, file in ipairs(sdk.list_dir(path)) do
+        if file:match("%.png$") or file:match("%.PNG$") then
+            has_png = true
+            break
         end
     end
     return has_usrdir and has_sfo and has_png
@@ -294,7 +284,7 @@ end
 --   - Root disc folder containing PS3_GAME (D:\) -> find and copy PS3_GAME subfolder
 local function validate_source_path(path)
     if not path or path == "" or not is_dir(path) then return false, path, path end
-    
+
     -- Check if path itself is USRDIR (has game directories)
     local ok = check_dirs_exist(path, USRDIR_DIRS_ORIGINAL) or check_dirs_exist(path, USRDIR_DIRS)
     if ok then
@@ -306,7 +296,7 @@ local function validate_source_path(path)
         -- Fallback if parent doesn't have PS3_GAME structure
         return true, path, path
     end
-    
+
     -- Check if path contains USRDIR subfolder (this is PS3_GAME folder)
     local usrdir = join(path, "USRDIR")
     if is_dir(usrdir) then
@@ -316,7 +306,7 @@ local function validate_source_path(path)
             return true, usrdir, path
         end
     end
-    
+
     -- Check path/PS3_GAME/USRDIR (for disc root like D:\)
     local ps3_game = join(path, "PS3_GAME")
     if is_dir(ps3_game) then
@@ -329,14 +319,14 @@ local function validate_source_path(path)
             end
         end
     end
-    
+
     return false, path, path
 end
 
 local function main()
     -- Determine module directory (two levels up from this script: operations/init.lua -> module root)
-    local this_file_path = debug.getinfo(1, 'S').source:sub(2)
-    local module_dir = (this_file_path:match("(.+)[/\\][^/\\]+[/\\][^/\\]+$") or ".")
+    -- Use script_dir global provided by engine
+    local module_dir = dirname(script_dir)
     local cfg_path = join(module_dir, "config.toml")
 
     -- Ensure config.toml exists with a placeholders block
@@ -426,13 +416,13 @@ local function main()
     -- Phase A: If existing MainSourcePath is invalid/missing, prompt user to provide a valid path
     local path_from_config = nil
     local path_from_config_us = nil -- For "Both" region only
-    
+
     -- Handle "Both" region - need to get both EU and US paths
     if region == "BOTH" then
         colour_print{colour=Colours.CYAN, message="\n--- Setting up BOTH regions (EU and US) ---"}
         colour_print{colour=Colours.YELLOW, message="You will be prompted to provide paths for both EU and US versions."}
         colour_print{colour=Colours.YELLOW, message="The EU version will be used as the primary source path."}
-        
+
         -- Get EU path
         colour_print{colour=Colours.MAGENTA, message="\n--- EU Version ---"}
         while not path_from_config do
@@ -443,7 +433,7 @@ local function main()
             end
             -- Trim and normalize the input path
             input = trim(input)
-            input = normalize(is_absolute(input) and input or join(lfs.currentdir(), input))
+            input = normalize(is_absolute(input) and input or join(sdk.currentdir(), input))
             colour_print{colour=Colours.CYAN, message="Checking path: '" .. input .. "'"}
             if is_dir(input) then
                 local ok, resolved, folder_to_copy = validate_source_path(input)
@@ -461,7 +451,7 @@ local function main()
                 colour_print{colour=Colours.RED, message="The provided path is not a directory. Please try again."}
             end
         end
-        
+
         -- Get US path
         colour_print{colour=Colours.MAGENTA, message="\n--- US Version ---"}
         local copy_source_root_us = nil
@@ -473,7 +463,7 @@ local function main()
             end
             -- Trim and normalize the input path
             input = trim(input)
-            input = normalize(is_absolute(input) and input or join(lfs.currentdir(), input))
+            input = normalize(is_absolute(input) and input or join(sdk.currentdir(), input))
             colour_print{colour=Colours.CYAN, message="Checking path: '" .. input .. "'"}
             if is_dir(input) then
                 local ok, resolved, folder_to_copy = validate_source_path(input)
@@ -491,7 +481,7 @@ local function main()
                 colour_print{colour=Colours.RED, message="The provided path is not a directory. Please try again."}
             end
         end
-        
+
         -- Store US source root for later copy/move operation
         placeholders["_temp_us_source_root"] = copy_source_root_us
         placeholders["_temp_us_path"] = path_from_config_us
@@ -524,7 +514,7 @@ local function main()
             end
             -- Trim and normalize the input path
             input = trim(input)
-            input = normalize(is_absolute(input) and input or join(lfs.currentdir(), input))
+            input = normalize(is_absolute(input) and input or join(sdk.currentdir(), input))
             colour_print{colour=Colours.CYAN, message="Checking path: '" .. input .. "'"}
             if is_dir(input) then
                 local ok, resolved, folder_to_copy = validate_source_path(input)
@@ -565,28 +555,29 @@ local function main()
         if not file_exists(local_data_path) then
             colour_print{colour=Colours.YELLOW, message="\n" .. (region == "BOTH" and "EU Region - " or "") .. "Choose how to use the source files:"}
             local display_name = basename(copy_source_root or path_from_config)
-            
+
             -- Check if source path is writable (not read-only like an ISO)
             local source_is_writable = sdk and sdk.is_writable and sdk.is_writable(copy_source_root or path_from_config) or false
-            
+
             -- Build options based on writability
             local options = {}
             table.insert(options, {id = "1", label = "Copy folder '" .. display_name .. "' into local '" .. basename(local_data_path) .. "' (Recommended, Safe)"})
-            
+
             if source_is_writable then
                 table.insert(options, {id = "2", label = "Move folder '" .. display_name .. "' into local '" .. basename(local_data_path) .. "' (Warning: Deletes originals)"})
                 table.insert(options, {id = "3", label = "Use original path '" .. display_name .. "' directly (Warning: Tools may modify original files)"})
             else
+                -- todo, skip prompt and auto select copy if source is read-only
                 colour_print{colour=Colours.YELLOW, message="  Note: Source is read-only (e.g., ISO/disc). Only copy option is available."}
             end
-            
+
             -- Display options and build prompt message
             local prompt_msg = "Choose how to use the source files:\n"
             for _, opt in ipairs(options) do
                 colour_print{colour=Colours.CYAN, message="  " .. opt.id .. ") " .. opt.label}
                 prompt_msg = prompt_msg .. opt.id .. ") " .. opt.label .. "\n"
             end
-            
+
             -- Build valid choices string
             local valid_choices = {}
             for _, opt in ipairs(options) do
@@ -600,7 +591,7 @@ local function main()
             else
                 choices_str = table.concat(valid_choices, ", ", 1, #valid_choices - 1) .. ", or " .. valid_choices[#valid_choices]
             end
-            
+
             prompt_msg = prompt_msg .. "\nEnter your choice (" .. choices_str .. "):"
 
             while true do
@@ -702,30 +693,31 @@ local function main()
     if region == "BOTH" and path_from_config_us then
         local us_source_root = placeholders["_temp_us_source_root"]
         local us_path = placeholders["_temp_us_path"]
-        
+
         if not starts_with(us_path, local_data_path_us) then
             if not file_exists(local_data_path_us) then
                 colour_print{colour=Colours.YELLOW, message="\nUS Region - Choose how to use the source files:"}
                 local display_name_us = basename(us_source_root or us_path)
-                
+
                 local source_is_writable_us = sdk and sdk.is_writable and sdk.is_writable(us_source_root or us_path) or false
-                
+
                 local options_us = {}
                 table.insert(options_us, {id = "1", label = "Copy folder '" .. display_name_us .. "' into local 'US' (Recommended, Safe)"})
-                
+
                 if source_is_writable_us then
                     table.insert(options_us, {id = "2", label = "Move folder '" .. display_name_us .. "' into local 'US' (Warning: Deletes originals)"})
                     table.insert(options_us, {id = "3", label = "Use original path '" .. display_name_us .. "' directly (Warning: Tools may modify original files)"})
                 else
+                    -- todo, skip prompt and auto select copy if source is read-only
                     colour_print{colour=Colours.YELLOW, message="  Note: Source is read-only (e.g., ISO/disc). Only copy option is available."}
                 end
-                
+
                 local prompt_msg_us = "Choose how to use the US source files:\n"
                 for _, opt in ipairs(options_us) do
                     colour_print{colour=Colours.CYAN, message="  " .. opt.id .. ") " .. opt.label}
                     prompt_msg_us = prompt_msg_us .. opt.id .. ") " .. opt.label .. "\n"
                 end
-                
+
                 local valid_choices_us = {}
                 for _, opt in ipairs(options_us) do
                     table.insert(valid_choices_us, opt.id)
@@ -738,7 +730,7 @@ local function main()
                 else
                     choices_str_us = table.concat(valid_choices_us, ", ", 1, #valid_choices_us - 1) .. ", or " .. valid_choices_us[#valid_choices_us]
                 end
-                
+
                 prompt_msg_us = prompt_msg_us .. "\nEnter your choice for US region (" .. choices_str_us .. "):"
 
                 while true do
@@ -828,7 +820,7 @@ local function main()
         else
             effective_source_path_us = us_path
         end
-        
+
         -- Clean up temporary placeholders
         placeholders["_temp_us_source_root"] = nil
         placeholders["_temp_us_path"] = nil
@@ -839,7 +831,7 @@ local function main()
     local base_source_dir = normalize(join(module_dir, "Source"))
     -- Calculate PostSourcePath relative to the region folder, not the Source folder
     local post_source_relative = get_relative_path(local_data_path, effective_source_path)
-    
+
     placeholders["MainSourcePath"] = effective_source_path
     placeholders["SourcePath"] = base_source_dir
     placeholders["PostSourcePath"] = post_source_relative
@@ -862,7 +854,7 @@ local function main()
         local base_source_dir = normalize(join(module_dir, "Source"))
         -- Calculate PostSourcePath relative to the region folder, not the Source folder
         local post_source_relative = get_relative_path(local_data_path, path_to_validate)
-        
+
         placeholders["MainSourcePath"] = path_to_validate
         placeholders["SourcePath"] = base_source_dir
         placeholders["PostSourcePath"] = post_source_relative
