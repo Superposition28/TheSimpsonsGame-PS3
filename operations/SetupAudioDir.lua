@@ -5,10 +5,8 @@ Purpose:
 - Prepare the audio source directory by grouping subfolders into 'EN' and 'Global'.
 - Skips language-specific folders in a blacklist.
 
-Runtime guarantees: lfs, sdk, argv are provided by engine
+Runtime guarantees: sdk, argv are provided by engine
 ]]
-
-local lfs = require("lfs")
 
 -- small path helpers
 local path_sep = package.config:sub(1,1) or "/"
@@ -114,30 +112,28 @@ local function main()
 
 	local moved, skipped, errors = 0, 0, 0
 
-	for name in lfs.dir(input) do
-		if name ~= "." and name ~= ".." then
-			local item = join(input, name)
-			local attr = lfs.attributes(item)
-			if attr and attr.mode == "directory" then
-				local lname = lower(name)
-				if name == en_dir_name or name == global_dir_name or language_blacklist[lname] then
-					cprint("darkgray", string.format("Skipping directory: '%s'", name))
+	local entries = sdk.list_dir(input)
+	for _, name in ipairs(entries) do
+		local item = join(input, name)
+		if is_dir(item) then
+			local lname = lower(name)
+			if name == en_dir_name or name == global_dir_name or language_blacklist[lname] then
+				cprint("darkgray", string.format("Skipping directory: '%s'", name))
+				skipped = skipped + 1
+			else
+				local parent = global_dirs[name] and global_dir_path or en_dir_path
+				local target = join(parent, name)
+				cprint("gray", string.format("Moving '%s' to '%s'...", name, target))
+				if path_exists(target) then
+					io.stderr:write(string.format("Warning: Target directory '%s' already exists. Skipping move for '%s'.\n", target, name))
 					skipped = skipped + 1
 				else
-					local parent = global_dirs[name] and global_dir_path or en_dir_path
-					local target = join(parent, name)
-					cprint("gray", string.format("Moving '%s' to '%s'...", name, target))
-					if path_exists(target) then
-						io.stderr:write(string.format("Warning: Target directory '%s' already exists. Skipping move for '%s'.\n", target, name))
-						skipped = skipped + 1
+					local ok = move_dir(item, target)
+					if ok then
+						moved = moved + 1
 					else
-						local ok = move_dir(item, target)
-						if ok then
-							moved = moved + 1
-						else
-							io.stderr:write(string.format("Error moving directory %s to %s\n", name, (global_dirs[name] and global_dir_name or en_dir_name)))
-							errors = errors + 1
-						end
+						io.stderr:write(string.format("Error moving directory %s to %s\n", name, (global_dirs[name] and global_dir_name or en_dir_name)))
+						errors = errors + 1
 					end
 				end
 			end

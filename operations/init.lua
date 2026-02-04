@@ -563,19 +563,22 @@ local function main()
             local options = {}
             table.insert(options, {id = "1", label = "Copy folder '" .. display_name .. "' into local '" .. basename(local_data_path) .. "' (Recommended, Safe)"})
 
+            local auto_choice = nil
             if source_is_writable then
                 table.insert(options, {id = "2", label = "Move folder '" .. display_name .. "' into local '" .. basename(local_data_path) .. "' (Warning: Deletes originals)"})
                 table.insert(options, {id = "3", label = "Use original path '" .. display_name .. "' directly (Warning: Tools may modify original files)"})
             else
-                -- todo, skip prompt and auto select copy if source is read-only
-                colour_print{colour=Colours.YELLOW, message="  Note: Source is read-only (e.g., ISO/disc). Only copy option is available."}
+                colour_print{colour=Colours.YELLOW, message="  Note: Source is read-only (e.g., ISO/disc). Automatically selecting Copy option."}
+                auto_choice = '1'
             end
 
             -- Display options and build prompt message
             local prompt_msg = "Choose how to use the source files:\n"
-            for _, opt in ipairs(options) do
-                colour_print{colour=Colours.CYAN, message="  " .. opt.id .. ") " .. opt.label}
-                prompt_msg = prompt_msg .. opt.id .. ") " .. opt.label .. "\n"
+            if not auto_choice then
+                for _, opt in ipairs(options) do
+                    colour_print{colour=Colours.CYAN, message="  " .. opt.id .. ") " .. opt.label}
+                    prompt_msg = prompt_msg .. opt.id .. ") " .. opt.label .. "\n"
+                end
             end
 
             -- Build valid choices string
@@ -595,7 +598,7 @@ local function main()
             prompt_msg = prompt_msg .. "\nEnter your choice (" .. choices_str .. "):"
 
             while true do
-                local choice = (prompt(prompt_msg, "Source Option") or ""):match("^%s*(.-)%s*$")
+                local choice = auto_choice or (prompt(prompt_msg, "Source Option") or ""):match("^%s*(.-)%s*$")
                 if choice == '1' then
                     local src = normalize(copy_source_root or path_from_config)
                     local src_name = basename(src)
@@ -704,18 +707,21 @@ local function main()
                 local options_us = {}
                 table.insert(options_us, {id = "1", label = "Copy folder '" .. display_name_us .. "' into local 'US' (Recommended, Safe)"})
 
+                local auto_choice_us = nil
                 if source_is_writable_us then
                     table.insert(options_us, {id = "2", label = "Move folder '" .. display_name_us .. "' into local 'US' (Warning: Deletes originals)"})
                     table.insert(options_us, {id = "3", label = "Use original path '" .. display_name_us .. "' directly (Warning: Tools may modify original files)"})
                 else
-                    -- todo, skip prompt and auto select copy if source is read-only
-                    colour_print{colour=Colours.YELLOW, message="  Note: Source is read-only (e.g., ISO/disc). Only copy option is available."}
+                    colour_print{colour=Colours.YELLOW, message="  Note: Source is read-only (e.g., ISO/disc). Automatically selecting US Copy option."}
+                    auto_choice_us = '1'
                 end
 
                 local prompt_msg_us = "Choose how to use the US source files:\n"
-                for _, opt in ipairs(options_us) do
-                    colour_print{colour=Colours.CYAN, message="  " .. opt.id .. ") " .. opt.label}
-                    prompt_msg_us = prompt_msg_us .. opt.id .. ") " .. opt.label .. "\n"
+                if not auto_choice_us then
+                    for _, opt in ipairs(options_us) do
+                        colour_print{colour=Colours.CYAN, message="  " .. opt.id .. ") " .. opt.label}
+                        prompt_msg_us = prompt_msg_us .. opt.id .. ") " .. opt.label .. "\n"
+                    end
                 end
 
                 local valid_choices_us = {}
@@ -734,7 +740,7 @@ local function main()
                 prompt_msg_us = prompt_msg_us .. "\nEnter your choice for US region (" .. choices_str_us .. "):"
 
                 while true do
-                    local choice = (prompt(prompt_msg_us, "US Source Option") or ""):match("^%s*(.-)%s*$")
+                    local choice = auto_choice_us or (prompt(prompt_msg_us, "US Source Option") or ""):match("^%s*(.-)%s*$")
                     if choice == '1' then
                         local src = normalize(us_source_root or us_path)
                         local src_name = basename(src)
