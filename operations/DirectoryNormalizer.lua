@@ -11,11 +11,8 @@ This script normalizes a directory by performing transformations:
    - UID is based on the original relative path stem (no extension).
    - NEW: UID is inserted before the *first* extension (e.g., file_UID.rws.PS3).
 
-Runtime: lfs, dkjson, sdk, argv provided by engine
+Runtime: dkjson, sdk, argv provided by engine
 ]]
-
-local dkjson = require("dkjson")
-local lfs = require("lfs")
 
 -- Small utilities -----------------------------------------------------------
 local path_sep = package.config:sub(1,1) or "/"
@@ -45,17 +42,9 @@ local function split_path(p)
     return parts
 end
 
-local function ensure_dir(p)
-    return sdk.ensure_dir(p)
-end
-
-local function path_exists(p)
-    return sdk.path_exists(p)
-end
-
 local function write_all_text(path, data)
     local parent = path:match("^(.*)[/\\][^/\\]+$")
-    if parent and parent ~= "" then ensure_dir(parent) end
+    if parent and parent ~= "" then sdk.ensure_dir(parent) end
     local f = io.open(path, "wb"); if not f then return false end
     f:write(data); f:close(); return true
 end
@@ -83,35 +72,30 @@ local function basename(p)
 end
 
 -- JSON helpers --------------------------------------------------------------
-local function json_decode(str)
-    local obj = dkjson.decode(str)
-    return obj
-end
-
 local function json_encode(obj, indent)
-    return dkjson.encode(obj, { indent = indent ~= false })
+    return sdk.text.json.encode(obj, { indent = indent ~= false })
 end
 
 -- Rename Map Loader --------------------------------------------------------
 local function load_rename_map(db_path)
     -- Returns a table: { [new_name_lowercase] = old_name }
     local map = {}
-    
+
     if not sdk.path_exists(db_path) then
         warn(string.format("RenameMap.db not found at: %s", db_path))
         return map
     end
-    
+
     local db = sqlite.open(db_path)
     if not db then
         warn(string.format("Failed to open RenameMap.db: %s", db_path))
         return map
     end
-    
+
     local ok, rows = pcall(function()
         return db:query("SELECT old_name, new_name FROM rename_mappings")
     end)
-    
+
     if ok and rows then
         for _, row in ipairs(rows) do
             local old_name = row.old_name
@@ -123,7 +107,7 @@ local function load_rename_map(db_path)
     else
         warn("Failed to query RenameMap.db")
     end
-    
+
     db:close()
     return map
 end
@@ -133,25 +117,25 @@ local function normalize_to_canonical(rel_path, rename_map)
     -- Converts renamed folder names back to their original canonical names
     -- This ensures consistent UID generation regardless of folder renaming
     -- Example: "L10_BargainBin/file.dat" -> "bargainbin/file.dat"
-    
+
     if not rename_map or not rel_path then
         return rel_path
     end
-    
+
     local parts = split_path(rel_path)
     if #parts == 0 then
         return rel_path
     end
-    
+
     -- Normalize the first folder (base folder) if it's in the rename map
     local base_folder = parts[1]
     local base_folder_lower = string.lower(base_folder)
-    
+
     if rename_map[base_folder_lower] then
         -- Replace with canonical (original) name
         parts[1] = rename_map[base_folder_lower]
     end
-    
+
     -- Reconstruct path with canonical base folder
     return table.concat(parts, "/")
 end
@@ -313,7 +297,7 @@ local function build_collapse_map(tree, map, current_orig_path, current_new_path
         if current_orig_path == "" then
             new_basename = child_name
         elseif new_basename == "" then
-             -- This happens if current_new_path was just "/"
+            -- This happens if current_new_path was just "/"
             new_basename = basename(current_orig_path)
         end
 
@@ -377,17 +361,17 @@ local function walk_files(root, ignore_list)
     local files = {}
     while #stack > 0 do
         local dir = table.remove(stack)
-        for entry in lfs.dir(dir) do
-            if entry ~= "." and entry ~= ".." then
-                local p = join(dir, entry)
-                local attr = lfs.attributes(p)
-                if attr and attr.mode == "directory" then
-                    if not should_ignore_dir(entry, ignore_list) then
-                        table.insert(stack, p)
-                    end
-                else
-                    table.insert(files, p)
+        local entries = sdk.list_dir(dir)
+        for i = 1, #entries do
+            local entry = entries[i]
+            local p = join(dir, entry)
+            local attr = sdk.attributes(p)
+            if attr and attr.mode == "directory" then
+                if not should_ignore_dir(entry, ignore_list) then
+                    table.insert(stack, p)
                 end
+            else
+                table.insert(files, p)
             end
         end
     end
@@ -416,9 +400,9 @@ end
 
 local function copy_with_collision_handling(src, dst)
     local parent = dirname(dst)
-    if parent and parent ~= "" then ensure_dir(parent) end
+    if parent and parent ~= "" then sdk.ensure_dir(parent) end
     local target = dst
-    if path_exists(target) then
+    if sdk.path_exists(target) then
         local ext = ext_lower(dst)
         local base
         if ext ~= "" then
@@ -431,7 +415,7 @@ local function copy_with_collision_handling(src, dst)
             local suffix = (i==1) and "" or tostring(i)
             target = string.format("%s_dup%s%s", base, suffix, ext)
             i = i + 1
-        until not path_exists(target)
+        until not sdk.path_exists(target)
     end
     return sdk.copy_file(src, target, false)
 end
@@ -448,20 +432,24 @@ local function main()
     local rename_map = {}
     if args.map_db_file and args.map_db_file ~= "" then
         local db_path = norm_slashes(args.map_db_file)
-        print(string.format("Loading rename mappings from: %s", db_path))
+        sdk.color_print("cyan", string.format("Loading rename mappings from: %s", db_path))
+        Diagnostics.Trace(string.format("[DirectoryNormalizer] Loading rename mappings from: %s", db_path))
         rename_map = load_rename_map(db_path)
-        print(string.format("Loaded %d rename mappings", 
-            (function() local c=0; for _ in pairs(rename_map) do c=c+1 end; return c end)()))
+        local count = (function() local c=0; for _ in pairs(rename_map) do c=c+1 end; return c end)()
+        sdk.color_print("green", string.format("Loaded %d rename mappings", count))
+        Diagnostics.Trace(string.format("[DirectoryNormalizer] Loaded %d rename mappings", count))
     else
-        print("No rename map provided, UIDs will be based on actual folder names")
+        sdk.color_print("yellow", "No rename map provided, UIDs will be based on actual folder names")
+        Diagnostics.Trace("[DirectoryNormalizer] No rename map provided, UIDs will be based on actual folder names")
     end
 
-    ensure_dir(args.dst)
+    sdk.ensure_dir(args.dst)
 
     local files = walk_files(args.src, args.ignores)
 
-    local prog = progress(#files, "normalize", "Normalizing directory")
+    local prog = progress.new(#files, "normalize", "Normalizing directory")
     local ok, err = pcall(function()
+        Diagnostics.Trace(string.format("Starting normalization: %d files found", #files))
 
         local file_targets = {}
         local target_tree = { [""] = { dirs={}, files={} } } -- Init root node
@@ -551,7 +539,8 @@ local function main()
         write_all_text(map_json, json_encode(mapping_rows, true))
 
         -- NEW: Write per-folder JSON maps
-        print("Writing per-folder JSON maps...")
+        sdk.color_print("cyan", "Writing per-folder JSON maps...")
+        Diagnostics.Trace("[DirectoryNormalizer] Writing per-folder JSON maps...")
         local per_folder_files = {}
         for top_folder, rows in pairs(per_folder_maps) do
             -- Ensure these are also sorted just like the main map
@@ -567,25 +556,27 @@ local function main()
             write_all_text(map_json_path, json_encode(rows, true))
             table.insert(per_folder_files, map_filename)
         end
-        print(string.format("Wrote %d per-folder maps.", #per_folder_files))
+        sdk.color_print("green", string.format("Wrote %d per-folder maps.", #per_folder_files))
+        Diagnostics.Trace(string.format("[DirectoryNormalizer] Wrote %d per-folder maps.", #per_folder_files))
         -- END NEW
 
         local summary = {
             total_assets = total,
             files_written = { basename(map_json) }
         }
-        
+
         -- NEW: Add per-folder maps to summary
         for _, f in ipairs(per_folder_files) do
             table.insert(summary.files_written, f)
         end
-        
+
         write_all_text(join(args.dst, "normalized_map_summary.json"), json_encode(summary, true))
 
-        print("")
-        print(string.format("Normalized %d assets.", total))
-        print(string.format("JSON mapping written to: %s", map_json))
-        print(string.format("Summary: %s", join(args.dst, "normalized_map_summary.json")))
+        sdk.color_print("green", "-------------------------------------------")
+        sdk.color_print("green", string.format("Normalized %d assets.", total))
+        sdk.color_print("green", string.format("JSON mapping written to: %s", map_json))
+        sdk.color_print("green", string.format("Summary: %s", join(args.dst, "normalized_map_summary.json")))
+        Diagnostics.Trace(string.format("[DirectoryNormalizer] Normalized %d assets.", total))
     end)
 
     if prog then prog:Complete() end

@@ -39,8 +39,6 @@
     - `dungeon` - `dung`
     - `shire` - `shir`
 
-
-
 * `grand_theft_scratchy` → `gts` → **Grand Theft Scratchy**
 * `medal_of_homer` → `moh` → **Medal of Homer**
 * `bigsuperhappy` → `bsh` → **Big Super Happy Fun Fun Game**

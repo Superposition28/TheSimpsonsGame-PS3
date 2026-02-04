@@ -717,7 +717,7 @@
     -   OLD_DIR_NAME: m8_xxx_0
         NEW_DIR_NAME: homer_simpson
         files:
-        -   Name: TBD
+        -   Name: 8-bit Homer
             Level: TBD
             file_patterns:
                 file_pattern: d_hom8_xxx_#######.exa.snu
@@ -990,7 +990,7 @@
     -   OLD_DIR_NAME: r8_xxx_0
         NEW_DIR_NAME: marge_simpson
         files:
-        -   Name: TBD
+        -   Name: 8-bit Marge
             Level: TBD
             file_patterns:
                 file_pattern: d_mar8_xxx_#######.exa.snu
@@ -1136,7 +1136,7 @@
     -   OLD_DIR_NAME: s8_xxx_0
         NEW_DIR_NAME: lisa_simpson
         files:
-        -   Name: TBD
+        -   Name: 8-bit Lisa
             Level: TBD
             file_patterns:
                 file_pattern: d_lis8_xxx_#######.exa.snu
@@ -1146,7 +1146,7 @@
     -   OLD_DIR_NAME: sa_xxx_0
         NEW_DIR_NAME: lisa_simpson
         files:
-        -   Name: TBD
+        -   Name: Lisa Simpson
             Level: TBD
             file_patterns:
                 file_pattern: d_lisa_xxx_#######.exa.snu
@@ -1156,8 +1156,8 @@
     -   OLD_DIR_NAME: sd_xxx_0
         NEW_DIR_NAME: milhouse_van_houten
         files:
-        -   Name: TBD
-            Level: TBD
+        -   Name: bshffg Milhouse
+            Level: Big Super Happy Fun Fun Game
             file_patterns:
                 file_pattern: d_mhsd_xxx_#######.exa.snu
                 file_regex: ^d_mhsd_xxx_[0-9a-fA-F]{7}\.exa\.snu$
@@ -1612,7 +1612,79 @@
 
 
 
-# Global' Audio files
+
+#####
+# Source: EngineApps\Games\TheSimpsonsGame-PS3\GameFiles\STROUT-EU_Full-audio_reorg-isRenamed\A1_Audio\Global
+#    region Ambient Sounds
+#       Global' Audio files
+#####
+
+# ==============================================================================
+# AMBIENT AUDIO NAMING PATTERN ANALYSIS
+# ==============================================================================
+#
+# 1. Level-First Convention
+# -------------------------
+# In this format, the filename begins with the Level Code, grouping files primarily
+# by the level they belong to.
+#
+# Format: [LevelCode]_amb_[Location/Description]_[Suffix].exa.snu
+#
+# Examples found in file:
+#   - moh_amb_aircraft_carrier_qd... (Medal of Homer)
+#   - hug_amb_forest_qd... (Lisa the Tree Hugger)
+#   - nvq_amb_dungeon_qd... (NeverQuest)
+#   - mob_amb_garage_qd... (Mob Rules)
+#   - scd_amb_chaos_harbor_qd... (Shadow of the Colossal Donut)
+#   - spr_amb_ext_garage_qd... (Springfield Hub)
+#
+# Observation:
+# This format is typically used for levels that appear to be "episodic" or
+# specific character stages (like Lisa the Tree Hugger or Medal of Homer).
+#
+# 2. Type-First Convention
+# ------------------------
+# In this format, the filename begins with amb (Ambience), grouping files by
+# their audio type rather than the level.
+#
+# Format: amb_[LevelCode]_[Location/Description]_[Suffix].exa.snu
+#
+# Examples found in file:
+#   - amb_brt_dino_4ch_lp... (Bartman Begins)
+#   - amb_bsh_village_qd... (Big Super Happy Fun Fun Game)
+#   - amb_che_cart_qd... (Enter the Cheatrix)
+#   - amb_gts_fullcity_qd... (Grand Theft Scratchy)
+#   - amb_dod_aquarium_qd... (Day of the Dolphin)
+#   - amb_mtp_heaven_full_qd... (Meet Thy Player)
+#
+# Observation:
+# This convention is applied to levels like Bartman Begins, Grand Theft Scratchy,
+# and Enter the Cheatrix. It often includes 4ch (4-channel) or lp (loop) in the suffix.
+#
+# 3. Key Components Analysis
+# --------------------------
+# Level Codes:
+#   moh: Medal of Homer
+#   brt: Bartman Begins
+#   bsh: Big Super Happy Fun Fun Game
+#   hug: Lisa the Tree Hugger (likely derived from "Hugger")
+#   nvq: NeverQuest
+#   mob: Mob Rules
+#   scd: Shadow of the Colossal Donut
+#   spr: Springfield (Hub)
+#   che: Enter the Cheatrix
+#   gts: Grand Theft Scratchy
+#   dod: Day of the Dolphin
+#   80b: Around the World in 80 Bites
+#   mtp: Meet Thy Player
+#   sss: Likely Invasion of the Yokel-Snatchers (contains mall_lot, lab, control_room).
+#
+# Suffixes:
+#   _qd:  Quad (Quadraphonic/Surround Sound).
+#   _4ch: 4-Channel audio.
+#   _lp:  Loop (Seamlessly looping track).
+#   _01:  Variation number.
+# ==============================================================================
 
 
 -   Global-Sound:

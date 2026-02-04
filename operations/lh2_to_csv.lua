@@ -12,6 +12,48 @@ Converted from Python script by Edness (v1.1)
 Lua conversion by samarixum for RemakeEngine
 --]]
 
+-- Small utilities -----------------------------------------------------------
+local path_sep = package.config:sub(1,1) or "/"
+
+local function join(a, b)
+    if not a or a == "" then return b end
+    if not b or b == "" then return a end
+    local last = a:sub(-1)
+    if last == "/" or last == "\\" then return a .. b end
+    return a .. path_sep .. b
+end
+
+local function norm_slashes(p)
+    if not p then return p end
+    if path_sep == "\\" then
+        p = p:gsub("/", "\\")
+    else
+        p = p:gsub("\\", "/")
+    end
+    p = p:gsub("[/\\]+", path_sep)
+    return p
+end
+
+local function walk_files(root)
+    local stack = { root }
+    local files = {}
+    while #stack > 0 do
+        local dir = table.remove(stack)
+        local entries = sdk.list_dir(dir)
+        for i = 1, #entries do
+            local entry = entries[i]
+            local p = join(dir, entry)
+            local attr = sdk.attributes(p)
+            if attr and attr.mode == "directory" then
+                table.insert(stack, p)
+            else
+                table.insert(files, p)
+            end
+        end
+    end
+    return files
+end
+
 -- Utility function to read big-endian uint32
 local function read_uint32_be(file)
     local b1, b2, b3, b4 = file:read(1), file:read(1), file:read(1), file:read(1)
@@ -50,20 +92,20 @@ end
 -- Main LH2 decode function
 local function decode_lh2(path)
     sdk.color_print('cyan', 'Processing: ' .. path)
-    
+
     -- Check if file exists
     if not sdk.path_exists(path) then
         sdk.color_print('red', 'Error: File not found: ' .. path)
         return false
     end
-    
+
     -- Open file for binary reading
     local file = io.open(path, "rb")
     if not file then
         sdk.color_print('red', 'Error: Could not open file: ' .. path)
         return false
     end
-    
+
     -- Check Magic Number
     local magic = file:read(4)
     if not magic or #magic ~= 4 then
@@ -71,7 +113,7 @@ local function decode_lh2(path)
         file:close()
         return false
     end
-    
+
     if magic ~= "2HCL" then
         -- Debug output to see what we actually got
         local hex = ""
@@ -83,33 +125,33 @@ local function decode_lh2(path)
         file:close()
         return false
     end
-    
+
     -- Check File Size integrity
     local file_size = read_uint32_be(file)
     local actual_size = file:seek("end")
     file:seek("set", 0)
     local _ = file:read(8) -- Skip magic and size we already read
-    
+
     if file_size ~= actual_size then
         sdk.color_print('yellow', 'Warning: File size mismatch (header=' .. file_size .. ', actual=' .. actual_size .. ')')
     end
-    
+
     -- Read Header Info
     file:seek("set", 0x10)
     local entries = read_uint32_be(file)
     local tables = read_uint32_be(file)
-    
+
     if not entries or not tables then
         sdk.color_print('red', 'Error: Failed to read header')
         file:close()
         return false
     end
-    
+
     sdk.color_print('white', string.format('  Entries: %d, Tables: %d', entries, tables))
-    
+
     -- Skip reserved/runtime pointers (8 bytes at 0x18)
     file:seek("set", 0x20)
-    
+
     -- Read String IDs (Hashes)
     local ids = {}
     for i = 1, entries do
@@ -121,7 +163,7 @@ local function decode_lh2(path)
         end
         table.insert(ids, id)
     end
-    
+
     -- Read Offset Pointers
     -- The pointers are arranged sequentially by table (language/column)
     local ptr = {}
@@ -137,7 +179,7 @@ local function decode_lh2(path)
             table.insert(ptr[t], offset)
         end
     end
-    
+
     -- Read Strings based on offsets
     local txt = {}
     for t = 1, tables do
@@ -149,58 +191,58 @@ local function decode_lh2(path)
             table.insert(txt[t], str)
         end
     end
-    
+
     file:close()
-    
+
     -- Prepare CSV Output
     local output_path = path .. ".csv"
-    
+
     -- Determine column structure
     -- If there is more than 1 table, the last table is usually the internal String Label
     local columns_count = (tables > 1) and (tables - 1) or tables
-    
+
     -- Open output file
     local out = io.open(output_path, "w")
     if not out then
         sdk.color_print('red', 'Error: Could not create output file: ' .. output_path)
         return false
     end
-    
+
     -- Create Header Row
     local header = {"String ID"}
     if tables > 1 then
         table.insert(header, "String Label")
     end
-    
+
     for x = 1, columns_count do
         table.insert(header, "Language " .. (x - 1))
     end
-    
+
     -- Write header
     out:write(table.concat(header, ",") .. "\n")
-    
+
     -- Write Data Rows
     for i = 1, entries do
         local row = {}
-        
+
         -- Format ID as Hex string
         table.insert(row, escape_csv_field(string.format("%08X", ids[i])))
-        
+
         if tables > 1 then
             -- If multiple tables, the last one is the label
             table.insert(row, escape_csv_field(txt[tables][i]))
         end
-        
+
         -- Add the localized text columns
         for x = 1, columns_count do
             table.insert(row, escape_csv_field(txt[x][i]))
         end
-        
+
         out:write(table.concat(row, ",") .. "\n")
     end
-    
+
     out:close()
-    
+
     sdk.color_print('green', 'Success: Output written to ' .. output_path)
     return true
 end
@@ -228,10 +270,10 @@ end
 -- Main execution
 local function main()
     sdk.color_print('white', '=== LH2 to CSV Converter ===')
-    
+
     -- Parse command line arguments
     local opts = parse_args(argv or {})
-    
+
     if opts.input_file then
         -- Single file mode
         local success = decode_lh2(opts.input_file)
@@ -240,48 +282,49 @@ local function main()
         end
     elseif opts.input_dir then
         -- Directory mode - find all .lh2 files
+        opts.input_dir = norm_slashes(opts.input_dir)
         sdk.color_print('cyan', 'Scanning directory: ' .. opts.input_dir)
-        
+        Diagnostics.Trace('[lh2_to_csv] Scanning directory: ' .. opts.input_dir)
+
         if not sdk.path_exists(opts.input_dir) then
             error("Input directory does not exist: " .. opts.input_dir)
         end
-        
-        -- Use lfs (shimmed LuaFileSystem) to recursively find .lh2 files
-        local lfs = require("lfs")
-        local files_found = 0
-        local files_processed = 0
-        
-        local function scan_directory(dir)
-            for entry in lfs.dir(dir) do
-                if entry ~= "." and entry ~= ".." then
-                    local path = dir .. "/" .. entry
-                    local attr = lfs.attributes(path)
-                    
-                    if attr and attr.mode == "directory" then
-                        scan_directory(path)
-                    elseif attr and attr.mode == "file" then
-                        -- Check if file ends with .lh2 (case-insensitive)
-                        if path:lower():match("%.lh2$") then
-                            files_found = files_found + 1
-                            sdk.color_print('white', string.format('[%d] Found: %s', files_found, path))
-                            if decode_lh2(path) then
-                                files_processed = files_processed + 1
-                            end
-                        end
-                    end
-                end
+
+        local all_files = walk_files(opts.input_dir)
+        local lh2_files = {}
+        for _, f in ipairs(all_files) do
+            if f:lower():match("%.lh2$") then
+                table.insert(lh2_files, f)
             end
         end
-        
-        scan_directory(opts.input_dir)
-        
+
+        local files_found = #lh2_files
+        local files_processed = 0
+
+        if files_found == 0 then
+            sdk.color_print('yellow', 'No .LH2 files found in directory')
+            return
+        end
+
+        sdk.color_print('white', string.format('Found %d .LH2 files. Starting conversion...', files_found))
+
+        local prog = progress.new(files_found, "lh2-csv", "Converting LH2 to CSV")
+
+        for _, path in ipairs(lh2_files) do
+            if decode_lh2(path) then
+                files_processed = files_processed + 1
+            end
+            if prog then prog:Update(1) end
+        end
+
+        if prog then prog:Complete() end
+
         sdk.color_print('white', '=== Processing Complete ===')
         sdk.color_print('cyan', string.format('Files found: %d', files_found))
         sdk.color_print('green', string.format('Files processed: %d', files_processed))
-        
-        if files_found == 0 then
-            sdk.color_print('yellow', 'No .LH2 files found in directory')
-        elseif files_processed < files_found then
+        Diagnostics.Trace(string.format('[lh2_to_csv] Processed %d/%d files', files_processed, files_found))
+
+        if files_processed < files_found then
             error(string.format("Some files failed to process (%d/%d)", files_processed, files_found))
         end
     else

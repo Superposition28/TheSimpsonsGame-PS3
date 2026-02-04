@@ -85,12 +85,12 @@ local function main()
 	input = normalize(input)
 
 	if not input or input == "" then
-		io.stderr:write("Error: AUDIO_SOURCE_DIR not provided or empty.\n")
-		os.exit(1)
+		sdk.colour_print{ colour = "Red", message = "Error: AUDIO_SOURCE_DIR not provided or empty." }
+		return
 	end
 	if not is_dir(input) then
-		io.stderr:write(string.format("Error: Audio source directory does not exist: %s\n", input))
-		os.exit(1)
+		sdk.colour_print{ colour = "Red", message = string.format("Error: Audio source directory does not exist: %s", input) }
+		return
 	end
 
 	-- check if input dir contains audiostreams/ folder or the A1_Audio/ folder
@@ -125,14 +125,14 @@ local function main()
 				local target = join(parent, name)
 				cprint("gray", string.format("Moving '%s' to '%s'...", name, target))
 				if path_exists(target) then
-					io.stderr:write(string.format("Warning: Target directory '%s' already exists. Skipping move for '%s'.\n", target, name))
+					cprint("yellow", string.format("Warning: Target directory '%s' already exists. Skipping move for '%s'.", target, name))
 					skipped = skipped + 1
 				else
 					local ok = move_dir(item, target)
 					if ok then
 						moved = moved + 1
 					else
-						io.stderr:write(string.format("Error moving directory %s to %s\n", name, (global_dirs[name] and global_dir_name or en_dir_name)))
+						cprint("red", string.format("Error moving directory %s to %s", name, (global_dirs[name] and global_dir_name or en_dir_name)))
 						errors = errors + 1
 					end
 				end

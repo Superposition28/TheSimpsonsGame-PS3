@@ -16,7 +16,6 @@ Usage
   lua run.lua [--verbose] [--debug-sleep] [--export glb fbx]
 
 Environment
-- Requires LuaFileSystem (lfs) (provided via engine shim)
 - May be hosted by an SDK exposing global `sdk` with helpers:
     sdk.colour_print({ colour = "red"|..., message = "..." })
     sdk.ensure_dir(path)
@@ -417,8 +416,7 @@ local function main()
     log(Colours.BLUE, string.format("cli arg asset_map_db: %s", tostring(cli.asset_map_db)))
 
     -- Establish working directory for resolving relative project paths
-    local lfs = require("lfs")
-    local working_dir = normalize_separators(lfs.currentdir())
+    local working_dir = normalize_separators(sdk.currentdir())
     log(Colours.CYAN, string.format("Working directory: %s", working_dir))
 
     -- Project-relative paths for the game's operations

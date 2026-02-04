@@ -1,5 +1,3 @@
-lfs = require('lfs')
-
 if not sqlite then
     error("sqlite module is not available; ensure LuaScriptAction exposes sqlite helpers")
 end
@@ -103,11 +101,7 @@ local function absolute_path(path)
     if is_absolute(path) then
         return normalize_separators(path)
     end
-    -- Ensure lfs module is loaded for currentdir
-    if not lfs then
-        lfs = require('lfs')
-    end
-    local cwd = lfs.currentdir()
+    local cwd = sdk.currentdir()
     return normalize_separators(cwd .. path_sep .. path)
 end
 
@@ -154,15 +148,13 @@ local function iterate_files(root_dir, visitor)
         return
     end
 
-    for entry in lfs.dir(root_dir) do
-        if entry ~= "." and entry ~= ".." then
-            local full_path = join(root_dir, entry)
-            local attrs = lfs.attributes(full_path)
-            if attrs and attrs.mode == "directory" then
-                iterate_files(full_path, visitor)
-            elseif attrs and attrs.mode == "file" then
-                visitor(full_path, entry)
-            end
+    local entries = sdk.list_dir(root_dir)
+    for _, entry in ipairs(entries) do
+        local full_path = join(root_dir, entry)
+        if sdk.is_dir(full_path) then
+            iterate_files(full_path, visitor)
+        elseif sdk.is_file(full_path) then
+            visitor(full_path, entry)
         end
     end
 end
@@ -422,7 +414,7 @@ local function create_symlink_entry(src, dst, is_dir, debug_sleep_duration)
             if not removed then
                 local msg = string.format("Unable to remove existing path prior to creating symlink: %s", dst)
                 log(Colours.RED, msg)
-                error(string.format("error during removal: s%", msg))
+                error(string.format("error during removal: %s", msg))
             end
         end
     end
@@ -440,7 +432,7 @@ local function create_symlink_entry(src, dst, is_dir, debug_sleep_duration)
     if debug_sleep_duration and debug_sleep_duration > 0 then
         sdk.sleep(debug_sleep_duration)
     end
-    error(string.format("error : s%", msg))
+    error(string.format("error : %s", msg))
 end
 
 local function verify_symlink(link_folder_path, src_folder_path, asset_id, link_type_name)
@@ -608,107 +600,6 @@ local function create_symbolic_links(db, root_drive, debug_mode_enabled)
 
     log(Colours.GREEN, string.format("Total assets updated with symlink information in DB: %d", updated))
 end
-local PreinstancedFileProcessor = {}
-PreinstancedFileProcessor.__index = PreinstancedFileProcessor
-
-function PreinstancedFileProcessor.new(opts)
-    local self = setmetatable({}, PreinstancedFileProcessor)
-    self.input_dir = absolute_path(opts.input_dir)
-    self.blend_dir = absolute_path(opts.blend_dir)
-    self.glb_dir = absolute_path(opts.glb_dir)
-    self.blank_blend_source = absolute_path(opts.blank_blend_source)
-    self.debug_mode_enabled = not not opts.debug_mode_enabled
-    self.verbose = not not opts.verbose
-    return self
-end
-
-function PreinstancedFileProcessor:process_files()
-    if not sdk.is_dir(self.input_dir) then
-        log(Colours.RED, string.format("InputDirectory '%s' is not set or does not exist.", self.input_dir))
-        error(string.format("InputDirectory '%s' is not set or does not exist.", self.input_dir))
-    end
-    if not self.blend_dir then
-        log(Colours.RED, "BlendDirectory is not set.")
-        error("BlendDirectory is not set.")
-    end
-    sdk.ensure_dir(self.blend_dir)
-    if not self.glb_dir then
-        log(Colours.RED, "GLBOutputDirectory is not set.")
-        error("GLBOutputDirectory is not set.")
-    end
-    sdk.ensure_dir(self.glb_dir)
-    if not sdk.is_file(self.blank_blend_source) then
-        log(Colours.RED, string.format("BlankBlendSource '%s' is not set or does not exist.", self.blank_blend_source))
-        error(string.format("BlankBlendSource '%s' is not set or does not exist.", self.blank_blend_source))
-    end
-
-    local files = {}
-    iterate_files(self.input_dir, function(full_path, filename)
-        if ends_with(filename:lower(), ".preinstanced") then
-            table.insert(files, full_path)
-        end
-    end)
-
-    log(Colours.CYAN, string.format("Found %d .preinstanced files in %s.", #files, self.input_dir))
-    local input_dir_abs = self.input_dir
-
-    for _, preinst_path in ipairs(files) do
-        if self.verbose then
-            log(Colours.CYAN, string.format("Processing preinstanced file: %s", preinst_path))
-        end
-
-        local rel = normalize_separators(preinst_path):sub(#input_dir_abs + 2)
-        -- Avoid complex Lua patterns on very long paths: find last separator manually
-        local rel_ns = normalize_separators(rel)
-        local last_sep = 0
-        for i = 1, #rel_ns do
-            local ch = rel_ns:sub(i, i)
-            if ch == '/' or ch == '\\' then last_sep = i end
-        end
-        local rel_dir = last_sep > 0 and rel_ns:sub(1, last_sep - 1) or nil
-        local blend_dest_dir = rel_dir and join(self.blend_dir, rel_dir) or self.blend_dir
-        local glb_dest_dir = rel_dir and join(self.glb_dir, rel_dir) or self.glb_dir
-
-        sdk.ensure_dir(blend_dest_dir)
-        sdk.ensure_dir(glb_dest_dir)
-
-        -- Derive base name without heavy patterns
-        local fn_ns = normalize_separators(preinst_path)
-        local last2 = 0
-        for i = 1, #fn_ns do
-            local ch = fn_ns:sub(i, i)
-            if ch == '/' or ch == '\\' then last2 = i end
-        end
-        local fname = last2 > 0 and fn_ns:sub(last2 + 1) or fn_ns
-        local suffix = '.preinstanced'
-        local base_name = fname
-        if #fname > #suffix and fname:sub(#fname - #suffix + 1):lower() == suffix then
-            base_name = fname:sub(1, #fname - #suffix)
-        end
-        local blend_dest_filename = base_name .. ".blend"
-        local blend_dest_full_path = join(blend_dest_dir, blend_dest_filename)
-
-        if not sdk.is_file(blend_dest_full_path) then
-            local copied = sdk.copy_file and sdk.copy_file(self.blank_blend_source, blend_dest_full_path, false)
-            if copied then
-                if self.verbose then
-                    log(Colours.CYAN, string.format("Copied %s to %s", self.blank_blend_source, blend_dest_full_path))
-                end
-            else
-                log(Colours.RED, string.format("Error copying blank blend file to '%s'", blend_dest_full_path))
-                if self.debug_mode_enabled then
-                    sdk.sleep(1)
-                end
-            end
-        end
-
-        if self.debug_mode_enabled then
-            sdk.sleep(0.05)
-        end
-    end
-
-    log(Colours.GREEN, string.format("Total .preinstanced files processed for blend/glb structure setup: %d", #files))
-end
 
 local function run(args)
     VERBOSE = not not args.verbose
@@ -766,26 +657,26 @@ local function run(args)
             local row_count = temp_db.query("SELECT COUNT(*) as count FROM asset_map")[1].count
             temp_db.close()
             temp_db = nil
-            
+
             if row_count == 0 then
                 log(Colours.YELLOW, string.format("Database file %s exists but asset_map table is empty; deleting and re-initializing.", db_filename))
-                
+
                 -- Force garbage collection to ensure file handles are released
                 if collectgarbage then
                     collectgarbage("collect")
                 end
-                
+
                 -- Small delay to allow OS to release file locks
                 if sdk.sleep then
                     sdk.sleep(0.1)
                 end
-                
+
                 local delete_success = sdk.remove_file and sdk.remove_file(db_filename)
                 if not delete_success then
                     log(Colours.RED, string.format("Failed to delete empty database file: %s. File may be locked. Attempting to continue anyway.", db_filename))
                     -- Try to proceed anyway - init_db might overwrite it
                 end
-                
+
                 db = init_db(db_filename)
                 log(Colours.GREEN, string.format("Empty database deleted and re-initialized at: %s", db_filename))
             else

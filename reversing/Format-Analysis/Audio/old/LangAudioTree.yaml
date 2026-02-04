@@ -1,4 +1,4 @@
-# Source: \GAMEFILES\USRDIR\ASSETS_1_AUDIO_STREAMS\EN
+# Source: EngineApps\Games\TheSimpsonsGame-PS3\GameFiles\STROUT-EU_Full-audio_reorg-isRenamed\A1_Audio\EN
 
 # KEY
 # File pattern format:
@@ -12,7 +12,7 @@
 
 # snu format known by vgmstream
 
-# Dialogue -- 7315
+# region Dialogue -- 7315
 
 -   OLD_DIR_NAME: 01_xxx_0
     NEW_DIR_NAME: generic_1
@@ -723,7 +723,7 @@
             Level: Bartman_Begins
             Note: "Cutscene where Bart and Homer encounter bullies robbing museum"
             file_pattern: brt_igc01.exa.snu
-        -   file_pattern: moh_igc01.exa.snu
+        -   moh_file: moh_igc01.exa.snu
         -   file_pattern: rwc_igc01.exa.snu
 
 -   OLD_DIR_NAME: igc01b.e
@@ -739,23 +739,23 @@
     files:
         -   file_pattern: 80b_igc02.exa.snu
         -   file_pattern: gts_igc02.exa.snu
-        -   file_pattern: hug_igc02.exa.snu
-        -   file_pattern: mob_igc02.exa.snu
-        -   file_pattern: nvq_igc02.exa.snu
+        -   hug_file: hug_igc02.exa.snu
+        -   mob_file: mob_igc02.exa.snu
+        -   nvq_file: nvq_igc02.exa.snu
         -   file_pattern: rwc_igc02.exa.snu
         -   file_pattern: sss_igc02.exa.snu
 
 -   OLD_DIR_NAME: igc03.ex
     NEW_DIR_NAME: TBD
     files:
-        -   file_pattern: hug_igc03.exa.snu
-        -   file_pattern: mob_igc03.exa.snu
+        -   hug_file: hug_igc03.exa.snu
+        -   mob_file: mob_igc03.exa.snu
         -   file_pattern: mtp_igc03.exa.snu
 
 -   OLD_DIR_NAME: igc03a.e
     NEW_DIR_NAME: TBD
     files:
-        -   file_pattern: mob_igc03a.exa.snu
+        -   mob_file: mob_igc03a.exa.snu
 
 -   OLD_DIR_NAME: igc04.ex
     NEW_DIR_NAME: TBD
@@ -768,24 +768,24 @@
         -   file_pattern: 80b_igc11.exa.snu
         -   file_pattern: brt_igc11.exa.snu
         -   file_pattern: BSH_igc11.exa.snu
-        -   file_pattern: moh_igc11.exa.snu
+        -   moh_file: moh_igc11.exa.snu
         -   file_pattern: mtp_igc11.exa.snu
-        -   file_pattern: nvq_igc11.exa.snu
-        -   file_pattern: scd_igc11.exa.snu
+        -   nvq_file: nvq_igc11.exa.snu
+        -   scd_file: scd_igc11.exa.snu
 
 -   OLD_DIR_NAME: igc12.ex
     NEW_DIR_NAME: TBD
     files:
         -   file_pattern: bsh_igc12.exa.snu
-        -   file_pattern: moh_igc12.exa.snu
-        -   file_pattern: nvq_igc12.exa.snu
+        -   moh_file: moh_igc12.exa.snu
+        -   nvq_file: nvq_igc12.exa.snu
 
 -   OLD_DIR_NAME: igc13.ex
     NEW_DIR_NAME: TBD
     files:
         -   file_pattern: bsh_igc13.exa.snu
-        -   file_pattern: hug_igc13.exa.snu
-        -   file_pattern: nvq_igc13.exa.snu
+        -   hug_file: hug_igc13.exa.snu
+        -   nvq_file: nvq_igc13.exa.snu
 
 -   OLD_DIR_NAME: igc15.ex
     NEW_DIR_NAME: TBD
@@ -815,224 +815,331 @@
             file_pattern: bsh_igc_14.exa.snu
 
 
-## 80b_crow
- ### 
-*    amb_80b_crowd_qd_01.exa.snu
- ### 
-*    amb_80b_crowd_qd_02.exa.snu
+#####
+# Source: EngineApps\Games\TheSimpsonsGame-PS3\GameFiles\STROUT-EU_Full-audio_reorg-isRenamed\A1_Audio\Global
+#    region Ambient Sounds
+#####
 
-## amb_airc
- ### 
-*    moh_amb_aircraft_carrier_qd.exa.snu
+# ==============================================================================
+# AMBIENT AUDIO NAMING PATTERN ANALYSIS
+# ==============================================================================
+#
+# 1. Level-First Convention
+# -------------------------
+# In this format, the filename begins with the Level Code, grouping files primarily
+# by the level they belong to.
+#
+# Format: [LevelCode]_amb_[Location/Description]_[Suffix].exa.snu
+#
+# Examples found in file:
+#   - moh_amb_aircraft_carrier_qd... (Medal of Homer)
+#   - hug_amb_forest_qd... (Lisa the Tree Hugger)
+#   - nvq_amb_dungeon_qd... (NeverQuest)
+#   - mob_amb_garage_qd... (Mob Rules)
+#   - scd_amb_chaos_harbor_qd... (Shadow of the Colossal Donut)
+#   - spr_amb_ext_garage_qd... (Springfield Hub)
+#
+# Observation:
+# This format is typically used for levels that appear to be "episodic" or
+# specific character stages (like Lisa the Tree Hugger or Medal of Homer).
+#
+# 2. Type-First Convention
+# ------------------------
+# In this format, the filename begins with amb (Ambience), grouping files by
+# their audio type rather than the level.
+#
+# Format: amb_[LevelCode]_[Location/Description]_[Suffix].exa.snu
+#
+# Examples found in file:
+#   - amb_brt_dino_4ch_lp... (Bartman Begins)
+#   - amb_bsh_village_qd... (Big Super Happy Fun Fun Game)
+#   - amb_che_cart_qd... (Enter the Cheatrix)
+#   - amb_gts_fullcity_qd... (Grand Theft Scratchy)
+#   - amb_dod_aquarium_qd... (Day of the Dolphin)
+#   - amb_mtp_heaven_full_qd... (Meet Thy Player)
+#
+# Observation:
+# This convention is applied to levels like Bartman Begins, Grand Theft Scratchy,
+# and Enter the Cheatrix. It often includes 4ch (4-channel) or lp (loop) in the suffix.
+#
+# 3. Key Components Analysis
+# --------------------------
+# Level Codes:
+#   moh: Medal of Homer
+#   brt: Bartman Begins
+#   bsh: Big Super Happy Fun Fun Game
+#   hug: Lisa the Tree Hugger (likely derived from "Hugger")
+#   nvq: NeverQuest
+#   mob: Mob Rules
+#   scd: Shadow of the Colossal Donut
+#   spr: Springfield (Hub)
+#   che: Enter the Cheatrix
+#   gts: Grand Theft Scratchy
+#   dod: Day of the Dolphin
+#   80b: Around the World in 80 Bites
+#   mtp: Meet Thy Player
+#   sss: Likely Invasion of the Yokel-Snatchers (contains mall_lot, lab, control_room).
+#
+# Suffixes:
+#   _qd:  Quad (Quadraphonic/Surround Sound).
+#   _4ch: 4-Channel audio.
+#   _lp:  Loop (Seamlessly looping track).
+#   _01:  Variation number.
+# ==============================================================================
 
-## amb_chao
- ### 
-*    scd_amb_chaos_harbor_qd_01.exa.snu
- ### 
-*    scd_amb_chaos_qd_01.exa.snu
 
-## amb_cour
- ### 
-*    rwc_amb_courtyard_qd_02.exa.snu
+-   OLD_DIR_NAME: 80b_crow
+    NEW_DIR_NAME: TBD
+    files:
+        -   amb_file: amb_80b_crowd_qd_01.exa.snu
+        -   amb_file: amb_80b_crowd_qd_02.exa.snu
 
-## amb_dung
- ### 
-*    nvq_amb_dungeon_qd_01.exa.snu
- ### 
-*    nvq_amb_dungeon_qd_02.exa.snu
- ### 
-*    nvq_amb_dungeon_qd_03.exa.snu
+#
+-   OLD_DIR_NAME: amb_airc
+    NEW_DIR_NAME: TBD
+    files:
+        -   moh_file: moh_amb_aircraft_carrier_qd.exa.snu
 
-## amb_ext_
- ### 
-*    spr_amb_ext_garage_qd_01.exa.snu
- ### 
-*    spr_amb_ext_harbor_qd_01.exa.snu
- ### 
-*    spr_amb_ext_qd_01.exa.snu
+-   OLD_DIR_NAME: amb_chao
+    NEW_DIR_NAME: TBD
+    files:
+        -   scd_file: scd_amb_chaos_harbor_qd_01.exa.snu
+        -   scd_file: scd_amb_chaos_qd_01.exa.snu
 
-## amb_fore
- ### 
-*    hug_amb_forest_qd_01.exa.snu
- ### 
-*    hug_amb_forest_qd_02.exa.snu
- ### 
-*    hug_amb_forest_qd_03.exa.snu
+-   OLD_DIR_NAME: amb_cour
+    NEW_DIR_NAME: TBD
+    files:
+        -   rwc_file: rwc_amb_courtyard_qd_02.exa.snu
 
-## amb_fren
- ### 
-*    moh_amb_french_castle_qd.exa.snu
- ### 
-*    moh_amb_french_village_night_qd.exa.snu
+-   OLD_DIR_NAME: amb_dung
+    NEW_DIR_NAME: TBD
+    files:
+        -   nvq_file: nvq_amb_dungeon_qd_01.exa.snu
+        -   nvq_file: nvq_amb_dungeon_qd_02.exa.snu
+        -   nvq_file: nvq_amb_dungeon_qd_03.exa.snu
 
-## amb_gara
- ### 
-*    mob_amb_garage_qd_01.exa.snu
+-   OLD_DIR_NAME: amb_ext_
+    NEW_DIR_NAME: TBD
+    files:
+        -   spr_file: spr_amb_ext_garage_qd_01.exa.snu
+        -   spr_file: spr_amb_ext_harbor_qd_01.exa.snu
+        -   spr_file: spr_amb_ext_qd_01.exa.snu
 
-## amb_int_
- ### 
-*    spr_amb_int_generic_qd_01.exa.snu
- ### 
-*    spr_amb_int_generic_qd_02.exa.snu
- ### 
-*    spr_amb_int_house_qd_01.exa.snu
- ### 
-*    spr_amb_int_vent_qd_01.exa.snu
+-   OLD_DIR_NAME: amb_fore
+    NEW_DIR_NAME: TBD
+    files:
+        -   hug_file: hug_amb_forest_qd_01.exa.snu
+        -   hug_file: hug_amb_forest_qd_02.exa.snu
+        -   hug_file: hug_amb_forest_qd_03.exa.snu
 
-## amb_mans
- ### 
-*    rwc_amb_mansion_qd_02.exa.snu
+-   OLD_DIR_NAME: amb_fren
+    NEW_DIR_NAME: TBD
+    files:
+        -   moh_file: moh_amb_french_castle_qd.exa.snu
+        -   moh_file: moh_amb_french_village_night_qd.exa.snu
 
-## amb_nort
- ### 
-*    moh_amb_northafrica_qd_01.exa.snu
- ### 
-*    moh_amb_northafrica_qd_02.exa.snu
- ### 
-*    moh_amb_northafrica_qd_03.exa.snu
+-   OLD_DIR_NAME: amb_gara
+    NEW_DIR_NAME: TBD
+    files:
+        -   mob_file: mob_amb_garage_qd_01.exa.snu
 
-## amb_riot
- ### 
-*    mob_amb_riot_qd_01.exa.snu
+-   OLD_DIR_NAME: amb_int_
+    NEW_DIR_NAME: TBD
+    files:
+        -   spr_file: spr_amb_int_generic_qd_01.exa.snu
+        -   spr_file: spr_amb_int_generic_qd_02.exa.snu
+        -   spr_file: spr_amb_int_house_qd_01.exa.snu
+        -   spr_file: spr_amb_int_vent_qd_01.exa.snu
 
-## amb_shir
- ### 
-*    nvq_amb_shire_qd_01.exa.snu
+-   OLD_DIR_NAME: amb_mans
+    NEW_DIR_NAME: TBD
+    files:
+        -   rwc_file: rwc_amb_mansion_qd_02.exa.snu
 
-## amb_vent
- ### 
-*    mob_amb_vent_qd_01.exa.snu
+-   OLD_DIR_NAME: amb_nort
+    NEW_DIR_NAME: TBD
+    files:
+        -   moh_file: moh_amb_northafrica_qd_01.exa.snu
+        -   moh_file: moh_amb_northafrica_qd_02.exa.snu
+        -   moh_file: moh_amb_northafrica_qd_03.exa.snu
 
-## bin_rev0
- ### 
-*    amb_bin_rev01_qd.exa.snu
+-   OLD_DIR_NAME: amb_riot
+    NEW_DIR_NAME: TBD
+    files:
+        -   mob_file: mob_amb_riot_qd_01.exa.snu
 
-## brt_dino
- ### 
-*    amb_brt_dino_4ch_lp.exa.snu
+-   OLD_DIR_NAME: amb_shir
+    NEW_DIR_NAME: TBD
+    files:
+        -   nvq_file: nvq_amb_shire_qd_01.exa.snu
 
-## brt_dior
- ### 
-*    amb_brt_diorama_4ch_lp.exa.snu
+-   OLD_DIR_NAME: amb_vent
+    NEW_DIR_NAME: TBD
+    files:
+        -   mob_file: mob_amb_vent_qd_01.exa.snu
+#
 
-## brt_myst
- ### 
-*    amb_brt_mystical_qd.exa.snu
+-   OLD_DIR_NAME: bin_rev0
+    NEW_DIR_NAME: TBD
+    files:
+        -   amb_file: amb_bin_rev01_qd.exa.snu
 
-## brt_plan
- ### 
-*    amb_brt_planet_4ch_lp.exa.snu
+-   OLD_DIR_NAME: brt_dino
+    NEW_DIR_NAME: TBD
+    files:
+        -   amb_file: amb_brt_dino_4ch_lp.exa.snu
 
-## brt_temp
- ### 
-*    amb_brt_temple_4ch_lp.exa.snu
+-   OLD_DIR_NAME: brt_dior
+    NEW_DIR_NAME: TBD
+    files:
+        -   amb_file: amb_brt_diorama_4ch_lp.exa.snu
 
-## bsh_air_
- ### 
-*    amb_bsh_air_qd.exa.snu
+-   OLD_DIR_NAME: brt_myst
+    NEW_DIR_NAME: TBD
+    files:
+        -   amb_file: amb_brt_mystical_qd.exa.snu
 
-## bsh_beac
- ### 
-*    amb_bsh_beach_qd.exa.snu
+-   OLD_DIR_NAME: brt_plan
+    NEW_DIR_NAME: TBD
+    files:
+        -   amb_file: amb_brt_planet_4ch_lp.exa.snu
 
-## bsh_figh
- ### 
-*    amb_bsh_fight_01.exa.snu
+-   OLD_DIR_NAME: brt_temp
+    NEW_DIR_NAME: TBD
+    files:
+        -   amb_file: amb_brt_temple_4ch_lp.exa.snu
 
-## bsh_fire
- ### 
-*    amb_bsh_fire_qd.exa.snu
+-   OLD_DIR_NAME: bsh_air_
+    NEW_DIR_NAME: TBD
+    files:
+        -   amb_file: amb_bsh_air_qd.exa.snu
 
-## bsh_ice_
- ### 
-*    amb_bsh_ice_qd.exa.snu
+-   OLD_DIR_NAME: bsh_beac
+    NEW_DIR_NAME: TBD
+    files:
+        -   amb_file: amb_bsh_beach_qd.exa.snu
 
-## bsh_vill
- ### 
-*    amb_bsh_village_qd.exa.snu
+-   OLD_DIR_NAME: bsh_figh
+    NEW_DIR_NAME: TBD
+    files:
+        -   amb_file: amb_bsh_fight_01.exa.snu
 
-## bsh__air
- ### 
-*    amb_bsh__airship_qd.exa.snu
+-   OLD_DIR_NAME: bsh_fire
+    NEW_DIR_NAME: TBD
+    files:
+        -   amb_file: amb_bsh_fire_qd.exa.snu
 
-## che_cart
- ### 
-*    amb_che_cart_qd.exa.snu
+-   OLD_DIR_NAME: bsh_ice_
+    NEW_DIR_NAME: TBD
+    files:
+        -   amb_file: amb_bsh_ice_qd.exa.snu
 
-## che_cent
- ### 
-*    amb_che_central_qd.exa.snu
- ### 
-*    amb_che_central_top_qd.exa.snu
+-   OLD_DIR_NAME: bsh_vill
+    NEW_DIR_NAME: TBD
+    files:
+        -   amb_file: amb_bsh_village_qd.exa.snu
 
-## che_mark
- ### 
-*    amb_che_market_qd.exa.snu
+-   OLD_DIR_NAME: bsh__air
+    NEW_DIR_NAME: TBD
+    files:
+        -   amb_file: amb_bsh__airship_qd.exa.snu
 
-## che_mo_b
- ### 
-*    amb_che_mo_bloody_qd.exa.snu
+-   OLD_DIR_NAME: che_cart
+    NEW_DIR_NAME: TBD
+    files:
+        -   amb_file: amb_che_cart_qd.exa.snu
 
-## che_q_an
- ### 
-*    amb_che_q_and_a_qd.exa.snu
+-   OLD_DIR_NAME: che_cent
+    NEW_DIR_NAME: TBD
+    files:
+        -   amb_file: amb_che_central_qd.exa.snu
+        -   amb_file: amb_che_central_top_qd.exa.snu
 
-## dod_aqua
- ### 
-*    amb_dod_aquarium_qd.exa.snu
+-   OLD_DIR_NAME: che_mark
+    NEW_DIR_NAME: TBD
+    files:
+        -   amb_file: amb_che_market_qd.exa.snu
 
-## dod_dock
- ### 
-*    amb_dod_docks_qd.exa.snu
+-   OLD_DIR_NAME: che_mo_b
+    NEW_DIR_NAME: TBD
+    files:
+        -   amb_file: amb_che_mo_bloody_qd.exa.snu
 
-## gamehub_
- ### 
-*    amb_gamehub_amb_qd.exa.snu
- ### 
-*    amb_gamehub_siegehouse_rev1_qd.exa.snu
+-   OLD_DIR_NAME: che_q_an
+    NEW_DIR_NAME: TBD
+    files:
+        -   amb_file: amb_che_q_and_a_qd.exa.snu
 
-## gts_full
- ### 
-*    amb_gts_fullcity_qd.exa.snu
+-   OLD_DIR_NAME: dod_aqua
+    NEW_DIR_NAME: TBD
+    files:
+        -   amb_file: amb_dod_aquarium_qd.exa.snu
 
-## gts_seas
- ### 
-*    amb_gts_seaside_qd.exa.snu
+-   OLD_DIR_NAME: dod_dock
+    NEW_DIR_NAME: TBD
+    files:
+        -   amb_file: amb_dod_docks_qd.exa.snu
 
-## gts_stat
- ### 
-*    amb_gts_station_qd.exa.snu
+-   OLD_DIR_NAME: gamehub_
+    NEW_DIR_NAME: TBD
+    files:
+        -   amb_file: amb_gamehub_amb_qd.exa.snu
+        -   amb_file: amb_gamehub_siegehouse_rev1_qd.exa.snu
 
-## gts_subu
- ### 
-*    amb_gts_suburb_qd.exa.snu
+-   OLD_DIR_NAME: gts_full
+    NEW_DIR_NAME: TBD
+    files:
+        -   amb_file: amb_gts_fullcity_qd.exa.snu
 
-## gts_vent
- ### 
-*    amb_gts_vents_qd.exa.snu
+-   OLD_DIR_NAME: gts_seas
+    NEW_DIR_NAME: TBD
+    files:
+        -   amb_file: amb_gts_seaside_qd.exa.snu
 
-## gts_viol
- ### 
-*    amb_gts_violent_sea_qd.exa.snu
+-   OLD_DIR_NAME: gts_stat
+    NEW_DIR_NAME: TBD
+    files:
+        -   amb_file: amb_gts_station_qd.exa.snu
 
-## mtp_heav
- ### 
-*    amb_mtp_heaven_full_qd.exa.snu
- ### 
-*    amb_mtp_heaven_lite_qd.exa.snu
+-   OLD_DIR_NAME: gts_subu
+    NEW_DIR_NAME: TBD
+    files:
+        -   amb_file: amb_gts_suburb_qd.exa.snu
 
-## mus_simp
- ### 
-*    rwc_mus_simpsons_theme_song.exa.snu
+-   OLD_DIR_NAME: gts_vent
+    NEW_DIR_NAME: TBD
+    files:
+        -   amb_file: amb_gts_vents_qd.exa.snu
 
-## sss_cont
- ### 
-*    amb_sss_control_room_qd.exa.snu
+-   OLD_DIR_NAME: gts_viol
+    NEW_DIR_NAME: TBD
+    files:
+        -   amb_file: amb_gts_violent_sea_qd.exa.snu
 
-## sss_lab_
- ### 
-*    amb_sss_lab_qd.exa.snu
+-   OLD_DIR_NAME: mtp_heav
+    NEW_DIR_NAME: TBD
+    files:
+        -   amb_file: amb_mtp_heaven_full_qd.exa.snu
+        -   amb_file: amb_mtp_heaven_lite_qd.exa.snu
 
-## sss_mall
- ### 
-*    amb_sss_mall_lot_qd.exa.snu
+#
+-   OLD_DIR_NAME: mus_simp
+    NEW_DIR_NAME: TBD
+    files:
+        -   rwc_file: rwc_mus_simpsons_theme_song.exa.snu
+#
+
+-   OLD_DIR_NAME: sss_cont
+    NEW_DIR_NAME: TBD
+    files:
+        -   amb_file: amb_sss_control_room_qd.exa.snu
+
+-   OLD_DIR_NAME: sss_lab_
+    NEW_DIR_NAME: TBD
+    files:
+        -   amb_file: amb_sss_lab_qd.exa.snu
+
+-   OLD_DIR_NAME: sss_mall
+    NEW_DIR_NAME: TBD
+    files:
+        -   amb_file: amb_sss_mall_lot_qd.exa.snu

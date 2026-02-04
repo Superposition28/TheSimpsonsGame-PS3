@@ -310,7 +310,7 @@ script_type = "lua"
 script = "{{Game_Root}}/operations/DirectoryNormalizer.lua"
 args = [
 	"{{Game_Root}}/GameFiles/STROUT-{{Region}}_{{Type}}-{{audio_state}}-{{isRenamed}}",
-	"{{Game_Root}}/GameFiles/STROUT_Normalized-{{Region}}_{{Type}}-{{audio_state}}-{{isRenamed}}",
+	"{{Game_Root}}/GameFiles/STROUT_Normalized-{{Region}}_{{Type}}Flattened-{{audio_state}}-{{isRenamed}}",
 	#"--rules", "{{Game_Root}}/config/DirectoryNormalizer.rules.json",
 	"--action", "copy",
 	"--ignore", "A1_Audio",
@@ -373,7 +373,7 @@ Name = "generate Godot Game (EXPERIMENTAL)"
 run-all = false
 depends-on = [0,6,8,9,11,12,13,14]
 script_type = "lua"
-script = "{{Game_Root}}/Godot/Game/godot-init-V0.4.2.lua"
+script = "{{Game_Root}}/Godot/Game/godot-init-V0.5.0.lua"
 args = [
 	"--project-name", "SimpsonsGamePS3",
 	"--repo-root", "{{Project_Root}}",
