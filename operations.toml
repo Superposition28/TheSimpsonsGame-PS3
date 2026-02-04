@@ -21,8 +21,8 @@ script = "{{Game_Root}}/operations/init.lua"
 [[operation]]
 id = -4
 Name = "change region to US"
-script_type = "lua"
-script = "{{Game_Root}}/config.lua"
+script_type = "engine"
+script = "config"
 args = [
 	"--group", "placeholders",
 	"--set", "Region=US:string",
@@ -31,8 +31,8 @@ args = [
 [[operation]]
 id = -2
 Name = "change region to EU"
-script_type = "lua"
-script = "{{Game_Root}}/config.lua"
+script_type = "engine"
+script = "config"
 args = [
 	"--group", "placeholders",
 	"--set", "Region=EU:string",
@@ -155,8 +155,8 @@ script = "rename-folders"
 args = ["{{Game_Root}}/GameFiles/STROUT-{{Region}}_{{Type}}-{{audio_state}}-{{isRenamed}}", "--map-db-file", "{{Game_Root}}/config/RenameMap.db"]
 [[operation.onsuccess]] # when successful, update isRenamed placeholder to "isRenamed"
 Name = "set isRenamed placeholder"
-script_type = "lua"
-script = "{{Game_Root}}/config.lua"
+script_type = "engine"
+script = "config"
 args = ["--group", "placeholders", "--key", "isRenamed", "--value", "isRenamed", "--type", "string"]
 [[operation.onsuccess]]
 Name = "rename folder STROUT-{{Region}}_{{Type}}-{{audio_state}}-{{isRenamed}} to STROUT-{{Region}}_{{Type}}-{{audio_state}}-isRenamed"
