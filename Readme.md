@@ -81,7 +81,7 @@ This module is fully automated and designed to be executed by [The Remake Engine
 ### Operations Overview
 - Init and config: creates/updates `config.toml`, ensures placeholders exist.
 - Validate source: engine `validate-files` using `config/GameFilesIndex_{...}.db`.
-- Download required tools: engine `download_tools` reading `Tools.toml`.
+- Download required tools: engine `download-tools` reading `Tools.toml`.
 - Rename base folders: engine `rename-folders` using `config/RenameMap.db` (sets `isRenamed`).
 - Reorganize audio: `operations/SetupAudioDir.lua` (sets `audio_state`).
 - Normalize folder structure: `operations/DirectoryNormalizer.lua` using `config/DirectoryNormalizer.rules.json` (sets `Type=FullFlattened` and updates `STROUT` to `STROUT_Normalized`).

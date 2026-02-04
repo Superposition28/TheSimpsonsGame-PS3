@@ -63,7 +63,7 @@ dotnet run -c Release --project EngineNet --framework net10.0 -- --game_module "
 **Run-all:** false
 
 ```pwsh
-dotnet run -c Release --project EngineNet --framework net10.0 -- --game_module ".\EngineApps\Games\TheSimpsonsGame-PS3\" --script_type engine --script "download_tools" --tools_manifest "{{Game_Root}}/Tools.toml"
+dotnet run -c Release --project EngineNet --framework net10.0 -- --game_module ".\EngineApps\Games\TheSimpsonsGame-PS3\" --script_type engine --script "download-tools" --tools_manifest "{{Game_Root}}/Tools.toml"
 ```
 
 ---
