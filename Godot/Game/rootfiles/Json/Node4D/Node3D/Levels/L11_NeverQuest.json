@@ -1,16 +1,16 @@
 [
     {
-        "name": "HungryHungryHomer",
-        "path": "Node4D/Node3D/Levels/HungryHungryHomer.tscn",
+        "name": "L11_NeverQuest",
+        "path": "Node4D/Node3D/Levels/L11_NeverQuest.tscn",
         "class": "Node3D",
         "type": "scene",
         "children": [{
-            "name": "eighty_bites3D",
+            "name": "neverquest3D",
             "Type": "Node",
             "class": "Node3D",
             "config": {
                 "transform": {
-                    "position": {"x": 1000, "y": -400.111, "z": 0},
+                    "position": {"x": 0, "y": -1200.111, "z": 0},
                     "rotation_degrees": {"x": 0, "y": 0, "z": 0},
                     "scale": {"x": 1, "y": 1, "z": 1}
                 }

@@ -1,0 +1,54 @@
+[
+    {
+        "name": "LHub-00_GameHub",
+        "path": "Node4D/Node3D/Levels/LHub-00_GameHub.tscn",
+        "class": "Node3D",
+        "type": "scene",
+        "children": [{
+            "name": "LOC3D",
+            "Type": "Node",
+            "class": "Node3D",
+            "config": {
+                "transform": {
+                    "position": {
+                        "x": -400,
+                        "y": 100.111,
+                        "z": 0
+                    },
+                    "rotation_degrees": {
+                        "x": 0,
+                        "y": 0,
+                        "z": 0
+                    },
+                    "scale": {
+                        "x": 1,
+                        "y": 1,
+                        "z": 1
+                    }
+                }
+            },
+            "children": [
+                {
+                    "name": "Zone01_Terrain",
+                    "path": "assets/LHub-00_GameHub/gamehub/zone01_str/assets/environs_zone01/export/terrain/lodmodel1_a70bb3.rws.PS3.glb",
+                    "index": {
+                        "index_id": 1679,
+                        "index_source_file_name": "lodmodel1.rws.PS3.glb",
+                        "index_source_path": "gamehub/gamehub/zone01_str/assets/environs/gamehub/gamehub/zone01/export/terrain/lodmodel1.rws.PS3.glb",
+                        "index_file_hash": "67678fab59dafe54691bb30789e7d32e282beb505ea7083b62f9aaa2322e43bc",
+                        "paths": [
+                            "LHub-00_GameHub/gamehub/zone01_str/assets/environs_zone01/export/terrain/lodmodel1_a70bb3.rws.PS3.glb",
+                            "gamehub/gamehub/zone01_str/assets/environs/gamehub/gamehub/zone01/export/terrain/lodmodel1.rws.PS3.glb"
+                        ]
+                    },
+                    "collision": {
+                        "enabled": true,
+                        "shapePlacement": "StaticBodyChild",
+                        "ShapeType": "Trimesh",
+                        "containerName": "Zone01_Terrain_Mesh_Collisions"
+                    }
+                }
+            ]
+        }]
+    }
+]

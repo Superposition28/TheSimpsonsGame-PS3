@@ -1,0 +1,162 @@
+[
+    {
+        "name": "L03_HungryHungryHomer",
+        "path": "Node4D/Node3D/Levels/L03_HungryHungryHomer.tscn",
+        "class": "Node3D",
+        "type": "scene",
+        "children": [{
+            "name": "eighty_bites3D",
+            "Type": "Node",
+            "class": "Node3D",
+            "config": {
+                "transform": {
+                    "position": {"x": 1000, "y": -400.111, "z": 0},
+                    "rotation_degrees": {"x": 0, "y": 0, "z": 0},
+                    "scale": {"x": 1, "y": 1, "z": 1}
+                }
+            },
+            "children": [
+                {
+                    "name": "Zone1_Terrain",
+                    "path": "assets/L03_HungryHungryHomer/eighty_bites/Zone1_str/assets_environs_zone1/export/terrain/lodmodel1_592a6f.rws.PS3.glb",
+                    "index": {
+                        "index_id": -1,
+                        "index_source_file_name": "lodmodel1.rws.PS3.glb",
+                        "index_source_path": "",
+                        "index_file_hash": "",
+                        "paths": [
+                            "L03_HungryHungryHomer/eighty_bites/Zone1_str/assets_environs_zone1/export/terrain/lodmodel1_592a6f.rws.PS3.glb",
+                            ""
+                        ]
+                    },
+                    "collision": {
+                        "enabled": true,
+                        "shapePlacement": "StaticBodyChild",
+                        "ShapeType": "Trimesh",
+                        "containerName": "80b_Zone01_Terrain_Mesh_Collisions"
+                    }
+                },
+                {
+                    "name": "Zone2_Terrain",
+                    "path": "assets/L03_HungryHungryHomer/eighty_bites/Zone2_str/assets_environs_zone2/export/terrain/lodmodel1_eacd0a.rws.PS3.glb",
+                    "index": {
+                        "index_id": -1,
+                        "index_source_file_name": "lodmodel1.rws.PS3.glb",
+                        "index_source_path": "",
+                        "index_file_hash": "",
+                        "paths": [
+                            "L03_HungryHungryHomer/eighty_bites/Zone2_str/assets_environs_zone2/export/terrain/lodmodel1_eacd0a.rws.PS3.glb",
+                            ""
+                        ]
+                    },
+                    "collision": {
+                        "enabled": true,
+                        "shapePlacement": "StaticBodyChild",
+                        "ShapeType": "Trimesh",
+                        "containerName": "80b_Zone02_Terrain_Mesh_Collisions"
+                    }
+                },
+                {
+                    "name": "Zone3_Terrain",
+                    "path": "assets/L03_HungryHungryHomer/eighty_bites/Zone3_str/assets_environs_zone3/export/terrain/lodmodel1_2ff71d.rws.PS3.glb",
+                    "index": {
+                        "index_id": -1,
+                        "index_source_file_name": "lodmodel1.rws.PS3.glb",
+                        "index_source_path": "",
+                        "index_file_hash": "",
+                        "paths": [
+                            "L03_HungryHungryHomer/eighty_bites/Zone3_str/assets_environs_zone3/export/terrain/lodmodel1_2ff71d.rws.PS3.glb",
+                            ""
+                        ]
+                    },
+                    "collision": {
+                        "enabled": true,
+                        "shapePlacement": "StaticBodyChild",
+                        "ShapeType": "Trimesh",
+                        "containerName": "80b_Zone03_Terrain_Mesh_Collisions"
+                    }
+                },
+                {
+                    "name": "Zone4_Terrain",
+                    "path": "assets/L03_HungryHungryHomer/eighty_bites/Zone4_str/assets_environs_zone4/export/terrain/lodmodel1_833f42.rws.PS3.glb",
+                    "index": {
+                        "index_id": -1,
+                        "index_source_file_name": "lodmodel1.rws.PS3.glb",
+                        "index_source_path": "",
+                        "index_file_hash": "",
+                        "paths": [
+                            "L03_HungryHungryHomer/eighty_bites/Zone4_str/assets_environs_zone4/export/terrain/lodmodel1_833f42.rws.PS3.glb",
+                            ""
+                        ]
+                    },
+                    "collision": {
+                        "enabled": true,
+                        "shapePlacement": "StaticBodyChild",
+                        "ShapeType": "Trimesh",
+                        "containerName": "80b_Zone04_Terrain_Mesh_Collisions"
+                    }
+                },
+                {
+                    "name": "Zone5_Terrain",
+                    "path": "assets/L03_HungryHungryHomer/eighty_bites/Zone5_str/assets_environs_zone5/export/terrain/lodmodel1_36aea4.rws.PS3.glb",
+                    "index": {
+                        "index_id": -1,
+                        "index_source_file_name": "lodmodel1.rws.PS3.glb",
+                        "index_source_path": "",
+                        "index_file_hash": "",
+                        "paths": [
+                            "L03_HungryHungryHomer/eighty_bites/Zone5_str/assets_environs_zone5/export/terrain/lodmodel1_36aea4.rws.PS3.glb",
+                            ""
+                        ]
+                    },
+                    "collision": {
+                        "enabled": true,
+                        "shapePlacement": "StaticBodyChild",
+                        "ShapeType": "Trimesh",
+                        "containerName": "80b_Zone05_Terrain_Mesh_Collisions"
+                    }
+                },
+                {
+                    "name": "Zone6_Terrain",
+                    "path": "assets/L03_HungryHungryHomer/eighty_bites/Zone6_str/assets_environs_zone6/export/terrain/lodmodel1_b9da23.rws.PS3.glb",
+                    "index": {
+                        "index_id": -1,
+                        "index_source_file_name": "lodmodel1.rws.PS3.glb",
+                        "index_source_path": "",
+                        "index_file_hash": "",
+                        "paths": [
+                            "L03_HungryHungryHomer/eighty_bites/Zone6_str/assets_environs_zone6/export/terrain/lodmodel1_b9da23.rws.PS3.glb",
+                            ""
+                        ]
+                    },
+                    "collision": {
+                        "enabled": true,
+                        "shapePlacement": "StaticBodyChild",
+                        "ShapeType": "Trimesh",
+                        "containerName": "80b_Zone06_Terrain_Mesh_Collisions"
+                    }
+                },
+                {
+                    "name": "Zone7_Terrain",
+                    "path": "assets/L03_HungryHungryHomer/eighty_bites/Zone7_str/assets_environs_zone7/export/terrain/lodmodel1_93345b.rws.PS3.glb",
+                    "index": {
+                        "index_id": -1,
+                        "index_source_file_name": "lodmodel1.rws.PS3.glb",
+                        "index_source_path": "",
+                        "index_file_hash": "",
+                        "paths": [
+                            "L03_HungryHungryHomer/eighty_bites/Zone7_str/assets_environs_zone7/export/terrain/lodmodel1_93345b.rws.PS3.glb",
+                            ""
+                        ]
+                    },
+                    "collision": {
+                        "enabled": true,
+                        "shapePlacement": "StaticBodyChild",
+                        "ShapeType": "Trimesh",
+                        "containerName": "80b_Zone07_Terrain_Mesh_Collisions"
+                    }
+                }
+            ]
+        }]
+    }
+]

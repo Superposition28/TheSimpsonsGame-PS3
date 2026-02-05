@@ -1,16 +1,16 @@
 [
     {
-        "name": "MedalOfHomer",
-        "path": "Node4D/Node3D/Levels/MedalOfHomer.tscn",
+        "name": "L10_BargainBin",
+        "path": "Node4D/Node3D/Levels/L10_BargainBin.tscn",
         "class": "Node3D",
         "type": "scene",
         "children": [{
-            "name": "medal_of_homer3D",
+            "name": "bargainbin3D",
             "Type": "Node",
             "class": "Node3D",
             "config": {
                 "transform": {
-                    "position": {"x": 0, "y": -1400.111, "z": 0},
+                    "position": {"x": -1000, "y": -1100.111, "z": 0},
                     "rotation_degrees": {"x": 0, "y": 0, "z": 0},
                     "scale": {"x": 1, "y": 1, "z": 1}
                 }

@@ -1,0 +1,102 @@
+[
+    {
+        "name": "L02_BartmanBegins",
+        "path": "Node4D/Node3D/Levels/L02_BartmanBegins.tscn",
+        "class": "Node3D",
+        "type": "scene",
+        "children": [{
+            "name": "brt3D",
+            "Type": "Node",
+            "class": "Node3D",
+            "config": {
+                "transform": {
+                    "position": {"x": -1000, "y": -300.111, "z": 0},
+                    "rotation_degrees": {"x": 0, "y": 0, "z": 0},
+                    "scale": {"x": 1, "y": 1, "z": 1}
+                }
+            },
+            "children": [
+                {
+                    "name": "Zone01_Terrain",
+                    "path": "assets/L02_BartmanBegins/brt/zone01_str/assets/environs_zone01/export/terrain/lodmodel1_459e37.rws.PS3.glb",
+                    "index": {
+                        "index_id": -1,
+                        "index_source_file_name": "lodmodel1.rws.PS3.glb",
+                        "index_source_path": "",
+                        "index_file_hash": "",
+                        "paths": [
+                            "L02_BartmanBegins/brt/zone01_str/assets/environs_zone01/export/terrain/lodmodel1_459e37.rws.PS3.glb",
+                            ""
+                        ]
+                    },
+                    "collision": {
+                        "enabled": true,
+                        "shapePlacement": "StaticBodyChild",
+                        "ShapeType": "Trimesh",
+                        "containerName": "Brt_Zone01_Terrain_Mesh_Collisions"
+                    }
+                },
+                {
+                    "name": "Zone02_Terrain",
+                    "path": "assets/L02_BartmanBegins/brt/zone02_str/assets/environs_zone02/export/terrain/lodmodel1_999873.rws.PS3.glb",
+                    "index": {
+                        "index_id": -1,
+                        "index_source_file_name": "lodmodel1.rws.PS3.glb",
+                        "index_source_path": "",
+                        "index_file_hash": "",
+                        "paths": [
+                            "L02_BartmanBegins/brt/zone02_str/assets/environs_zone02/export/terrain/lodmodel1_999873.rws.PS3.glb",
+                            ""
+                        ]
+                    },
+                    "collision": {
+                        "enabled": true,
+                        "shapePlacement": "StaticBodyChild",
+                        "ShapeType": "Trimesh",
+                        "containerName": "Brt_Zone02_Terrain_Mesh_Collisions"
+                    }
+                },
+                {
+                    "name": "Zone03_Terrain",
+                    "path": "assets/L02_BartmanBegins/brt/zone03_str/assets/environs_zone03/export/terrain/lodmodel1_3b9e19.rws.PS3.glb",
+                    "index": {
+                        "index_id": -1,
+                        "index_source_file_name": "lodmodel1.rws.PS3.glb",
+                        "index_source_path": "",
+                        "index_file_hash": "",
+                        "paths": [
+                            "L02_BartmanBegins/brt/zone03_str/assets/environs_zone03/export/terrain/lodmodel1_3b9e19.rws.PS3.glb",
+                            ""
+                        ]
+                    },
+                    "collision": {
+                        "enabled": true,
+                        "shapePlacement": "StaticBodyChild",
+                        "ShapeType": "Trimesh",
+                        "containerName": "Brt_Zone03_Terrain_Mesh_Collisions"
+                    }
+                },
+                {
+                    "name": "Zone04_Terrain",
+                    "path": "assets/L02_BartmanBegins/brt/zone04_str/assets/environs_zone04/export/terrain/lodmodel1_2de7bd.rws.PS3.glb",
+                    "index": {
+                        "index_id": -1,
+                        "index_source_file_name": "lodmodel1.rws.PS3.glb",
+                        "index_source_path": "",
+                        "index_file_hash": "",
+                        "paths": [
+                            "L02_BartmanBegins/brt/zone04_str/assets/environs_zone04/export/terrain/lodmodel1_2de7bd.rws.PS3.glb",
+                            ""
+                        ]
+                    },
+                    "collision": {
+                        "enabled": true,
+                        "shapePlacement": "StaticBodyChild",
+                        "ShapeType": "Trimesh",
+                        "containerName": "Brt_Zone04_Terrain_Mesh_Collisions"
+                    }
+                }
+            ]
+        }]
+    }
+]

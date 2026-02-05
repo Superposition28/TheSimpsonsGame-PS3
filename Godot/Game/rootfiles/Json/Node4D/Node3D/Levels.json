@@ -6,94 +6,94 @@
         "type": "scene",
         "children": [
             {
-                "name": "GameHub",
-                "path": "Node4D/Node3D/Levels/GameHub.tscn",
-                "config_file": "Node4D/Node3D/Levels/GameHub.json"
+                "name": "LHub-00_GameHub",
+                "path": "Node4D/Node3D/Levels/LHub-00_GameHub.tscn",
+                "config_file": "Node4D/Node3D/Levels/LHub-00_GameHub.json"
             },
             {
-                "name": "SprHub",
-                "path": "Node4D/Node3D/Levels/SprHub.tscn",
-                "config_file": "Node4D/Node3D/Levels/SprHub.json"
+                "name": "LHub-00_SprHub",
+                "path": "Node4D/Node3D/Levels/LHub-00_SprHub.tscn",
+                "config_file": "Node4D/Node3D/Levels/LHub-00_SprHub.json"
             },
             {
-                "name": "TheLandOfChocolate",
-                "path": "Node4D/Node3D/Levels/TheLandOfChocolate.tscn",
-                "config_file": "Node4D/Node3D/Levels/TheLandOfChocolate.json"
+                "name": "L01_LandOfChocolate",
+                "path": "Node4D/Node3D/Levels/L01_LandOfChocolate.tscn",
+                "config_file": "Node4D/Node3D/Levels/L01_LandOfChocolate.json"
             },
             {
-                "name": "BartmanBegins",
-                "path": "Node4D/Node3D/Levels/BartmanBegins.tscn",
-                "config_file": "Node4D/Node3D/Levels/BartmanBegins.json"
+                "name": "L02_BartmanBegins",
+                "path": "Node4D/Node3D/Levels/L02_BartmanBegins.tscn",
+                "config_file": "Node4D/Node3D/Levels/L02_BartmanBegins.json"
             },
             {
-                "name": "HungryHungryHomer",
-                "path": "Node4D/Node3D/Levels/HungryHungryHomer.tscn",
-                "config_file": "Node4D/Node3D/Levels/HungryHungryHomer.json"
+                "name": "L03_HungryHungryHomer",
+                "path": "Node4D/Node3D/Levels/L03_HungryHungryHomer.tscn",
+                "config_file": "Node4D/Node3D/Levels/L03_HungryHungryHomer.json"
             },
             {
-                "name": "TreeHugger",
-                "path": "Node4D/Node3D/Levels/TreeHugger.tscn",
-                "config_file": "Node4D/Node3D/Levels/TreeHugger.json"
+                "name": "L04_TreeHugger",
+                "path": "Node4D/Node3D/Levels/L04_TreeHugger.tscn",
+                "config_file": "Node4D/Node3D/Levels/L04_TreeHugger.json"
             },
             {
-                "name": "MobRules",
-                "path": "Node4D/Node3D/Levels/MobRules.tscn",
-                "config_file": "Node4D/Node3D/Levels/MobRules.json"
+                "name": "L05_MobRules",
+                "path": "Node4D/Node3D/Levels/L05_MobRules.tscn",
+                "config_file": "Node4D/Node3D/Levels/L05_MobRules.json"
             },
             {
-                "name": "EnterTheCheatrix",
-                "path": "Node4D/Node3D/Levels/EnterTheCheatrix.tscn",
-                "config_file": "Node4D/Node3D/Levels/EnterTheCheatrix.json"
+                "name": "L06_EnterTheCheatrix",
+                "path": "Node4D/Node3D/Levels/L06_EnterTheCheatrix.tscn",
+                "config_file": "Node4D/Node3D/Levels/L06_EnterTheCheatrix.json"
             },
             {
-                "name": "DayOfTheDolphin",
-                "path": "Node4D/Node3D/Levels/DayOfTheDolphin.tscn",
-                "config_file": "Node4D/Node3D/Levels/DayOfTheDolphin.json"
+                "name": "L07_DayOfTheDolphin",
+                "path": "Node4D/Node3D/Levels/L07_DayOfTheDolphin.tscn",
+                "config_file": "Node4D/Node3D/Levels/L07_DayOfTheDolphin.json"
             },
             {
-                "name": "TheColossalDonut",
-                "path": "Node4D/Node3D/Levels/TheColossalDonut.tscn",
-                "config_file": "Node4D/Node3D/Levels/TheColossalDonut.json"
+                "name": "L08_TheColossalDonut",
+                "path": "Node4D/Node3D/Levels/L08_TheColossalDonut.tscn",
+                "config_file": "Node4D/Node3D/Levels/L08_TheColossalDonut.json"
             },
             {
-                "name": "Invasion",
-                "path": "Node4D/Node3D/Levels/Invasion.tscn",
-                "config_file": "Node4D/Node3D/Levels/Invasion.json"
+                "name": "L09_Invasion",
+                "path": "Node4D/Node3D/Levels/L09_Invasion.tscn",
+                "config_file": "Node4D/Node3D/Levels/L09_Invasion.json"
             },
             {
-                "name": "BargainBin",
-                "path": "Node4D/Node3D/Levels/BargainBin.tscn",
-                "config_file": "Node4D/Node3D/Levels/BargainBin.json"
+                "name": "L10_BargainBin",
+                "path": "Node4D/Node3D/Levels/L10_BargainBin.tscn",
+                "config_file": "Node4D/Node3D/Levels/L10_BargainBin.json"
             },
             {
-                "name": "NeverQuest",
-                "path": "Node4D/Node3D/Levels/NeverQuest.tscn",
-                "config_file": "Node4D/Node3D/Levels/NeverQuest.json"
+                "name": "L11_NeverQuest",
+                "path": "Node4D/Node3D/Levels/L11_NeverQuest.tscn",
+                "config_file": "Node4D/Node3D/Levels/L11_NeverQuest.json"
             },
             {
-                "name": "GrandTheftScratchy",
-                "path": "Node4D/Node3D/Levels/GrandTheftScratchy.tscn",
-                "config_file": "Node4D/Node3D/Levels/GrandTheftScratchy.json"
+                "name": "L12_GrandTheftScratchy",
+                "path": "Node4D/Node3D/Levels/L12_GrandTheftScratchy.tscn",
+                "config_file": "Node4D/Node3D/Levels/L12_GrandTheftScratchy.json"
             },
             {
-                "name": "MedalOfHomer",
-                "path": "Node4D/Node3D/Levels/MedalOfHomer.tscn",
-                "config_file": "Node4D/Node3D/Levels/MedalOfHomer.json"
+                "name": "L13_MedalOfHomer",
+                "path": "Node4D/Node3D/Levels/L13_MedalOfHomer.tscn",
+                "config_file": "Node4D/Node3D/Levels/L13_MedalOfHomer.json"
             },
             {
-                "name": "BigSuperHappy",
-                "path": "Node4D/Node3D/Levels/BigSuperHappy.tscn",
-                "config_file": "Node4D/Node3D/Levels/BigSuperHappy.json"
+                "name": "L14_BigSuperHappy",
+                "path": "Node4D/Node3D/Levels/L14_BigSuperHappy.tscn",
+                "config_file": "Node4D/Node3D/Levels/L14_BigSuperHappy.json"
             },
             {
-                "name": "Rhymes",
-                "path": "Node4D/Node3D/Levels/Rhymes.tscn",
-                "config_file": "Node4D/Node3D/Levels/Rhymes.json"
+                "name": "L15_Rhymes",
+                "path": "Node4D/Node3D/Levels/L15_Rhymes.tscn",
+                "config_file": "Node4D/Node3D/Levels/L15_Rhymes.json"
             },
             {
-                "name": "MeetThyPlayer",
-                "path": "Node4D/Node3D/Levels/MeetThyPlayer.tscn",
-                "config_file": "Node4D/Node3D/Levels/MeetThyPlayer.json"
+                "name": "L16_MeetThyPlayer",
+                "path": "Node4D/Node3D/Levels/L16_MeetThyPlayer.tscn",
+                "config_file": "Node4D/Node3D/Levels/L16_MeetThyPlayer.json"
             }
         ]
     }

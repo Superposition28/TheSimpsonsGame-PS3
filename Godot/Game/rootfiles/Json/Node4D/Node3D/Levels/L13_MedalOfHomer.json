@@ -1,16 +1,16 @@
 [
     {
-        "name": "BartmanBegins",
-        "path": "Node4D/Node3D/Levels/BartmanBegins.tscn",
+        "name": "L13_MedalOfHomer",
+        "path": "Node4D/Node3D/Levels/L13_MedalOfHomer.tscn",
         "class": "Node3D",
         "type": "scene",
         "children": [{
-            "name": "brt3D",
+            "name": "medal_of_homer3D",
             "Type": "Node",
             "class": "Node3D",
             "config": {
                 "transform": {
-                    "position": {"x": -1000, "y": -300.111, "z": 0},
+                    "position": {"x": 0, "y": -1400.111, "z": 0},
                     "rotation_degrees": {"x": 0, "y": 0, "z": 0},
                     "scale": {"x": 1, "y": 1, "z": 1}
                 }

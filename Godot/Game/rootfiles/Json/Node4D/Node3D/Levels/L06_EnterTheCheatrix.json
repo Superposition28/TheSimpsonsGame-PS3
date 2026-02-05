@@ -1,16 +1,16 @@
 [
     {
-        "name": "TreeHugger",
-        "path": "Node4D/Node3D/Levels/TreeHugger.tscn",
+        "name": "L06_EnterTheCheatrix",
+        "path": "Node4D/Node3D/Levels/L06_EnterTheCheatrix.tscn",
         "class": "Node3D",
         "type": "scene",
         "children": [{
-            "name": "tree_hugger3D",
+            "name": "cheater3D",
             "Type": "Node",
             "class": "Node3D",
             "config": {
                 "transform": {
-                    "position": {"x": -1000, "y": -500.111, "z": 0},
+                    "position": {"x": -1000, "y": -700.111, "z": 0},
                     "rotation_degrees": {"x": 0, "y": 0, "z": 0},
                     "scale": {"x": 1, "y": 1, "z": 1}
                 }
