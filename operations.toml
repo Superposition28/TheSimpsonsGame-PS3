@@ -286,6 +286,8 @@ condition = "enable_export"
 validation = { required = true, message = "You must select at least one format." }
 
 
+## ignoring audio/video folder after conversion means those files wont be copied to the final game folder,
+## they cant be run in the flattener as theres too many files, so they need to be copied manually or run after the flattener
 
 ## blender cannot handle paths that exeed windows path limits
 ## blender refused to accept my solutions to this so i did two things to ensure it works for -
@@ -334,6 +336,8 @@ args = [
 	"--set", "Type=FullFlattened:string"
 ]
 
+
+
 # convert all lh2 dialogue/subtitles to csv
 [[operation]]
 id = 17
@@ -377,38 +381,7 @@ script = "{{Game_Root}}/Godot/Game/godot-init-V0.5.0.lua"
 args = [
 	"--project-name", "SimpsonsGamePS3",
 	"--repo-root", "{{Project_Root}}",
-	"--sourcePath", "{{Game_Root}}/GameFiles/{{STROUT}}-{{Region}}_{{Type}}-{{audio_state}}-{{isRenamed}}"
-]
-
-## the HARD part but its menus, and UI this time
-[[operation]]
-id = 16
-Name = "GODOT - Generate Menu's (EXPERIMENTAL)"
-run-all = false
-depends-on = [0,6,8,9,11,12,13,14]
-script_type = "lua"
-script = "{{Project_Root}}/EngineApps/Games/TheSimpsonsGame-PS3/Godot/Game.Menu/godot-init-V0.4.2.lua"
-args = [
-	"--project-name", "SimpsonsGamePS3",
-	"--repo-root", "{{Project_Root}}",
-	"--sourcePath", "{{Game_Root}}/GameFiles/{{STROUT}}-{{Region}}_{{Type}}-{{audio_state}}-{{isRenamed}}"
-]
-
-## dev
-[[operation]]
-id = -1
-Name = "godot Dev tests"
-run-all = false
-depends-on = []
-script_type = "lua"
-script = "{{Project_Root}}/EngineApps/Games/TheSimpsonsGame-PS3/Godot/Game.Dev/godot-init-V0.4.2.lua"
-args = [
-	"--project-name", "Test",
-	"--repo-root", "{{Project_Root}}",
-	"--game-root", "{{Game_Root}}",
 	"--sourcePath", "{{Game_Root}}/GameFiles/{{STROUT}}-{{Region}}_{{Type}}-{{audio_state}}-{{isRenamed}}",
 	"--iconPath", "{{SourcePath}}/{{Region}}/{{PostSourcePath}}",
 	"--no-exit"
 ]
-
-## more HARD parts to come?...

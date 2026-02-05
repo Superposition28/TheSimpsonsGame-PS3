@@ -8,6 +8,7 @@
             "name": "rhymes3D",
             "Type": "Node",
             "class": "Node3D",
+            "path": "Node4D/Node3D/Levels/L15_Rhymes/rhymes3D.tscn",
             "config": {
                 "transform": {
                     "position": {"x": 0, "y": -1600.111, "z": 0},

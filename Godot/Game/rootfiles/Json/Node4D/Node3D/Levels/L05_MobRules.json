@@ -8,6 +8,7 @@
             "name": "mob_rules3D",
             "Type": "Node",
             "class": "Node3D",
+            "path": "Node4D/Node3D/Levels/L05_MobRules/mob_rules3D.tscn",
             "config": {
                 "transform": {
                     "position": {"x": 1000, "y": -600.111, "z": 0},

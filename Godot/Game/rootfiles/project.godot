@@ -11,7 +11,7 @@ config_version=5
 [application]
 
 config/name="Game"
-run/main_scene="res://node.tscn"
+run/main_scene="res://node4D.tscn"
 config/use_custom_user_dir=true
 config/features=PackedStringArray("4.5", "GL Compatibility")
 boot_splash/bg_color=Color(0.17072648, 0.055087596, 0.33185843, 1)

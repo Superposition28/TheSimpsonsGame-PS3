@@ -45,6 +45,9 @@ local Colours = {
     DARKRED = "darkred"
 }
 
+-- # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
+-- # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
+
 local function normalize(p)
     if not p then return p end
     if path_sep == "\\" then
@@ -194,7 +197,6 @@ end
 -- File ops
 local function copy_file(src, dst)
     sdk.ensure_dir(normalize(dirname(dst)))
-    -- Use SDK copy_file (guaranteed by engine runtime). Validate afterward.
     local ok = sdk.copy_file(src, dst, true)
     if not ok then
         fatal(string.format("SDK copy failed: '%s' -> '%s'", src, dst))
@@ -404,9 +406,101 @@ local function tableToString(t)
     return "{" .. table.concat(result, ", ") .. "}"
 end
 
+
+-- # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
+-- # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
+
+
+local function resolve_godot()
+    local tool_fn = rawget(_G, "tool")
+    local p = tool_fn("Godot")
+    if p and p ~= "" then return p end
+    fatal("Godot executable not found via tool('Godot'); ensure Godot is installed and configured in the engine.")
+end
+
+-- Helper to extract parent directory using string patterns
+local function get_parent_directory(path)
+    if not path then return nil end
+    -- Normalize to forward slashes for easier matching
+    path = path:gsub("\\", "/")
+    -- Remove trailing slash if present (e.g. "path/to/dir/" -> "path/to/dir")
+    if path:sub(-1) == "/" then
+        path = path:sub(1, -2)
+    end
+    -- Capture everything up to the last slash
+    local parent = path:match("^(.*)/[^/]+$")
+    return parent
+end
+
+local function discover_pngs_in_dir(dir)
+    local list = {}
+    if not dir or dir == "" then return list end
+    dir = normalize(dir)
+    log_info("Scanning for logo images in: " .. dir)
+
+    -- Using sdk.list_dir from LuaSdkModule.cs
+    local entries = sdk.list_dir(dir)
+    if not entries then return list end
+
+    for i = 1, #entries do
+        local name = entries[i]
+        if name ~= "." and name ~= ".." then
+            local p = join(dir, name)
+            -- Using sdk.attributes from LuaSdkModule.cs
+            local a = sdk.attributes(p)
+            if a and a.mode == "file" then
+                if name:lower():sub(-4) == ".png" then
+                    table.insert(list, p)
+                end
+            end
+        end
+    end
+    return list
+end
+
+local function get_logos(iconPath)
+    local logos = {}
+    local ok, err = pcall(function()
+        local logo_dir = iconPath
+
+        -- 1. First Attempt: Check the specific iconPath
+        if logo_dir and sdk.is_dir(logo_dir) then
+            logos = discover_pngs_in_dir(logo_dir)
+        elseif logo_dir then
+            log_warn("Logo directory not found: " .. logo_dir)
+        end
+
+        -- 2. Fallback Attempt: If no logos found, check the parent directory
+        if #logos == 0 and logo_dir then
+            local parent_dir = get_parent_directory(logo_dir)
+
+            -- Ensure parent exists and is actually different from the original dir
+            if parent_dir and parent_dir ~= logo_dir and sdk.is_dir(parent_dir) then
+                log_info("No PNGs found in icon path. Checking parent directory: " .. parent_dir)
+                logos = discover_pngs_in_dir(parent_dir)
+            end
+        end
+
+        if #logos > 0 then
+            log_info("Found game logo images: " .. table.concat(logos, ", "))
+        end
+    end)
+
+    if not ok then
+        log_warn("Logo scan warning: " .. tostring(err))
+    end
+    return logos
+end
+
+
+-- # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
+-- # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
+
+
 -- Constants
-local AUDIO_TOP1 = "audiostreams" -- default name, if not renamed to Assets_1_Audio_Streams
-local AUDIO_TOP2 = "Assets_1_Audio_Streams"
+local AUDIO_TOP1 = "audiostreams" -- source name
+local AUDIO_TOP2 = "A1_Audio" -- renamed
+-- Map of language folder names under audiostreams to whether they should be prioritized first (true) or later (false) in processing order.
 local AUDIO_LANG_FOLDERS = { EN=true, ES=true, FR=true, IT=true, Global=true }
 
 -- Create and import Godot project
@@ -492,13 +586,15 @@ local function create_godot_project(project_name, project_path, extracted_root, 
 
     -- Confirm potentially destructive operations once per run
     local confirm_overwrite = true
+    local skip_import = false
     -- If destination contains existing assets, prompt for confirmation
     local existing_assets = sdk.list_dir(assets_dst_root)
     if existing_assets and #existing_assets > 0 then
         local ans = prompt("Assets already exist in project; files may be overwritten. Continue? (y/N)", "confirm_overwrite", false)
         if not ans or (ans:lower() ~= "y" and ans:lower() ~= "yes") then
-            log_warn("Operation cancelled by user before copying assets.")
-            return
+            --log_info("Skipping asset copy and import.")
+            --return
+            skip_import = true
         end
     end
 
@@ -506,50 +602,83 @@ local function create_godot_project(project_name, project_path, extracted_root, 
     sdk.ensure_dir(normalize(assets_dst_root))
 
     local case_insensitive = (path_sep == "\\") or false -- assume Windows as case-insensitive
-
-    for batch_idx, top in ipairs(top_folders) do
-        local src_top = join(extracted_root, top)
-        if top == AUDIO_TOP1 or top == AUDIO_TOP2 then
-            -- sub-batch by language folders
-            local langs = {}
-            local entries2 = sdk.list_dir(src_top)
-            if entries2 then
-                for i = 1, #entries2 do
-                    local name = entries2[i]
-                    if name ~= "." and name ~= ".." then
-                        local p = join(src_top, name)
-                        if sdk.is_dir(p) then table.insert(langs, name) end
+    if skip_import then
+        log_info("Skipping asset copy and import.")
+    else
+        for batch_idx, top in ipairs(top_folders) do
+            local src_top = join(extracted_root, top)
+            if top == AUDIO_TOP1 or top == AUDIO_TOP2 then
+                -- sub-batch by language folders
+                local langs = {}
+                local entries2 = sdk.list_dir(src_top)
+                if entries2 then
+                    for i = 1, #entries2 do
+                        local name = entries2[i]
+                        if name ~= "." and name ~= ".." then
+                            local p = join(src_top, name)
+                            if sdk.is_dir(p) then table.insert(langs, name) end
+                        end
                     end
                 end
-            end
-            table.sort(langs, function(a,b)
-                local aa = not not AUDIO_LANG_FOLDERS[a]
-                local bb = not not AUDIO_LANG_FOLDERS[b]
-                if aa ~= bb then return aa end
-                return a < b
-            end)
+                table.sort(langs, function(a,b)
+                    local aa = not not AUDIO_LANG_FOLDERS[a]
+                    local bb = not not AUDIO_LANG_FOLDERS[b]
+                    if aa ~= bb then return aa end
+                    return a < b
+                end)
 
-            for _,lang in ipairs(langs) do
-                local src_lang = join(src_top, lang)
-                local dst_lang = join(join(assets_dst_root, top), lang)
-                sdk.ensure_dir(normalize(dst_lang))
+                for _,lang in ipairs(langs) do
+                    local src_lang = join(src_top, lang)
+                    local dst_lang = join(join(assets_dst_root, top), lang)
+                    sdk.ensure_dir(normalize(dst_lang))
 
-                -- gate with .gdignore during placement
-                local gdignore_path = join(dst_lang, ".gdignore")
+                    -- gate with .gdignore during placement
+                    local gdignore_path = join(dst_lang, ".gdignore")
+                    sdk.write_file(gdignore_path, "")
+
+                    log_info(string.format("\n=== Batch %d: %s/%s ===", batch_idx, top, lang))
+
+                    -- Progress for file copy
+                    local list_counter = { count = 0 }
+                    walk_files(src_lang, function(ap, rp, fn)
+                        if asset_exts then
+                            local low = fn:lower(); local match=false; for _,e in ipairs(asset_exts) do if low:sub(-#e) == e then match=true; break end end; if not match then return end
+                        end
+                        list_counter.count = list_counter.count + 1
+                    end)
+                    local p = progress.new(list_counter.count, "copy_"..top.."_"..lang, string.format("Copy %s/%s", top, lang))
+                    local stats = copy_tree_incremental(src_lang, dst_lang, {
+                        use_hardlinks = true,
+                        verify_hash_for_large = true,
+                        large_bytes_threshold = 50*1024*1024,
+                        exts = asset_exts,
+                        progress_handle = p,
+                        case_insensitive = case_insensitive,
+                        log_sample_actions = 50,
+                    })
+                    p:Complete()
+
+                    log_info(string.format("Placed %d file(s), copied %d, hardlinked %d, skipped %d, bytes copied %.2f MiB", stats.total_seen, stats.copied, stats.hardlinked, stats.skipped_identical, stats.bytes_copied / (1024*1024)))
+
+                    sdk.remove_file(gdignore_path)
+
+                    run_godot({ godot_exe, "--headless", "--path", project_dir, "--import", "-v", "--quit" }, string.format("Headless Import: %s/%s", top, lang))
+                end
+            else
+                local dst_top = join(assets_dst_root, top)
+                sdk.ensure_dir(normalize(dst_top))
+                local gdignore_path = join(dst_top, ".gdignore")
                 sdk.write_file(gdignore_path, "")
 
-                log_info(string.format("\n=== Batch %d: %s/%s ===", batch_idx, top, lang))
+                log_info(string.format("\n=== Batch %d: %s ===", batch_idx, top))
 
-                -- Progress for file copy
                 local list_counter = { count = 0 }
-                walk_files(src_lang, function(ap, rp, fn)
-                    if asset_exts then
-                        local low = fn:lower(); local match=false; for _,e in ipairs(asset_exts) do if low:sub(-#e) == e then match=true; break end end; if not match then return end
-                    end
+                walk_files(src_top, function(ap, rp, fn)
+                    if asset_exts then local low = fn:lower(); local match=false; for _,e in ipairs(asset_exts) do if low:sub(-#e) == e then match=true; break end end; if not match then return end end
                     list_counter.count = list_counter.count + 1
                 end)
-                local p = progress.new(list_counter.count, "copy_"..top.."_"..lang, string.format("Copy %s/%s", top, lang))
-                local stats = copy_tree_incremental(src_lang, dst_lang, {
+                local p = progress.new(list_counter.count, "copy_"..top, string.format("Copy %s", top))
+                local stats = copy_tree_incremental(src_top, dst_top, {
                     use_hardlinks = true,
                     verify_hash_for_large = true,
                     large_bytes_threshold = 50*1024*1024,
@@ -564,52 +693,87 @@ local function create_godot_project(project_name, project_path, extracted_root, 
 
                 sdk.remove_file(gdignore_path)
 
-                run_godot({ godot_exe, "--headless", "--path", project_dir, "--import", "-v", "--quit" }, string.format("Headless Import: %s/%s", top, lang))
+                run_godot({ godot_exe, "--headless", "--path", project_dir, "--import", "-v", "--quit" }, string.format("Headless Import: %s", top))
             end
-        else
-            local dst_top = join(assets_dst_root, top)
-            sdk.ensure_dir(normalize(dst_top))
-            local gdignore_path = join(dst_top, ".gdignore")
-            sdk.write_file(gdignore_path, "")
-
-            log_info(string.format("\n=== Batch %d: %s ===", batch_idx, top))
-
-            local list_counter = { count = 0 }
-            walk_files(src_top, function(ap, rp, fn)
-                if asset_exts then local low = fn:lower(); local match=false; for _,e in ipairs(asset_exts) do if low:sub(-#e) == e then match=true; break end end; if not match then return end end
-                list_counter.count = list_counter.count + 1
-            end)
-            local p = progress.new(list_counter.count, "copy_"..top, string.format("Copy %s", top))
-            local stats = copy_tree_incremental(src_top, dst_top, {
-                use_hardlinks = true,
-                verify_hash_for_large = true,
-                large_bytes_threshold = 50*1024*1024,
-                exts = asset_exts,
-                progress_handle = p,
-                case_insensitive = case_insensitive,
-                log_sample_actions = 50,
-            })
-            p:Complete()
-
-            log_info(string.format("Placed %d file(s), copied %d, hardlinked %d, skipped %d, bytes copied %.2f MiB", stats.total_seen, stats.copied, stats.hardlinked, stats.skipped_identical, stats.bytes_copied / (1024*1024)))
-
-            sdk.remove_file(gdignore_path)
-
-            run_godot({ godot_exe, "--headless", "--path", project_dir, "--import", "-v", "--quit" }, string.format("Headless Import: %s", top))
         end
     end
-
     log_info("\nAssets are ready. Preparing to run tool scripts.")
     countdown(1)
 
+    -- pause with prompt to continue
+    prompt("Press Enter to continue...")
+
     -- Run scene builder
-    local cmd = { godot_exe, "--editor", "--path", project_dir, "--script", "res://Scripts/import-V0.4.gd" }
+    local cmd = { godot_exe, "--editor", "--path", project_dir, "--script", "res://Scripts/import-V0.5.gd" }
     if no_exit then table.insert(cmd, "--no-exit"); sdk.colour_print{ colour = Colours.CYAN, message = "\n'--no-exit' flag detected. Godot will remain open after script execution." } end
     run_godot(cmd, "Scene Building")
 
     log_info("\n✅✅✅ Godot project setup and scene generation complete! ✅✅✅")
     countdown(1)
 end
+
+
+-- # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
+-- # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
+
+
+local function main(project_name, repo_root, no_exit, sourcePath, iconPath)
+    -- Locate this module directory
+    local godot_module_root = script_dir
+    local module_root = dirname(godot_module_root)
+
+    -- Engine diagnostics replaces local bootstrapping
+    Diagnostics.Log("[godot-init] info: bootstrap logging started")
+
+    log_info("Godot Module Root: " .. godot_module_root)
+    log_info("Repository Root: " .. repo_root)
+
+    -- 3. Source root exists
+    if not sdk.is_dir(sourcePath) then
+        fatal("Source root not found: " .. sourcePath)
+    end
+
+    --local extracted_root = sourcePath -- or join(join(module_root, "GameFiles"), "STROUT")
+    log_info("Using sourcePath: " .. sourcePath)
+    local addons_folder = join(godot_module_root, "addons")
+    local conf_folder = join(godot_module_root, "rootfiles")
+    local project_parent = join(godot_module_root, "GodotGame")
+
+    local godot_exe = resolve_godot()
+
+    -- Pre-flight validations
+    local stage = progress.start(4, "preflight", "Pre-flight checks")
+    -- 1. Validate Godot tool
+    if not godot_exe or godot_exe == "" or not sdk.is_file(godot_exe) then
+        fatal("Godot executable not found. Ensure 'Godot' tool is configured.")
+    end
+    stage:Update(1)
+    -- 2. Godot version check (fast)
+    local ok_version = sdk.execSilent({ godot_exe, "--version" }, { wait = true })
+    if not (ok_version and ok_version.success == true) then
+        log_warn("Unable to validate Godot via '--version'. Continuing, but import may fail.")
+    end
+
+    stage:Update(1)
+    -- 4. Optional folders logged
+    if not sdk.is_dir(addons_folder) then log_warn("Addons folder not found: " .. addons_folder) end
+    stage:Update(1)
+    if not sdk.is_dir(conf_folder) then log_warn("Conf folder not found: " .. conf_folder) end
+    stage:Update(1)
+    -- Close preflight stage
+    stage:Complete()
+
+    -- Asset extensions to consider for import (filter out unnecessary files)
+    local asset_exts = { ".png", ".glb", ".wav", ".ogv", ".graph" }
+    local logos = get_logos(iconPath)
+
+    create_godot_project(project_name, project_parent, sourcePath, addons_folder, conf_folder, godot_exe, no_exit, logos, asset_exts)
+end
+
+
+-- # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
+-- # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
+
 
 -- CLI
 local function parse_args(argv)
@@ -635,117 +799,26 @@ local function parse_args(argv)
     return opts
 end
 
-local function resolve_godot()
-    local tool_fn = rawget(_G, "tool")
-    local p = tool_fn("Godot")
-    if p and p ~= "" then return p end
-    fatal("Godot executable not found via tool('Godot'); ensure Godot is installed and configured in the engine.")
-end
-
--- Discover PNG files only in the specified directory (non-recursive)
-local function discover_pngs_in_dir(dir)
-    local list = {}
-    if not dir or dir == "" then return list end
-    dir = normalize(dir)
-    local entries = sdk.list_dir(dir)
-    if not entries then return list end
-    for i = 1, #entries do
-        local name = entries[i]
-        if name ~= "." and name ~= ".." then
-            local p = join(dir, name)
-            local a = sdk.attributes(p)
-            if a and a.mode == "file" then
-                if name:lower():sub(-4) == ".png" then
-                    table.insert(list, p)
-                end
-            end
-        end
-    end
-    return list
-end
-
-local function main(project_name, repo_root, no_exit, sourcePath, iconPath)
-    -- Locate this module directory
-    local godot_module_root = script_dir
-    local module_root = dirname(godot_module_root)
-
-    -- Engine diagnostics replaces local bootstrapping
-    Diagnostics.Log("[godot-init] info: bootstrap logging started")
-
-    log_info("Godot Module Root: " .. godot_module_root)
-    log_info("Repository Root: " .. repo_root)
-
-    local extracted_root = sourcePath or join(join(module_root, "GameFiles"), "STROUT")
-    log_info("Using Extracted Root: " .. extracted_root)
-    local addons_folder = join(godot_module_root, "addons")
-    local conf_folder = join(godot_module_root, "rootfiles")
-    local project_parent = join(godot_module_root, "GodotGame")
-
-    local godot_exe = resolve_godot()
-
-    -- Pre-flight validations
-    local stage = progress.start(6, "preflight", "Pre-flight checks")
-    -- 1. Validate Godot tool
-    if not godot_exe or godot_exe == "" or not sdk.is_file(godot_exe) then
-        fatal("Godot executable not found. Ensure 'Godot' tool is configured.")
-    end
-    stage:Update(1)
-    -- 2. Godot version check (fast)
-    local ok_version = sdk.execSilent({ godot_exe, "--version" }, { wait = true })
-    if not (ok_version and ok_version.success == true) then
-        log_warn("Unable to validate Godot via '--version'. Continuing, but import may fail.")
-    end
-    stage:Update(1)
-    -- 3. Source root exists
-    if not sdk.is_dir(extracted_root) then
-        fatal("Extracted source root not found: " .. extracted_root)
-    end
-    stage:Update(1)
-    -- 4. Optional folders logged
-    if not sdk.is_dir(addons_folder) then log_warn("Addons folder not found: " .. addons_folder) end
-    stage:Update(1)
-    if not sdk.is_dir(conf_folder) then log_warn("Conf folder not found: " .. conf_folder) end
-    stage:Update(1)
-    -- Close preflight stage
-    stage:Complete()
-
-    local asset_exts = { ".png", ".glb", ".wav", ".ogv" }
-
-    local logos = {}
-    local ok, err = pcall(function()
-        -- logo discovery
-        local logo_dir = iconPath
-        if logo_dir and sdk.is_dir(logo_dir) then
-            logos = discover_pngs_in_dir(logo_dir)
-        elseif logo_dir then
-            sdk.colour_print{ colour = Colours.YELLOW, message = "Logo directory not found: " .. logo_dir }
-            logos = {}
-        end
-        if #logos > 0 then
-            sdk.colour_print{ colour = Colours.BLUE, message = "Found game logo images: " .. table.concat(logos, ", ") }
-        end
-    end)
-    if not ok then
-    sdk.colour_print{ colour = Colours.YELLOW, message = "Logo scan warning: " .. tostring(err) }
-    end
-
-    create_godot_project(project_name, project_parent, extracted_root, addons_folder, conf_folder, godot_exe, no_exit, logos, asset_exts)
-end
-
 -- Main
 local function run()
     local opts = parse_args(argv)
-    if not opts["repo-root"] or not opts["sourcePath"] then
-        fatal("Missing required args: --repo-root and --sourcePath")
+
+    if not opts["repo-root"] then
+        fatal("Missing required arg --repo-root")
+        return
     end
+    if not opts["sourcePath"] then
+        fatal("Missing required arg --sourcePath")
+        return
+    end
+
+    if not opts["iconPath"] then
+        fatal("Missing required arg --iconPath")
+        return
+    end
+
     main(opts["project-name"], normalize(opts["repo-root"]), opts["no-exit"], normalize(opts["sourcePath"]), opts["iconPath"] and normalize(opts["iconPath"]))
 end
 
-if ... == nil then
-    run()
-end
 
-return {
-    main = main,
-    run = run,
-}
+run()

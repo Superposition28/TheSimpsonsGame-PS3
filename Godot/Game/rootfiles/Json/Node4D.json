@@ -4,7 +4,7 @@
         "path": "Node4D.tscn",
         "class": "Node",
         "type": "scene",
-        "editable_children_default": true,
+        "editable_children_default": false,
         "children": [
             {
                 "name": "Node2D",

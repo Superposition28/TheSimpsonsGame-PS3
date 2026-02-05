@@ -8,6 +8,7 @@
             "name": "dayofthedolphins3D",
             "Type": "Node",
             "class": "Node3D",
+            "path": "Node4D/Node3D/Levels/L07_DayOfTheDolphin/dayofthedolphins3D.tscn",
             "config": {
                 "transform": {
                     "position": {"x": 1000, "y": -800.111, "z": 0},

@@ -8,6 +8,7 @@
             "name": "eighty_bites3D",
             "Type": "Node",
             "class": "Node3D",
+            "path": "Node4D/Node3D/Levels/L03_HungryHungryHomer/eighty_bites3D.tscn",
             "config": {
                 "transform": {
                     "position": {"x": 1000, "y": -400.111, "z": 0},

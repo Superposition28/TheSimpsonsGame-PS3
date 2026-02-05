@@ -8,6 +8,7 @@
             "name": "medal_of_homer3D",
             "Type": "Node",
             "class": "Node3D",
+            "path": "Node4D/Node3D/Levels/L13_MedalOfHomer/medal_of_homer3D.tscn",
             "config": {
                 "transform": {
                     "position": {"x": 0, "y": -1400.111, "z": 0},

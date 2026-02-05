@@ -2,7 +2,7 @@
     {
         "name": "Terminal_ControlNode",
         "path": "Node4D/Node2D/Terminal_ControlNode.tscn",
-        "script": "Node4D/Node2D/Terminal_ControlNode.gd",
+        "script": "Scripts/Node4D/Node2D/Terminal_ControlNode.gd",
         "class": "Control",
         "type": "scene",
         "children": [

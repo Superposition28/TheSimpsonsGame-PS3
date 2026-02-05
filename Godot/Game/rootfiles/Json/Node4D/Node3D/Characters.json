@@ -16,6 +16,20 @@
                 "class": "Node3D",
                 "path": "Node4D/Node3D/Characters/player.tscn",
                 "type": "scene",
+                "children": [
+                    {
+                        "name": "CollisionShape3D",
+                        "type": "node",
+                        "class": "CollisionShape3D",
+                        "config": {
+                            "transform": {
+                                "position": {"x": 0, "y": 0, "z": 0},
+                                "rotation_degrees": {"x": 0, "y": 0, "z": 0},
+                                "scale": {"x": 1, "y": 1, "z": 1}
+                            }
+                        }
+                    }
+                ],
                 "config": {
                     "transform": {
                         "position": {
@@ -35,6 +49,39 @@
                         }
                     }
                 }
+            },
+            {
+                "name": "All",
+                "class": "Node3D",
+                "path": "Node4D/Node3D/Characters/all.tscn",
+                "type": "scene",
+                "children": [
+                    {
+                        "name": "Bart",
+                        "path": "Node4D/Node3D/Characters/all/bart.tscn",
+                        "config_file": "Node4D/Node3D/Characters/bart.json"
+                    },
+                    {
+                        "name": "Homer",
+                        "path": "Node4D/Node3D/Characters/all/homer.tscn",
+                        "config_file": "Node4D/Node3D/Characters/homer.json"
+                    },
+                    {
+                        "name": "Lisa",
+                        "path": "Node4D/Node3D/Characters/all/lisa.tscn",
+                        "config_file": "Node4D/Node3D/Characters/lisa.json"
+                    },
+                    {
+                        "name": "Maggie",
+                        "path": "Node4D/Node3D/Characters/all/maggie.tscn",
+                        "config_file": "Node4D/Node3D/Characters/maggie.json"
+                    },
+                    {
+                        "name": "Marge",
+                        "path": "Node4D/Node3D/Characters/all/marge.tscn",
+                        "config_file": "Node4D/Node3D/Characters/marge.json"
+                    }
+                ]
             }
         ]
     }

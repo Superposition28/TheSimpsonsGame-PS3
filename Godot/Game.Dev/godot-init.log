@@ -1,7 +1,0 @@
-[2025-11-16 18:48:28] INFO  bootstrap logging started
-[2025-11-16 18:48:28] INFO  Using Extracted Root: A:\RemakeEngine\EngineApps\Games\TheSimpsonsGame-PS3\GameFiles\STROUT
-[2025-11-16 18:48:28] INFO  Using Addons Folder: A:\RemakeEngine/EngineApps/Games/TheSimpsonsGame-PS3/Godot/Game.Dev\addons
-[2025-11-16 18:48:28] INFO  Using Conf Folder: A:\RemakeEngine/EngineApps/Games/TheSimpsonsGame-PS3/Godot/Game.Dev\rootfiles
-[2025-11-16 18:48:28] INFO  Using Project Parent: A:\RemakeEngine\EngineApps\Games\TheSimpsonsGame-PS3\GameFiles\GodotGame
-[2025-11-16 18:48:28] INFO  Using Godot Executable: A:\RemakeEngine\Tools\Godot\Godot_v4.5-stable_mono_win64\Godot_v4.5-stable_mono_win64.exe
-[2025-11-16 18:48:28] INFO  Godot Project Directory: A:\RemakeEngine\EngineApps\Games\TheSimpsonsGame-PS3\GameFiles\GodotGame\Test

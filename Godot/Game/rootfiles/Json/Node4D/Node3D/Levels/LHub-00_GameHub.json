@@ -8,6 +8,7 @@
             "name": "LOC3D",
             "Type": "Node",
             "class": "Node3D",
+            "path": "Node4D/Node3D/Levels/LHub-00_GameHub/LOC3D.tscn",
             "config": {
                 "transform": {
                     "position": {

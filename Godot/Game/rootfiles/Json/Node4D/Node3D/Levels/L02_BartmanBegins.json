@@ -8,6 +8,7 @@
             "name": "brt3D",
             "Type": "Node",
             "class": "Node3D",
+            "path": "Node4D/Node3D/Levels/L02_BartmanBegins/brt3D.tscn",
             "config": {
                 "transform": {
                     "position": {"x": -1000, "y": -300.111, "z": 0},

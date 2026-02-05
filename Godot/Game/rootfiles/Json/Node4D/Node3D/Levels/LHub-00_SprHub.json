@@ -8,6 +8,7 @@
             "name": "SpringFieldHub3D",
             "Type": "Node",
             "class": "Node3D",
+            "path": "Node4D/Node3D/Levels/LHub-00_SprHub/SpringFieldHub3D.tscn",
             "config": {
                 "transform": {
                     "position": {"x": 0, "y": -100.111, "z": 0},

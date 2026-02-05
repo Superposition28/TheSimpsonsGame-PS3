@@ -1,0 +1,61 @@
+[
+    {
+        "name": "Bart",
+        "path": "Node4D/Node3D/Characters/all/bart.tscn",
+        "class": "Node3D",
+        "type": "scene",
+        "children": [
+            {
+                "name": "bart",
+                "path": "assets/A2_Characters/GlobalFolder/costumes/costume_bart_default_str/assets_chars/bart/bound_export/lod2_model_1a1244.dff.PS3.glb",
+                "config": {
+                    "transform": {
+                        "position": {"x": -2000, "y": -2000, "z": 0},
+                        "rotation_degrees": {"x": 0, "y": 0, "z": 0},
+                        "scale": {"x": 1, "y": 1, "z": 1}
+                    }
+                },
+                "collision": {
+                    "enabled": true,
+                    "shapePlacement": "StaticBodyChild",
+                    "ShapeType": "Trimesh",
+                    "containerName": "bart_collision"
+                }
+            },
+            {
+                "name": "bartman",
+                "path": "assets/A2_Characters/GlobalFolder/costumes/costume_bart_default_str/assets_chars/bartman/bound_export/lod1_model_30b841.dff.PS3.glb",
+                "config": {
+                    "transform": {
+                        "position": {"x": -2000, "y": -2000, "z": 10},
+                        "rotation_degrees": {"x": 0, "y": 0, "z": 0},
+                        "scale": {"x": 1, "y": 1, "z": 1}
+                    }
+                },
+                "collision": {
+                    "enabled": true,
+                    "shapePlacement": "StaticBodyChild",
+                    "ShapeType": "Trimesh",
+                    "containerName": "bartman_collision"
+                }
+            },
+            {
+                "name": "bart_robo",
+                "path": "assets/A2_Characters/GlobalFolder/costumes/costume_bart_default_str/assets_chars/bart_robo/bound_export/lod2_model_00eda9.dff.PS3.glb",
+                "config": {
+                    "transform": {
+                        "position": {"x": -2000, "y": -2000, "z": 20},
+                        "rotation_degrees": {"x": 0, "y": 0, "z": 0},
+                        "scale": {"x": 1, "y": 1, "z": 1}
+                    }
+                },
+                "collision": {
+                    "enabled": true,
+                    "shapePlacement": "StaticBodyChild",
+                    "ShapeType": "Trimesh",
+                    "containerName": "bart_robo_collision"
+                }
+            }
+        ]
+    }
+]
