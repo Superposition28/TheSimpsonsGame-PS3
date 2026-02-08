@@ -14,35 +14,23 @@ This module re-implements *The Simpsons Game* (2007, PS3 edition) using the [Rem
 
 ## File Breakdown
 
-- `config/` - Module configuration files (e.g., `config.toml`, patches, maps, indices).
-  - `config/DirectoryNormalizer.rules.json` - Rules used by the Directory Normalizer to flatten and normalize paths.
-  - `config/GameFilesIndex_{Region}_{Type}-{audio_state}-{isRenamed}.db` - Dynamic asset index used for validation and tools. Example: `GameFilesIndex_EU_FullFlattened-audio_reorg-isRenamed.db`.
-  - `config/RenameMap.db` - Maps cryptic original folder names to human-readable names used by the module.
-  - `config/Patches/` - Data patches for extracted assets (e.g., UV maps, texture maps).
-    - `config/Patches/Texture_Maps.json`
-    - `config/Patches/UV_Maps.json`
-    - `config/Patches/Maps/` - Patch data for specific locations/assets.
-- `data/` - Supplemental data (audio maps, naming docs).
-- `dev-tools/` - Indexer scripts and supporting utilities (not used during normal operations).
-  - `dev-tools/indexer/` - Scripts for generating `GameFilesIndex_{...}.db`.
-- `Game/` - Godot project files and scripts for remake logic.
-  - `Game/addons/` - Third-party or custom Godot plugins.
-  - `Game/conf/` - Project configuration files.
-    - `Game/conf/project.godot`
-  - `Game/GodotGame/` - Built Godot games.
-  - `Game/Scripts/` - Scene Builder GDScript for generating game nodes and worlds.
-    - `Game/Scripts/_BuildScenes.gd`
-  - `Game/init.lua` - Godot project initializer.
-  - `Game/scene_config.json` - Asset locations and node/script mapping.
-- `GameFiles/` - Output directory for extracted and converted game assets.
+- `config/`
+  - `config/RenameMap.db` - Maps original folder names to human-readable names used by the module.
+
+- `Godot/`
+  - `Game/` - Godot project files and scripts for remake logic.
+    - `addons/` - Third-party and custom Godot addons.
+    - `rootfiles/Scripts/` - Scene Builder GDScript for generating game nodes and worlds.
+      - `import-V*.gd` - Main scene builder script.
+    - `godot-init-V*.lua` - Godot project initializer.
+    - `rootfiles/json/**.json` - Asset locations and node/script mapping.
+
 - `operations/` - Core operation scripts (Lua, BMS, Blender, etc.).
-  - `operations/Blender/` - Blender conversion scripts and handlers.
-    - `operations/Blender/Texture_Handlers/` - Texture import/export handlers.
-    - `operations/Blender/UV_Map_Handlers/` - UV map import/export handlers.
-  - `operations/DirectoryNormalizer.lua` - Replaces the older C# directory flattener; normalizes folder structure using the rules JSON.
+  - `Blender/` - Blender conversion scripts and handlers.
 - `reversing/` - Reverse engineering notes and format analyses.
-  - `reversing/Source/` - Main format documentation and notes.
-  - `reversing/Source/Format-Analysis/` - Detailed format-specific analyses.
+  - `Source/` - Main format documentation and notes.
+  - `Source/Format-Analysis/` - Detailed format-specific analyses.
+
 - `Source/` - Local copy of user-provided game files (if copied/moved).
 - `.gitignore` - Ignore rules for assets and outputs.
 - `blank.blend` - Blank Blender file for model conversion.
@@ -51,7 +39,6 @@ This module re-implements *The Simpsons Game* (2007, PS3 edition) using the [Rem
 - `operations.toml` / `operations.json` - Defines the sequence of asset-processing operations.
 - `Readme.md` - This file.
 - `Tools.toml` / `Tools.json` - Configuration for external tools managed by RemakeEngine.
-- `Stuff/` - Development workspace.
 
 ### Path Placeholders
 
@@ -60,7 +47,8 @@ RemakeEngine operations use built-in placeholders for paths and configuration. T
 **Built-in placeholders for `operations.toml`:**
 - `{{Game_Root}}` — Path to this module's root directory.
 - `{{Project_Root}}` — Path to the RemakeEngine root project directory.
-**Custom placeholders defined in `config.json`:**
+
+**Custom placeholders defined in `config.toml`:**
 - `{{SourcePath}}` — Path to your validated original game files (set by `init.lua` and stored in `config.toml`).
 - `{{Region}}` — Game region, e.g. `US` or `EU`.
 - `{{Type}}` — Extraction/structure type for validation. Set to `FullFlattened` after normalization.
