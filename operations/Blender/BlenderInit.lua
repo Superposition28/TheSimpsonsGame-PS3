@@ -656,7 +656,7 @@ local function run(args)
             local temp_db = init_db(db_filename)
             local row_count = temp_db.query("SELECT COUNT(*) as count FROM asset_map")[1].count
             temp_db.close()
-            temp_db = nil
+            --temp_db = nil
 
             if row_count == 0 then
                 log(Colours.YELLOW, string.format("Database file %s exists but asset_map table is empty; deleting and re-initializing.", db_filename))
