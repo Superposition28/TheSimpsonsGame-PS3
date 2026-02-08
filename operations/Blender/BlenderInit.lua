@@ -604,7 +604,7 @@ end
 local function run(args)
     VERBOSE = not not args.verbose
 
-    log(Colours.CYAN, string.format("Input args: %s", require("dkjson").encode(args)))
+    log(Colours.CYAN, string.format("Input args: %s", sdk.text.json.encode(args)))
 
     local marker = args.marker
     log(Colours.CYAN, string.format("Marker: %s", tostring(marker)))

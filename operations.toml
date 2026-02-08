@@ -2,6 +2,8 @@
 
 # Placeholders: Game_Root, Project_Root are built into the engine
 
+# validate-files operations cannot be run until the indexing db's are generated manually
+
 
 ## creates config.toml and ensures placeholders exist
 ## operations marked with init = true are not displayed in interactive UI or GUI lists to ensure they are always run every time
@@ -12,7 +14,7 @@
 [[operation]]
 id = 0
 init = true
-run-all = false # rerun when using run-all to ensure config is valid
+run-all = true # rerun when using run-all to ensure config is valid
 depends-on = []
 script_type = "lua"
 script = "{{Game_Root}}/operations/init.lua"
@@ -24,9 +26,9 @@ Name = "change region to US"
 script_type = "engine"
 script = "config"
 args = [
-	"--group", "placeholders",
-	"--set", "Region=US:string",
-	"--set", "MainSourcePath={{Game_Root}}\\Source\\US\\PS3_GAME\\USRDIR:string"
+    "--group", "placeholders",
+    "--set", "Region=US:string",
+    "--set", "MainSourcePath={{Game_Root}}\\Source\\US\\PS3_GAME\\USRDIR:string"
 ]
 [[operation]]
 id = -2
@@ -34,34 +36,34 @@ Name = "change region to EU"
 script_type = "engine"
 script = "config"
 args = [
-	"--group", "placeholders",
-	"--set", "Region=EU:string",
-	"--set", "MainSourcePath={{Game_Root}}\\Source\\EU\\PS3_GAME\\USRDIR:string"
+    "--group", "placeholders",
+    "--set", "Region=EU:string",
+    "--set", "MainSourcePath={{Game_Root}}\\Source\\EU\\PS3_GAME\\USRDIR:string"
 ]
 
 
 ## validates source only files for US and EU
 ## validates source folders exist changed or unchanged, should be unchanged on first run
-[[operation]] ## validation steps dont do anything and only depend on db file thats dynmaically selected based on placeholders
-id = 1
-Name = "Validate Source Game Files and Folders"
-run-all = false
-depends-on = [0]
-script_type = "engine"
-script = "validate-files"
-db = "{{Game_Root}}/config/GameFilesIndex_{{Region}}_{{Type}}-{{audio_state}}-{{isRenamed}}.db"
-args = [
-	"{{SourcePath}}/{{Region}}/{{PostSourcePath}}",
-	"--tables", "str_index:source_path,video_index:source_path,mus_index:source_path,snu_index:source_path",
-	"--required-dirs", "audiostreams,movies,frontend,simpsons_chars,spr_hub,loc,brt,eighty_bites,tree_hugger,mob_rules,cheater,dayofthedolphins,colossaldonut,dayspringfieldstoodstill,bargainbin,gamehub,neverquest,grand_theft_scratchy,medal_of_homer,bigsuperhappy,rhymes,meetthyplayer",
-]
+#[[operation]] ## validation steps dont do anything and only depend on db file thats dynmaically selected based on placeholders
+#id = 1
+#Name = "Validate Source Game Files and Folders"
+#run-all = false
+#depends-on = [0]
+#script_type = "engine"
+#script = "validate-files"
+#db = "{{Game_Root}}/config/GameFilesIndex_{{Region}}_{{Type}}-{{audio_state}}-{{isRenamed}}.db"
+#args = [
+#    "{{SourcePath}}/{{Region}}/{{PostSourcePath}}",
+#    "--tables", "str_index:source_path,video_index:source_path,mus_index:source_path,snu_index:source_path",
+#    "--required-dirs", "audiostreams,movies,frontend,simpsons_chars,spr_hub,loc,brt,eighty_bites,tree_hugger,mob_rules,cheater,dayofthedolphins,colossaldonut,dayspringfieldstoodstill,bargainbin,gamehub,neverquest,grand_theft_scratchy,medal_of_homer,bigsuperhappy,rhymes,meetthyplayer",
+#]
 
 
 ##
 [[operation]]
 id = 2
 Name = "Download Required Tools"
-run-all = false
+run-all = true
 depends-on = [0]
 script_type = "engine"
 script = "download-tools"
@@ -83,9 +85,9 @@ default = false
 #script = "validate-files"
 #db = "{{Game_Root}}/config/GameFilesIndex_{{Region}}_{{Type}}-{{audio_state}}-{{isRenamed}}.db"
 #args = [
-#	"{{SourcePath}}/{{Region}}/{{PostSourcePath}}",
-#	"--tables", "str_index:source_path,video_index:source_path,mus_index:source_path,snu_index:source_path",
-#	"--required-dirs", "audiostreams||A1_Audio, movies||A1_Video, frontend||A2_Frontend, simpsons_chars||A2_Characters_Simpsons, spr_hub||L00_SprHub, loc||L01_LandOfChocolate, brt||L02_BartmanBegins, eighty_bites||L03_HungryHungryHomer, tree_hugger||L04_TreeHugger, mob_rules||L05_MobRules, cheater||L06_EnterTheCheatrix, dayofthedolphins||L07_DayOfTheDolphin, colossaldonut||L08_TheColossalDonut, dayspringfieldstoodstill||L09_Invasion,bargainbin||L10_BargainBin,gamehub||L00_GameHub,neverquest||L11_NeverQuest,grand_theft_scratchy||L12_GrandTheftScratchy,medal_of_homer||L13_MedalOfHomer,bigsuperhappy||L14_BigSuperHappy,rhymes||L15_Rhymes,meetthyplayer||L16_MeetThyPlayer",
+#    "{{SourcePath}}/{{Region}}/{{PostSourcePath}}",
+#    "--tables", "str_index:source_path,video_index:source_path,mus_index:source_path,snu_index:source_path",
+#    "--required-dirs", "audiostreams||A1_Audio, movies||A1_Video, frontend||A2_Frontend, simpsons_chars||A2_Characters_Simpsons, spr_hub||L00_SprHub, loc||L01_LandOfChocolate, brt||L02_BartmanBegins, eighty_bites||L03_HungryHungryHomer, tree_hugger||L04_TreeHugger, mob_rules||L05_MobRules, cheater||L06_EnterTheCheatrix, dayofthedolphins||L07_DayOfTheDolphin, colossaldonut||L08_TheColossalDonut, dayspringfieldstoodstill||L09_Invasion,bargainbin||L10_BargainBin,gamehub||L00_GameHub,neverquest||L11_NeverQuest,grand_theft_scratchy||L12_GrandTheftScratchy,medal_of_homer||L13_MedalOfHomer,bigsuperhappy||L14_BigSuperHappy,rhymes||L15_Rhymes,meetthyplayer||L16_MeetThyPlayer",
 #]
 
 ## extract all other files from the archives
@@ -113,14 +115,14 @@ script_type = "engine"
 script = "format-convert"
 tool = "ffmpeg"
 args = [
-	"-m", "ffmpeg",
-	"--type", "video",
-	## doesnt need to specify the location of the movies folder as its within the source path and {{STROUT}} and the only location vp6 files exist
-	"-s", "{{SourcePath}}/{{Region}}/{{PostSourcePath}}",
-	"-t", "{{Game_Root}}/GameFiles/{{STROUT}}-{{Region}}_{{Type}}-{{audio_state}}-{{isRenamed}}",
-	#"-f", "ffmpeg.exe",
-	"-i", ".vp6",
-	"-o", ".ogv"
+    "-m", "ffmpeg",
+    "--type", "video",
+    ## doesnt need to specify the location of the movies folder as its within the source path and {{STROUT}} and the only location vp6 files exist
+    "-s", "{{SourcePath}}/{{Region}}/{{PostSourcePath}}",
+    "-t", "{{Game_Root}}/GameFiles/{{STROUT}}-{{Region}}_{{Type}}-{{audio_state}}-{{isRenamed}}",
+    #"-f", "ffmpeg.exe",
+    "-i", ".vp6",
+    "-o", ".ogv"
 ]
 
 ## convert Audio into a usable format for godot
@@ -133,22 +135,22 @@ script_type = "engine"
 script = "format-convert"
 tool = "vgmstream"
 args = [
-	"-m", "vgmstream",
-	"--type", "audio",
-	## doesnt need to specify the location of the audiostreams folder as its within the source path and {{STROUT}} and the only location snu files exist
-	"-s", "{{SourcePath}}/{{Region}}/{{PostSourcePath}}",
-	"-t", "{{Game_Root}}/GameFiles/{{STROUT}}-{{Region}}_{{Type}}-{{audio_state}}-{{isRenamed}}",
-	#"--vgmstream-cli", "vgmstream-cli.exe",
-	"-i", ".snu",
-	"-o", ".wav",
-	"--godot-compatible"
+    "-m", "vgmstream",
+    "--type", "audio",
+    ## doesnt need to specify the location of the audiostreams folder as its within the source path and {{STROUT}} and the only location snu files exist
+    "-s", "{{SourcePath}}/{{Region}}/{{PostSourcePath}}",
+    "-t", "{{Game_Root}}/GameFiles/{{STROUT}}-{{Region}}_{{Type}}-{{audio_state}}-{{isRenamed}}",
+    #"--vgmstream-cli", "vgmstream-cli.exe",
+    "-i", ".snu",
+    "-o", ".wav",
+    "--godot-compatible"
 ]
 
 ## renames output Game folders for clarity
 [[operation]]
 id = 3
 Name = "Rename base folders"
-run-all = false
+run-all = true
 depends-on = [0,6,12,13]
 script_type = "engine"
 script = "rename-folders"
@@ -163,8 +165,8 @@ Name = "rename folder STROUT-{{Region}}_{{Type}}-{{audio_state}}-{{isRenamed}} t
 script_type = "lua"
 script = "{{Game_Root}}/rename.lua"
 args = [
-	"--old_path", "{{Game_Root}}/GameFiles/STROUT-{{Region}}_{{Type}}-{{audio_state}}-notRenamed",
-	"--new_path", "{{Game_Root}}/GameFiles/STROUT-{{Region}}_{{Type}}-{{audio_state}}-isRenamed"
+    "--old_path", "{{Game_Root}}/GameFiles/STROUT-{{Region}}_{{Type}}-{{audio_state}}-notRenamed",
+    "--new_path", "{{Game_Root}}/GameFiles/STROUT-{{Region}}_{{Type}}-{{audio_state}}-isRenamed"
 ]
 
 ## creates EN folder to match language folder patterns in EU ver
@@ -172,7 +174,7 @@ args = [
 [[operation]]
 id = 4
 Name = "Reorganize Audio Files"
-run-all = false
+run-all = true
 depends-on = [0,6,13]
 script_type = "lua"
 script = "{{Game_Root}}/operations/SetupAudioDir.lua"
@@ -187,8 +189,8 @@ Name = "rename folder STROUT-{{Region}}_{{Type}}-{{audio_state}}-{{isRenamed}} t
 script_type = "lua"
 script = "{{Game_Root}}/rename.lua"
 args = [
-	"--old_path", "{{Game_Root}}/GameFiles/STROUT-{{Region}}_{{Type}}-audio_og-{{isRenamed}}",
-	"--new_path", "{{Game_Root}}/GameFiles/STROUT-{{Region}}_{{Type}}-audio_reorg-{{isRenamed}}"
+    "--old_path", "{{Game_Root}}/GameFiles/STROUT-{{Region}}_{{Type}}-audio_og-{{isRenamed}}",
+    "--new_path", "{{Game_Root}}/GameFiles/STROUT-{{Region}}_{{Type}}-audio_reorg-{{isRenamed}}"
 ]
 
 
@@ -212,26 +214,42 @@ script_type = "engine"
 script = "format-convert"
 tool = "ImageMagick"
 args = [
-	"--source", "{{Game_Root}}/GameFiles/{{STROUT}}-{{Region}}_{{Type}}-{{audio_state}}-{{isRenamed}}",
-	"--target", "{{Game_Root}}/GameFiles/{{STROUT}}-{{Region}}_{{Type}}-{{audio_state}}-{{isRenamed}}",
-	"--input-ext", ".dds",
-	"--output-ext", ".png"
+    "--source", "{{Game_Root}}/GameFiles/{{STROUT}}-{{Region}}_{{Type}}-{{audio_state}}-{{isRenamed}}",
+    "--target", "{{Game_Root}}/GameFiles/{{STROUT}}-{{Region}}_{{Type}}-{{audio_state}}-{{isRenamed}}",
+    "--input-ext", ".dds",
+    "--output-ext", ".png"
 ]
 
-## validate extraction of str and txd files
+
+# convert all lh2 dialogue/subtitles to csv
 [[operation]]
-id = 10
-Name = "validate extracted game files"
-run-all = false
+id = 17
+Name = "Extract Dialogue/Subtitles (.lh2 -> .csv)"
+run-all = true
 depends-on = [0]
-script_type = "engine"
-script = "validate-files"
-db = "{{Game_Root}}/config/GameFilesIndex_{{Region}}_{{Type}}-{{audio_state}}-{{isRenamed}}.db"
+script_type = "lua"
+script = "{{Game_Root}}/operations/lh2_to_csv.lua"
 args = [
-	"{{Game_Root}}/GameFiles/{{STROUT}}-{{Region}}_{{Type}}-{{audio_state}}-{{isRenamed}}",
-	"--tables", "preinstanced_index:source_path,txd_index:source_path,dds_index:source_path,png_index:source_path",
-	"--required-dirs", "audiostreams||A1_Audio,movies||A1_Video,frontend||A2_Frontend,simpsons_chars||A2_Characters_Simpsons,spr_hub||L00_SprHub,loc||L01_LandOfChocolate,brt||L02_BartmanBegins,eighty_bites||L03_HungryHungryHomer,tree_hugger||L04_TreeHugger,mob_rules||L05_MobRules,cheater||L06_EnterTheCheatrix,dayofthedolphins||L07_DayOfTheDolphin,colossaldonut||L08_TheColossalDonut,dayspringfieldstoodstill||L09_Invasion,bargainbin||L10_BargainBin,gamehub||L00_GameHub,neverquest||L11_NeverQuest,grand_theft_scratchy||L12_GrandTheftScratchy,medal_of_homer||L13_MedalOfHomer,bigsuperhappy||L14_BigSuperHappy,rhymes||L15_Rhymes,meetthyplayer||L16_MeetThyPlayer",
+    "--input-dir", "{{Game_Root}}/GameFiles/{{STROUT}}-{{Region}}_{{Type}}-{{audio_state}}-{{isRenamed}}"
+    # auto output to same location as input files
 ]
+
+
+
+## validate extraction of str and txd files
+#[[operation]]
+#id = 10
+#Name = "validate extracted game files"
+#run-all = false
+#depends-on = [0]
+#script_type = "engine"
+#script = "validate-files"
+#db = "{{Game_Root}}/config/GameFilesIndex_{{Region}}_{{Type}}-{{audio_state}}-{{isRenamed}}.db"
+#args = [
+#    "{{Game_Root}}/GameFiles/{{STROUT}}-{{Region}}_{{Type}}-{{audio_state}}-{{isRenamed}}",
+#    "--tables", "preinstanced_index:source_path,txd_index:source_path,dds_index:source_path,png_index:source_path",
+#    "--required-dirs", "audiostreams||A1_Audio,movies||A1_Video,frontend||A2_Frontend,simpsons_chars||A2_Characters_Simpsons,spr_hub||L00_SprHub,loc||L01_LandOfChocolate,brt||L02_BartmanBegins,eighty_bites||L03_HungryHungryHomer,tree_hugger||L04_TreeHugger,mob_rules||L05_MobRules,cheater||L06_EnterTheCheatrix,dayofthedolphins||L07_DayOfTheDolphin,colossaldonut||L08_TheColossalDonut,dayspringfieldstoodstill||L09_Invasion,bargainbin||L10_BargainBin,gamehub||L00_GameHub,neverquest||L11_NeverQuest,grand_theft_scratchy||L12_GrandTheftScratchy,medal_of_homer||L13_MedalOfHomer,bigsuperhappy||L14_BigSuperHappy,rhymes||L15_Rhymes,meetthyplayer||L16_MeetThyPlayer",
+#]
 
 ## convert 3d models into .blend files, and export to glb for godot use
 ## auto apply textures within blender as well, however materials will need to be manually adjusted within godot
@@ -243,16 +261,16 @@ depends-on = [0,2,6,8,9] # depends on blender, str extraction for assets, and te
 script_type = "lua"
 script = "{{Game_Root}}/operations/Blender/run.lua"
 args = [
-	"--game-root", "{{Game_Root}}",
-	"--base-dir", "{{Game_Root}}",
-	"--operations-dir", "{{Game_Root}}/operations",
-	"--blender-dir", "{{Game_Root}}/operations/Blender",
-	"--preinstanced-dir", "{{Game_Root}}/GameFiles/{{STROUT}}-{{Region}}_{{Type}}-{{audio_state}}-{{isRenamed}}",
-	"--blend-dir", "{{Game_Root}}/GameFiles/{{STROUT}}-{{Region}}_{{Type}}-{{audio_state}}-{{isRenamed}}",
-	"--blank-blend", "{{Game_Root}}/blank.blend",
-	"--root-drive", "{{Game_Root}}/TMP_TSG_LNKS-{{Region}}_{{Type}}-{{audio_state}}-{{isRenamed}}", # symbolic link root to avoid path length issues
-	"--main-db", "{{Game_Root}}/config/GameFilesIndex_{{Region}}_{{Type}}-{{audio_state}}-{{isRenamed}}.db",
-	"--asset-map-db", "{{Game_Root}}/GameFiles/config/{{Region}}_{{Type}}-{{audio_state}}-{{isRenamed}}/AssetMap.sqlite",
+    "--game-root", "{{Game_Root}}",
+    "--base-dir", "{{Game_Root}}",
+    "--operations-dir", "{{Game_Root}}/operations",
+    "--blender-dir", "{{Game_Root}}/operations/Blender",
+    "--preinstanced-dir", "{{Game_Root}}/GameFiles/{{STROUT}}-{{Region}}_{{Type}}-{{audio_state}}-{{isRenamed}}",
+    "--blend-dir", "{{Game_Root}}/GameFiles/{{STROUT}}-{{Region}}_{{Type}}-{{audio_state}}-{{isRenamed}}",
+    "--blank-blend", "{{Game_Root}}/blank.blend",
+    "--root-drive", "{{Game_Root}}/TMP_TSG_LNKS-{{Region}}_{{Type}}-{{audio_state}}-{{isRenamed}}", # symbolic link root to avoid path length issues
+    "--main-db", "{{Game_Root}}/config/GameFilesIndex_{{Region}}_{{Type}}-{{audio_state}}-{{isRenamed}}.db",
+    "--asset-map-db", "{{Game_Root}}/GameFiles/config/{{Region}}_{{Type}}-{{audio_state}}-{{isRenamed}}/AssetMap.sqlite",
 ]
 # for debugging
 [[operation.prompts]]
@@ -306,66 +324,51 @@ validation = { required = true, message = "You must select at least one format."
 [[operation]]
 id = 7
 Name = "Normalize folder structure"
-run-all = false
+run-all = true
 depends-on = [0]
 script_type = "lua"
 script = "{{Game_Root}}/operations/DirectoryNormalizer.lua"
 args = [
-	"{{Game_Root}}/GameFiles/STROUT-{{Region}}_{{Type}}-{{audio_state}}-{{isRenamed}}",
-	"{{Game_Root}}/GameFiles/STROUT_Normalized-{{Region}}_{{Type}}Flattened-{{audio_state}}-{{isRenamed}}",
-	#"--rules", "{{Game_Root}}/config/DirectoryNormalizer.rules.json",
-	"--action", "copy",
-	"--ignore", "A1_Audio",
-	"--ignore", "audiostreams",
-	"--ignore", "A1_Video",
-	"--ignore", "movies"
+    "{{Game_Root}}/GameFiles/STROUT-{{Region}}_{{Type}}-{{audio_state}}-{{isRenamed}}",
+    "{{Game_Root}}/GameFiles/STROUT_Normalized-{{Region}}_{{Type}}Flattened-{{audio_state}}-{{isRenamed}}",
+    #"--rules", "{{Game_Root}}/config/DirectoryNormalizer.rules.json",
+    "--action", "copy",
+    "--ignore", "A1_Audio",
+    "--ignore", "audiostreams",
+    "--ignore", "A1_Video",
+    "--ignore", "movies"
 ]
-[[operation.prompts]]
-type = "confirm"
-Name = "dry run?"
-message = "dry run (no files will be copied)?"
-default = false
-cli_arg = "--dry-run"
+#[[operation.prompts]] Dev option
+#type = "confirm"
+#Name = "dry run?"
+#message = "dry run (no files will be copied)?"
+#default = false
+#cli_arg = "--dry-run"
 [[operation.onsuccess]] # when successful, update placeholders to normalized
 Name = "update normalized placeholders"
 script_type = "lua"
 script = "{{Game_Root}}/config.lua"
 args = [
-	"--group", "placeholders",
-	"--set", "STROUT=STROUT_Normalized:string",
-	"--set", "Type=FullFlattened:string"
-]
-
-
-
-# convert all lh2 dialogue/subtitles to csv
-[[operation]]
-id = 17
-Name = "Extract Dialogue/Subtitles (.lh2 -> .csv)"
-run-all = false
-depends-on = [0]
-script_type = "lua"
-script = "{{Game_Root}}/operations/lh2_to_csv.lua"
-args = [
-	"--input-dir", "{{Game_Root}}/GameFiles/{{STROUT}}-{{Region}}_{{Type}}-{{audio_state}}-{{isRenamed}}"
-	# auto output to same location as input files
+    "--group", "placeholders",
+    "--set", "STROUT=STROUT_Normalized:string",
+    "--set", "Type=FullFlattened:string"
 ]
 
 ## final validation of all files before running godot
-[[operation]]
-id = 14
-Name = "Validate all game files"
-run-all = false
-depends-on = [0]
-script_type = "engine"
-script = "validate-files"
-db = "{{Game_Root}}/config/GameFilesIndex_{{Region}}_{{Type}}-{{audio_state}}-{{isRenamed}}.db"
-args = [
-	"{{Game_Root}}/GameFiles/{{STROUT}}-{{Region}}_{{Type}}-{{audio_state}}-{{isRenamed}}",
-	"--tables", "preinstanced_index:source_path,glb_index:source_path,txd_index:source_path,dds_index:source_path,png_index:source_path,audio_wav_index:source_path,video_ogv_index:source_path",
-	"--required-dirs", "audiostreams||A1_Audio,movies||A1_Video,frontend||A2_Frontend,simpsons_chars||A2_Characters_Simpsons,spr_hub||L00_SprHub,loc||L01_LandOfChocolate,brt||L02_BartmanBegins,eighty_bites||L03_HungryHungryHomer,tree_hugger||L04_TreeHugger,mob_rules||L05_MobRules,cheater||L06_EnterTheCheatrix,dayofthedolphins||L07_DayOfTheDolphin,colossaldonut||L08_TheColossalDonut,dayspringfieldstoodstill||L09_Invasion,bargainbin||L10_BargainBin,gamehub||L00_GameHub,neverquest||L11_NeverQuest,grand_theft_scratchy||L12_GrandTheftScratchy,medal_of_homer||L13_MedalOfHomer,bigsuperhappy||L14_BigSuperHappy,rhymes||L15_Rhymes,meetthyplayer||L16_MeetThyPlayer",
-	"--debug"
-]
+#[[operation]]
+#id = 14
+#Name = "Validate all game files"
+#run-all = false
+#depends-on = [0]
+#script_type = "engine"
+#script = "validate-files"
+#db = "{{Game_Root}}/config/GameFilesIndex_{{Region}}_{{Type}}-{{audio_state}}-{{isRenamed}}.db"
+#args = [
+#    "{{Game_Root}}/GameFiles/{{STROUT}}-{{Region}}_{{Type}}-{{audio_state}}-{{isRenamed}}",
+#    "--tables", "preinstanced_index:source_path,glb_index:source_path,txd_index:source_path,dds_index:source_path,png_index:source_path,audio_wav_index:source_path,video_ogv_index:source_path",
+#    "--required-dirs", "audiostreams||A1_Audio,movies||A1_Video,frontend||A2_Frontend,simpsons_chars||A2_Characters_Simpsons,spr_hub||L00_SprHub,loc||L01_LandOfChocolate,brt||L02_BartmanBegins,eighty_bites||L03_HungryHungryHomer,tree_hugger||L04_TreeHugger,mob_rules||L05_MobRules,cheater||L06_EnterTheCheatrix,dayofthedolphins||L07_DayOfTheDolphin,colossaldonut||L08_TheColossalDonut,dayspringfieldstoodstill||L09_Invasion,bargainbin||L10_BargainBin,gamehub||L00_GameHub,neverquest||L11_NeverQuest,grand_theft_scratchy||L12_GrandTheftScratchy,medal_of_homer||L13_MedalOfHomer,bigsuperhappy||L14_BigSuperHappy,rhymes||L15_Rhymes,meetthyplayer||L16_MeetThyPlayer",
+#    "--debug"
+#]
 
 
 
@@ -379,9 +382,9 @@ depends-on = [0,6,8,9,11,12,13,14]
 script_type = "lua"
 script = "{{Game_Root}}/Godot/Game/godot-init-V0.5.0.lua"
 args = [
-	"--project-name", "SimpsonsGamePS3",
-	"--repo-root", "{{Project_Root}}",
-	"--sourcePath", "{{Game_Root}}/GameFiles/{{STROUT}}-{{Region}}_{{Type}}-{{audio_state}}-{{isRenamed}}",
-	"--iconPath", "{{SourcePath}}/{{Region}}/{{PostSourcePath}}",
-	"--no-exit"
+    "--project-name", "SimpsonsGamePS3",
+    "--repo-root", "{{Project_Root}}",
+    "--sourcePath", "{{Game_Root}}/GameFiles/{{STROUT}}-{{Region}}_{{Type}}-{{audio_state}}-{{isRenamed}}",
+    "--iconPath", "{{SourcePath}}/{{Region}}/{{PostSourcePath}}",
+    "--no-exit"
 ]
