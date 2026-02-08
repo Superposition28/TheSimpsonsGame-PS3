@@ -120,7 +120,7 @@ def validate_file_paths(config: ScriptConfig) -> None:
     log_to_blender("All paths validated successfully.")
 
 def setup_blender_environment(config: ScriptConfig) -> None:
-    """Opens the base blend file and installs/enables the required addon."""
+    """Loads the addon directly from source without installing it to the global user dir."""
     try:
         log_to_blender(f"Opening blend file: {config.base_blend_file}")
         bpy.ops.wm.open_mainfile(filepath=config.base_blend_file)
@@ -141,28 +141,40 @@ def setup_blender_environment(config: ScriptConfig) -> None:
             log_to_blender(f"Warning: Game root path not found or not provided: {config.game_root_path}")
             exit(1)
 
-        # create tsg_gameroot_path if it doesn't exist
+        # Create tsg_gameroot_path if it doesn't exist
         if "tsg_gameroot_path" not in bpy.context.scene or bpy.context.scene["tsg_gameroot_path"] != config.game_root_path:
             bpy.context.scene["tsg_gameroot_path"] = config.game_root_path
             log_to_blender(f"Set scene property 'tsg_gameroot_path' to: {config.game_root_path}")
         else:
             log_to_blender(f"Scene property 'tsg_gameroot_path' already set to: {bpy.context.scene['tsg_gameroot_path']}")
 
+        # Direct module loading avoids global addon install race conditions.
+        addon_path = os.path.abspath(config.python_extension_file)
+        addon_dir = os.path.dirname(addon_path)
+        addon_name = os.path.splitext(os.path.basename(addon_path))[0]
 
-        log_to_blender(f"Setting script directory to temporary path: {config.temp_addon_dir}")
-        log_to_blender(f"Installing and enabling addon '{ADDON_MODULE_NAME}'...")
-        addon_filepath_abs = os.path.abspath(config.python_extension_file)
-        # set overwrite to false to avoid instance read/write conflicts
-        bpy.ops.preferences.addon_install(filepath=addon_filepath_abs, overwrite=False)
-        bpy.ops.preferences.addon_enable(module=ADDON_MODULE_NAME)
-        # This ensures the addon is installed in our isolated directory, not AppData.
-        log_to_blender(f"Addon '{ADDON_MODULE_NAME}' enabled.")
+        log_to_blender(f"Directly loading addon module '{addon_name}' from '{addon_dir}'...")
+
+        if addon_dir not in sys.path:
+            sys.path.append(addon_dir)
 
         importlib.invalidate_caches()
-        if ADDON_MODULE_NAME in sys.modules:
-            importlib.reload(sys.modules[ADDON_MODULE_NAME])
-    except (RuntimeError, PermissionError) as e:
-        raise BlenderScriptError(f"Blender API or Permission error during environment setup: {e}") from e
+        if addon_name in sys.modules:
+            addon_module = importlib.reload(sys.modules[addon_name])
+        else:
+            addon_module = importlib.import_module(addon_name)
+
+        if hasattr(addon_module, "register"):
+            try:
+                addon_module.register()
+                log_to_blender(f"Successfully registered '{addon_name}' in memory.")
+            except ValueError:
+                log_to_blender(f"'{addon_name}' was already registered. Skipping.")
+        else:
+            raise BlenderScriptError(f"Module '{addon_name}' has no 'register' function.")
+
+    except Exception as e:
+        raise BlenderScriptError(f"Error during direct addon loading: {e}") from e
 
 def process_scene(config: ScriptConfig) -> None:
     """Imports the preinstanced file, exports to formats, and saves the blend file."""

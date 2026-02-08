@@ -91,7 +91,7 @@ end
 
 -- Main LH2 decode function
 local function decode_lh2(path)
-    sdk.color_print('cyan', 'Processing: ' .. path)
+    --sdk.color_print('cyan', 'Processing: ' .. path)
 
     -- Check if file exists
     if not sdk.path_exists(path) then
@@ -147,7 +147,7 @@ local function decode_lh2(path)
         return false
     end
 
-    sdk.color_print('white', string.format('  Entries: %d, Tables: %d', entries, tables))
+    --sdk.color_print('white', string.format('  Entries: %d, Tables: %d', entries, tables))
 
     -- Skip reserved/runtime pointers (8 bytes at 0x18)
     file:seek("set", 0x20)
@@ -243,7 +243,7 @@ local function decode_lh2(path)
 
     out:close()
 
-    sdk.color_print('green', 'Success: Output written to ' .. output_path)
+    --sdk.color_print('green', 'Success: Output written to ' .. output_path) too verbose, the progress bar and final summary will cover this
     return true
 end
 

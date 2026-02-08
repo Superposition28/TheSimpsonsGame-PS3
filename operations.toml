@@ -3,6 +3,9 @@
 # Placeholders: Game_Root, Project_Root are built into the engine
 
 # validate-files operations cannot be run until the indexing db's are generated manually
+## there could be two different indexes, a source index for us and eu thats packed with the repo,
+## and a index that is generated in this after some processes just before blender so blender has a texture index to find the extracted textures
+## this would mean no intermediary validation would be possible as thered be no source of truth, since creating an index of the files you have isnt validation that the output is correct but as long as the input is correct it should generally be fine
 
 
 ## creates config.toml and ensures placeholders exist
@@ -28,7 +31,7 @@ script = "config"
 args = [
     "--group", "placeholders",
     "--set", "Region=US:string",
-    "--set", "MainSourcePath={{Game_Root}}\\Source\\US\\PS3_GAME\\USRDIR:string"
+    "--set", "MainSourcePath={{Game_Root}}/Source/US/PS3_GAME/USRDIR:string"
 ]
 [[operation]]
 id = -2
@@ -38,7 +41,7 @@ script = "config"
 args = [
     "--group", "placeholders",
     "--set", "Region=EU:string",
-    "--set", "MainSourcePath={{Game_Root}}\\Source\\EU\\PS3_GAME\\USRDIR:string"
+    "--set", "MainSourcePath={{Game_Root}}/Source/EU/PS3_GAME/USRDIR:string"
 ]
 
 
@@ -101,33 +104,8 @@ depends-on = [0,2] # depends on bms tool being downloaded
 script_type = "bms"
 script = "{{Game_Root}}/operations/simpsons_str.bms"
 input = "{{SourcePath}}/{{Region}}/{{PostSourcePath}}"
-output = "{{Game_Root}}/GameFiles/STROUT-{{Region}}_{{Type}}-{{audio_state}}-{{isRenamed}}" # always output to STROUT not {{STROUT}}
+output = "{{Game_Root}}/GameFiles/{{STROUT}}-{{Region}}_{{Type}}-{{audio_state}}-{{isRenamed}}" # always output to STROUT not {{STROUT}}
 extension = ".str"
-
-## renames output Game folders for clarity
-[[operation]]
-id = 3
-Name = "Rename base folders"
-run-all = true
-depends-on = [0,6,12,13]
-script_type = "engine"
-script = "rename-folders"
-args = ["{{Game_Root}}/GameFiles/STROUT-{{Region}}_{{Type}}-{{audio_state}}-{{isRenamed}}", "--map-db-file", "{{Game_Root}}/config/RenameMap.db"]
-[[operation.onsuccess]] # when successful, update isRenamed placeholder to "isRenamed"
-Name = "set isRenamed placeholder"
-script_type = "engine"
-script = "config"
-args = ["--group", "placeholders", "--key", "isRenamed", "--value", "isRenamed", "--type", "string"]
-[[operation.onsuccess]]
-Name = "rename folder STROUT-{{Region}}_{{Type}}-{{audio_state}}-{{isRenamed}} to STROUT-{{Region}}_{{Type}}-{{audio_state}}-isRenamed"
-script_type = "lua"
-script = "{{Game_Root}}/rename.lua"
-args = [
-    "--old_path", "{{Game_Root}}/GameFiles/STROUT-{{Region}}_{{Type}}-{{audio_state}}-notRenamed",
-    "--new_path", "{{Game_Root}}/GameFiles/STROUT-{{Region}}_{{Type}}-{{audio_state}}-isRenamed"
-]
-
-
 
 ## extract textures from texture dictionaries that were extracted from .str files
 [[operation]]
@@ -239,55 +217,6 @@ condition = "enable_export"
 validation = { required = true, message = "You must select at least one format." }
 
 
-## ignoring audio/video folder after conversion means those files wont be copied to the final game folder,
-## they cant be run in the flattener as theres too many files, so they need to be copied manually or run after the flattener
-
-## blender cannot handle paths that exeed windows path limits
-## blender refused to accept my solutions to this so i did two things to ensure it works for -
-## blender and any other application that needs to handle the files
-## blender is currently solved using symbolic links for assets, and \\?\ for texture paths, this (\\?\) actually working indicates the i dont need the sym links for blender and could just use \\?\ for assets as well
-## the same issue also occurs in godots virtual file system, the only solution there is to flatten the folder structure
-## this process specificaly reduces redundent directory structurs without removing improtant path data
-#[[operation]] old C# flattener, replaced by lua normalizer
-#id = 7
-#Name = "flatten folder structure"
-#run-all = false
-#depends-on = [0]
-#script_type = "engine"
-#script = "flatten"
-#args = ["{{SourcePath}}/{{Region}}/{{PostSourcePath}}", "{{Game_Root}}/SourceFlat", "--rules", "{{Game_Root}}/config/PathRules.json", "--separator", "^", "--action", "copy", "--ignore", "audiostreams", "--ignore", "movies"]
-[[operation]]
-id = 7
-Name = "Normalize folder structure"
-run-all = true
-depends-on = [0]
-script_type = "lua"
-script = "{{Game_Root}}/operations/DirectoryNormalizer.lua"
-args = [
-    "{{Game_Root}}/GameFiles/STROUT-{{Region}}_{{Type}}-{{audio_state}}-{{isRenamed}}",
-    "{{Game_Root}}/GameFiles/STROUT_Normalized-{{Region}}_{{Type}}Flattened-{{audio_state}}-{{isRenamed}}",
-    #"--rules", "{{Game_Root}}/config/DirectoryNormalizer.rules.json",
-    "--action", "copy",
-    "--ignore", "A1_Audio",
-    "--ignore", "audiostreams",
-    "--ignore", "A1_Video",
-    "--ignore", "movies"
-]
-#[[operation.prompts]] Dev option
-#type = "confirm"
-#Name = "dry run?"
-#message = "dry run (no files will be copied)?"
-#default = false
-#cli_arg = "--dry-run"
-[[operation.onsuccess]] # when successful, update placeholders to normalized
-Name = "update normalized placeholders"
-script_type = "lua"
-script = "{{Game_Root}}/config.lua"
-args = [
-    "--group", "placeholders",
-    "--set", "STROUT=STROUT_Normalized:string",
-    "--set", "Type=FullFlattened:string"
-]
 
 ## convert videos into a usable format for godot
 [[operation]]
@@ -329,6 +258,127 @@ args = [
     "-o", ".wav",
     "--godot-compatible"
 ]
+
+
+
+## renames output Game folders for clarity
+[[operation]]
+id = 3
+Name = "Rename base folders"
+run-all = true
+depends-on = [0,6,12,13]
+script_type = "engine"
+script = "rename-folders"
+args = ["{{Game_Root}}/GameFiles/{{STROUT}}-{{Region}}_{{Type}}-{{audio_state}}-{{isRenamed}}", "--map-db-file", "{{Game_Root}}/config/RenameMap.db"]
+[[operation.onsuccess]] # when successful, update {{isRenamed}} placeholder to "isRenamed"
+Name = "set isRenamed placeholder"
+script_type = "engine"
+script = "config"
+args = ["--group", "placeholders", "--key", "isRenamed", "--value", "isRenamed", "--type", "string"]
+[[operation.onsuccess]]
+Name = "rename folder STROUT-{{Region}}_{{Type}}-{{audio_state}}-{{isRenamed}} to STROUT-{{Region}}_{{Type}}-{{audio_state}}-isRenamed"
+script_type = "lua"
+script = "{{Game_Root}}/rename.lua"
+args = [
+    "--old_path", "{{Game_Root}}/GameFiles/{{STROUT}}-{{Region}}_{{Type}}-{{audio_state}}-notRenamed",
+    "--new_path", "{{Game_Root}}/GameFiles/{{STROUT}}-{{Region}}_{{Type}}-{{audio_state}}-isRenamed"
+]
+
+
+## ignoring audio/video folder after conversion means those files wont be copied to the final game folder,
+## they cant be run in the flattener as theres too many files, so they need to be copied manually or run after the flattener
+
+## blender cannot handle paths that exeed windows path limits
+## blender refused to accept my solutions to this so i did two things to ensure it works for -
+## blender and any other application that needs to handle the files
+## blender is currently solved using symbolic links for assets, and \\?\ for texture paths, this (\\?\) actually working indicates the i dont need the sym links for blender and could just use \\?\ for assets as well
+## the same issue also occurs in godots virtual file system, the only solution there is to flatten the folder structure
+## this process specificaly reduces redundent directory structurs without removing improtant path data
+#[[operation]] old C# flattener, replaced by lua normalizer
+#id = 7
+#Name = "flatten folder structure"
+#run-all = false
+#depends-on = [0]
+#script_type = "engine"
+#script = "flatten"
+#args = ["{{SourcePath}}/{{Region}}/{{PostSourcePath}}", "{{Game_Root}}/SourceFlat", "--rules", "{{Game_Root}}/config/PathRules.json", "--separator", "^", "--action", "copy", "--ignore", "audiostreams", "--ignore", "movies"]
+[[operation]]
+id = 7
+Name = "Normalize folder structure"
+run-all = true
+depends-on = [0]
+script_type = "lua"
+script = "{{Game_Root}}/operations/DirectoryNormalizer.lua"
+args = [
+    "{{Game_Root}}/GameFiles/{{STROUT}}-{{Region}}_{{Type}}-{{audio_state}}-{{isRenamed}}",
+    "{{Game_Root}}/GameFiles/{{STROUT}}-{{Region}}_{{Type}}Flattened-{{audio_state}}-{{isRenamed}}",
+    #"--rules", "{{Game_Root}}/config/DirectoryNormalizer.rules.json",
+    "--action", "copy",
+    "--ignore", "A1_Audio",
+    "--ignore", "audiostreams",
+    "--ignore", "A1_Video",
+    "--ignore", "movies"
+]
+#[[operation.prompts]] Dev option
+#type = "confirm"
+#Name = "dry run?"
+#message = "dry run (no files will be copied)?"
+#default = false
+#cli_arg = "--dry-run"
+[[operation.onsuccess]] # when successful, update placeholders to normalized
+Name = "update normalized placeholders"
+script_type = "engine"
+script = "config"
+args = [
+    "--group", "placeholders",
+    "--set", "STROUT=STROUT_Normalized:string",
+    "--set", "Type=FullFlattened:string"
+]
+
+
+
+
+## convert videos into a usable format for godot
+[[operation]]
+id = 12
+Name = "Convert Videos (.vp6 -> .ogv)"
+run-all = true
+depends-on = [0,2] # depends on ffmpeg being downloaded
+script_type = "engine"
+script = "format-convert"
+tool = "ffmpeg"
+args = [
+    "-m", "ffmpeg",
+    "--type", "video",
+    ## doesnt need to specify the location of the movies folder as its within the source path and {{STROUT}} and the only location vp6 files exist
+    "-s", "{{SourcePath}}/{{Region}}/{{PostSourcePath}}",
+    "-t", "{{Game_Root}}/GameFiles/{{STROUT}}-{{Region}}_{{Type}}-{{audio_state}}-{{isRenamed}}",
+    #"-f", "ffmpeg.exe",
+    "-i", ".vp6",
+    "-o", ".ogv"
+]
+
+## convert Audio into a usable format for godot
+[[operation]]
+id = 13
+Name = "Convert Audio (.snu -> .wav)"
+run-all = true
+depends-on = [0,2] # depends on vgmstream being downloaded, could depend on audio reorg but that is technically optional
+script_type = "engine"
+script = "format-convert"
+tool = "vgmstream"
+args = [
+    "-m", "vgmstream",
+    "--type", "audio",
+    ## doesnt need to specify the location of the audiostreams folder as its within the source path and {{STROUT}} and the only location snu files exist
+    "-s", "{{SourcePath}}/{{Region}}/{{PostSourcePath}}",
+    "-t", "{{Game_Root}}/GameFiles/{{STROUT}}-{{Region}}_{{Type}}-{{audio_state}}-{{isRenamed}}",
+    #"--vgmstream-cli", "vgmstream-cli.exe",
+    "-i", ".snu",
+    "-o", ".wav",
+    "--godot-compatible"
+]
+
 ## creates EN folder to match language folder patterns in EU ver
 ## creates Global folder for non language specific audio, mostly Ambiants
 [[operation]]
@@ -338,20 +388,48 @@ run-all = true
 depends-on = [0,6,13]
 script_type = "lua"
 script = "{{Game_Root}}/operations/SetupAudioDir.lua"
-args = ["{{Game_Root}}/GameFiles/STROUT-{{Region}}_{{Type}}-{{audio_state}}-{{isRenamed}}"]
+args = ["{{Game_Root}}/GameFiles/{{STROUT}}-{{Region}}_{{Type}}-{{audio_state}}-{{isRenamed}}"]
 [[operation.onsuccess]] # when successful, update isRenamed placeholder to "isRenamed"
 Name = "set audio_state placeholder"
-script_type = "lua"
-script = "{{Game_Root}}/config.lua"
+script_type = "engine"
+script = "config"
 args = ["--group", "placeholders", "--key", "audio_state", "--value", "audio_reorg", "--type", "string"]
 [[operation.onsuccess]]
 Name = "rename folder STROUT-{{Region}}_{{Type}}-{{audio_state}}-{{isRenamed}} to STROUT-{{Region}}_{{Type}}-audio_reorg-{{isRenamed}}"
 script_type = "lua"
 script = "{{Game_Root}}/rename.lua"
 args = [
-    "--old_path", "{{Game_Root}}/GameFiles/STROUT-{{Region}}_{{Type}}-audio_og-{{isRenamed}}",
-    "--new_path", "{{Game_Root}}/GameFiles/STROUT-{{Region}}_{{Type}}-audio_reorg-{{isRenamed}}"
+    "--old_path", "{{Game_Root}}/GameFiles/{{STROUT}}-{{Region}}_{{Type}}-audio_og-{{isRenamed}}",
+    "--new_path", "{{Game_Root}}/GameFiles/{{STROUT}}-{{Region}}_{{Type}}-audio_reorg-{{isRenamed}}"
 ]
+
+
+
+## creates EN folder to match language folder patterns in EU ver
+## creates Global folder for non language specific audio, mostly Ambiants
+[[operation]]
+id = 4
+Name = "Reorganize Audio Files"
+run-all = true
+depends-on = [0,6,13]
+script_type = "lua"
+script = "{{Game_Root}}/operations/SetupAudioDir.lua"
+args = ["{{Game_Root}}/GameFiles/{{STROUT}}-{{Region}}_{{Type}}-{{audio_state}}-{{isRenamed}}"]
+[[operation.onsuccess]] # when successful, update isRenamed placeholder to "isRenamed"
+Name = "set audio_state placeholder"
+script_type = "engine"
+script = "config"
+args = ["--group", "placeholders", "--key", "audio_state", "--value", "audio_reorg", "--type", "string"]
+[[operation.onsuccess]]
+Name = "rename folder STROUT-{{Region}}_{{Type}}-{{audio_state}}-{{isRenamed}} to STROUT-{{Region}}_{{Type}}-audio_reorg-{{isRenamed}}"
+script_type = "lua"
+script = "{{Game_Root}}/rename.lua"
+args = [
+    "--old_path", "{{Game_Root}}/GameFiles/{{STROUT}}-{{Region}}_{{Type}}-audio_og-{{isRenamed}}",
+    "--new_path", "{{Game_Root}}/GameFiles/{{STROUT}}-{{Region}}_{{Type}}-audio_reorg-{{isRenamed}}"
+]
+
+
 
 
 

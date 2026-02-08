@@ -6,7 +6,7 @@ This module re-implements *The Simpsons Game* (2007, PS3 edition) using the [Rem
 
 - Converts your legally obtained game assets into Godot-ready formats.
 - Generates a Godot project using Python and GDScript.
-- Requires ownership of the original PlayStation 3 game.
+- Requires possession of the original PlayStation 3 game.
 
 ## Goals
 
@@ -96,19 +96,13 @@ These resources provide:
 
 ## Obligatory Legal Disclaimer
 
-**Please read this disclaimer carefully before using this project.**
-
 This project automates extraction of assets (3D models, sounds, videos) from *The Simpsons Game* 2007 (PS3 edition) for personal use only--hobby projects, learning, research, etc.--not for commercial distribution.
 
 **Key Points:**
 
 - **Requires Ownership of the Game:** You must possess your own legally obtained ISO copy of the game for PlayStation 3. This tool does not provide game files.
-- **Respect Copyright:** Extracted assets are copyrighted by Electronic Arts (EA) and Disney. Use is limited to personal exploration and modification of assets from a game you legally own. You are responsible for compliance with copyright laws and the game's EULA/Terms of Service.
-- **No Distribution of Assets:** This project does not distribute copyrighted game assets. It only provides code to automate extraction from your own files.
-- **Compliance with Takedown Requests:** The developer respects the intellectual property rights of EA and Disney. If requested by EA or Disney (or their representatives), the developer will promptly remove this code.
+- **Respect Copyright:** Extracted assets are copyrighted by Electronic Arts (EA) and Disney. Use is limited to personal exploration and modification of assets from a game you legally own. You are responsible for compliance with copyright laws and the game's EULA/Terms of Service where applicable.
+- **No Distribution of Assets:** This project does not distribute copyrighted game assets. It only provides code to automate extraction from your own files and should not be used to share or distribute game content.
 
 **By using this project, you acknowledge that you have read and understood this disclaimer and agree to use it responsibly and in accordance with all applicable laws and terms of service.**
 
----
-
-# DO NOT USE THIS FOR COMMERCIAL PURPOSES OR DISTRIBUTE ANY EXTRACTED ASSETS WITHOUT PERMISSION FROM THE COPYRIGHT HOLDERS.
