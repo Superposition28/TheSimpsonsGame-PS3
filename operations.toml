@@ -217,6 +217,73 @@ condition = "enable_export"
 validation = { required = true, message = "You must select at least one format." }
 
 
+
+
+## convert videos into a usable format for godot
+[[operation]]
+id = 12
+Name = "Convert Videos (.vp6 -> .ogv)"
+run-all = true
+depends-on = [0,2] # depends on ffmpeg being downloaded
+script_type = "engine"
+script = "format-convert"
+tool = "ffmpeg"
+args = [
+    "-m", "ffmpeg",
+    "--type", "video",
+    ## doesnt need to specify the location of the movies folder as its within the source path and {{STROUT}} and the only location vp6 files exist
+    "-s", "{{SourcePath}}/{{Region}}/{{PostSourcePath}}",
+    "-t", "{{Game_Root}}/GameFiles/{{STROUT}}-{{Region}}_{{Type}}-{{audio_state}}-{{isRenamed}}",
+    #"-f", "ffmpeg.exe",
+    "-i", ".vp6",
+    "-o", ".ogv"
+]
+
+## convert Audio into a usable format for godot
+[[operation]]
+id = 13
+Name = "Convert Audio (.snu -> .wav)"
+run-all = true
+depends-on = [0,2] # depends on vgmstream being downloaded, could depend on audio reorg but that is technically optional
+script_type = "engine"
+script = "format-convert"
+tool = "vgmstream"
+args = [
+    "-m", "vgmstream",
+    "--type", "audio",
+    ## doesnt need to specify the location of the audiostreams folder as its within the source path and {{STROUT}} and the only location snu files exist
+    "-s", "{{SourcePath}}/{{Region}}/{{PostSourcePath}}",
+    "-t", "{{Game_Root}}/GameFiles/{{STROUT}}-{{Region}}_{{Type}}-{{audio_state}}-{{isRenamed}}",
+    "-i", ".snu",
+    "-o", ".wav",
+    "--godot-compatible"
+]
+
+## creates EN folder to match language folder patterns in EU ver
+## creates Global folder for non language specific audio, mostly Ambiants
+[[operation]]
+id = 4
+Name = "Reorganize Audio Files"
+run-all = true
+depends-on = [0,6,13]
+script_type = "lua"
+script = "{{Game_Root}}/operations/SetupAudioDir.lua"
+args = ["{{Game_Root}}/GameFiles/{{STROUT}}-{{Region}}_{{Type}}-{{audio_state}}-{{isRenamed}}"]
+[[operation.onsuccess]] # when successful, update isRenamed placeholder to "isRenamed"
+Name = "set audio_state placeholder"
+script_type = "engine"
+script = "config"
+args = ["--group", "placeholders", "--key", "audio_state", "--value", "audio_reorg", "--type", "string"]
+[[operation.onsuccess]]
+Name = "rename folder STROUT-{{Region}}_{{Type}}-{{audio_state}}-{{isRenamed}} to STROUT-{{Region}}_{{Type}}-audio_reorg-{{isRenamed}}"
+script_type = "lua"
+script = "{{Game_Root}}/rename.lua"
+args = [
+    "--old_path", "{{Game_Root}}/GameFiles/{{STROUT}}-{{Region}}_{{Type}}-audio_og-{{isRenamed}}",
+    "--new_path", "{{Game_Root}}/GameFiles/{{STROUT}}-{{Region}}_{{Type}}-audio_reorg-{{isRenamed}}"
+]
+
+
 ## renames output Game folders for clarity
 [[operation]]
 id = 3
@@ -264,16 +331,14 @@ Name = "Normalize folder structure"
 run-all = true
 depends-on = [0]
 script_type = "lua"
-script = "{{Game_Root}}/operations/DirectoryNormalizer.lua"
+script = "{{Game_Root}}/operations/DirectoryNormalizer/run.lua"
 args = [
     "{{Game_Root}}/GameFiles/{{STROUT}}-{{Region}}_{{Type}}-{{audio_state}}-{{isRenamed}}",
     "{{Game_Root}}/GameFiles/{{STROUT}}-{{Region}}_{{Type}}Flattened-{{audio_state}}-{{isRenamed}}",
     #"--rules", "{{Game_Root}}/config/DirectoryNormalizer.rules.json",
-    "--action", "copy",
-    "--ignore", "A1_Audio",
-    "--ignore", "audiostreams",
-    "--ignore", "A1_Video",
-    "--ignore", "movies"
+    #"--action", "copy",
+    "--copyonly", "A1_Audio",
+    "--copyonly", "A1_Video",
 ]
 #[[operation.prompts]] Dev option
 #type = "confirm"
@@ -287,77 +352,9 @@ script_type = "engine"
 script = "config"
 args = [
     "--group", "placeholders",
-    "--set", "STROUT=STROUT_Normalized:string",
     "--set", "Type=FullFlattened:string"
 ]
 
-
-
-
-## convert videos into a usable format for godot
-[[operation]]
-id = 12
-Name = "Convert Videos (.vp6 -> .ogv)"
-run-all = true
-depends-on = [0,2] # depends on ffmpeg being downloaded
-script_type = "engine"
-script = "format-convert"
-tool = "ffmpeg"
-args = [
-    "-m", "ffmpeg",
-    "--type", "video",
-    ## doesnt need to specify the location of the movies folder as its within the source path and {{STROUT}} and the only location vp6 files exist
-    "-s", "{{SourcePath}}/{{Region}}/{{PostSourcePath}}",
-    "-t", "{{Game_Root}}/GameFiles/{{STROUT}}-{{Region}}_{{Type}}-{{audio_state}}-{{isRenamed}}",
-    #"-f", "ffmpeg.exe",
-    "-i", ".vp6",
-    "-o", ".ogv"
-]
-
-## convert Audio into a usable format for godot
-[[operation]]
-id = 13
-Name = "Convert Audio (.snu -> .wav)"
-run-all = true
-depends-on = [0,2] # depends on vgmstream being downloaded, could depend on audio reorg but that is technically optional
-script_type = "engine"
-script = "format-convert"
-tool = "vgmstream"
-args = [
-    "-m", "vgmstream",
-    "--type", "audio",
-    ## doesnt need to specify the location of the audiostreams folder as its within the source path and {{STROUT}} and the only location snu files exist
-    "-s", "{{SourcePath}}/{{Region}}/{{PostSourcePath}}",
-    "-t", "{{Game_Root}}/GameFiles/{{STROUT}}-{{Region}}_{{Type}}-{{audio_state}}-{{isRenamed}}",
-    #"--vgmstream-cli", "vgmstream-cli.exe",
-    "-i", ".snu",
-    "-o", ".wav",
-    "--godot-compatible"
-]
-
-## creates EN folder to match language folder patterns in EU ver
-## creates Global folder for non language specific audio, mostly Ambiants
-[[operation]]
-id = 4
-Name = "Reorganize Audio Files"
-run-all = true
-depends-on = [0,6,13]
-script_type = "lua"
-script = "{{Game_Root}}/operations/SetupAudioDir.lua"
-args = ["{{Game_Root}}/GameFiles/{{STROUT}}-{{Region}}_{{Type}}-{{audio_state}}-{{isRenamed}}"]
-[[operation.onsuccess]] # when successful, update isRenamed placeholder to "isRenamed"
-Name = "set audio_state placeholder"
-script_type = "engine"
-script = "config"
-args = ["--group", "placeholders", "--key", "audio_state", "--value", "audio_reorg", "--type", "string"]
-[[operation.onsuccess]]
-Name = "rename folder STROUT-{{Region}}_{{Type}}-{{audio_state}}-{{isRenamed}} to STROUT-{{Region}}_{{Type}}-audio_reorg-{{isRenamed}}"
-script_type = "lua"
-script = "{{Game_Root}}/rename.lua"
-args = [
-    "--old_path", "{{Game_Root}}/GameFiles/{{STROUT}}-{{Region}}_{{Type}}-audio_og-{{isRenamed}}",
-    "--new_path", "{{Game_Root}}/GameFiles/{{STROUT}}-{{Region}}_{{Type}}-audio_reorg-{{isRenamed}}"
-]
 
 
 
