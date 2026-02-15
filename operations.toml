@@ -384,7 +384,7 @@ Name = "generate Godot Game (EXPERIMENTAL)"
 run-all = false
 depends-on = [0,6,8,9,11,12,13,14]
 script_type = "lua"
-script = "{{Game_Root}}/Godot/Game/godot-init-V0.5.0.lua"
+script = "{{Game_Root}}/Godot/Game/godot-init-V0.5.1.lua"
 args = [
     "--project-name", "SimpsonsGamePS3",
     "--repo-root", "{{Project_Root}}",

@@ -17,8 +17,8 @@ unpack_destination = "./Tools/QuickBMS/exe"
 
 [[tool]]
 name = "Godot"
-#version = "4.5-stable-mono"
-version = "4.6-stable-mono"
+version = "4.5-stable-mono"
+#version = "4.6-stable-mono"
 destination = "./TMP/Downloads"
 unpack = true
 unpack_destination = "./Tools/Godot"

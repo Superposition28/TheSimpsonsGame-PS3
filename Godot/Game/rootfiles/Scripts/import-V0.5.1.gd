@@ -1,23 +1,12 @@
 # -----------------------------------------------------------------------------
-# IMPORT V0.5
-#
+# IMPORT V0.5.1
+# godot version 4.5
 # -----------------------------------------------------------------------------
-
 @tool
 extends SceneTree
 
 const CONFIG_ROOT := "res://Json/"
 const ASSET_ROOT  := "res://assets/"
-
-# Entry file can be overridden with: --config=res://scene_config/Whatever.json
-func _get_entry_config_path() -> String:
-    var entry := CONFIG_ROOT + "Node4D.json"
-    for arg in OS.get_cmdline_args():
-        if arg.begins_with("--config="):
-            var v := arg.substr(len("--config="), arg.length())
-            if v != "":
-                entry = v
-    return entry
 
 # -----------------------------------------------------------------------------
 # JSON IO & TYPE CONVERSION
@@ -296,12 +285,11 @@ func _instantiate_child(child_info: Dictionary, _scene_root: Node) -> Node:
         # Build the child scene recursively
         var built_root = _build_from_config(cfg_path)
 
-        # FIX ISSUE 1: DETACHED INSTANCES
         # If the config built successfully and we have a target path ending in .tscn...
         if built_root and path_ref.ends_with(".tscn"):
             var abs_path := _path_to_res(path_ref)
 
-            # The build process (inside _build_from_config) has already saved the scene to disk.
+            # The build process has already saved the scene to disk.
             # We treat the raw 'built_root' as a temporary artifact and free it.
             built_root.free()
 
@@ -319,11 +307,11 @@ func _instantiate_child(child_info: Dictionary, _scene_root: Node) -> Node:
             # Fallback: If no path was provided, use the raw node (won't be a linked instance)
             instance = built_root
 
-    # 2. Scene Path (Preferred)
-    elif path_ref.ends_with(".tscn"):
+    # 2. Scene or Model Path (Preferred)
+    # UPDATED: Allows .glb/.gltf files found in 'path' to be loaded directly.
+    elif path_ref.ends_with(".tscn") or path_ref.ends_with(".glb") or path_ref.ends_with(".gltf"):
         var abs_path := _path_to_res(path_ref)
 
-        # FIX ISSUE 2: INLINE SCENE GENERATION
         # We build if the file is missing OR if the JSON defines children (Inline Definition).
         var file_missing := not FileAccess.file_exists(abs_path)
         var is_inline_def := child_info.has("children")
@@ -331,10 +319,8 @@ func _instantiate_child(child_info: Dictionary, _scene_root: Node) -> Node:
         if file_missing or is_inline_def:
             print("    Detected Inline Scene Definition for: ", abs_path)
             # Treat this child_info as the root of a new scene and build it.
-            # We wrap it in an array because _build_scene_from_array expects a list.
             var built_root = _build_scene_from_array([child_info])
 
-            # Like above, we free the raw node and load the instance we just saved.
             if built_root:
                 built_root.free()
                 if FileAccess.file_exists(abs_path):
@@ -348,7 +334,7 @@ func _instantiate_child(child_info: Dictionary, _scene_root: Node) -> Node:
             else:
                 printerr("    Failed to load scene: ", abs_path)
 
-    # 3. Simple GLB Loading (V0.4.1 logic restored - Direct Paths)
+    # 3. Simple GLB Loading (Fallback / Index style)
     elif child_info.has("index") and child_info["index"].has("index_source_path"):
         var glb_path: String = ASSET_ROOT + String(child_info["index"]["index_source_path"])
         if FileAccess.file_exists(glb_path):
@@ -375,6 +361,27 @@ func _instantiate_child(child_info: Dictionary, _scene_root: Node) -> Node:
         # Apply merged config
         if child_info.has("config") and child_info["config"] is Dictionary:
             _apply_node_config(instance, child_info["config"])
+
+    # [PATCH] 5. Recursion for Nested Children (Class-based nodes like LOC3D)
+    if instance and child_info.has("children") and child_info["children"] is Array:
+        for sub_data in child_info["children"]:
+            if not (sub_data is Dictionary): continue
+
+            # Recursive call to create the sub-child (e.g. Zone01_Terrain)
+            var sub_node := _instantiate_child(sub_data, _scene_root)
+
+            if sub_node:
+                instance.add_child(sub_node)
+
+                # Ensure it gets saved to the scene
+                if _scene_root:
+                    sub_node.owner = _scene_root
+
+                # Apply Collision (Copied from main loop logic)
+                if sub_node is MeshInstance3D and sub_data.has("collision"):
+                    var c: Dictionary = sub_data["collision"]
+                    if c.get("enabled", false):
+                        _add_mesh_collision(sub_node, c, instance)
 
     return instance
 
@@ -434,6 +441,7 @@ func _build_scene_from_array(scene_array: Array) -> Node:
 
                 # Editable Children
                 var editable := bool(root_info.get("editable_children_default", false))
+                #var editable := bool(root_info.get("editable_children_default", true))
                 if child_data.has("editable_children"):
                     editable = bool(child_data["editable_children"])
                 if editable:
@@ -461,7 +469,7 @@ func _build_from_config(abs_path: String) -> Node:
 # -----------------------------------------------------------------------------
 func _init():
     print("--- Importer V0.5 Initialized ---")
-    var entry := _get_entry_config_path()
+    var entry := CONFIG_ROOT + "Node4D.json"
     print("Config Entry: ", entry)
 
     _build_from_config(entry)
@@ -471,8 +479,4 @@ func _init():
     if OS.get_cmdline_args().has("--no-exit"):
         print("Keeping editor open (--no-exit).")
     else:
-        print("Waiting 5s for asset import stabilization...")
-        #var timer := get_tree().create_timer(15.0)
-        #await timer.timeout
         print("Exiting.")
-        #get_tree().quit()
