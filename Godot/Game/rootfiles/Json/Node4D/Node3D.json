@@ -4,6 +4,7 @@
         "path": "Node4D/Node3D.tscn",
         "class": "Node3D",
         "type": "scene",
+        "editable_children_default": true,
         "children": [
             {
                 "name": "Environment",

@@ -1,5 +1,5 @@
 # -----------------------------------------------------------------------------
-# IMPORT V0.5.1
+# IMPORT V0.5.2
 # godot version 4.5
 # -----------------------------------------------------------------------------
 @tool
@@ -7,6 +7,9 @@ extends SceneTree
 
 const CONFIG_ROOT := "res://Json/"
 const ASSET_ROOT  := "res://assets/"
+const ASSET_MAP_PATH := "res://assets/normalized_map.json"
+
+var _asset_map: Dictionary = {}
 
 # -----------------------------------------------------------------------------
 # JSON IO & TYPE CONVERSION
@@ -26,6 +29,49 @@ func _load_json_array(abs_path: String) -> Array:
 
 func _path_to_res(p: String) -> String:
     return p if p.begins_with("res://") else "res://" + p
+
+# -----------------------------------------------------------------------------
+# ASSET RESOLUTION (Normalized Map & Fallbacks)
+# -----------------------------------------------------------------------------
+
+func _load_asset_map() -> void:
+    if not FileAccess.file_exists(ASSET_MAP_PATH):
+        print("    No asset map found at: ", ASSET_MAP_PATH)
+        return
+
+    var data = _load_json_array(ASSET_MAP_PATH)
+    for entry in data:
+        if entry is Dictionary and entry.has("uid") and entry.has("new_path"):
+            _asset_map[entry["uid"]] = entry["new_path"]
+
+    print("    Loaded ", _asset_map.size(), " asset mappings.")
+
+func _resolve_asset_path(item_info: Dictionary) -> String:
+    var path_out := ""
+
+    # 1. Try Mapping (via asset_id)
+    if item_info.has("asset") and item_info["asset"] is Dictionary:
+        var asset_cfg: Dictionary = item_info["asset"]
+        var aid = asset_cfg.get("asset_id", "")
+
+        if aid != "" and _asset_map.has(aid):
+            var mapped_path = ASSET_ROOT + _asset_map[aid]
+            if FileAccess.file_exists(mapped_path):
+                return mapped_path
+
+        # 2. Try Fallback Paths
+        if asset_cfg.has("paths") and asset_cfg["paths"] is Array:
+            for p in asset_cfg["paths"]:
+                var candidate := ASSET_ROOT + String(p)
+                if FileAccess.file_exists(candidate):
+                    return candidate
+
+    # 3. Default: Use top-level path property
+    var p_ref = String(item_info.get("path", ""))
+    if p_ref != "":
+        return _path_to_res(p_ref)
+
+    return ""
 
 func _json_to_vec2(d: Dictionary) -> Vector2:
     if d.is_empty(): return Vector2.ZERO
@@ -165,7 +211,7 @@ func _add_mesh_collision(mesh_instance: MeshInstance3D, col_info: Dictionary, pa
 # CONFIG APPLICATION
 # -----------------------------------------------------------------------------
 
-func _apply_node_config(node: Node, cfg: Dictionary) -> void:
+func _apply_node_config(node: Node, cfg: Dictionary, node_info: Dictionary = {}) -> void:
     if cfg.is_empty(): return
 
     # 1. Transforms (Combined V0.4.1 + V0.4.2 logic)
@@ -202,10 +248,19 @@ func _apply_node_config(node: Node, cfg: Dictionary) -> void:
 
     # 3. Visuals & UI (Combined V0.4.1 + V0.4.2)
     if node is Sprite2D:
-        if cfg.has("texture_path"):
-            var path := _path_to_res(String(cfg["texture_path"]))
-            var tex = load(path)
+        var tex_path := ""
+        # 1. Try resolving via node info (Map or Fallbacks)
+        if not node_info.is_empty():
+            tex_path = _resolve_asset_path(node_info)
+
+        # 2. Fallback to direct texture_path
+        if tex_path == "" and cfg.has("texture_path"):
+            tex_path = _path_to_res(String(cfg["texture_path"]))
+
+        if tex_path != "":
+            var tex = load(tex_path)
             if tex: node.texture = tex
+
         if cfg.has("region_enabled"): node.region_enabled = bool(cfg["region_enabled"])
         if cfg.has("region_rect"): node.region_rect = _json_to_rect2(cfg["region_rect"])
 
@@ -276,7 +331,7 @@ func _attach_script_if_requested(node: Node, info: Dictionary) -> void:
 
 func _instantiate_child(child_info: Dictionary, _scene_root: Node) -> Node:
     var instance: Node = null
-    var path_ref: String = String(child_info.get("path", ""))
+    var path_ref: String = _resolve_asset_path(child_info)
 
     # 1. Nested Config
     if child_info.has("config_file"):
@@ -287,7 +342,7 @@ func _instantiate_child(child_info: Dictionary, _scene_root: Node) -> Node:
 
         # If the config built successfully and we have a target path ending in .tscn...
         if built_root and path_ref.ends_with(".tscn"):
-            var abs_path := _path_to_res(path_ref)
+            var abs_path := path_ref
 
             # The build process has already saved the scene to disk.
             # We treat the raw 'built_root' as a temporary artifact and free it.
@@ -310,7 +365,7 @@ func _instantiate_child(child_info: Dictionary, _scene_root: Node) -> Node:
     # 2. Scene or Model Path (Preferred)
     # UPDATED: Allows .glb/.gltf files found in 'path' to be loaded directly.
     elif path_ref.ends_with(".tscn") or path_ref.ends_with(".glb") or path_ref.ends_with(".gltf"):
-        var abs_path := _path_to_res(path_ref)
+        var abs_path := path_ref
 
         # We build if the file is missing OR if the JSON defines children (Inline Definition).
         var file_missing := not FileAccess.file_exists(abs_path)
@@ -360,7 +415,7 @@ func _instantiate_child(child_info: Dictionary, _scene_root: Node) -> Node:
 
         # Apply merged config
         if child_info.has("config") and child_info["config"] is Dictionary:
-            _apply_node_config(instance, child_info["config"])
+            _apply_node_config(instance, child_info["config"], child_info)
 
     # [PATCH] 5. Recursion for Nested Children (Class-based nodes like LOC3D)
     if instance and child_info.has("children") and child_info["children"] is Array:
@@ -374,8 +429,8 @@ func _instantiate_child(child_info: Dictionary, _scene_root: Node) -> Node:
                 instance.add_child(sub_node)
 
                 # Ensure it gets saved to the scene
-                if _scene_root:
-                    sub_node.owner = _scene_root
+                #if _scene_root:
+                #    sub_node.owner = _scene_root
 
                 # Apply Collision (Copied from main loop logic)
                 if sub_node is MeshInstance3D and sub_data.has("collision"):
@@ -411,6 +466,13 @@ func _save_scene(scene_root: Node, scene_path: String) -> void:
     else:
         printerr("  Failed to pack scene: ", scene_path)
 
+func _assign_owner(node: Node, target_owner: Node) -> void:
+    if node != target_owner and node.owner == null:
+        node.owner = target_owner
+
+    for child in node.get_children():
+        _assign_owner(child, target_owner)
+
 func _build_scene_from_array(scene_array: Array) -> Node:
     if scene_array.is_empty(): return null
 
@@ -426,7 +488,7 @@ func _build_scene_from_array(scene_array: Array) -> Node:
 
     # Apply Root Config
     if root_info.has("config"):
-        _apply_node_config(this_root, root_info["config"])
+        _apply_node_config(this_root, root_info["config"], root_info)
     _attach_script_if_requested(this_root, root_info)
 
     # Process Children
@@ -437,7 +499,7 @@ func _build_scene_from_array(scene_array: Array) -> Node:
             var child_node := _instantiate_child(child_data, this_root)
             if child_node:
                 this_root.add_child(child_node)
-                child_node.owner = this_root # Important for saving
+                _assign_owner(child_node, this_root)
 
                 # Editable Children
                 var editable := bool(root_info.get("editable_children_default", false))
@@ -469,6 +531,8 @@ func _build_from_config(abs_path: String) -> Node:
 # -----------------------------------------------------------------------------
 func _init():
     print("--- Importer V0.5 Initialized ---")
+    _load_asset_map()
+
     var entry := CONFIG_ROOT + "Node4D.json"
     print("Config Entry: ", entry)
 

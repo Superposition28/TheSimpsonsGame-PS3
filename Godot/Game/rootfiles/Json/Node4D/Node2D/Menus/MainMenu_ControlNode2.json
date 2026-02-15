@@ -3,12 +3,18 @@
     "children": [
       {
         "class": "Sprite2D",
+        "asset": {
+          "asset_id": "ee93fa",
+          "asset_type": "png",
+          "paths": [
+            "A2_Frontend/frontend_str/assets_rws_frontend_frontend/txd/frontend_txd/1_frontend_assets_ee93fa.png"
+          ]
+        },
         "config": {
           "position": {
             "x": 2600.0,
             "y": 488.0
-          },
-          "texture_path": "res://assets/A2_Frontend/frontend_str/assets_rws_frontend_frontend/txd/frontend_txd/1_frontend_assets_ee93fa.png"
+          }
         },
         "name": "1FrontendAssets"
       },
@@ -16,6 +22,13 @@
         "children": [
           {
             "class": "Sprite2D",
+            "asset": {
+              "asset_id": "005d67",
+              "asset_type": "png",
+              "paths": [
+                "A2_Frontend/frontend_str/assets_rws_frontend_frontend/txd/frontend_split16_txd/buttons_005d67.png"
+              ]
+            },
             "config": {
               "position": {
                 "x": 208.000015258789,
@@ -35,8 +48,7 @@
               "scale": {
                 "x": 0.615384876728058,
                 "y": 0.615384995937347
-              },
-              "texture_path": "res://assets/A2_Frontend/frontend_str/assets_rws_frontend_frontend/txd/frontend_split16_txd/buttons_005d67.png"
+              }
             },
             "name": "S_Button"
           },
@@ -56,6 +68,13 @@
           },
           {
             "class": "Sprite2D",
+            "asset": {
+              "asset_id": "005d67",
+              "asset_type": "png",
+              "paths": [
+                "A2_Frontend/frontend_str/assets_rws_frontend_frontend/txd/frontend_split16_txd/buttons_005d67.png"
+              ]
+            },
             "config": {
               "position": {
                 "x": 880.0,
@@ -75,8 +94,7 @@
               "scale": {
                 "x": 0.646363735198975,
                 "y": 0.570754706859589
-              },
-              "texture_path": "res://assets/A2_Frontend/frontend_str/assets_rws_frontend_frontend/txd/frontend_split16_txd/buttons_005d67.png"
+              }
             },
             "name": "X_Button"
           },
@@ -96,12 +114,18 @@
           },
           {
             "class": "Sprite2D",
+            "asset": {
+              "asset_id": "6a3576",
+              "asset_type": "png",
+              "paths": [
+                "A2_Frontend/frontend_str/assets_rws_frontend_frontend/txd/frontend_split19_txd/4_SharedLibrary_6a3576.png"
+              ]
+            },
             "config": {
               "position": {
                 "x": 526.0,
                 "y": 127.0
-              },
-              "texture_path": "res://assets/A2_Frontend/frontend_str/assets_rws_frontend_frontend/txd/frontend_split19_txd/4_SharedLibrary_6a3576.png"
+              }
             },
             "name": "4SharedLibrary"
           },
@@ -123,6 +147,13 @@
             "children": [
               {
                 "class": "Sprite2D",
+                "asset": {
+                  "asset_id": "e36432",
+                  "asset_type": "png",
+                  "paths": [
+                    "A2_Frontend/frontend_str/assets_rws_frontend_frontend/txd/frontend_split24_txd/2_SharedLibrary_e36432.png"
+                  ]
+                },
                 "config": {
                   "position": {
                     "x": 528.0,
@@ -131,13 +162,19 @@
                   "scale": {
                     "x": 1.15625011920929,
                     "y": 0.15234375
-                  },
-                  "texture_path": "res://assets/A2_Frontend/frontend_str/assets_rws_frontend_frontend/txd/frontend_split24_txd/2_SharedLibrary_e36432.png"
+                  }
                 },
                 "name": "CURRENT LEVEL OF SELECTED SAVE FILE BackGround"
               },
               {
                 "class": "Sprite2D",
+                "asset": {
+                  "asset_id": "0b4178",
+                  "asset_type": "png",
+                  "paths": [
+                    "A2_Frontend/frontend_str/assets_rws_frontend_frontend/txd/frontend_split20_txd/3_SharedLibrary_0b4178.png"
+                  ]
+                },
                 "config": {
                   "position": {
                     "x": 528.0,
@@ -146,13 +183,19 @@
                   "scale": {
                     "x": 1.17968761920929,
                     "y": 1.0
-                  },
-                  "texture_path": "res://assets/A2_Frontend/frontend_str/assets_rws_frontend_frontend/txd/frontend_split20_txd/3_SharedLibrary_0b4178.png"
+                  }
                 },
                 "name": "3SharedLibrary2"
               },
               {
                 "class": "Sprite2D",
+                "asset": {
+                  "asset_id": "0b4178",
+                  "asset_type": "png",
+                  "paths": [
+                    "A2_Frontend/frontend_str/assets_rws_frontend_frontend/txd/frontend_split20_txd/3_SharedLibrary_0b4178.png"
+                  ]
+                },
                 "config": {
                   "position": {
                     "x": 528.0,
@@ -161,8 +204,7 @@
                   "scale": {
                     "x": 1.181640625,
                     "y": 0.812498152256012
-                  },
-                  "texture_path": "res://assets/A2_Frontend/frontend_str/assets_rws_frontend_frontend/txd/frontend_split20_txd/3_SharedLibrary_0b4178.png"
+                  }
                 },
                 "name": "3SharedLibrary"
               },
@@ -258,6 +300,13 @@
               },
               {
                 "class": "Sprite2D",
+                "asset": {
+                  "asset_id": "0b4178",
+                  "asset_type": "png",
+                  "paths": [
+                    "A2_Frontend/frontend_str/assets_rws_frontend_frontend/txd/frontend_split20_txd/3_SharedLibrary_0b4178.png"
+                  ]
+                },
                 "config": {
                   "position": {
                     "x": 507.191986083984,
@@ -266,13 +315,19 @@
                   "scale": {
                     "x": 0.553937554359436,
                     "y": 1.0
-                  },
-                  "texture_path": "res://assets/A2_Frontend/frontend_str/assets_rws_frontend_frontend/txd/frontend_split20_txd/3_SharedLibrary_0b4178.png"
+                  }
                 },
                 "name": "3SharedLibrary4"
               },
               {
                 "class": "Sprite2D",
+                "asset": {
+                  "asset_id": "0b4178",
+                  "asset_type": "png",
+                  "paths": [
+                    "A2_Frontend/frontend_str/assets_rws_frontend_frontend/txd/frontend_split20_txd/3_SharedLibrary_0b4178.png"
+                  ]
+                },
                 "config": {
                   "position": {
                     "x": 506.194671630859,
@@ -281,13 +336,19 @@
                   "scale": {
                     "x": 0.557778120040894,
                     "y": 1.0
-                  },
-                  "texture_path": "res://assets/A2_Frontend/frontend_str/assets_rws_frontend_frontend/txd/frontend_split20_txd/3_SharedLibrary_0b4178.png"
+                  }
                 },
                 "name": "3SharedLibrary5"
               },
               {
                 "class": "Sprite2D",
+                "asset": {
+                  "asset_id": "0b4178",
+                  "asset_type": "png",
+                  "paths": [
+                    "A2_Frontend/frontend_str/assets_rws_frontend_frontend/txd/frontend_split20_txd/3_SharedLibrary_0b4178.png"
+                  ]
+                },
                 "config": {
                   "position": {
                     "x": 506.683563232422,
@@ -296,8 +357,7 @@
                   "scale": {
                     "x": 0.567642211914063,
                     "y": 1.0
-                  },
-                  "texture_path": "res://assets/A2_Frontend/frontend_str/assets_rws_frontend_frontend/txd/frontend_split20_txd/3_SharedLibrary_0b4178.png"
+                  }
                 },
                 "name": "3SharedLibrary3"
               }
@@ -328,6 +388,13 @@
         "children": [
           {
             "class": "Sprite2D",
+            "asset": {
+              "asset_id": "7e0f3c",
+              "asset_type": "png",
+              "paths": [
+                "A2_Frontend/frontend_str/assets_rws_frontend_frontend/txd/frontend_split24_txd/8_SharedLibrary_7e0f3c.png"
+              ]
+            },
             "config": {
               "position": {
                 "x": 7.25048828125,
@@ -336,13 +403,19 @@
               "scale": {
                 "x": 2.79956388473511,
                 "y": 3.23649454116821
-              },
-              "texture_path": "res://assets/A2_Frontend/frontend_str/assets_rws_frontend_frontend/txd/frontend_split24_txd/8_SharedLibrary_7e0f3c.png"
+              }
             },
             "name": "8SharedLibrary"
           },
           {
             "class": "Sprite2D",
+            "asset": {
+              "asset_id": "44e6ea",
+              "asset_type": "png",
+              "paths": [
+                "A2_Frontend/frontend_str/assets_rws_frontend_frontend/txd/frontend_split11_txd/7_SharedLibrary_44e6ea.png"
+              ]
+            },
             "config": {
               "position": {
                 "x": 1.1153564453125,
@@ -351,13 +424,19 @@
               "scale": {
                 "x": 0.997821390628815,
                 "y": 0.998799502849579
-              },
-              "texture_path": "res://assets/A2_Frontend/frontend_str/assets_rws_frontend_frontend/txd/frontend_split11_txd/7_SharedLibrary_44e6ea.png"
+              }
             },
             "name": "7SharedLibrary"
           }
         ],
         "class": "Sprite2D",
+        "asset": {
+          "asset_id": "704032",
+          "asset_type": "png",
+          "paths": [
+            "A2_Frontend/frontend_str/assets_rws_frontend_frontend/txd/frontend_split3_txd/9_SharedLibrary_704032.png"
+          ]
+        },
         "config": {
           "position": {
             "x": 549.000061035156,
@@ -366,8 +445,7 @@
           "scale": {
             "x": 0.896484375,
             "y": 0.813476622104645
-          },
-          "texture_path": "res://assets/A2_Frontend/frontend_str/assets_rws_frontend_frontend/txd/frontend_split3_txd/9_SharedLibrary_704032.png"
+          }
         },
         "name": "TV"
       }

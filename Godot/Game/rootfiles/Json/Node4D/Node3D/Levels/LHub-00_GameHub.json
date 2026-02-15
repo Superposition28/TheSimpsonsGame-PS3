@@ -5,10 +5,10 @@
         "class": "Node3D",
         "type": "scene",
         "children": [{
-            "name": "LOC3D",
+            "name": "GameHub3D",
             "Type": "Node",
             "class": "Node3D",
-            "path": "Node4D/Node3D/Levels/LHub-00_GameHub/LOC3D.tscn",
+            "path": "Node4D/Node3D/Levels/LHub-00_GameHub/GameHub3D.tscn",
             "config": {
                 "transform": {
                     "position": {

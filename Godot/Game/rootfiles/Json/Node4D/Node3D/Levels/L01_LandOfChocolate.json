@@ -6,8 +6,8 @@
         "type": "scene",
         "children": [{
             "name": "LOC3D",
-            "Type": "Node",
             "class": "Node3D",
+            "Type": "node",
             "path": "Node4D/Node3D/Levels/L01_LandOfChocolate/LOC3D.tscn",
             "config": {
                 "transform": {
@@ -19,9 +19,9 @@
             "children": [
                 {
                     "name": "Zone01_Terrain",
-                    "path": "assets/L01_LandOfChocolate/loc/zone01_str/assets_environs/export/terrain/lodmodel1_c8c552.rws.PS3.glb",
                     "asset": {
                         "asset_id": "c8c552",
+                        "asset_type": "glb",
                         "paths": [
                             "L01_LandOfChocolate/loc/zone01_str/assets_environs/export/terrain/lodmodel1_c8c552.rws.PS3.glb",
                             "loc/loc/zone01_str/build/PS3/pal_en/assets/environs/loc/loc/zone01/export/terrain/lodmodel1.rws.PS3.glb"

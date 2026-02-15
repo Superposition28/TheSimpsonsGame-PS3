@@ -48,12 +48,18 @@
       },
       {
         "class": "Sprite2D",
+        "asset": {
+          "asset_id": "742af3",
+          "asset_type": "png",
+          "paths": [
+            "A2_Frontend/frontend_str/assets_rws/txd/frontend_split23_txd/64_popup_742af3.png"
+          ]
+        },
         "config": {
           "position": {
             "x": -632.0,
             "y": -624.0
-          },
-          "texture_path": "res://assets/A2_Frontend/frontend_str/assets_rws_frontend_frontend/txd/frontend_split23_txd/64_popup_742af3.png"
+          }
         },
         "name": "64Popup"
       }

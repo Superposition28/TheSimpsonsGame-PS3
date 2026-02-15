@@ -725,7 +725,7 @@ local function create_godot_project(project_name, project_path, assetSourcePath,
     prompt("Press Enter to continue...")
 
     -- Run scene builder
-    local cmd = { godot_exe, "--editor", "--path", project_dir, "--script", "res://Scripts/import-V0.5.gd" }
+    local cmd = { godot_exe, "--editor", "--path", project_dir, "--script", "res://Scripts/import-V0.5.2.gd" }
     if no_exit then table.insert(cmd, "--no-exit"); sdk.colour_print{ colour = Colours.CYAN, message = "\n'--no-exit' flag detected. Godot will remain open after script execution." } end
     run_godot(cmd, "Scene Building")
 
