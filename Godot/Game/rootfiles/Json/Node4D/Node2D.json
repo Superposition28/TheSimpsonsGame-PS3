@@ -46,7 +46,7 @@
             }
         ],
         "class": "Node2D",
-        "editable_children_default": true,
+        "editable_children": true,
         "name": "Node2D",
         "overwrite": true,
         "path": "Node4D/Node2D.tscn",

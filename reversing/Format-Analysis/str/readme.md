@@ -7,7 +7,6 @@ this format is understood and can be easily extracted using an official quickbms
 
 Version: 1.0
 Last Updated: 2025-05-04
-Author(s): [Analysis derived from provided text and BMS script references]
 1. Overview
 
     Format Name: Simpsons Game STR Archive Format

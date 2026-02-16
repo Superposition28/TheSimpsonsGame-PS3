@@ -65,7 +65,7 @@
       }
     ],
     "class": "Node2D",
-    "editable_children_default": true,
+    "editable_children": true,
     "name": "Menus",
     "overwrite": true,
     "path": "Node4D/Node2D/Menus/menus.tscn",

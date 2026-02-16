@@ -234,7 +234,7 @@
       }
     ],
     "class": "Control",
-    "editable_children_default": true,
+    "editable_children": true,
     "name": "StartMenu_ControlNode",
     "overwrite": true,
     "path": "Node4D/Node2D/Menus/StartMenu_ControlNode/start_menu_control_node.tscn",

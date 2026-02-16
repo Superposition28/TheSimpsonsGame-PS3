@@ -45,6 +45,9 @@ reversing/Format-Analysis/ps3/hko/animatedcollisionmodel1.hko.PS3
 reversing/Format-Analysis/ps3/acs/marge.acs.PS3
 reversing/Format-Analysis/ps3/acs/bart.acs.PS3
 reversing/Format-Analysis/ps3/hkt/collisionmodel.hkt.PS3
+*.PS3
+
+
 
 **old**
 **.hko.PS3

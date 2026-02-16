@@ -16,7 +16,7 @@
       }
     ],
     "class": "Control",
-    "editable_children_default": true,
+    "editable_children": true,
     "name": "HUD_ControlNode",
     "overwrite": true,
     "path": "Node4D/Node2D/HUD_ControlNode/hud_control_node.tscn",

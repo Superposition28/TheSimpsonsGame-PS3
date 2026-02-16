@@ -332,6 +332,7 @@ func _attach_script_if_requested(node: Node, info: Dictionary) -> void:
 func _instantiate_child(child_info: Dictionary, _scene_root: Node) -> Node:
     var instance: Node = null
     var path_ref: String = _resolve_asset_path(child_info)
+    var children_processed := false
 
     # 1. Nested Config
     if child_info.has("config_file"):
@@ -375,6 +376,7 @@ func _instantiate_child(child_info: Dictionary, _scene_root: Node) -> Node:
             print("    Detected Inline Scene Definition for: ", abs_path)
             # Treat this child_info as the root of a new scene and build it.
             var built_root = _build_scene_from_array([child_info])
+            children_processed = true
 
             if built_root:
                 built_root.free()
@@ -418,7 +420,7 @@ func _instantiate_child(child_info: Dictionary, _scene_root: Node) -> Node:
             _apply_node_config(instance, child_info["config"], child_info)
 
     # [PATCH] 5. Recursion for Nested Children (Class-based nodes like LOC3D)
-    if instance and child_info.has("children") and child_info["children"] is Array:
+    if instance and child_info.has("children") and child_info["children"] is Array and not children_processed:
         for sub_data in child_info["children"]:
             if not (sub_data is Dictionary): continue
 
@@ -502,8 +504,8 @@ func _build_scene_from_array(scene_array: Array) -> Node:
                 _assign_owner(child_node, this_root)
 
                 # Editable Children
-                var editable := bool(root_info.get("editable_children_default", false))
-                #var editable := bool(root_info.get("editable_children_default", true))
+                var editable := bool(root_info.get("editable_children", false)) # Default to false, to make true, explicitly set "editable_children": true in each JSON
+                #var editable := bool(root_info.get("editable_children", true)) # default to true if not specified
                 if child_data.has("editable_children"):
                     editable = bool(child_data["editable_children"])
                 if editable:

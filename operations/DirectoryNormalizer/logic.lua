@@ -321,6 +321,37 @@ function logic.apply_file_rules(original_rel, uid_generator_func, rename_map)
     return new_rel_path, uid
 end
 
+function logic.ExtractAudioUidFromFilename(filename)
+    if not filename or filename == "" then
+        return nil
+    end
+    local lower = string.lower(filename)
+    if not lower:match("%.exa%.wav$") then
+        return nil
+    end
+    local stem = filename:sub(1, #filename - #".exa.wav")
+    if #stem < 6 then
+        return nil
+    end
+    local uid = stem:sub(#stem - 5)
+    if uid:match("^[%x]+$") then
+        return string.lower(uid)
+    end
+    return nil
+end
+
+function logic.GetCopyOnlyUid(rel_path, uid_generator_func, rename_map)
+    local filename = utils.basename(rel_path or "")
+    local audio_uid = logic.ExtractAudioUidFromFilename(filename)
+    if audio_uid then
+        return audio_uid
+    end
+
+    local canonical_rel = logic.normalize_to_canonical(rel_path, rename_map)
+    local canonical_rel_stem, _ = utils.multi_ext(canonical_rel)
+    return uid_generator_func(canonical_rel_stem, 6)
+end
+
 function logic.add_to_tree(tree, path_str)
     local parts = utils.split_path(path_str)
     local filename = table.remove(parts)

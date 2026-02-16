@@ -9,8 +9,10 @@ This script normalizes a directory by performing transformations:
 4. Finds any folder that contains only one other folder, and merges their names.
 5. Appends a 6-character hex UID to each filename.
 6. NEW: When --copyonly is used, those directories are excluded from normalization and copied as-is after normalization.
-   - UID is based on the original relative path stem (no extension).
-   - NEW: UID is inserted before the *first* extension (e.g., file_UID.rws.PS3).
+    - Copy-only assets are still included in mapping outputs with uid/new_path/original_path fields.
+    - Audio UIDs are extracted from *.exa.wav filenames (last 6 chars before .exa.wav).
+    - Video UIDs are auto-assigned from the canonical relative path stem (no extension).
+    - UID is inserted before the *first* extension (e.g., file_UID.rws.PS3).
 7. NEW: Removes redundant level shortform tokens from folder names after the level folder
     and collapses repeated tokens within a segment.
     e.g., 'assets_rws_loc_loc' -> 'assets_rws', 'assets_rws_simpsons_chars_simpsons_chars' -> 'assets_rws'.
@@ -208,6 +210,24 @@ local function main()
             local full = copyonly_files[i]
             local rel = utils.rel_path(full, args.src)
             local new_path = utils.join(args.dst, rel)
+
+            local uid = logic.GetCopyOnlyUid(rel, utils.get_hex_uid, rename_map)
+            local row_data = {
+                uid = uid,
+                original_path = utils.to_posix(rel),
+                new_path = utils.to_posix(rel),
+            }
+            table.insert(mapping_rows, row_data)
+
+            local parts = utils.split_path(rel)
+            if #parts > 0 then
+                local top_folder = parts[1]
+                if not per_folder_maps[top_folder] then
+                    per_folder_maps[top_folder] = {}
+                end
+                table.insert(per_folder_maps[top_folder], row_data)
+            end
+
             if not args.dry_run then
                 utils.copy_with_collision_handling(full, new_path)
             end

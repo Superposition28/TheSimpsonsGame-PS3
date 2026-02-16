@@ -451,7 +451,7 @@
       }
     ],
     "class": "Control",
-    "editable_children_default": true,
+    "editable_children": true,
     "name": "MainMenu_ControlNode2",
     "overwrite": true,
     "path": "Node4D/Node2D/Menus/MainMenu_ControlNode2/main_menu_control_node_2.tscn",

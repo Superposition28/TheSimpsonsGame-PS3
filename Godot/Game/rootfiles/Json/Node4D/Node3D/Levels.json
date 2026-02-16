@@ -4,7 +4,7 @@
         "path": "Node4D/Node3D/Levels.tscn",
         "class": "Node3D",
         "type": "scene",
-        "editable_children_default": true,
+        "editable_children": true,
         "children": [
             {
                 "name": "LHub-00_GameHub",
