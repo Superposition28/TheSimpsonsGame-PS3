@@ -26,6 +26,7 @@ config.toml
 Source/
 # .str archive extraction output
 /GameFiles/
+
 **/STROUT/
 # temporary symlinks for 3d assets blender processing, blender 4.0 cannot handle long paths, if the import script is updated to run on 4.0+ this may be removable
 TMP_TSG_LNKS**/
@@ -33,6 +34,9 @@ TMP_TSG_LNKS**/
 # Python cache files
 __pycache__/
 *.pyc
+
+reversing/Docs/
+reversing/fileviewer/
 
 GameFiles*/
 config/old/
@@ -46,8 +50,6 @@ reversing/Format-Analysis/ps3/acs/marge.acs.PS3
 reversing/Format-Analysis/ps3/acs/bart.acs.PS3
 reversing/Format-Analysis/ps3/hkt/collisionmodel.hkt.PS3
 *.PS3
-
-
 
 **old**
 **.hko.PS3

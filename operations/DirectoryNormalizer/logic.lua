@@ -33,10 +33,7 @@ logic.LevelAliasMap = {
 
 logic.IgnoredExtensions = {
     [".blend"] = true,
-    [".blend1"] = true,
-    [".preinstanced"] = true,
-    [".dds"] = true,
-    [".txd"] = true
+    [".blend1"] = true
 }
 
 -- Functions -----------------------------------------------------------------

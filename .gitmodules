@@ -1,0 +1,6 @@
+[submodule "TheSimpsonsGame-PS3-Docs"]
+    path = reversing/docs
+    url = https://github.com/Superposition28/TheSimpsonsGame-PS3-Docs.git
+[submodule "TheSimpsonsGame-PS3-FileViewer"]
+    path = reversing/fileviewer
+    url = https://github.com/Superposition28/TheSimpsonsGame-PS3-FileViewer.git
