@@ -35,9 +35,6 @@ TMP_TSG_LNKS**/
 __pycache__/
 *.pyc
 
-reversing/Docs/
-reversing/fileviewer/
-
 GameFiles*/
 config/old/
 indexer/old/
