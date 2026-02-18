@@ -197,7 +197,9 @@ def process_scene(config: ScriptConfig) -> None:
 
         log_to_blender(f"Saving blend file to: {config.base_blend_file}")
         if bpy.data.is_dirty:
-            bpy.ops.wm.save_mainfile(filepath=config.base_blend_file)
+            # Use save_as_mainfile with check_existing=False to avoid "old file (file saved with @)" errors 
+            # when using long path prefixes (\\?\) or path variations.
+            bpy.ops.wm.save_as_mainfile(filepath=config.base_blend_file, check_existing=False)
         else:
             log_to_blender("No changes to save.")
     except RuntimeError as e:

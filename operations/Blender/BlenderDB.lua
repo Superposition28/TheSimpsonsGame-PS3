@@ -114,20 +114,37 @@ function M.setup(Utils)
                 Utils.log(Utils.Colours.CYAN, string.format("Extracted Map Subdirectory: '%s' for %s", map_subdir, full_path))
             end
 
+            -- The symlink relative path preserves the structure after the map_subdirectory
+            -- rel is props\env\bin.preinstanced, map_subdir is props
+            -- symlink_rel should be env\bin.preinstanced
+            local symlink_rel = ""
+            if rel:sub(1, #map_subdir) == map_subdir then
+                symlink_rel = rel:sub(#map_subdir + 2)
+            end
+
             local identifier = Utils.get_canonical_id(canonical_rel, rename_map)
             local base_filename = filename:gsub("%.preinstanced$", "")
+            
+            -- Use a single shared symlink folder per asset ID on the root drive
+            local shared_symlink_root = Utils.join(root_drive, identifier)
+            
             local params = {
                 identifier = identifier,
                 map_subdirectory = map_subdir,
                 filename = base_filename,
                 preinstanced_full = full_path,
                 blend_full = blend_full,
-                glb_full = glb_full
+                glb_full = glb_full,
+                preinstanced_symlink = shared_symlink_root,
+                blend_symlink = shared_symlink_root,
+                glb_symlink = glb_full and shared_symlink_root or nil
             }
 
             db.exec([[INSERT OR REPLACE INTO asset_map (
-                    identifier, map_subdirectory, filename, preinstanced_full, blend_full, glb_full)
-                    VALUES (:identifier, :map_subdirectory, :filename, :preinstanced_full, :blend_full, :glb_full)
+                    identifier, map_subdirectory, filename, preinstanced_full, blend_full, glb_full,
+                    preinstanced_symlink, blend_symlink, glb_symlink)
+                    VALUES (:identifier, :map_subdirectory, :filename, :preinstanced_full, :blend_full, :glb_full,
+                    :preinstanced_symlink, :blend_symlink, :glb_symlink)
                 ]], params)
             assets_processed = assets_processed + 1
         end)

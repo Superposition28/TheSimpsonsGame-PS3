@@ -73,6 +73,12 @@ so it needs to know the base folder new and old names so that it can generate th
 it needs to beable to predict the flattened paths of the files based on the original paths and the operations performed on them, so that it can generate the same id for the same file before and after flattening,
 many files dont exist until later stages of the process, for example the .blend and .glb files dont exist until the blender process, currently blender is already predicting the .blend and .glb file paths based on the original .preinstanced file paths, so it needs to be able to generate the same predicted paths with ids for these files
 
+the blender process is dependent on the texture extraction process to extract the textures from the txd files, and the texture conversion process to convert them to png
+
+perhaps a better order of operations could be used
+
+the audio files are aleady id'd and re-organised by another op so it can occur at any time
+
 
 
 

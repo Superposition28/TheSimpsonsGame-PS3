@@ -114,7 +114,8 @@ local function to_long_path(path)
     -- Normalize separators first
     local normalized = normalize_separators(path)
     -- If it's an absolute path with drive letter, return with prefix
-    if normalized:match("^%a:") then
+    -- Only apply if the path is actually long (> 255 chars) to avoid "saved with @" errors for short paths.
+    if normalized:match("^%a:") and #normalized > 255 then
         return "\\\\?\\" .. normalized
     end
     return normalized
@@ -155,16 +156,29 @@ local function get_path(base_path, filename, extension)
     local expected_suffix = filename .. extension
 
     local result = ""
-    -- Case 1: base_path is already the full path we want
-    if base_path:sub(-#expected_suffix) == expected_suffix then
+    -- Case 1: base_path is already the full path we want or already has the extension
+    -- Use a case-insensitive check and ensure separators are consistent
+    local lower_base = base_path:lower()
+    local lower_suffix = expected_suffix:lower()
+    local lower_ext = extension:lower()
+
+    if lower_base:sub(-#lower_suffix) == lower_suffix then
+        result = base_path
+    elseif lower_base:sub(-#lower_ext) == lower_ext then
+        -- Already has extension but filename might be different (e.g. case)
+        -- If it's a file, trust the base_path
         result = base_path
     -- Case 2: base_path is a full path to a DIFFERENT extension
     elseif base_path:match("%.[a-zA-Z0-9]+$") then
+        -- Find last separator
         local dir = base_path:match("(.*)[\\/]")
         if dir then
             result = join(dir, expected_suffix)
+        else
+            -- No separator, just a filename with extension?
+            result = expected_suffix
         end
-    -- Case 3: base_path is a directory (or we couldn't identify it as a file path)
+    -- Case 3: base_path is a directory
     else
         result = join(base_path, expected_suffix)
     end
@@ -235,18 +249,15 @@ end
 -- @return table array of asset tables
 local function load_assets(db_path)
     local db = sqlite.open(to_long_path(db_path))
-    --local rows = db.query("SELECT identifier, filename, preinstanced_symlink, blend_symlink, glb_symlink FROM asset_map")
-    -- test using full paths instead of symlinks, newest blender version may not require symlinks and should beable to handle long paths
-    -- if this works the entire symkink proccess can be removed
-    local rows = db.query("SELECT identifier, filename, preinstanced_full, blend_full, glb_full FROM asset_map")
+    local rows = db.query("SELECT identifier, filename, preinstanced_symlink, blend_symlink, glb_symlink FROM asset_map")
     local assets = {}
     for index, row in ipairs(rows) do
         assets[index] = {
             identifier = row.identifier,
             filename = row.filename,
-            preinstanced_symlink = row.preinstanced_full,
-            blend_symlink = row.blend_full,
-            glb_symlink = row.glb_full
+            preinstanced_symlink = row.preinstanced_symlink,
+            blend_symlink = row.blend_symlink,
+            glb_symlink = row.glb_symlink
         }
     end
     db.close()

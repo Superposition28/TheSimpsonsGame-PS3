@@ -34,6 +34,7 @@ local function run(args)
     local Utils = load_module(join(base_path, "BlenderUtils.lua"))
     local DB_Module = load_module(join(base_path, "BlenderDB.lua")).setup(Utils)
     local Processor_Module = load_module(join(base_path, "BlenderProcessor.lua")).setup(Utils)
+    local Symlink_Module = load_module(join(base_path, "BlenderSymlink.lua")).setup(Utils)
 
     local VERBOSE = not not args.verbose
     Utils.log(Utils.Colours.CYAN, string.format("Input args: %s", sdk.text.json.encode(args)))
@@ -132,6 +133,10 @@ local function run(args)
         local asset_count = DB_Module.generate_asset_mapping(db, root_drive, preinstanced_dir, blend_dir, marker, glb_dir, false, VERBOSE, rename_map, args.game_root)
         Utils.log(Utils.Colours.GREEN, string.format("Generated and stored map for %d assets in the database.", asset_count))
         if debug_mode_enabled then sdk.sleep(2) end
+
+        Utils.log(Utils.Colours.CYAN, "--- Step 3: Creating Symbolic Links ---")
+        Symlink_Module.create_symbolic_links(db, root_drive, preinstanced_dir, blend_dir, marker, glb_dir, debug_mode_enabled, VERBOSE)
+        Utils.log(Utils.Colours.GREEN, "--- Step 3: Completed ---")
     end)
 
     if not ok then

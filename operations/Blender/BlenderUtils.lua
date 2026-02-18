@@ -105,7 +105,8 @@ function M.absolute_path(path)
     result = M.normalize_separators(result)
 
     -- Ensure \\?\ prefix on Windows for long path support in Blender 4.5+
-    if path_sep == "\\" and result:match("^%a:") and not result:find("^\\\\%?\\") then
+    -- Only apply if the path is actually long (> 255 chars) to avoid "saved with @" errors for short paths.
+    if path_sep == "\\" and result:match("^%a:") and not result:find("^\\\\%?\\") and #result > 255 then
         result = "\\\\?\\" .. result
     end
 
