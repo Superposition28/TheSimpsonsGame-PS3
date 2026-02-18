@@ -106,7 +106,8 @@ local function main()
             blank_blend_source = nil,
             root_drive = nil,
             main_db = nil,
-            asset_map_db = nil
+            asset_map_db = nil,
+            rename_map_file = nil
         }
         -- Byte-wise helpers to avoid Lua pattern engine entirely
         local function is_space_byte(b)
@@ -328,6 +329,17 @@ local function main()
                     end
                 end
                 result.asset_map_db = clean_value(value)
+            elseif option_name == "--rename-map" or option_name == "--rename_map" then
+                local value = inline_value
+                if value == nil or #value == 0 then
+                    i = i + 1
+                    if i <= #args then
+                        value = args[i]
+                    else
+                        error("Expected value after --rename-map")
+                    end
+                end
+                result.rename_map_file = clean_value(value)
             end
             i = i + 1
         end
@@ -485,6 +497,7 @@ local function main()
 
     -- Options for initialization phase
     local init_opts = {
+        game_root = cli.game_root,
         preinstanced_dir = preinstanced_dir,
         blend_dir = blend_dir,
         glb_dir = preinstanced_dir,
@@ -495,6 +508,7 @@ local function main()
         debug_sleep = cli.debug_sleep,
         verbose = cli.verbose,
         db_file_path = join(cli.asset_map_db),
+        rename_map_file = cli.rename_map_file
     }
 
     -- Phase 1: setup, link creation, and environment preparation

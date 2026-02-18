@@ -2,8 +2,10 @@ title = "The Simpsons Game PS3 Tools"
 
 [[tool]]
 name = "Blender"
-#version = "4.5.4" it is possible to use 4.5.4 but this auto disables the 'auto_smooth' feature in the blender 'preinstanced import' addon as its no longer supported in 4.1+
-version = "4.0.2"
+# it is possible to use 4.5.4 but this auto disables the 'auto_smooth' feature in the blender 'preinstanced import' addon as its no longer supported in 4.1+
+version = "4.5.4"
+# when chaning version the blank.blend file needs to be re-saved in that version
+#version = "4.0.2" # this version cant handle long paths and requires symlinks
 destination = "./TMP/Downloads"
 unpack = true
 unpack_destination = "./Tools/Blender"

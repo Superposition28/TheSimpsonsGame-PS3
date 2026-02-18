@@ -99,6 +99,27 @@ local function normalize_separators(path)
     return path
 end
 
+--- Add the Windows long path prefix (\\?\) to absolute paths if running on Windows.
+-- This helps bypass the 260-character path limit.
+-- @param path string|nil
+-- @return string|nil
+local function to_long_path(path)
+    if not path or path == "" or path_sep ~= "\\" then
+        return path
+    end
+    -- If already prefixed return as is
+    if path:find("^\\\\%?\\") then
+        return path
+    end
+    -- Normalize separators first
+    local normalized = normalize_separators(path)
+    -- If it's an absolute path with drive letter, return with prefix
+    if normalized:match("^%a:") then
+        return "\\\\?\\" .. normalized
+    end
+    return normalized
+end
+
 --- Join path segments and trim redundant separators.
 -- @vararg string
 -- @return string
@@ -119,6 +140,36 @@ local function join(...)
         end
     end
     return table.concat(buffer, path_sep)
+end
+
+--- Get the appropriate path for an asset file, handling both directory roots and full file paths.
+-- @param base_path string The path from the DB (could be a directory or a full file path)
+-- @param filename string The asset filename
+-- @param extension string The desired extension (e.g. ".blend")
+-- @return string The resolved path
+local function get_path(base_path, filename, extension)
+    if not base_path or base_path == "" then
+        return ""
+    end
+    base_path = normalize_separators(base_path)
+    local expected_suffix = filename .. extension
+
+    local result = ""
+    -- Case 1: base_path is already the full path we want
+    if base_path:sub(-#expected_suffix) == expected_suffix then
+        result = base_path
+    -- Case 2: base_path is a full path to a DIFFERENT extension
+    elseif base_path:match("%.[a-zA-Z0-9]+$") then
+        local dir = base_path:match("(.*)[\\/]")
+        if dir then
+            result = join(dir, expected_suffix)
+        end
+    -- Case 3: base_path is a directory (or we couldn't identify it as a file path)
+    else
+        result = join(base_path, expected_suffix)
+    end
+
+    return to_long_path(result)
 end
 
 --- Return true when path exists.
@@ -177,22 +228,25 @@ local function normalize_export_formats(list)
     return set, ordered
 end
 
+
 --- Load all assets from the SQLite `asset_map` table.
--- Expected columns: identifier, filename, preinstanced_symlink,
---                   blend_symlink, glb_symlink
+-- Expected columns: identifier, filename, preinstanced_symlink, blend_symlink, glb_symlink
 -- @param db_path string
 -- @return table array of asset tables
 local function load_assets(db_path)
-    local db = sqlite.open(db_path)
-    local rows = db.query("SELECT identifier, filename, preinstanced_symlink, blend_symlink, glb_symlink FROM asset_map")
+    local db = sqlite.open(to_long_path(db_path))
+    --local rows = db.query("SELECT identifier, filename, preinstanced_symlink, blend_symlink, glb_symlink FROM asset_map")
+    -- test using full paths instead of symlinks, newest blender version may not require symlinks and should beable to handle long paths
+    -- if this works the entire symkink proccess can be removed
+    local rows = db.query("SELECT identifier, filename, preinstanced_full, blend_full, glb_full FROM asset_map")
     local assets = {}
     for index, row in ipairs(rows) do
         assets[index] = {
             identifier = row.identifier,
             filename = row.filename,
-            preinstanced_symlink = row.preinstanced_symlink,
-            blend_symlink = row.blend_symlink,
-            glb_symlink = row.glb_symlink
+            preinstanced_symlink = row.preinstanced_full,
+            blend_symlink = row.blend_full,
+            glb_symlink = row.glb_full
         }
     end
     db.close()
@@ -208,7 +262,7 @@ local function should_process_asset(asset, export_set)
         return false, false, "Missing required symlink paths"
     end
 
-    local blend_file = join(asset.blend_symlink, asset.filename .. ".blend")
+    local blend_file = get_path(asset.blend_symlink, asset.filename, ".blend")
     if not is_file(blend_file) then
         return false, false, string.format("Blend file not found: %s", blend_file)
     end
@@ -218,7 +272,7 @@ local function should_process_asset(asset, export_set)
         if not asset.glb_symlink then
             return false, false, "GLB symlink path missing"
         end
-        local glb_file = join(asset.glb_symlink, asset.filename .. ".glb")
+        local glb_file = get_path(asset.glb_symlink, asset.filename, ".glb")
         if not is_file(glb_file) then
             run_needed = true
         end
@@ -228,7 +282,7 @@ local function should_process_asset(asset, export_set)
         if not asset.glb_symlink then
             return false, false, "FBX symlink path missing"
         end
-        local fbx_file = join(asset.glb_symlink, asset.filename .. ".fbx")
+        local fbx_file = get_path(asset.glb_symlink, asset.filename, ".fbx")
         if not is_file(fbx_file) then
             run_needed = true
         end
@@ -259,11 +313,10 @@ local function run_blender_for_asset(asset, export_set, ordered_formats, verbose
     -- Informational log for the upcoming Blender run
     log(Colours.DARKCYAN, string.format("running blender for asset %s", tostring(asset.identifier)))
 
-    local blend_file = join(asset.blend_symlink, asset.filename .. ".blend")
-    local glb_dir = asset.glb_symlink or ""
-    local glb_file = join(glb_dir, asset.filename .. ".glb")
-    local fbx_file = join(glb_dir, asset.filename .. ".fbx")
-    local preinstanced_file = join(asset.preinstanced_symlink, asset.filename .. ".preinstanced")
+    local blend_file = get_path(asset.blend_symlink, asset.filename, ".blend")
+    local glb_file = get_path(asset.glb_symlink, asset.filename, ".glb")
+    local fbx_file = get_path(asset.glb_symlink, asset.filename, ".fbx")
+    local preinstanced_file = get_path(asset.preinstanced_symlink, asset.filename, ".preinstanced")
 
     if not is_file(preinstanced_file) then
         return { asset_id = asset.identifier, success = false, skipped = false, message = string.format("Preinstanced symlink missing: %s", preinstanced_file) }
@@ -362,15 +415,15 @@ function BlenderCore.main(opts)
     local export_set, ordered_formats = normalize_export_formats(opts.export_formats)
 
     local db_path = opts.db_file_path and normalize_separators(opts.db_file_path)
-    db_path = normalize_separators(db_path)
+    db_path = to_long_path(normalize_separators(db_path))
     if not db_path or db_path == "" then
         error("DB file path must be specified in opts.db_file_path")
         os.exit(1)
     end
 
-    local main_db_path = opts.main_db and normalize_separators(opts.main_db) or ""
-    local blender_exe_path = opts.blender_exe_path and normalize_separators(opts.blender_exe_path) or ""
-    local game_root_path = opts.game_root and normalize_separators(opts.game_root)
+    local main_db_path = opts.main_db and to_long_path(normalize_separators(opts.main_db)) or ""
+    local blender_exe_path = opts.blender_exe_path and to_long_path(normalize_separators(opts.blender_exe_path)) or ""
+    local game_root_path = opts.game_root and to_long_path(normalize_separators(opts.game_root))
 
     log(Colours.CYAN, "all input opts: " .. tableToString(opts))
 
@@ -455,15 +508,14 @@ function BlenderCore.main(opts)
             local asset = table.remove(work_queue, 1)
 
             -- build paths and basic checks (similar to run_blender_for_asset)
-            local blend_file = join(asset.blend_symlink, asset.filename .. ".blend")
+            local blend_file = get_path(asset.blend_symlink, asset.filename, ".blend")
             if not is_file(blend_file) then
                 table.insert(failures, { asset_id = asset.identifier, success = false, skipped = false, message = string.format("Blend file not found: %s", blend_file) })
                 return
             end
-            local glb_dir = asset.glb_symlink or ""
-            local glb_file = join(glb_dir, asset.filename .. ".glb")
-            local fbx_file = join(glb_dir, asset.filename .. ".fbx")
-            local preinstanced_file = join(asset.preinstanced_symlink, asset.filename .. ".preinstanced")
+            local glb_file = get_path(asset.glb_symlink, asset.filename, ".glb")
+            local fbx_file = get_path(asset.glb_symlink, asset.filename, ".fbx")
+            local preinstanced_file = get_path(asset.preinstanced_symlink, asset.filename, ".preinstanced")
             if not is_file(preinstanced_file) then
                 table.insert(failures, { asset_id = asset.identifier, success = false, skipped = false, message = string.format("Preinstanced symlink missing: %s", preinstanced_file) })
                 return
@@ -550,11 +602,11 @@ function BlenderCore.main(opts)
                         else
                             -- verify expected files
                             local ok_files = true
-                            if export_set.glb and not is_file(join(info.asset.glb_symlink or "", info.asset.filename .. ".glb")) then
+                            if export_set.glb and not is_file(get_path(info.asset.glb_symlink, info.asset.filename, ".glb")) then
                                 ok_files = false
                                 table.insert(failures, { asset_id = info.asset.identifier, success = false, skipped = false, message = "GLB not produced" })
                             end
-                            if export_set.fbx and not is_file(join(info.asset.glb_symlink or "", info.asset.filename .. ".fbx")) then
+                            if export_set.fbx and not is_file(get_path(info.asset.glb_symlink, info.asset.filename, ".fbx")) then
                                 ok_files = false
                                 table.insert(failures, { asset_id = info.asset.identifier, success = false, skipped = false, message = "FBX not produced" })
                             end

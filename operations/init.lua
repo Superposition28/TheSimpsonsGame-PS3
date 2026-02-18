@@ -353,11 +353,11 @@ local function main()
         colour_print{colour=Colours.GREEN, message="Initialized placeholders.num = \"1\""}
     end
 
-    -- ensure audio_state placeholder exists if not set to audio_og
+    -- ensure audio_state placeholder exists if not set to audio_none
     if placeholders["audio_state"] == nil then
-        placeholders["audio_state"] = "audio_og"
+        placeholders["audio_state"] = "audio_none"
         write_placeholders(cfg_path, placeholders)
-        colour_print{colour=Colours.GREEN, message="Initialized placeholders.audio_state = \"audio_og\""}
+        colour_print{colour=Colours.GREEN, message="Initialized placeholders.audio_state = \"audio_none\""}
     end
 
     -- ensure type placeholder exists if not set
@@ -368,11 +368,11 @@ local function main()
     end
 
     -- ensure out placeholder exists if not set
-    if placeholders["STROUT"] == nil then
-        placeholders["STROUT"] = "STROUT"
-        write_placeholders(cfg_path,placeholders)
-        colour_print{colour=Colours.GREEN, message="Initialized placeholders.STROUT = \"STROUT\""}
-    end
+    --if placeholders["STROUT"] == nil then
+    --    placeholders["STROUT"] = "STROUT"
+    --    write_placeholders(cfg_path,placeholders)
+    --    colour_print{colour=Colours.GREEN, message="Initialized placeholders.STROUT = \"STROUT\""}
+    --end
 
     local region = normalize_region(placeholders["Region"])
     if region then

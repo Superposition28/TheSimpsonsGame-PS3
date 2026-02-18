@@ -106,3 +106,15 @@ This project automates extraction of assets (3D models, sounds, videos) from *Th
 
 **By using this project, you acknowledge that you have read and understood this disclaimer and agree to use it responsibly and in accordance with all applicable laws and terms of service.**
 
+---
+---
+
+![](.github/assets/OperationsMenu2.png)
+---
+Extract Archives (.STR)
+
+![](.github/assets/ExtractingSTR-DEBUG.png)
+---
+![](.github/assets/ExtractingSTR.png)
+![](.github/assets/ExtractedSTR.png)
+---
