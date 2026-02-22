@@ -164,24 +164,10 @@ args = [
     "--output-ext", ".png"
 ]
 
-
-# convert all lh2 dialogue/subtitles to csv
-[[operation]]
-id = 8
-Name = "Extract Dialogue/Subtitles (.lh2 -> .csv)"
-run-all = true
-depends-on = [6]
-script_type = "lua"
-script = "{{Game_Root}}/operations/lh2_to_csv.lua"
-args = [
-    "--input-dir", "{{Game_Root}}/GameFiles/{{Region}}-{{Type}}-{{audio_state}}-{{isRenamed}}"
-    # auto output to same location as input files
-]
-
 ## convert 3d models into .blend files, and export to glb for godot use
 ## auto apply textures within blender as well, however materials will need to be manually adjusted within godot
 [[operation]]
-id = 9
+id = 8
 Name = "Convert Models (.preinstanced -> .blend)"
 run-all = true
 depends-on = [7] # depends on blender, str extraction for assets, and texture extraction and conversion for materials
@@ -231,6 +217,19 @@ condition = "enable_export"
 validation = { required = true, message = "You must select at least one format." }
 
 
+# convert all lh2 dialogue/subtitles to csv
+[[operation]]
+id = 9
+Name = "Extract Dialogue/Subtitles (.lh2 -> .csv)"
+run-all = true
+depends-on = [6]
+script_type = "lua"
+script = "{{Game_Root}}/operations/lh2_to_csv.lua"
+args = [
+    "--input-dir", "{{Game_Root}}/GameFiles/{{Region}}-{{Type}}-{{audio_state}}-{{isRenamed}}"
+    # auto output to same location as input files
+]
+
 ## convert Audio into a usable format for godot
 [[operation]]
 id = 10
@@ -244,14 +243,14 @@ args = [
     "-m", "vgmstream",
     "--type", "audio",
     ## doesnt need to specify the location of the audiostreams folder as its within the source path and {{STROUT}} and the only location snu files exist
-    "-s", "{{SourcePath}}/{{Region}}/{{PostSourcePath}}",
-    "-t", "{{Game_Root}}/GameFiles/{{Region}}_{{Type}}-{{audio_state}}-{{isRenamed}}",
+    "-s", "{{Game_Root}}/GameFiles/{{Region}}-{{Type}}-{{audio_state}}-{{isRenamed}}",
+    "-t", "{{Game_Root}}/GameFiles/{{Region}}-{{Type}}-{{audio_state}}-{{isRenamed}}",
     "-i", ".snu",
     "-o", ".wav",
     "--godot-compatible"
 ]
 
-## convert videos into a usable format for godot
+
 [[operation]]
 id = 11
 Name = "Convert Videos (.vp6 -> .ogv)"
@@ -263,10 +262,24 @@ tool = "ffmpeg"
 args = [
     "-m", "ffmpeg",
     "--type", "video",
-    ## doesnt need to specify the location of the movies folder as its within the source path and {{STROUT}} and the only location vp6 files exist
-    "-s", "{{SourcePath}}/{{Region}}/{{PostSourcePath}}",
+    "-s", "{{Game_Root}}/GameFiles/{{Region}}-{{Type}}-{{audio_state}}-{{isRenamed}}",
     "-t", "{{Game_Root}}/GameFiles/{{Region}}-{{Type}}-{{audio_state}}-{{isRenamed}}",
-    #"-f", "ffmpeg.exe",
     "-i", ".vp6",
     "-o", ".ogv"
+]
+
+
+[[operation]]
+id = 12
+Name = "generate Godot Game (EXPERIMENTAL)"
+run-all = false
+depends-on = [8,9,10,11]
+script_type = "lua"
+script = "{{Game_Root}}/Godot/Game/godot-init-V0.5.1.lua"
+args = [
+    "--project-name", "SimpsonsGamePS3",
+    "--repo-root", "{{Project_Root}}",
+    "--sourcePath", "{{Game_Root}}/GameFiles/{{Region}}-{{Type}}-{{audio_state}}-{{isRenamed}}",
+    "--iconPath", "{{SourcePath}}/{{Region}}/{{PostSourcePath}}",
+    "--no-exit"
 ]

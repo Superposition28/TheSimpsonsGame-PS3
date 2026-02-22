@@ -481,6 +481,8 @@ function BlenderCore.main(opts)
         end
     end
 
+    local p = progress.new(#work_queue, "blender-batch", "Exporting Assets with Blender...")
+
     local has_spawn = (sdk.spawn_process ~= nil)
     -- Default workers: user-specified opts.workers -> sdk.cpu_count -> 1
     local default_workers = 1
@@ -500,6 +502,7 @@ function BlenderCore.main(opts)
             else
                 table.insert(failures, rec)
             end
+            p:Update(1)
         end
     else
         -- Concurrent execution using spawn/poll
@@ -522,6 +525,7 @@ function BlenderCore.main(opts)
             local blend_file = get_path(asset.blend_symlink, asset.filename, ".blend")
             if not is_file(blend_file) then
                 table.insert(failures, { asset_id = asset.identifier, success = false, skipped = false, message = string.format("Blend file not found: %s", blend_file) })
+                p:Update(1)
                 return
             end
             local glb_file = get_path(asset.glb_symlink, asset.filename, ".glb")
@@ -529,6 +533,7 @@ function BlenderCore.main(opts)
             local preinstanced_file = get_path(asset.preinstanced_symlink, asset.filename, ".preinstanced")
             if not is_file(preinstanced_file) then
                 table.insert(failures, { asset_id = asset.identifier, success = false, skipped = false, message = string.format("Preinstanced symlink missing: %s", preinstanced_file) })
+                p:Update(1)
                 return
             end
 
@@ -565,6 +570,7 @@ function BlenderCore.main(opts)
                 local msg = "spawn failed"
                 if not ok then msg = tostring(res) end
                 table.insert(failures, { asset_id = asset.identifier, success = false, skipped = false, message = msg })
+                p:Update(1)
                 return
             end
 
@@ -590,6 +596,7 @@ function BlenderCore.main(opts)
                     -- treat as failure and cleanup
                     if sdk.remove_dir then pcall(sdk.remove_dir, info.temp_dir) end
                     table.insert(failures, { asset_id = info.asset.identifier, success = false, skipped = false, message = "poll failed: " .. tostring(pol) })
+                    p:Update(1)
                     active[pid] = nil
                 else
                     if not pol.running then
@@ -626,6 +633,7 @@ function BlenderCore.main(opts)
                             end
                         end
 
+                        p:Update(1)
                         active[pid] = nil
                     end
                 end
@@ -639,6 +647,8 @@ function BlenderCore.main(opts)
             end
         end
     end
+
+    p:Complete()
 
     -- Summarize and error on failures (same behaviour as before)
     log(Colours.CYAN, string.format("Successes: %d, Failures: %d, Skipped: %d", #successes, #failures, #skipped))
