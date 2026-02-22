@@ -44,7 +44,7 @@ end
 -- Arg parsing ---------------------------------------------------------------
 local function parse_args(argv)
     local function gets(i) local v = argv[i]; return type(v) == "string" and v or nil end
-    local out = { ignores = {}, copyonly = {}, dry_run = false, map_db_file = nil }
+    local out = { ignores = {}, copyonly = {}, dry_run = false, map_db_file = nil, camel_only = false }
     out.src = gets(1)
     out.dst = gets(2)
     local i = 3
@@ -58,6 +58,9 @@ local function parse_args(argv)
             i = i + 2
         elseif a == "--dry-run" then
             out.dry_run = true
+            i = i + 1
+        elseif a == "--camel-only" then
+            out.camel_only = true
             i = i + 1
         elseif a == "--map-db-file" then
             out.map_db_file = gets(i+1)
@@ -116,6 +119,31 @@ local function main()
     local ok, err = pcall(function()
         Diagnostics.Trace(string.format("Starting normalization: %d files found", #files))
 
+        -- NEW: Optional exit for isolated camelCase testing
+        if args.camel_only then
+            sdk.color_print("cyan", "Running in camel-only mode...")
+            local total = 0
+            for i=1, #files do
+                local full = files[i]
+                local rel = utils.rel_path(full, args.src)
+                local new_rel = rel
+                
+                -- Skip conversion for copy-only sets
+                if not logic.IsCopyOnlyPath(rel, copyonly_set) then
+                    new_rel = logic.apply_camel_case_to_path(rel)
+                end
+                
+                local new_path = utils.join(args.dst, new_rel)
+                if not args.dry_run then
+                    utils.copy_with_collision_handling(full, new_path)
+                end
+                total = total + 1
+                if prog then prog:Update(1) end
+            end
+            sdk.color_print("green", string.format("Camel-only pass complete. Copied %d files.", total))
+            return -- Exit early, completely bypassing full normalization
+        end
+
         local file_targets = {}
         local target_tree = { [""] = { dirs={}, files={} } } -- Init root node
         local mapping_rows = {}
@@ -132,9 +160,11 @@ local function main()
             if logic.IsCopyOnlyPath(rel, copyonly_set) then
                 table.insert(copyonly_files, full)
             else
-                -- Get the target path *before* collapse, and the UID
-                -- CRITICAL: Pass rename_map for canonical UID generation
-                local rel_no_build, uid = logic.apply_file_rules(rel, utils.get_hex_uid, rename_map)
+                -- Apply CamelCase conversion strictly before hitting the rules engine
+                local camel_rel = logic.apply_camel_case_to_path(rel)
+                
+                -- Note: apply_file_rules now takes BOTH rel and camel_rel
+                local rel_no_build, uid = logic.apply_file_rules(rel, camel_rel, utils.get_hex_uid, rename_map)
 
                 -- Store for Pass 3
                 table.insert(file_targets, {

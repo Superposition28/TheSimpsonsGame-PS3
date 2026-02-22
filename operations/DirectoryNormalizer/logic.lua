@@ -4,8 +4,8 @@ local utils = {}
 -- Constants -----------------------------------------------------------------
 
 logic.segments_to_remove = {
-    { "build", "ps3", "pal_en" },
-    { "build", "ps3", "ntsc_en" }
+    { "build", "ps3", "palen" },
+    { "build", "ps3", "ntscen" }
 }
 
 logic.LevelAliasMap = {
@@ -17,7 +17,7 @@ logic.LevelAliasMap = {
     ["l06_enterthecheatrix"] = { "cheater" },
     ["l07_dayofthedolphin"] = { "dayofthedolphins" },
     ["l08_thecolossaldonut"] = { "colossaldonut" },
-    ["l09_invasion"] = { "dayspringfieldstoodstill" },
+    ["l09_invasion"] = { "dayspringfieldstoodstill", "springfield_stood_still", "sss", "sssinvasion" },
     ["l10_bargainbin"] = { "bargainbin" },
     ["l11_neverquest"] = { "neverquest" },
     ["l12_grandtheftscratchy"] = { "grand_theft_scratchy" },
@@ -31,6 +31,25 @@ logic.LevelAliasMap = {
     ["a2_characters"] = { "simpsons_chars" }
 }
 
+logic.EpisodeMap = {
+    ["loc"] = { {"land", "of", "chocolate"}, {"landofchocolate"}, {"loc"} },
+    ["brt"] = { {"bartman", "begins"}, {"bartmanbegins"}, {"brt"} },
+    ["80b"] = { {"around", "the", "world", "in", "80", "bites"}, {"eighty", "bites"}, {"80b"}, {"80bites"} },
+    ["hug"] = { {"lisa", "the", "tree", "hugger"}, {"tree", "hugger"}, {"treehugger"}, {"hug"} },
+    ["mob"] = { {"mob", "rules"}, {"mobrules"}, {"mob"} },
+    ["che"] = { {"enter", "the", "cheatrix"}, {"cheatrix"}, {"cheater"}, {"che"} },
+    ["dod"] = { {"day", "of", "the", "dolphin"}, {"day", "of", "dolphin"}, {"dayofthedolphins"}, {"dod"} },
+    ["scd"] = { {"shadow", "of", "the", "colossal", "donut"}, {"colossal", "donut"}, {"colossaldonut"}, {"scd"} },
+    ["sss"] = { {"invasion", "of", "the", "yokel", "snatchers"}, {"day", "springfield", "stood", "still"}, {"dayspringfieldstoodstill"}, {"sss"} },
+    ["gamehub"] = { {"bargain", "bin"}, {"bargainbin"}, {"gamehub"} },
+    ["nvq"] = { {"neverquest"}, {"nvq"} },
+    ["gts"] = { {"grand", "theft", "scratchy"}, {"grandtheftscratchy"}, {"gts"} },
+    ["moh"] = { {"medal", "of", "homer"}, {"medalofhomer"}, {"moh"} },
+    ["bsh"] = { {"big", "super", "happy", "fun", "fun", "game"}, {"big", "super", "happy"}, {"bigsuperhappy"}, {"bsh"} },
+    ["rwc"] = { {"five", "characters", "in", "search", "of", "an", "author"}, {"rhymes"}, {"rwc"} },
+    ["mtp"] = { {"game", "over"}, {"meet", "thy", "player"}, {"meetthyplayer"}, {"mtp"} }
+}
+
 logic.IgnoredExtensions = {
     [".blend"] = true,
     [".blend1"] = true
@@ -42,9 +61,123 @@ function logic.init(util)
     utils = util
 end
 
+function logic.to_camel_case(str)
+    if not str or not string.find(str, "_") then return str end
+    local parts = {}
+    for token in string.gmatch(str, "[^_]+") do
+        table.insert(parts, token)
+    end
+    if #parts == 0 then return str end
+    local res = string.lower(parts[1])
+    for i = 2, #parts do
+        local t = string.lower(parts[i])
+        res = res .. string.upper(string.sub(t, 1, 1)) .. string.sub(t, 2)
+    end
+    return res
+end
+
+function logic.simplify_episode_names(rel_path)
+    local parts = utils.split_path(rel_path)
+    if #parts <= 1 then return rel_path end
+
+    local root_lower = string.lower(parts[1])
+    if not (root_lower:match("^a2_") or root_lower:match("^lhub%-")) then
+        return rel_path
+    end
+
+    local seen_episodes = {}
+
+    for i = 2, #parts - 1 do
+        local part = parts[i]
+        local tokens = logic.SplitTokens(part)
+
+        local new_tokens = {}
+        local t_idx = 1
+        while t_idx <= #tokens do
+            local matched_shortcode = nil
+            local matched_len = 0
+
+            for shortcode, sequences in pairs(logic.EpisodeMap) do
+                for _, seq in ipairs(sequences) do
+                    if logic.MatchesSequence(tokens, t_idx, seq) then
+                        if #seq > matched_len then
+                            matched_len = #seq
+                            matched_shortcode = shortcode
+                        end
+                    end
+                end
+            end
+
+            if matched_shortcode then
+                if not seen_episodes[matched_shortcode] then
+                    table.insert(new_tokens, matched_shortcode)
+                    seen_episodes[matched_shortcode] = true
+                end
+                t_idx = t_idx + matched_len
+            else
+                table.insert(new_tokens, tokens[t_idx])
+                t_idx = t_idx + 1
+            end
+        end
+
+        if #new_tokens == 0 and #tokens > 0 then
+            local fallback_tokens = {}
+            local f_idx = 1
+            while f_idx <= #tokens do
+                local matched_shortcode = nil
+                local matched_len = 0
+                for shortcode, sequences in pairs(logic.EpisodeMap) do
+                    for _, seq in ipairs(sequences) do
+                        if logic.MatchesSequence(tokens, f_idx, seq) then
+                            if #seq > matched_len then
+                                matched_len = #seq
+                                matched_shortcode = shortcode
+                            end
+                        end
+                    end
+                end
+                if matched_shortcode then
+                    table.insert(fallback_tokens, matched_shortcode)
+                    f_idx = f_idx + matched_len
+                else
+                    table.insert(fallback_tokens, tokens[f_idx])
+                    f_idx = f_idx + 1
+                end
+            end
+            new_tokens = fallback_tokens
+        end
+
+        parts[i] = table.concat(new_tokens, "_")
+    end
+
+    return table.concat(parts, utils.path_sep)
+end
+
+function logic.apply_camel_case_to_path(rel_path)
+    rel_path = logic.simplify_episode_names(rel_path)
+
+    local parts = utils.split_path(rel_path)
+    -- Don't process paths that are just root or root/file
+    if #parts <= 1 then return rel_path end
+    
+    -- Explicit override: rename L09_Invasion primary level folder before camelCase
+    if #parts >= 2 and string.lower(parts[1]) == "l09_invasion" and string.lower(parts[2]) == "dayspringfieldstoodstill" then
+        parts[2] = "sss_invasion"
+    end
+    
+    -- Exclude parts[1] (root folder) and parts[#parts] (file name)
+    for i = 2, #parts - 1 do
+        parts[i] = logic.to_camel_case(parts[i])
+    end
+    
+    return table.concat(parts, utils.path_sep)
+end
+
 function logic.SplitTokens(segment)
     local tokens = {}
-    for token in segment:gmatch("[^_]+") do
+    -- Convert camelCase boundaries to underscores temporarily so gmatch still works
+    local s = segment:gsub("([a-z])([A-Z])", "%1_%2")
+    for token in s:gmatch("[^_]+") do
         table.insert(tokens, token)
     end
     return tokens
@@ -80,7 +213,7 @@ function logic.GetZonePrefix(segment)
         return nil
     end
     local lower = string.lower(segment)
-    local zone_number = lower:match("^zone(%d+)_")
+    local zone_number = lower:match("^zone(%d+)")
     if not zone_number then
         return nil
     end
@@ -96,7 +229,7 @@ function logic.IsMatchingZoneAssets(parent_segment, child_segment)
         return false
     end
     local child_lower = string.lower(child_segment)
-    return child_lower == ("assets_environs_" .. parent_zone)
+    return child_lower == ("assetsenvirons" .. parent_zone)
 end
 
 function logic.IsMatchingZoneAssets2(parent_segment, child_segment)
@@ -108,7 +241,7 @@ function logic.IsMatchingZoneAssets2(parent_segment, child_segment)
         return false
     end
     local child_lower = string.lower(child_segment)
-    return child_lower == ("environs_" .. parent_zone)
+    return child_lower == ("environs" .. parent_zone)
 end
 
 function logic.NormalizeFolderSegment(segment, alias_sequences)
@@ -149,7 +282,14 @@ function logic.NormalizeFolderSegment(segment, alias_sequences)
     if #collapsed == 0 then
         return ""
     end
-    return table.concat(collapsed, "_")
+    
+    -- Recombine the tokens using camelCase instead of underscores
+    local res = string.lower(collapsed[1])
+    for j = 2, #collapsed do
+        local t = string.lower(collapsed[j])
+        res = res .. string.upper(string.sub(t, 1, 1)) .. string.sub(t, 2)
+    end
+    return res
 end
 
 function logic.NormalizeCollapsedDir(dir_path, level_folder_lower, level_name_lower)
@@ -174,9 +314,9 @@ function logic.NormalizeCollapsedDir(dir_path, level_folder_lower, level_name_lo
         else
             local skip_part = false
             if i > 2 and i < #parts then
-                if part_lower == "challenge_mode" or part_lower == "story_mode" then
+                if part_lower == "challengemode" or part_lower == "storymode" then
                     local next_part = parts[i + 1]
-                    if next_part and string.lower(next_part):find("^" .. part_lower .. "_") then
+                    if next_part and string.lower(next_part):find("^" .. part_lower) then
                         skip_part = true
                     end
                 end
@@ -186,7 +326,7 @@ function logic.NormalizeCollapsedDir(dir_path, level_folder_lower, level_name_lo
                 if i > 2 and #new_parts > 0 then
                     local parent_part = new_parts[#new_parts]
                     if logic.IsMatchingZoneAssets(parent_part, part) then
-                        part = "assets_environs"
+                        part = "assetsEnvirons"
                     end
                     if logic.IsMatchingZoneAssets2(parent_part, part) then
                         part = "environs"
@@ -216,9 +356,9 @@ function logic.NormalizeCollapsedDir(dir_path, level_folder_lower, level_name_lo
     return table.concat(new_parts, utils.path_sep)
 end
 
-function logic.apply_file_rules(original_rel, uid_generator_func, rename_map)
-    local parts = utils.split_path(original_rel)
-    if #parts == 0 then return original_rel, "000000" end
+function logic.apply_file_rules(original_rel, process_rel, uid_generator_func, rename_map)
+    local parts = utils.split_path(process_rel)
+    if #parts == 0 then return process_rel, "000000" end
 
     local level_name_lower = ""
     if #parts >= 2 then
@@ -262,22 +402,22 @@ function logic.apply_file_rules(original_rel, uid_generator_func, rename_map)
             else
                 local skip_part = false
                 if i > 2 and i < #parts then
-                    if part_lower == "challenge_mode" or part_lower == "story_mode" then
+                    if part_lower == "challengemode" or part_lower == "storymode" then
                         local next_part = parts[i + 1]
-                        if next_part and string.lower(next_part):find("^" .. part_lower .. "_") then
+                        if next_part and string.lower(next_part):find("^" .. part_lower) then
                             skip_part = true
                         end
                     end
                 end
 
                 if not skip_part then
-                    if part_lower == "texture_dictionary" then
+                    if part_lower == "texturedictionary" then
                         part = "txd"
                     end
                     if i > 2 and #new_parts > 0 then
                         local parent_part = new_parts[#new_parts]
                         if logic.IsMatchingZoneAssets(parent_part, part) then
-                            part = "assets_environs"
+                            part = "assetsEnvirons"
                         end
                     end
                     if i > 2 and i < #parts then
@@ -297,11 +437,12 @@ function logic.apply_file_rules(original_rel, uid_generator_func, rename_map)
         end
     end
 
-    if #new_parts == 0 then return original_rel, "000000" end
+    if #new_parts == 0 then return process_rel, "000000" end
 
     local filename = table.remove(new_parts)
     local new_dir = table.concat(new_parts, utils.path_sep)
 
+    -- Use original_rel for stable UID generation regardless of camelCase
     local canonical_rel = logic.normalize_to_canonical(original_rel, rename_map)
     local canonical_rel_stem, _ = utils.multi_ext(canonical_rel)
     local uid = uid_generator_func(canonical_rel_stem, 6)
@@ -392,7 +533,10 @@ function logic.build_collapse_map(tree, map, current_orig_path, current_new_path
             new_basename = utils.basename(current_orig_path)
         end
 
-        local new_collapsed_name = new_basename .. "_" .. child_name
+        -- Capitalize the first letter of the child folder to merge in camelCase
+        local capitalized_child = string.upper(string.sub(child_name, 1, 1)) .. string.sub(child_name, 2)
+        local new_collapsed_name = new_basename .. capitalized_child
+        
         local new_collapsed_path = utils.join(utils.dirname(current_new_path), new_collapsed_name)
 
         logic.build_collapse_map(tree, map, child_orig_path, new_collapsed_path)
@@ -409,12 +553,10 @@ end
 function logic.load_rename_map(db_path)
     local map = {}
     if not sdk.path_exists(db_path) then
-        warn(string.format("RenameMap.db not found at: %s", db_path))
         return map
     end
     local db = sqlite.open(db_path)
     if not db then
-        warn(string.format("Failed to open RenameMap.db: %s", db_path))
         return map
     end
     local ok, rows = pcall(function()
@@ -428,8 +570,6 @@ function logic.load_rename_map(db_path)
                 map[string.lower(new_name)] = old_name
             end
         end
-    else
-        warn("Failed to query RenameMap.db")
     end
     db:close()
     return map

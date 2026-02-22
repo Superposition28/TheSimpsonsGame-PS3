@@ -3,6 +3,24 @@
 # Placeholders: Game_Root, Project_Root are built into the engine
 
 
+#test
+
+[[operation]]
+id = 69
+Name = "Normalize folder structure"
+run-all = true
+depends-on = [5]
+script_type = "lua"
+script = "{{Game_Root}}/operations/DirectoryNormalizer/run.lua"
+args = [
+    "{{Game_Root}}/GameFiles/{{Region}}-{{Type}}-{{audio_state}}-{{isRenamed}}",
+    "{{Game_Root}}/GameFiles/test5",
+    "--copyonly", "A1_Audio",
+    "--copyonly", "audiostreams",
+]
+
+
+
 ## creates config.toml and ensures placeholders exist
 ## operations marked with init = true are not displayed in interactive UI or GUI lists to ensure they are always run every time
 ##  - ensure placeholders exist: SourcePath, Region
@@ -186,19 +204,19 @@ args = [
     "--asset-map-db", "{{Game_Root}}/GameFiles/config/{{Region}}-{{Type}}-{{audio_state}}-{{isRenamed}}/AssetMap.sqlite",
 ]
 # for debugging
-[[operation.prompts]]
-type = "confirm"
-Name = "verbose"
-message = "Model Conversion: Enable verbose output?"
-default = false
-cli_arg = "--verbose"
+#[[operation.prompts]]
+#type = "confirm"
+#Name = "verbose"
+#message = "Model Conversion: Enable verbose output?"
+#default = false
+#cli_arg = "--verbose"
 # for debugging
-[[operation.prompts]]
-type = "confirm"
-Name = "debug mode"
-message = "Model Conversion: Enable debug mode?"
-default = false
-cli_arg = "--debug-sleep"
+#[[operation.prompts]]
+#type = "confirm"
+#Name = "debug mode"
+#message = "Model Conversion: Enable debug mode?"
+#default = false
+#cli_arg = "--debug-sleep"
 ## for direct export to glb or fbx instead of just creating .blend files
 [[operation.prompts]]
 type = "confirm"
