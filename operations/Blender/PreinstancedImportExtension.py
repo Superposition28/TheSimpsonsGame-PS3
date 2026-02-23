@@ -39,7 +39,7 @@ bl_info = {
 
 # --- Global Settings ---
 global debug_mode
-debug_mode = True  # Default value, can be set in the addon preferences
+debug_mode = False  # Default value, can be set in the addon preferences
 
 # --- Utility Functions ---
 

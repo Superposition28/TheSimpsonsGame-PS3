@@ -501,10 +501,20 @@ function BlenderCore.main(opts)
             p:Update(1)
         end
     else
-        -- Concurrent execution using spawn/poll
+        -- Concurrent execution using spawn/poll with JSON batching
         log(Colours.GREEN, string.format("Spawning up to %d workers using sdk.spawn_process", max_workers))
 
-        local active = {} -- pid -> { asset=..., temp_dir=... }
+        local active = {} -- pid -> { batch_file=..., temp_dir=..., assets=... }
+        local batches = {}
+
+        -- Partition work_queue into max_workers batches
+        for i = 1, max_workers do
+            table.insert(batches, {})
+        end
+        for i, asset in ipairs(work_queue) do
+            local batch_idx = ((i - 1) % max_workers) + 1
+            table.insert(batches[batch_idx], asset)
+        end
 
         local function active_count()
             local c = 0
@@ -513,48 +523,54 @@ function BlenderCore.main(opts)
         end
 
         local function start_next()
-            if #work_queue == 0 then return end
+            if #batches == 0 then return end
             if active_count() >= max_workers then return end
-            local asset = table.remove(work_queue, 1)
 
-            -- build paths and basic checks (similar to run_blender_for_asset)
-            local blend_file = get_path(asset.blend_symlink, asset.filename, ".blend")
-            if not is_file(blend_file) then
-                table.insert(failures, { asset_id = asset.identifier, success = false, skipped = false, message = string.format("Blend file not found: %s", blend_file) })
-                p:Update(1)
-                return
-            end
-            local glb_file = get_path(asset.glb_symlink, asset.filename, ".glb")
-            local fbx_file = get_path(asset.glb_symlink, asset.filename, ".fbx")
-            local preinstanced_file = get_path(asset.preinstanced_symlink, asset.filename, ".preinstanced")
-            if not is_file(preinstanced_file) then
-                table.insert(failures, { asset_id = asset.identifier, success = false, skipped = false, message = string.format("Preinstanced symlink missing: %s", preinstanced_file) })
-                p:Update(1)
-                return
-            end
+            local batch_assets = table.remove(batches, 1)
+            if #batch_assets == 0 then return end
 
             local temp_addon_dir = make_temp_dir("blender_addon_")
+            local batch_file = join(temp_addon_dir, "batch.json")
+
+            local batch_data = {}
+            for _, asset in ipairs(batch_assets) do
+                local blend_file = get_path(asset.blend_symlink, asset.filename, ".blend")
+                local glb_file = get_path(asset.glb_symlink, asset.filename, ".glb")
+                local fbx_file = get_path(asset.glb_symlink, asset.filename, ".fbx")
+                local preinstanced_file = get_path(asset.preinstanced_symlink, asset.filename, ".preinstanced")
+
+                table.insert(batch_data, {
+                    asset_id = asset.identifier,
+                    blend_file = blend_file,
+                    preinstanced_file = preinstanced_file,
+                    glb_file = glb_file,
+                    fbx_file = fbx_file
+                })
+            end
+
+            local fh = io.open(batch_file, "w")
+            if fh then
+                fh:write(sdk.text.json.encode(batch_data))
+                fh:close()
+            else
+                log(Colours.RED, "Failed to write batch file: " .. batch_file)
+                return
+            end
 
             local cmd = {
                 blender_exe_path,
-                "-b", blend_file,
+                "-b",
                 "--python", python_script_path,
                 "--",
-                blend_file,
-                preinstanced_file,
-                glb_file,
+                batch_file,
                 python_extension_file,
                 VERBOSE and "true" or "false",
                 debug_sleep and "true" or "false",
                 blender_dir,
-                fbx_file,
-                asset.identifier,
                 temp_addon_dir,
                 game_root_path,
                 table.concat(ordered_formats, ",")
             }
-
-            --log(Colours.DARKCYAN, string.format("Spawning process for asset %s with command: %s", tostring(asset.identifier), table.concat(cmd, " ")))
 
             local ok, res = pcall(function()
                 return sdk.spawn_process(cmd, { capture_stdout = true, capture_stderr = true, cwd = nil })
@@ -564,23 +580,25 @@ function BlenderCore.main(opts)
                 if sdk.remove_dir then pcall(sdk.remove_dir, temp_addon_dir) end
                 local msg = "spawn failed"
                 if not ok then msg = tostring(res) end
-                table.insert(failures, { asset_id = asset.identifier, success = false, skipped = false, message = msg })
-                p:Update(1)
+                for _, asset in ipairs(batch_assets) do
+                    table.insert(failures, { asset_id = asset.identifier, success = false, skipped = false, message = msg })
+                    p:Update(1)
+                end
                 return
             end
 
             local pid = res.pid
-            active[pid] = { asset = asset, temp_dir = temp_addon_dir }
-            log(Colours.DARKCYAN, string.format("Launched PID %s for asset %s", tostring(pid), tostring(asset.identifier)))
+            active[pid] = { batch_file = batch_file, temp_dir = temp_addon_dir, assets = batch_assets }
+            log(Colours.DARKCYAN, string.format("Launched PID %s for batch of %d assets", tostring(pid), #batch_assets))
         end
 
         -- seed initial workers
         for i = 1, max_workers do start_next() end
 
         -- poll loop
-        while next(active) ~= nil or #work_queue > 0 do
+        while next(active) ~= nil or #batches > 0 do
             -- start more if capacity
-            while active_count() < max_workers and #work_queue > 0 do
+            while active_count() < max_workers and #batches > 0 do
                 start_next()
             end
 
@@ -590,45 +608,47 @@ function BlenderCore.main(opts)
                 if not ok then
                     -- treat as failure and cleanup
                     if sdk.remove_dir then pcall(sdk.remove_dir, info.temp_dir) end
-                    table.insert(failures, { asset_id = info.asset.identifier, success = false, skipped = false, message = "poll failed: " .. tostring(pol) })
-                    p:Update(1)
+                    for _, asset in ipairs(info.assets) do
+                        table.insert(failures, { asset_id = asset.identifier, success = false, skipped = false, message = "poll failed: " .. tostring(pol) })
+                        p:Update(1)
+                    end
                     active[pid] = nil
                 else
+                    -- Process stdout delta for progress markers
+                    if pol.stdout_delta and #pol.stdout_delta > 0 then
+                        for line in pol.stdout_delta:gmatch("[^\r\n]+") do
+                            local asset_id, status, msg = line:match("__REMAKE_ASSET_DONE__:(.-):(.-):?(.*)")
+                            if asset_id and status then
+                                if status == "SUCCESS" then
+                                    table.insert(successes, { asset_id = asset_id, success = true, skipped = false, message = "Processed asset " .. asset_id })
+                                else
+                                    table.insert(failures, { asset_id = asset_id, success = false, skipped = false, message = msg or "Failed" })
+                                end
+                                p:Update(1)
+                            else
+                                log(Colours.GRAY, string.format("[PID %s] %s", tostring(pid), line))
+                            end
+                        end
+                    end
+
+                    if pol.stderr_delta and #pol.stderr_delta > 0 then
+                        for line in pol.stderr_delta:gmatch("[^\r\n]+") do
+                            log(Colours.YELLOW, string.format("[PID %s] %s", tostring(pid), line))
+                        end
+                    end
+
                     if not pol.running then
                         -- finished
                         if sdk.remove_dir then pcall(sdk.remove_dir, info.temp_dir) end
 
-                        -- log captured output grouped by asset
-                        if (pol.stderr and #pol.stderr > 0) or (pol.stdout and #pol.stdout > 0) then
-                            log(Colours.DARKGRAY, string.format("\n--- Output for Asset ID: %s (PID %s) ---", info.asset.identifier, tostring(pid)))
-                            if pol.stdout and #pol.stdout > 0 then log(Colours.GRAY, pol.stdout) end
-                            if pol.stderr and #pol.stderr > 0 then log(Colours.YELLOW, pol.stderr) end
-                            log(Colours.DARKGRAY, string.format("--- End of Output for Asset ID: %s ---\n", info.asset.identifier))
-                        else
-                            log(Colours.DARKGRAY, string.format("No output for Asset ID: %s (PID %s)", info.asset.identifier, tostring(pid)))
-                        end
-
                         local exit_code = pol.exit_code or 1
                         if exit_code ~= 0 then
                             local message = (pol.stderr and #pol.stderr > 0 and pol.stderr:match("^[^\n]*")) or pol.stdout or "Blender process reported failure"
-                            table.insert(failures, { asset_id = info.asset.identifier, success = false, skipped = false, message = message })
+                            log(Colours.RED, string.format("Batch PID %s failed: %s", tostring(pid), message))
                         else
-                            -- verify expected files
-                            local ok_files = true
-                            if export_set.glb and not is_file(get_path(info.asset.glb_symlink, info.asset.filename, ".glb")) then
-                                ok_files = false
-                                table.insert(failures, { asset_id = info.asset.identifier, success = false, skipped = false, message = "GLB not produced" })
-                            end
-                            if export_set.fbx and not is_file(get_path(info.asset.glb_symlink, info.asset.filename, ".fbx")) then
-                                ok_files = false
-                                table.insert(failures, { asset_id = info.asset.identifier, success = false, skipped = false, message = "FBX not produced" })
-                            end
-                            if ok_files then
-                                table.insert(successes, { asset_id = info.asset.identifier, success = true, skipped = false, message = string.format("Processed asset %s", info.asset.identifier) })
-                            end
+                            log(Colours.DARKGRAY, string.format("Batch PID %s finished successfully", tostring(pid)))
                         end
 
-                        p:Update(1)
                         active[pid] = nil
                     end
                 end

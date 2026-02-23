@@ -11,8 +11,9 @@ import sys
 import os
 import time
 import importlib
+import json
 from dataclasses import dataclass
-from typing import Set, Optional
+from typing import Set, Optional, List, Dict, Any
 
 import bpy # pyright: ignore[reportMissingImports]
 
@@ -30,17 +31,21 @@ class BlenderScriptError(Exception):
 @dataclass
 class ScriptConfig:
     """A data class to hold all script configuration parameters."""
-    base_blend_file: str
-    input_preinstanced_file: str
-    output_glb: str
+    batch_file: str
     python_extension_file: str
     current_dir: str
     verbose: bool
     debug_sleep: bool
-    export_formats: Optional[Set[str]]
-    asset_id: str
     temp_addon_dir: str
     game_root_path: str
+    export_formats: Optional[Set[str]]
+
+@dataclass
+class AssetConfig:
+    asset_id: str
+    base_blend_file: str
+    input_preinstanced_file: str
+    output_glb: str
     output_fbx: Optional[str] = None
 
 # --- Utility and Logging Functions ---
@@ -51,9 +56,9 @@ def printc(message: str, colour: Optional[str] = None) -> None:
     endc = colours['reset']
     prefix = f"{colours['magenta']}BLENDER-SCRIPT:{endc}"
     if colour and colour.lower() in colours:
-        print(f"{prefix} {colours[colour.lower()]}{message}{endc}")
+        print(f"{prefix} {colours[colour.lower()]}{message}{endc}", flush=True)
     else:
-        print(f"{prefix} {colours['darkcyan']}{message}{endc}")
+        print(f"{prefix} {colours['darkcyan']}{message}{endc}", flush=True)
 
 def log_to_blender(text: str) -> None:
     """Appends a message to a text block in Blender's text editor and prints to console."""
@@ -84,21 +89,17 @@ def get_script_config() -> ScriptConfig:
         arg_start_index = argv.index('--') + 1
         def to_bool(arg_str: str) -> bool: return arg_str.strip().lower() == "true"
         return ScriptConfig(
-            base_blend_file=argv[arg_start_index],
-            input_preinstanced_file=argv[arg_start_index + 1],
-            output_glb=argv[arg_start_index + 2],
-            python_extension_file=argv[arg_start_index + 3],
-            verbose=to_bool(argv[arg_start_index + 4]),
-            debug_sleep=to_bool(argv[arg_start_index + 5]),
-            current_dir=argv[arg_start_index + 6],
-            output_fbx=argv[arg_start_index + 7],
-            asset_id=argv[arg_start_index + 8],
-            temp_addon_dir=argv[arg_start_index + 9],
-            game_root_path=argv[arg_start_index + 10],
-            export_formats={fmt.strip() for fmt in argv[arg_start_index + 11].lower().replace(",", " ").split() if fmt.strip() in {"glb", "fbx"}} or None,
+            batch_file=argv[arg_start_index],
+            python_extension_file=argv[arg_start_index + 1],
+            verbose=to_bool(argv[arg_start_index + 2]),
+            debug_sleep=to_bool(argv[arg_start_index + 3]),
+            current_dir=argv[arg_start_index + 4],
+            temp_addon_dir=argv[arg_start_index + 5],
+            game_root_path=argv[arg_start_index + 6],
+            export_formats={fmt.strip() for fmt in argv[arg_start_index + 7].lower().replace(",", " ").split() if fmt.strip() in {"glb", "fbx"}} or None,
         )
     except (ValueError, IndexError) as e:
-        printc("Usage: ... -- <base.blend> ... <asset_id> <temp_addon_dir> <game_root_path> <export_formats>", colour='yellow')
+        printc("Usage: ... -- <batch_file.json> <python_extension_file> <verbose> <debug_sleep> <current_dir> <temp_addon_dir> <game_root_path> <export_formats>", colour='yellow')
         raise BlenderScriptError(f"Argument parsing failed: {e}") from e
 
 def log_script_config(config: ScriptConfig) -> None:
@@ -110,23 +111,16 @@ def log_script_config(config: ScriptConfig) -> None:
 def validate_file_paths(config: ScriptConfig) -> None:
     """Validates that all necessary input files and output directories exist."""
     log_to_blender("Validating file paths...")
-    paths_to_check = {"Blend file": config.base_blend_file, "Preinstanced file": config.input_preinstanced_file, "Python extension file": config.python_extension_file}
+    paths_to_check = {"Batch file": config.batch_file, "Python extension file": config.python_extension_file}
     for name, path in paths_to_check.items():
         if not os.path.exists(path):
             raise FileNotFoundError(f"{name} not found at: {path}")
         log_to_blender(f"   - Found {name}: {path}")
-    output_dir = os.path.dirname(config.output_glb)
-    if output_dir and not os.path.exists(output_dir):
-        raise FileNotFoundError(f"Output directory does not exist: {output_dir}")
     log_to_blender("All paths validated successfully.")
 
 def setup_blender_environment(config: ScriptConfig) -> None:
     """Loads the addon directly from source without installing it to the global user dir."""
     try:
-        log_to_blender(f"Opening blend file: {config.base_blend_file}")
-        bpy.ops.wm.open_mainfile(filepath=config.base_blend_file)
-        log_to_blender("Blend file opened successfully.")
-
         # Set the texture DB path from the config argument
         log_to_blender("Setting dynamic DB path...")
         db_path = None
@@ -177,34 +171,59 @@ def setup_blender_environment(config: ScriptConfig) -> None:
     except Exception as e:
         raise BlenderScriptError(f"Error during direct addon loading: {e}") from e
 
-def process_scene(config: ScriptConfig) -> None:
+def process_scene(config: ScriptConfig, asset: AssetConfig) -> None:
     """Imports the preinstanced file, exports to formats, and saves the blend file."""
     try:
-        log_to_blender(f"Importing preinstanced file: {config.input_preinstanced_file}")
-        bpy.ops.custom_import_scene.simpgame(filepath=config.input_preinstanced_file)
+        log_to_blender(f"Opening blend file: {asset.base_blend_file}")
+        bpy.ops.wm.open_mainfile(filepath=asset.base_blend_file)
+        log_to_blender("Blend file opened successfully.")
+
+        log_to_blender(f"Importing preinstanced file: {asset.input_preinstanced_file}")
+        bpy.ops.custom_import_scene.simpgame(filepath=asset.input_preinstanced_file)
         log_to_blender("Preinstanced file imported successfully.")
 
         imported_collection = bpy.data.collections.get("New Mesh")
         if not imported_collection or not imported_collection.objects:
-            log_to_file(f"Warning: No objects found in 'New Mesh' collection after import of {os.path.basename(config.input_preinstanced_file)}.", config.current_dir)
+            log_to_file(f"Warning: No objects found in 'New Mesh' collection after import of {os.path.basename(asset.input_preinstanced_file)}.", config.current_dir)
 
         if config.export_formats:
             if 'glb' in config.export_formats:
-                log_to_blender(f"Exporting to GLB file: {config.output_glb}")
-                bpy.ops.export_scene.gltf(filepath=config.output_glb, export_format='GLB', use_selection=False)
-            if 'fbx' in config.export_formats and config.output_fbx:
-                log_to_blender(f"Exporting to FBX file: {config.output_fbx}")
-                bpy.ops.export_scene.fbx(filepath=config.output_fbx, use_selection=False)
+                log_to_blender(f"Exporting to GLB file: {asset.output_glb}")
+                bpy.ops.export_scene.gltf(filepath=asset.output_glb, export_format='GLB', use_selection=False)
+            if 'fbx' in config.export_formats and asset.output_fbx:
+                log_to_blender(f"Exporting to FBX file: {asset.output_fbx}")
+                bpy.ops.export_scene.fbx(filepath=asset.output_fbx, use_selection=False)
 
-        log_to_blender(f"Saving blend file to: {config.base_blend_file}")
+        log_to_blender(f"Saving blend file to: {asset.base_blend_file}")
         if bpy.data.is_dirty:
             # Use save_as_mainfile with check_existing=False to avoid "old file (file saved with @)" errors 
             # when using long path prefixes (\\?\) or path variations.
-            bpy.ops.wm.save_as_mainfile(filepath=config.base_blend_file, check_existing=False)
+            bpy.ops.wm.save_as_mainfile(filepath=asset.base_blend_file, check_existing=False)
         else:
             log_to_blender("No changes to save.")
     except RuntimeError as e:
         raise BlenderScriptError(f"Blender API error during scene processing: {e}") from e
+
+def process_batch(config: ScriptConfig) -> None:
+    with open(config.batch_file, 'r', encoding='utf-8') as f:
+        batch_data = json.load(f)
+    
+    for item in batch_data:
+        asset = AssetConfig(
+            asset_id=item['asset_id'],
+            base_blend_file=item['blend_file'],
+            input_preinstanced_file=item['preinstanced_file'],
+            output_glb=item['glb_file'],
+            output_fbx=item.get('fbx_file')
+        )
+        
+        try:
+            process_scene(config, asset)
+            print(f"__REMAKE_ASSET_DONE__:{asset.asset_id}:SUCCESS", flush=True)
+        except Exception as e:
+            error_msg = str(e).replace('\n', ' ')
+            print(f"__REMAKE_ASSET_DONE__:{asset.asset_id}:FAILED:{error_msg}", flush=True)
+            log_to_file(f"Asset {asset.asset_id} failed: {e}", config.current_dir)
 
 # --- Main Execution ---
 def main() -> None:
@@ -217,7 +236,7 @@ def main() -> None:
         if config.debug_sleep: time.sleep(5)
         validate_file_paths(config)
         setup_blender_environment(config)
-        process_scene(config)
+        process_batch(config)
         log_to_blender("Script finished successfully.")
     # --- MODIFIED: Specific Exception Handling ---
     except (FileNotFoundError, PermissionError) as e:
@@ -229,14 +248,13 @@ def main() -> None:
         error_message = f"FATAL UNEXPECTED ERROR: {e}"
     finally:
         if error_message:
-            asset_info = f"[Asset ID: {config.asset_id}] " if config else ""
-            full_error = f"{error_message} {asset_info}"
+            full_error = f"{error_message}"
             log_to_blender(full_error)
 
             # Robustly log to file
             log_dir = config.current_dir if config else None
             if not log_dir:
-                try: log_dir = sys.argv[sys.argv.index('--') + 8]
+                try: log_dir = sys.argv[sys.argv.index('--') + 5]
                 except (ValueError, IndexError): pass
             if log_dir: log_to_file(full_error, log_dir)
 
