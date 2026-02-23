@@ -6,13 +6,16 @@ It uses specific exception handling for robust error reporting.
 """
 
 # --- Imports and Setup ---
-import bpy # pyright: ignore[reportMissingImports]
+
 import sys
 import os
 import time
 import importlib
 from dataclasses import dataclass
 from typing import Set, Optional
+
+import bpy # pyright: ignore[reportMissingImports]
+
 
 # --- Constants ---
 ADDON_MODULE_NAME = 'PreinstancedImportExtension'
@@ -37,7 +40,6 @@ class ScriptConfig:
     export_formats: Optional[Set[str]]
     asset_id: str
     temp_addon_dir: str
-    main_db_path: str
     game_root_path: str
     output_fbx: Optional[str] = None
 
@@ -92,12 +94,11 @@ def get_script_config() -> ScriptConfig:
             output_fbx=argv[arg_start_index + 7],
             asset_id=argv[arg_start_index + 8],
             temp_addon_dir=argv[arg_start_index + 9],
-            main_db_path=argv[arg_start_index + 10],
-            game_root_path=argv[arg_start_index + 11],
-            export_formats={fmt.strip() for fmt in argv[arg_start_index + 12].lower().replace(",", " ").split() if fmt.strip() in {"glb", "fbx"}} or None,
+            game_root_path=argv[arg_start_index + 10],
+            export_formats={fmt.strip() for fmt in argv[arg_start_index + 11].lower().replace(",", " ").split() if fmt.strip() in {"glb", "fbx"}} or None,
         )
     except (ValueError, IndexError) as e:
-        printc("Usage: ... -- <base.blend> ... <asset_id> <temp_addon_dir> <main_db_path> <game_root_path> <export_formats>", colour='yellow')
+        printc("Usage: ... -- <base.blend> ... <asset_id> <temp_addon_dir> <game_root_path> <export_formats>", colour='yellow')
         raise BlenderScriptError(f"Argument parsing failed: {e}") from e
 
 def log_script_config(config: ScriptConfig) -> None:
@@ -128,7 +129,7 @@ def setup_blender_environment(config: ScriptConfig) -> None:
 
         # Set the texture DB path from the config argument
         log_to_blender("Setting dynamic DB path...")
-        db_path = config.main_db_path
+        db_path = None
         if db_path and os.path.exists(db_path):
             bpy.context.scene["tsg_db_path"] = db_path
             log_to_blender(f"Set scene property 'tsg_db_path' to: {db_path}")

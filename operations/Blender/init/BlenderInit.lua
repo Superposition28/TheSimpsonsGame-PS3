@@ -24,17 +24,18 @@ end
 local function run(args)
     -- Determine the directory where this script and its modules reside
     local base_path = args.blender_dir or (args.output_dir and sdk.realpath(args.output_dir)) or sdk.currentdir()
-    
+
     local function join(p1, p2)
         local sep = package.config:sub(1, 1)
         return p1 .. sep .. p2
     end
 
     -- Load sub-modules
-    local Utils = load_module(join(base_path, "BlenderUtils.lua"))
-    local DB_Module = load_module(join(base_path, "BlenderDB.lua")).setup(Utils)
-    local Processor_Module = load_module(join(base_path, "BlenderProcessor.lua")).setup(Utils)
-    local Symlink_Module = load_module(join(base_path, "BlenderSymlink.lua")).setup(Utils)
+    local init_path = join(base_path, "init")
+    local Utils = load_module(join(init_path, "BlenderUtils.lua"))
+    local DB_Module = load_module(join(init_path, "BlenderDB.lua")).setup(Utils)
+    local Processor_Module = load_module(join(init_path, "BlenderProcessor.lua")).setup(Utils)
+    local Symlink_Module = load_module(join(init_path, "BlenderSymlink.lua")).setup(Utils)
 
     local VERBOSE = not not args.verbose
     Utils.log(Utils.Colours.CYAN, string.format("Input args: %s", sdk.text.json.encode(args)))
@@ -47,7 +48,7 @@ local function run(args)
     sdk.ensure_dir(database_output_directory)
 
     local db_filename = args.db_file_path
-    local root_drive = Utils.absolute_path(args.root_drive)
+    local symlink_path = Utils.absolute_path(args.symlink_path)
     local blank_blend_source = Utils.absolute_path(args.blank_blend_source)
     local debug_mode_enabled = not not args.debug_sleep
 
@@ -115,27 +116,13 @@ local function run(args)
         Utils.log(Utils.Colours.CYAN, "--- Step 2: Generating Asset Map & Populating Database ---")
         if debug_mode_enabled then sdk.sleep(2) end
 
-        -- Load rename map if provided for canonical ID consistency
-        local rename_map = nil
-        if args.rename_map_file and args.rename_map_file ~= "" then
-            local map_path = Utils.absolute_path(args.rename_map_file)
-            if sdk.path_exists(map_path) then
-                local content = sdk.read_all_text(map_path)
-                if content then
-                    rename_map = sdk.text.json.decode(content)
-                    Utils.log(Utils.Colours.CYAN, string.format("Loaded rename map for canonical IDs from: %s", map_path))
-                end
-            else
-                Utils.log(Utils.Colours.YELLOW, string.format("Rename map file not found: %s", map_path))
-            end
-        end
 
-        local asset_count = DB_Module.generate_asset_mapping(db, root_drive, preinstanced_dir, blend_dir, marker, glb_dir, false, VERBOSE, rename_map, args.game_root)
+        local asset_count = DB_Module.generate_asset_mapping(db, symlink_path, preinstanced_dir, blend_dir, marker, glb_dir, false, VERBOSE, args.game_root)
         Utils.log(Utils.Colours.GREEN, string.format("Generated and stored map for %d assets in the database.", asset_count))
         if debug_mode_enabled then sdk.sleep(2) end
 
         Utils.log(Utils.Colours.CYAN, "--- Step 3: Creating Symbolic Links ---")
-        Symlink_Module.create_symbolic_links(db, root_drive, preinstanced_dir, blend_dir, marker, glb_dir, debug_mode_enabled, VERBOSE)
+        Symlink_Module.create_symbolic_links(db, symlink_path, preinstanced_dir, blend_dir, marker, glb_dir, debug_mode_enabled, VERBOSE)
         Utils.log(Utils.Colours.GREEN, "--- Step 3: Completed ---")
     end)
 

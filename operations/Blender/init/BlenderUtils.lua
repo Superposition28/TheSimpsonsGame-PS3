@@ -159,20 +159,13 @@ function M.md5_hash(value)
     error("sdk.md5 helper is unavailable")
 end
 
-function M.get_canonical_id(rel_path, rename_map)
+function M.get_canonical_id(rel_path)
     if not rel_path then return nil end
     local normalized = M.normalize_separators(rel_path):gsub("\\", "/")
 
     local parts = {}
     for part in normalized:gmatch("[^/]+") do
         table.insert(parts, part)
-    end
-
-    if #parts > 0 and rename_map then
-        local first = parts[1]:lower()
-        if rename_map[first] then
-            parts[1] = rename_map[first]
-        end
     end
 
     local canonical = table.concat(parts, "/")

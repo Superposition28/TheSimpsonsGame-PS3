@@ -3,24 +3,6 @@
 # Placeholders: Game_Root, Project_Root are built into the engine
 
 
-#test
-
-[[operation]]
-id = 69
-Name = "Normalize folder structure"
-run-all = true
-depends-on = [5]
-script_type = "lua"
-script = "{{Game_Root}}/operations/DirectoryNormalizer/run.lua"
-args = [
-    "{{Game_Root}}/GameFiles/{{Region}}-{{Type}}-{{audio_state}}-{{isRenamed}}",
-    "{{Game_Root}}/GameFiles/test5",
-    "--copyonly", "A1_Audio",
-    "--copyonly", "audiostreams",
-]
-
-
-
 ## creates config.toml and ensures placeholders exist
 ## operations marked with init = true are not displayed in interactive UI or GUI lists to ensure they are always run every time
 ##  - ensure placeholders exist: SourcePath, Region
@@ -179,7 +161,8 @@ args = [
     "--source", "{{Game_Root}}/GameFiles/{{Region}}-{{Type}}-{{audio_state}}-{{isRenamed}}",
     "--target", "{{Game_Root}}/GameFiles/{{Region}}-{{Type}}-{{audio_state}}-{{isRenamed}}",
     "--input-ext", ".dds",
-    "--output-ext", ".png"
+    "--output-ext", ".png",
+    "--replace"
 ]
 
 ## convert 3d models into .blend files, and export to glb for godot use
@@ -196,11 +179,9 @@ args = [
     "--base-dir", "{{Game_Root}}",
     "--operations-dir", "{{Game_Root}}/operations",
     "--blender-dir", "{{Game_Root}}/operations/Blender",
-    "--preinstanced-dir", "{{Game_Root}}/GameFiles/{{Region}}-{{Type}}-{{audio_state}}-{{isRenamed}}",
-    "--blend-dir", "{{Game_Root}}/GameFiles/{{Region}}-{{Type}}-{{audio_state}}-{{isRenamed}}",
+    "--GameFiles", "{{Game_Root}}/GameFiles/{{Region}}-{{Type}}-{{audio_state}}-{{isRenamed}}",
     "--blank-blend", "{{Game_Root}}/blank.blend",
-    "--root-drive", "{{Game_Root}}/TMP_TSG_LNKS-{{Region}}-{{Type}}-{{audio_state}}-{{isRenamed}}", # symbolic link root to avoid path length issues
-    "--main-db", "{{Game_Root}}/config/GameFilesIndex_{{Region}}-{{Type}}-{{audio_state}}-{{isRenamed}}.db",
+    "--symlink-path", "{{Game_Root}}/TMP_TSG_LNKS-{{Region}}-{{Type}}-{{audio_state}}-{{isRenamed}}", # symbolic link root to avoid path length issues
     "--asset-map-db", "{{Game_Root}}/GameFiles/config/{{Region}}-{{Type}}-{{audio_state}}-{{isRenamed}}/AssetMap.sqlite",
 ]
 # for debugging

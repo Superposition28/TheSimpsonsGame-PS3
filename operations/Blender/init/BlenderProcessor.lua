@@ -36,11 +36,31 @@ function M.setup(Utils)
         end
 
         local files = {}
-        Utils.iterate_files(self.input_dir, function(full_path, filename)
-            if Utils.ends_with(filename:lower(), ".preinstanced") then
-                table.insert(files, full_path)
+        local map_file_path = Utils.join(self.input_dir, "normalized_map.json")
+        if sdk.is_file(map_file_path) then
+            Utils.log(Utils.Colours.CYAN, string.format("Using normalized_map.json from %s", self.input_dir))
+            local fh = io.open(map_file_path, "r")
+            if fh then
+                local map_content = fh:read("*a")
+                fh:close()
+                local map_data = sdk.text.json.decode(map_content)
+                if map_data then
+                    for _, entry in ipairs(map_data) do
+                        local new_path = entry.new_path
+                        if new_path and Utils.ends_with(new_path:lower(), ".preinstanced") then
+                            local full_path = Utils.join(self.input_dir, new_path)
+                            table.insert(files, full_path)
+                        end
+                    end
+                end
             end
-        end)
+        else
+            Utils.iterate_files(self.input_dir, function(full_path, filename)
+                if Utils.ends_with(filename:lower(), ".preinstanced") then
+                    table.insert(files, full_path)
+                end
+            end)
+        end
 
         Utils.log(Utils.Colours.CYAN, string.format("Found %d .preinstanced files in %s.", #files, self.input_dir))
         local input_dir_abs = self.input_dir

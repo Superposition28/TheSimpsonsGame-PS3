@@ -13,12 +13,25 @@ CLI
 - --export <fmt>… : one or more export format strings (e.g., glb, fbx)
 
 Usage
-  lua run.lua [--verbose] [--debug-sleep] [--export glb fbx]
+    [ [operation] ]
+    id = 8
+    Name = "Convert Models (.preinstanced -> .blend)"
+    run-all = true
+    depends-on = [7] # depends on blender, str extraction for assets, and texture extraction and conversion for materials
+    script_type = "lua"
+    script = "{{Game_Root}}/operations/Blender/run.lua"
+    args = [
+        "--game-root", "{{Game_Root}}",
+        "--base-dir", "{{Game_Root}}",
+        "--operations-dir", "{{Game_Root}}/operations",
+        "--blender-dir", "{{Game_Root}}/operations/Blender",
+        "--GameFiles", "{{Game_Root}}/GameFiles/{{Region}}-{{Type}}-{{audio_state}}-{{isRenamed}}",
+        "--blank-blend", "{{Game_Root}}/blank.blend",
+        "--symlink-path", "{{Game_Root}}/TMP_TSG_LNKS-{{Region}}-{{Type}}-{{audio_state}}-{{isRenamed}}", # symbolic link root to avoid path length issues
+        "--asset-map-db", "{{Game_Root}}/GameFiles/config/{{Region}}-{{Type}}-{{audio_state}}-{{isRenamed}}/AssetMap.sqlite",
+    ]
 
-Environment
-- May be hosted by an SDK exposing global `sdk` with helpers:
-    sdk.colour_print({ colour = "red"|..., message = "..." })
-    sdk.ensure_dir(path)
+
 --]]
 
 local function main()
@@ -104,8 +117,7 @@ local function main()
             preinstanced_dir = nil,
             blend_dir = nil,
             blank_blend_source = nil,
-            root_drive = nil,
-            main_db = nil,
+            symlink_path = nil,
             asset_map_db = nil,
             rename_map_file = nil
         }
@@ -274,50 +286,29 @@ local function main()
                     end
                 end
                 result.blender_dir = clean_value(value)
-            elseif option_name == "--preinstanced-dir" or option_name == "--preinstanced_dir" then
+            elseif option_name == "--GameFiles" then
                 local value = inline_value
                 if value == nil or #value == 0 then
                     i = i + 1
                     if i <= #args then
                         value = args[i]
                     else
-                        error("Expected value after --preinstanced-dir")
+                        error("Expected value after --GameFiles")
                     end
                 end
                 result.preinstanced_dir = clean_value(value)
-            elseif option_name == "--blend-dir" or option_name == "--blend_dir" then
+                result.blend_dir = clean_value(value) -- use the same dir
+            elseif option_name == "--symlink-path" then
                 local value = inline_value
                 if value == nil or #value == 0 then
                     i = i + 1
                     if i <= #args then
                         value = args[i]
                     else
-                        error("Expected value after --blend-dir")
+                        error("Expected value after --symlink-path")
                     end
                 end
-                result.blend_dir = clean_value(value)
-            elseif option_name == "--root-drive" or option_name == "--root_drive" then
-                local value = inline_value
-                if value == nil or #value == 0 then
-                    i = i + 1
-                    if i <= #args then
-                        value = args[i]
-                    else
-                        error("Expected value after --root-drive")
-                    end
-                end
-                result.root_drive = clean_value(value)
-            elseif option_name == "--main-db" or option_name == "--main_db" then
-                local value = inline_value
-                if value == nil or #value == 0 then
-                    i = i + 1
-                    if i <= #args then
-                        value = args[i]
-                    else
-                        error("Expected value after --main-db")
-                    end
-                end
-                result.main_db = clean_value(value)
+                result.symlink_path = clean_value(value)
             elseif option_name == "--asset-map-db" or option_name == "--asset_map_db" then
                 local value = inline_value
                 if value == nil or #value == 0 then
@@ -405,7 +396,7 @@ local function main()
     end
 
     local cli = parse_arguments(argv)
-    local path_fields = { "game_root", "base_dir", "operations_dir", "blender_dir", "preinstanced_dir", "blend_dir", "blank_blend_source", "root_drive" }
+    local path_fields = { "game_root", "base_dir", "operations_dir", "blender_dir", "preinstanced_dir", "blend_dir", "blank_blend_source", "symlink_path" }
     for _, key in ipairs(path_fields) do
         local value = cli[key]
         if type(value) == "string" and #value > 0 then
@@ -423,8 +414,7 @@ local function main()
     log(Colours.BLUE, string.format("cli arg preinstanced_dir: %s", tostring(cli.preinstanced_dir)))
     log(Colours.BLUE, string.format("cli arg blend_dir: %s", tostring(cli.blend_dir)))
     log(Colours.BLUE, string.format("cli arg blank_blend_source: %s", tostring(cli.blank_blend_source)))
-    log(Colours.BLUE, string.format("cli arg root_drive: %s", tostring(cli.root_drive)))
-    log(Colours.BLUE, string.format("cli arg main_db: %s", tostring(cli.main_db)))
+    log(Colours.BLUE, string.format("cli arg symlink_path: %s", tostring(cli.symlink_path)))
     log(Colours.BLUE, string.format("cli arg asset_map_db: %s", tostring(cli.asset_map_db)))
 
     -- Establish working directory for resolving relative project paths
@@ -472,19 +462,19 @@ local function main()
 
     -- Compute a root for temporary symlinks
     local drive, _ = split_drive(working_dir)
-    local root_drive
-    if cli.root_drive and #cli.root_drive > 0 then
-        if is_absolute(cli.root_drive) then
-            root_drive = cli.root_drive
+    local symlink_path
+    if cli.symlink_path and #cli.symlink_path > 0 then
+        if is_absolute(cli.symlink_path) then
+            symlink_path = cli.symlink_path
         else
-            root_drive = normalize_separators(join(working_dir, cli.root_drive))
+            symlink_path = normalize_separators(join(working_dir, cli.symlink_path))
         end
     elseif drive then
-        root_drive = normalize_separators(join(drive .. path_sep, "TMP_TSG_LNKS"))
+        symlink_path = normalize_separators(join(drive .. path_sep, "TMP_TSG_LNKS"))
     else
-        root_drive = normalize_separators(join(cli.game_root, "TMP_TSG_LNKS"))
+        symlink_path = normalize_separators(join(cli.game_root, "TMP_TSG_LNKS"))
     end
-    log(Colours.CYAN, string.format("Resolved root_drive: %s", tostring(root_drive)))
+    log(Colours.CYAN, string.format("Resolved symlink_path: %s", tostring(symlink_path)))
 
     local marker = preinstanced_dir and (preinstanced_dir .. path_sep) or ""
 
@@ -492,8 +482,16 @@ local function main()
     sdk.ensure_dir(output_dir)
 
     -- Load phase modules (must export a `main(opts)` function)
-    local BlenderInit = load_module(join(output_dir, "BlenderInit.lua"))
+    local BlenderInit = load_module(join(output_dir, join("init", "BlenderInit.lua")))
+    if not BlenderInit or type(BlenderInit.main) ~= "function" then
+        error("BlenderInit module did not return a table with a main(opts) function")
+        os.exit(1)
+    end
     local BlenderCore = load_module(join(output_dir, "BlenderCore.lua"))
+    if not BlenderCore or type(BlenderCore.main) ~= "function" then
+        error("BlenderCore module did not return a table with a main(opts) function")
+        os.exit(1)
+    end
 
     -- Options for initialization phase
     local init_opts = {
@@ -502,7 +500,7 @@ local function main()
         blend_dir = blend_dir,
         glb_dir = preinstanced_dir,
         output_dir = output_dir,
-        root_drive = root_drive,
+        symlink_path = symlink_path,
         blank_blend_source = blank_blend_source,
         marker = marker,
         debug_sleep = cli.debug_sleep,
@@ -541,7 +539,6 @@ local function main()
         export = cli.export,
         export_formats = cli.formats,
         db_file_path = join(cli.asset_map_db),
-        main_db = cli.main_db,
         blender_exe_path = blender_exe_path,
         game_root = cli.game_root
     }

@@ -28,7 +28,6 @@ Public entry point
         - opts.export: boolean
         - opts.export_formats: list of strings (e.g. {"glb", "fbx"})
         - opts.db_file_path: string
-        - opts.main_db: string (path to main asset DB; passed to Blender script)
         - opts.blender_exe_path: string (path to Blender executable)
 
 Behavior
@@ -311,7 +310,7 @@ end
 -- @param verbose boolean
 -- @param debug_sleep boolean
 -- @return table { asset_id, success, skipped, message }
-local function run_blender_for_asset(asset, export_set, ordered_formats, verbose, debug_sleep, main_db_path, blender_exe_path, game_root_path)
+local function run_blender_for_asset(asset, export_set, ordered_formats, verbose, debug_sleep, blender_exe_path, game_root_path)
     local ok, run_needed, reason = should_process_asset(asset, export_set)
     if not ok then
         return { asset_id = asset.identifier, success = false, skipped = false, message = reason }
@@ -351,7 +350,6 @@ local function run_blender_for_asset(asset, export_set, ordered_formats, verbose
         fbx_file,
         asset.identifier,
         temp_addon_dir,
-        main_db_path,
         game_root_path,
         table.concat(ordered_formats, ",")
     }
@@ -432,7 +430,6 @@ function BlenderCore.main(opts)
         os.exit(1)
     end
 
-    local main_db_path = opts.main_db and to_long_path(normalize_separators(opts.main_db)) or ""
     local blender_exe_path = opts.blender_exe_path and to_long_path(normalize_separators(opts.blender_exe_path)) or ""
     local game_root_path = opts.game_root and to_long_path(normalize_separators(opts.game_root))
 
@@ -440,7 +437,6 @@ function BlenderCore.main(opts)
 
     log(Colours.CYAN, string.format("Export formats: %s", (#ordered_formats > 0) and table.concat(ordered_formats, ", ") or "None"))
     log(Colours.CYAN, string.format("Using DB: %s", db_path))
-    log(Colours.CYAN, string.format("Using main DB: %s", main_db_path))
     log(Colours.CYAN, string.format("Using Blender executable: %s", blender_exe_path))
     if not game_root_path then
         error("Game root path must be specified in opts.game_root_path")
@@ -496,7 +492,7 @@ function BlenderCore.main(opts)
         -- Fallback: run sequentially using existing run_blender_for_asset implementation
         log(Colours.YELLOW, "spawn_process unavailable; running sequentially using sdk.run_process")
         for _, asset in ipairs(work_queue) do
-            local rec = run_blender_for_asset(asset, export_set, ordered_formats, VERBOSE, debug_sleep, main_db_path, blender_exe_path, game_root_path)
+            local rec = run_blender_for_asset(asset, export_set, ordered_formats, VERBOSE, debug_sleep, blender_exe_path, game_root_path)
             if rec.success then
                 table.insert(successes, rec)
             else
@@ -554,7 +550,6 @@ function BlenderCore.main(opts)
                 fbx_file,
                 asset.identifier,
                 temp_addon_dir,
-                main_db_path,
                 game_root_path,
                 table.concat(ordered_formats, ",")
             }

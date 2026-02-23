@@ -46,7 +46,7 @@ function M.setup(Utils)
 
         -- Query distinct identifiers and their source folders
         local rows = db.query("SELECT DISTINCT identifier, preinstanced_full, preinstanced_symlink FROM asset_map")
-        
+
         for _, row in ipairs(rows) do
             if row.preinstanced_full and row.preinstanced_symlink then
                 -- Create a single symlink root for the asset ID

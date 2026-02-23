@@ -1,10 +1,34 @@
 # SPDX-License-Identifier: MIT
 # Blender addon for importing The Simpsons Game 3D assets with texture↔mesh linking
 
+
+import struct
+import re
+import io
+import math
+from pathlib import Path
+import string
+import sqlite3
+import sys
+
+import numpy as np
+
+import bpy
+import bmesh
+import mathutils
+
+from bpy.props import (
+    StringProperty,
+    CollectionProperty
+)
+
+from bpy_extras.io_utils import ImportHelper
+
+
 bl_info = {
     "name": "The Simpsons Game 3d Asset Importer",
     "author": "Turk & Mister_Nebula & Samarixum",
-    "version": (1, 5, 6),
+    "version": (1, 5, 7),
     "blender": (4, 0, 0),  # highest supportable version
     "location": "File > Import-Export",
     "description": "Import .rws.preinstanced, .dff.preinstanced mesh files from The Simpsons Game (PS3), detect embedded strings, and link textures to meshes.",
@@ -12,25 +36,6 @@ bl_info = {
     "category": "Import-Export",
 }
 
-import bpy
-import bmesh
-import struct
-import re
-import io
-import math
-import mathutils
-from pathlib import Path
-import numpy as np
-import string
-import tempfile
-import sqlite3
-import sys
-
-from bpy.props import (
-    StringProperty,
-    CollectionProperty
-)
-from bpy_extras.io_utils import ImportHelper
 
 # --- Global Settings ---
 global debug_mode
@@ -39,6 +44,9 @@ debug_mode = True  # Default value, can be set in the addon preferences
 # --- Utility Functions ---
 
 def printc(message: str, colour: str | None = None) -> None:
+    """
+    Print a message to the console with optional ANSI color coding.
+    """
     colours = {
         'red': '\033[91m', 'green': '\033[92m', 'yellow': '\033[93m',
         'blue': '\033[94m', 'magenta': '\033[95m', 'cyan': '\033[96m',
@@ -52,6 +60,9 @@ def printc(message: str, colour: str | None = None) -> None:
         print(f"{colours['magenta']}EXTENSION:{endc} {colours['blue']}{message}{endc}")
 
 def get_unique_metadata_key(container: dict, base_key: str) -> str:
+    """
+    generate a unique key for storing metadata in the given container (e.g. bpy.types.Scene) by appending a numeric suffix if needed to avoid overwriting existing keys.
+    """
     if base_key not in container.keys():
         return base_key
     i = 1
@@ -162,6 +173,10 @@ CONTEXT_SIZE = 16
 STRING_CONTEXT_SIZE = 5
 
 def find_strings_by_signature_in_data(data: bytes, signatures_info: list, max_string_length: int, min_string_length: int, context_bytes: int, string_context_bytes: int) -> list:
+    """
+    Search the given data for configured fixed signatures and attempt to extract valid ASCII strings at specified offsets from those signatures, along with contextual data around both the signature and the string.
+    Returns a list of dictionaries containing details about each found signature and associated string (if valid).
+    """
     results = []
     data_len = len(data)
     bPrinter("[String Search] Starting search for configured fixed signatures...")
@@ -593,9 +608,15 @@ class SimpGameImport(bpy.types.Operator, ImportHelper):
     files: CollectionProperty(type=bpy.types.PropertyGroup)
 
     def draw(self, context: bpy.types.Context) -> None:
+        """
+        Draw the operator UI in the file browser.
+        """
         pass
 
     def execute(self, context: bpy.types.Context) -> set:
+        """
+        Main execution method for the importer. Reads the file, detects textures and meshes, logs information, and prepares for mesh creation.
+        """
         bPrinter("== The Simpsons Game Import Log ==", to_blender_editor=True, log_as_metadata=False)
         bPrinter("Importer Version: {}.{}.{}".format(*bl_info['version']), to_blender_editor=True, log_as_metadata=False)
         bPrinter(f"Importing file: {self.filepath}", to_blender_editor=True, log_as_metadata=True)
@@ -1068,6 +1089,9 @@ class SimpGameImport(bpy.types.Operator, ImportHelper):
         return {'FINISHED'}
 
 class MyAddonPreferences(bpy.types.AddonPreferences):
+    """
+    Blender Addon Preferences for The Simpsons Game Importer. Provides a toggle for debug mode to enable additional logging and diagnostics.
+    """
     bl_idname = __name__
     debugmode: bpy.props.BoolProperty(
         name="Debug Mode",
@@ -1079,6 +1103,9 @@ class MyAddonPreferences(bpy.types.AddonPreferences):
         layout.prop(self, "debugmode")
 
 def menu_func_import(self: bpy.types.Menu, context: bpy.types.Context) -> None:
+    """
+    Function to add the importer to the Blender file import menu.
+    """
     self.layout.operator(SimpGameImport.bl_idname, text="The Simpsons Game (.rws,dff)")
 
 # --- Registration ---
@@ -1089,12 +1116,18 @@ classes = (
 )
 
 def register() -> None:
+    """
+    Register the addon classes and add the menu item.
+    """
     bPrinter("[Register] Registering addon components")
     for cls in classes:
         bpy.utils.register_class(cls)
     bpy.types.TOPBAR_MT_file_import.append(menu_func_import)
 
 def unregister() -> None:
+    """
+    Unregister the addon classes and remove the menu item.
+    """
     bPrinter("[Unregister] Unregistering addon components")
     try:
         bpy.types.TOPBAR_MT_file_import.remove(menu_func_import)
@@ -1105,6 +1138,7 @@ def unregister() -> None:
             bpy.utils.unregister_class(cls)
         except RuntimeError as e:
             bPrinter(f"[Unregister] Warning unregistering class {cls.__name__}: {e}", to_blender_editor=True)
+
 
 if __name__ == "__main__":
     bPrinter("[Main] Running as main script. Registering.")
