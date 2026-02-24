@@ -310,7 +310,7 @@ end
 -- @param verbose boolean
 -- @param debug_sleep boolean
 -- @return table { asset_id, success, skipped, message }
-local function run_blender_for_asset(asset, export_set, ordered_formats, verbose, debug_sleep, blender_exe_path, game_root_path)
+local function run_blender_for_asset(asset, export_set, ordered_formats, verbose, debug_sleep, blender_exe_path, game_root_path, json_db_path, preinstanced_dir)
     local ok, run_needed, reason = should_process_asset(asset, export_set)
     if not ok then
         return { asset_id = asset.identifier, success = false, skipped = false, message = reason }
@@ -334,24 +334,42 @@ local function run_blender_for_asset(asset, export_set, ordered_formats, verbose
 
     -- Create a per-run temp addon directory; will be removed after execution
     local temp_addon_dir = make_temp_dir("blender_addon_")
+    
+    local batch_file = join(temp_addon_dir, "batch.json")
+    local batch_data = {
+        {
+            asset_id = asset.identifier,
+            blend_file = blend_file,
+            preinstanced_file = preinstanced_file,
+            glb_file = glb_file,
+            fbx_file = fbx_file
+        }
+    }
+    local fh = io.open(batch_file, "w")
+    if fh then
+        fh:write(sdk.text.json.encode(batch_data))
+        fh:close()
+    else
+        log(Colours.RED, "Failed to write batch file: " .. batch_file)
+        return { asset_id = asset.identifier, success = false, skipped = false, message = "Failed to write batch file" }
+    end
+
     -- Blender CLI layout: `--` separates Blender's args from script args
     local command = {
         blender_exe_path,
-        "-b", blend_file,
+        "-b",
         "--python", python_script_path,
         "--",
-        blend_file,
-        preinstanced_file,
-        glb_file,
+        batch_file,
         python_extension_file,
         verbose and "true" or "false",
         debug_sleep and "true" or "false",
         blender_dir,
-        fbx_file,
-        asset.identifier,
         temp_addon_dir,
         game_root_path,
-        table.concat(ordered_formats, ",")
+        table.concat(ordered_formats, ","),
+        json_db_path,
+        preinstanced_dir
     }
 
     local result
@@ -430,6 +448,9 @@ function BlenderCore.main(opts)
         os.exit(1)
     end
 
+    local json_db_path = opts.preinstanced_dir and join(opts.preinstanced_dir, "normalized_map.json") or ""
+    json_db_path = to_long_path(normalize_separators(json_db_path))
+
     local blender_exe_path = opts.blender_exe_path and to_long_path(normalize_separators(opts.blender_exe_path)) or ""
     local game_root_path = opts.game_root and to_long_path(normalize_separators(opts.game_root))
 
@@ -480,9 +501,11 @@ function BlenderCore.main(opts)
     local p = progress.new(#work_queue, "blender-batch", "Exporting Assets with Blender...")
 
     local has_spawn = (sdk.spawn_process ~= nil)
-    -- Default workers: user-specified opts.workers -> sdk.cpu_count -> 1
+    -- Default workers: user-specified opts.workers -> global cpu_count -> sdk.cpu_count -> 1
     local default_workers = 1
-    if sdk and sdk.cpu_count then
+    if cpu_count then
+        default_workers = tonumber(cpu_count) or default_workers
+    elseif sdk and sdk.cpu_count then
         default_workers = tonumber(sdk.cpu_count) or default_workers
     end
     local max_workers = tonumber(opts.workers) or default_workers
@@ -492,7 +515,7 @@ function BlenderCore.main(opts)
         -- Fallback: run sequentially using existing run_blender_for_asset implementation
         log(Colours.YELLOW, "spawn_process unavailable; running sequentially using sdk.run_process")
         for _, asset in ipairs(work_queue) do
-            local rec = run_blender_for_asset(asset, export_set, ordered_formats, VERBOSE, debug_sleep, blender_exe_path, game_root_path)
+            local rec = run_blender_for_asset(asset, export_set, ordered_formats, VERBOSE, debug_sleep, blender_exe_path, game_root_path, json_db_path, opts.preinstanced_dir)
             if rec.success then
                 table.insert(successes, rec)
             else
@@ -569,7 +592,9 @@ function BlenderCore.main(opts)
                 blender_dir,
                 temp_addon_dir,
                 game_root_path,
-                table.concat(ordered_formats, ",")
+                table.concat(ordered_formats, ","),
+                json_db_path,
+                opts.preinstanced_dir
             }
 
             local ok, res = pcall(function()

@@ -13,7 +13,7 @@ import time
 import importlib
 import json
 from dataclasses import dataclass
-from typing import Set, Optional, List, Dict, Any
+from typing import Set, Optional
 
 import bpy # pyright: ignore[reportMissingImports]
 
@@ -39,9 +39,12 @@ class ScriptConfig:
     temp_addon_dir: str
     game_root_path: str
     export_formats: Optional[Set[str]]
+    db_path: Optional[str]
+    preinstanced_dir: Optional[str]
 
 @dataclass
 class AssetConfig:
+    """A data class to represent the configuration for each asset to be processed."""
     asset_id: str
     base_blend_file: str
     input_preinstanced_file: str
@@ -77,8 +80,8 @@ def log_to_file(text: str, log_directory: str) -> None:
     try:
         with open(file_path, "a", encoding='utf-8') as log_file:
             log_file.write(f"{time.strftime('%Y-%m-%d %H:%M:%S')} - {text}\n")
-    except Exception as e:
-        printc(f"Error writing to log file: {e}", colour='red')
+    except PermissionError as e:
+        printc(f"Permission error writing to log file: {e}", colour='red')
 
 # --- Core Logic Functions ---
 
@@ -87,7 +90,17 @@ def get_script_config() -> ScriptConfig:
     try:
         argv = sys.argv
         arg_start_index = argv.index('--') + 1
-        def to_bool(arg_str: str) -> bool: return arg_str.strip().lower() == "true"
+        def to_bool(arg_str: str) -> bool:
+            return arg_str.strip().lower() == "true"
+
+        db_path = None
+        if len(argv) > arg_start_index + 8:
+            db_path = argv[arg_start_index + 8]
+
+        preinstanced_dir = None
+        if len(argv) > arg_start_index + 9:
+            preinstanced_dir = argv[arg_start_index + 9]
+
         return ScriptConfig(
             batch_file=argv[arg_start_index],
             python_extension_file=argv[arg_start_index + 1],
@@ -97,12 +110,15 @@ def get_script_config() -> ScriptConfig:
             temp_addon_dir=argv[arg_start_index + 5],
             game_root_path=argv[arg_start_index + 6],
             export_formats={fmt.strip() for fmt in argv[arg_start_index + 7].lower().replace(",", " ").split() if fmt.strip() in {"glb", "fbx"}} or None,
+            db_path=db_path,
+            preinstanced_dir=preinstanced_dir
         )
     except (ValueError, IndexError) as e:
-        printc("Usage: ... -- <batch_file.json> <python_extension_file> <verbose> <debug_sleep> <current_dir> <temp_addon_dir> <game_root_path> <export_formats>", colour='yellow')
+        printc("Usage: ... -- <batch_file.json> <python_extension_file> <verbose> <debug_sleep> <current_dir> <temp_addon_dir> <game_root_path> <export_formats> <db_path> <preinstanced_dir>", colour='yellow')
         raise BlenderScriptError(f"Argument parsing failed: {e}") from e
 
 def log_script_config(config: ScriptConfig) -> None:
+    """Logs the script configuration to Blender's text editor and console."""
     log_to_blender("Script started with arguments:")
     for i, (key, value) in enumerate(vars(config).items()):
         log_to_blender(f"{i+1}: {key}: {value}")
@@ -123,7 +139,7 @@ def setup_blender_environment(config: ScriptConfig) -> None:
     try:
         # Set the texture DB path from the config argument
         log_to_blender("Setting dynamic DB path...")
-        db_path = None
+        db_path = config.db_path
         if db_path and os.path.exists(db_path):
             bpy.context.scene["tsg_db_path"] = db_path
             log_to_blender(f"Set scene property 'tsg_db_path' to: {db_path}")
@@ -142,6 +158,12 @@ def setup_blender_environment(config: ScriptConfig) -> None:
             log_to_blender(f"Set scene property 'tsg_gameroot_path' to: {config.game_root_path}")
         else:
             log_to_blender(f"Scene property 'tsg_gameroot_path' already set to: {bpy.context.scene['tsg_gameroot_path']}")
+
+        if config.preinstanced_dir and os.path.exists(config.preinstanced_dir):
+            bpy.context.scene["tsg_preinstanced_dir"] = config.preinstanced_dir
+            log_to_blender(f"Set scene property 'tsg_preinstanced_dir' to: {config.preinstanced_dir}")
+        elif config.preinstanced_dir:
+            log_to_blender(f"Warning: Preinstanced dir not found: {config.preinstanced_dir}")
 
         # Direct module loading avoids global addon install race conditions.
         addon_path = os.path.abspath(config.python_extension_file)
@@ -178,6 +200,14 @@ def process_scene(config: ScriptConfig, asset: AssetConfig) -> None:
         bpy.ops.wm.open_mainfile(filepath=asset.base_blend_file)
         log_to_blender("Blend file opened successfully.")
 
+        # Re-apply scene properties after loading the new file
+        if config.db_path and os.path.exists(config.db_path):
+            bpy.context.scene["tsg_db_path"] = config.db_path
+        if config.game_root_path and os.path.exists(config.game_root_path):
+            bpy.context.scene["tsg_gameroot_path"] = config.game_root_path
+        if config.preinstanced_dir and os.path.exists(config.preinstanced_dir):
+            bpy.context.scene["tsg_preinstanced_dir"] = config.preinstanced_dir
+
         log_to_blender(f"Importing preinstanced file: {asset.input_preinstanced_file}")
         bpy.ops.custom_import_scene.simpgame(filepath=asset.input_preinstanced_file)
         log_to_blender("Preinstanced file imported successfully.")
@@ -196,7 +226,7 @@ def process_scene(config: ScriptConfig, asset: AssetConfig) -> None:
 
         log_to_blender(f"Saving blend file to: {asset.base_blend_file}")
         if bpy.data.is_dirty:
-            # Use save_as_mainfile with check_existing=False to avoid "old file (file saved with @)" errors 
+            # Use save_as_mainfile with check_existing=False to avoid "old file (file saved with @)" errors
             # when using long path prefixes (\\?\) or path variations.
             bpy.ops.wm.save_as_mainfile(filepath=asset.base_blend_file, check_existing=False)
         else:
@@ -205,9 +235,10 @@ def process_scene(config: ScriptConfig, asset: AssetConfig) -> None:
         raise BlenderScriptError(f"Blender API error during scene processing: {e}") from e
 
 def process_batch(config: ScriptConfig) -> None:
+    """Processes each asset defined in the batch file."""
     with open(config.batch_file, 'r', encoding='utf-8') as f:
         batch_data = json.load(f)
-    
+
     for item in batch_data:
         asset = AssetConfig(
             asset_id=item['asset_id'],
@@ -216,7 +247,7 @@ def process_batch(config: ScriptConfig) -> None:
             output_glb=item['glb_file'],
             output_fbx=item.get('fbx_file')
         )
-        
+
         try:
             process_scene(config, asset)
             print(f"__REMAKE_ASSET_DONE__:{asset.asset_id}:SUCCESS", flush=True)
@@ -233,7 +264,8 @@ def main() -> None:
     try:
         config = get_script_config()
         log_script_config(config)
-        if config.debug_sleep: time.sleep(5)
+        if config.debug_sleep:
+            time.sleep(5)
         validate_file_paths(config)
         setup_blender_environment(config)
         process_batch(config)
@@ -254,9 +286,11 @@ def main() -> None:
             # Robustly log to file
             log_dir = config.current_dir if config else None
             if not log_dir:
-                try: log_dir = sys.argv[sys.argv.index('--') + 5]
+                try:
+                    log_dir = sys.argv[sys.argv.index('--') + 5]
                 except (ValueError, IndexError): pass
-            if log_dir: log_to_file(full_error, log_dir)
+            if log_dir:
+                log_to_file(full_error, log_dir)
 
             sys.exit(1)
 

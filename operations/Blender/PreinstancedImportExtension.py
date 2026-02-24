@@ -8,14 +8,14 @@ import io
 import math
 from pathlib import Path
 import string
-import sqlite3
+import json
 import sys
 
-import numpy as np
+#import numpy as np
 
 import bpy
 import bmesh
-import mathutils
+#import mathutils
 
 from bpy.props import (
     StringProperty,
@@ -82,6 +82,7 @@ def bPrinter(
     log_as_metadata: bool = False,
     metadata_key: str = "log_metadata"
 ) -> None:
+    """Robust logging function that can print to console with colors, write to a Blender text block, and/or store logs as metadata on the scene. Respects a global debug_mode flag and can be configured to only log when debug_mode is True."""
     global debug_mode
     try:
         if __name__ in bpy.context.preferences.addons:
@@ -113,6 +114,7 @@ def bPrinter(
                 printc(f"[Log Error] Failed to write to Blender text block '{block_name}': {e}")
 
 def sanitize_uvs(uv_layer: bpy.types.MeshUVLoopLayer) -> None:
+    """Sanitize UV coordinates by replacing non-finite values with (0.0, 0.0) and logging any occurrences."""
     bPrinter(f"[Sanitize] Checking UV layer: {uv_layer.name}")
     if not uv_layer.data:
         bPrinter(f"[Sanitize] Warning: UV layer '{uv_layer.name}' has no data.")
@@ -128,23 +130,25 @@ def sanitize_uvs(uv_layer: bpy.types.MeshUVLoopLayer) -> None:
         bPrinter(f"[Sanitize] Sanitized {sanitized_count} non-finite UV coordinates in layer '{uv_layer.name}'.")
 
 def utils_set_mode(mode: str) -> None:
+    """Utility function to set the current mode in Blender, with error handling and logging."""
     bPrinter(f"[SetMode] Setting mode to {mode}")
     if bpy.ops.object.mode_set.poll():
         bpy.ops.object.mode_set(mode=mode, toggle=False)
 
 def strip2face(strip: list) -> list:
-    bPrinter(f"[Strip2Face] Converting strip of length {len(strip)} to faces", require_debug_mode=True)
+    """Convert a triangle strip (list of vertex indices) into a list of faces (triplets of vertex indices), handling the winding order correctly and skipping degenerate faces."""
+    #bPrinter(f"[Strip2Face] Converting strip of length {len(strip)} to faces", require_debug_mode=True)
     flipped = False
     tmp_table = []
     if len(strip) < 3:
-        bPrinter(f"[Strip2Face] Strip too short ({len(strip)}) to form faces. Skipping.")
+        #bPrinter(f"[Strip2Face] Strip too short ({len(strip)}) to form faces. Skipping.")
         return []
     for x in range(len(strip)-2):
         v1 = strip[x]
         v2 = strip[x+1]
         v3 = strip[x+2]
         if v1 == v2 or v1 == v3 or v2 == v3:
-            bPrinter(f"[Strip2Face] Skipping degenerate face in strip at index {x} with indices ({v1}, {v2}, {v3})", require_debug_mode=True)
+            #bPrinter(f"[Strip2Face] Skipping degenerate face in strip at index {x} with indices ({v1}, {v2}, {v3})", require_debug_mode=True)
             flipped = not flipped
             continue
         if flipped:
@@ -152,7 +156,7 @@ def strip2face(strip: list) -> list:
         else:
             tmp_table.append((v2, v3, v1))
         flipped = not flipped
-    bPrinter(f"[Strip2Face] Generated {len(tmp_table)} faces from strip.", require_debug_mode=True)
+    #bPrinter(f"[Strip2Face] Generated {len(tmp_table)} faces from strip.", require_debug_mode=True)
     return tmp_table
 
 # --- String Detection (original) ---
@@ -290,7 +294,7 @@ def _check_required_headers(data: bytes) -> bool:
 def _iter_all_occurrences(data: bytes, needle: bytes):
     start = 0
     nlen = len(needle)
-    dlen = len(data)
+    #dlen = len(data)
     while True:
         idx = data.find(needle, start)
         if idx == -1:
@@ -317,7 +321,7 @@ def _extract_ascii_from(data: bytes, start_off: int, max_len: int) -> str | None
             return None
     return None
 
-def build_texture_mesh_links(data: bytes) -> tuple[dict[int, list[str]], dict[str, str], set[str]]:
+def build_texture_mesh_links(data: bytes, preinstanced_filepath: str = None) -> tuple[dict[int, list[str]], dict[str, str], set[str]]: # pyright: ignore[reportArgumentType]
     """
     Pass 1: scan file for texture headers→names, TLFD markers, mesh chunk headers.
     Pass 2: walk events in order and associate the last texture set (after TLFD if present)
@@ -325,7 +329,7 @@ def build_texture_mesh_links(data: bytes) -> tuple[dict[int, list[str]], dict[st
 
     Returns tuple:
       - links: {mesh_chunk_offset: [tex_names]}
-      - resolved_paths: {lower(tex_name): source_path from SQLite (if available)}
+      - resolved_paths: {lower(tex_name): source_path from JSON DB (if available)}
       - all_texture_names_found: {set of all unique texture names found}
     """
     links: dict[int, list[str]] = {}
@@ -345,8 +349,8 @@ def build_texture_mesh_links(data: bytes) -> tuple[dict[int, list[str]], dict[st
                 tex_hits += 1
                 events.append((off, "tex_name", name))
                 all_texture_names_found.add(name)
-                # Attempt to resolve to a full path via SQLite
-                _maybe_cache_texture_path(name, resolved_paths)
+                # Attempt to resolve to a full path via JSON DB
+                _maybe_cache_texture_path(name, resolved_paths, preinstanced_filepath)
     if tex_hits == 0:
         bPrinter("[TexScan] No texture strings found via header variants.", console_colour="yellow")
     else:
@@ -417,17 +421,19 @@ def build_texture_mesh_links(data: bytes) -> tuple[dict[int, list[str]], dict[st
         bPrinter("[Link] No mesh↔texture associations could be established.", to_blender_editor=True)
     return links, resolved_paths, all_texture_names_found
 
-# --- SQLite texture index -----------------------------------------
+# --- JSON texture index -----------------------------------------
 
-USE_SQLITE_DB_LOOKUP = True
-SQLITE_TABLE = "png_index"
+USE_JSON_DB_LOOKUP = True
 
-_sqlite_conn = None
+_json_db_cache = None
 
-def _open_sqlite_if_configured() -> sqlite3.Connection | None:
-    global _sqlite_conn
-    if not USE_SQLITE_DB_LOOKUP:
+def _load_json_db_if_configured() -> list | None:
+    global _json_db_cache
+    if not USE_JSON_DB_LOOKUP:
         return None
+
+    if _json_db_cache is not None:
+        return _json_db_cache
 
     # Get path dynamically from the scene property set by the driver script
     try:
@@ -435,28 +441,28 @@ def _open_sqlite_if_configured() -> sqlite3.Connection | None:
         if bpy.context and bpy.context.scene:
             main_db_path = bpy.context.scene.get("tsg_db_path")
         else:
-            bPrinter(f"[SQLite] bpy.context.scene is not available. DB lookup unavailable.", console_colour="red", to_blender_editor=True)
+            bPrinter("[JSON DB] bpy.context.scene is not available. DB lookup unavailable.", console_colour="red", to_blender_editor=True)
             main_db_path = None
 
     except Exception as e:
-        bPrinter(f"[SQLite] Failed to access bpy.context.scene: {e}", console_colour="red", to_blender_editor=True)
+        bPrinter(f"[JSON DB] Failed to access bpy.context.scene: {e}", console_colour="red", to_blender_editor=True)
         main_db_path = None
 
     if not main_db_path:
-        bPrinter(f"[SQLite] 'tsg_db_path' custom property not found or empty on scene. DB lookup unavailable.", console_colour="red", to_blender_editor=True)
+        bPrinter("[JSON DB] 'tsg_db_path' custom property not found or empty on scene. DB lookup unavailable.", console_colour="red", to_blender_editor=True)
         return None
 
     try:
-        if _sqlite_conn is None:
-            db_path = Path(main_db_path)
-            if not db_path.exists():
-                bPrinter(f"[SQLite] DB not found at: {main_db_path}", console_colour="yellow", to_blender_editor=True)
-                return None
-            _sqlite_conn = sqlite3.connect(str(db_path))
-            bPrinter(f"[SQLite] Opened DB at: {main_db_path}", console_colour="green", to_blender_editor=True)
-        return _sqlite_conn
+        db_path = Path(main_db_path)
+        if not db_path.exists():
+            bPrinter(f"[JSON DB] DB not found at: {main_db_path}", console_colour="yellow", to_blender_editor=True)
+            return None
+        with open(db_path, 'r', encoding='utf-8') as f:
+            _json_db_cache = json.load(f)
+        bPrinter(f"[JSON DB] Loaded DB at: {main_db_path} with {len(_json_db_cache)} entries", console_colour="green", to_blender_editor=True)
+        return _json_db_cache
     except Exception as e:
-        bPrinter(f"[SQLite] Failed to open DB at '{main_db_path}': {e}", console_colour="red", to_blender_editor=True)
+        bPrinter(f"[JSON DB] Failed to load DB at '{main_db_path}': {e}", console_colour="red", to_blender_editor=True)
         return None
 
 def _normalize_tex_name(name: str) -> str:
@@ -465,33 +471,75 @@ def _normalize_tex_name(name: str) -> str:
         n = n[: -4]
     return n.lower()
 
-def _resolve_texture_path_from_db(tex_name: str) -> str | None:
-    conn = _open_sqlite_if_configured()
-    if conn is None:
+def _resolve_texture_path_from_db(tex_name: str, preinstanced_filepath: str = None) -> str | None: # pyright: ignore[reportArgumentType]
+    db = _load_json_db_if_configured()
+    if db is None:
         return None
     try:
         norm = _normalize_tex_name(tex_name)
-        cur = conn.cursor()
-        cur.execute(
-            f"SELECT source_path FROM {SQLITE_TABLE} WHERE LOWER(REPLACE(source_file_name, '.png', '')) = ? LIMIT 1",
-            (norm,)
-        )
-        row = cur.fetchone()
-        bPrinter(f"[SQLite] Lookup for '{tex_name}' (normalized: '{norm}') returned: {row}", console_colour="green" if row else "yellow", to_blender_editor=True)
-        return row[0] if row and row[0] else None
+        matches = []
+        for entry in db:
+            orig_path = entry.get("original_path", "")
+            if not orig_path:
+                continue
+
+            # Extract filename without extension
+            filename = orig_path.split('/')[-1].split('\\')[-1]
+            if filename.lower().endswith('.dds'):
+                filename = filename[:-4]
+
+            if filename.lower() == norm:
+                matches.append(entry)
+
+        if not matches:
+            bPrinter(f"[JSON DB] Lookup for '{tex_name}' (normalized: '{norm}') returned no results.", console_colour="yellow", to_blender_editor=True)
+            return None
+
+        best_match = matches[0]
+        if len(matches) > 1 and preinstanced_filepath:
+            preinstanced_parts = [p.lower() for p in Path(preinstanced_filepath).parts]
+            best_score = -1
+
+            for match in matches:
+                new_parts = [p.lower() for p in Path(match.get("new_path", "")).parts[:-1]]
+                score = 0
+                if new_parts and new_parts[0] in preinstanced_parts:
+                    # Find the last occurrence of new_parts[0] in preinstanced_parts
+                    # to handle cases where the root folder name might be repeated
+                    start_idx = len(preinstanced_parts) - 1 - preinstanced_parts[::-1].index(new_parts[0])
+                    for i in range(min(len(new_parts), len(preinstanced_parts) - start_idx)):
+                        if new_parts[i] == preinstanced_parts[start_idx + i]:
+                            score += 1
+                        else:
+                            break
+
+                # Fallback: just count common parts
+                if score == 0:
+                    score = len(set(new_parts).intersection(set(preinstanced_parts)))
+
+                if score > best_score:
+                    best_score = score
+                    best_match = match
+
+        new_path = best_match.get("new_path", "")
+        if new_path.lower().endswith('.dds'):
+            new_path = new_path[:-4] + ".png"
+
+        bPrinter(f"[JSON DB] Lookup for '{tex_name}' (normalized: '{norm}') returned: {new_path}", console_colour="green", to_blender_editor=True)
+        return new_path
     except Exception as e:
-        bPrinter(f"[SQLite] Lookup error for '{tex_name}': {e}", console_colour="yellow", to_blender_editor=True)
+        bPrinter(f"[JSON DB] Lookup error for '{tex_name}': {e}", console_colour="yellow", to_blender_editor=True)
         return None
 
-def _maybe_cache_texture_path(tex_name: str, cache: dict[str, str]) -> None:
+def _maybe_cache_texture_path(tex_name: str, cache: dict[str, str], preinstanced_filepath: str = None) -> None: # pyright: ignore[reportArgumentType]
     key = _normalize_tex_name(tex_name)
     if key in cache:
-        bPrinter(f"[SQLite] Cache hit for '{tex_name}': {cache[key]}", console_colour="green", to_blender_editor=True)
+        bPrinter(f"[JSON DB] Cache hit for '{tex_name}': {cache[key]}", console_colour="green", to_blender_editor=True)
         return
-    path = _resolve_texture_path_from_db(tex_name)
+    path = _resolve_texture_path_from_db(tex_name, preinstanced_filepath)
     if path:
         cache[key] = path
-    bPrinter(f"[SQLite] Cached path for '{tex_name}': {path if path else 'NOT_FOUND'}", console_colour="green" if path else "yellow", to_blender_editor=True)
+    bPrinter(f"[JSON DB] Cached path for '{tex_name}': {path if path else 'NOT_FOUND'}", console_colour="green" if path else "yellow", to_blender_editor=True)
 
 # --- Material helpers ---------------------------------------------------------
 
@@ -528,19 +576,19 @@ def _ensure_material_for_texture(tex_name: str, resolved_paths: dict[str, str]) 
         relative_path = resolved_paths.get(key) # This is the 'db_source_path'
 
         if relative_path:
-            gameroot_path = None
+            db_path_str = None
             try:
                 # Check if we are in a context where bpy.context is available
                 if bpy.context and bpy.context.scene:
-                    gameroot_path = bpy.context.scene.get("tsg_gameroot_path")
+                    db_path_str = bpy.context.scene.get("tsg_db_path")
                 else:
                     bPrinter("[Material] bpy.context.scene not available.", console_colour="red")
             except Exception as e:
-                    bPrinter(f"[Material] Error accessing scene or scene property 'tsg_gameroot_path': {e}", console_colour="red")
+                bPrinter(f"[Material] Error accessing scene or scene property 'tsg_db_path': {e}", console_colour="red")
 
-            if gameroot_path:
-                # Construct the full absolute path as requested: gameroot + "GameFiles/STROUT/" + db_source_path
-                absolute_path = Path(gameroot_path) / "GameFiles" / "STROUT" / relative_path
+            if db_path_str:
+                # Construct the full absolute path relative to the JSON DB file
+                absolute_path = Path(db_path_str).parent / relative_path
 
                 # Prepend the long path prefix if on Windows
                 if sys.platform == 'win32' and not str(absolute_path).startswith('\\\\?\\'):
@@ -557,7 +605,7 @@ def _ensure_material_for_texture(tex_name: str, resolved_paths: dict[str, str]) 
                 else:
                     bPrinter(f"[Material] File not found at constructed path: {absolute_path}", console_colour="yellow")
             else:
-                bPrinter(f"[Material] 'tsg_gameroot_path' not set in scene. Cannot resolve '{relative_path}'.", console_colour="red")
+                bPrinter(f"[Material] 'tsg_db_path' not set in scene. Cannot resolve '{relative_path}'.", console_colour="red")
         else:
             bPrinter(f"[Material] No resolved DB path found for '{tex_name}' (key: '{key}').", console_colour="yellow")
 
@@ -607,18 +655,18 @@ class SimpGameImport(bpy.types.Operator, ImportHelper):
     filepath: StringProperty(subtype='FILE_PATH',)
     files: CollectionProperty(type=bpy.types.PropertyGroup)
 
-    def draw(self, context: bpy.types.Context) -> None:
+    def draw(self, _context: bpy.types.Context) -> None:
         """
         Draw the operator UI in the file browser.
         """
         pass
 
-    def execute(self, context: bpy.types.Context) -> set:
+    def execute(self, _context: bpy.types.Context) -> set:
         """
         Main execution method for the importer. Reads the file, detects textures and meshes, logs information, and prepares for mesh creation.
         """
         bPrinter("== The Simpsons Game Import Log ==", to_blender_editor=True, log_as_metadata=False)
-        bPrinter("Importer Version: {}.{}.{}".format(*bl_info['version']), to_blender_editor=True, log_as_metadata=False)
+        bPrinter(f"Importer Version: {bl_info['version'][0]}.{bl_info['version'][1]}.{bl_info['version'][2]}", to_blender_editor=True, log_as_metadata=False)
         bPrinter(f"Importing file: {self.filepath}", to_blender_editor=True, log_as_metadata=True)
         file_path = Path(self.filepath)
         bPrinter(f"File size: {file_path.stat().st_size} bytes", to_blender_editor=True, log_as_metadata=False)
@@ -631,15 +679,15 @@ class SimpGameImport(bpy.types.Operator, ImportHelper):
             with open(self.filepath, "rb") as cur_file:
                 tmpRead = cur_file.read()
         except FileNotFoundError:
-            bPrinter(f"[Error] File not found: {self.filepath})")
+            bPrinter(f"[Error] File not found: {self.filepath})", console_colour="red")
             return {'CANCELLED'}
         except Exception as e:
-            bPrinter(f"[Error] Failed to read file {self.filepath}: {e}")
+            bPrinter(f"[Error] Failed to read file {self.filepath}: {e}", console_colour="red")
             return {'CANCELLED'}
 
         # --- Dedicated texture pass ---
         bPrinter("\n--- Texture String Pass ---", to_blender_editor=True)
-        texture_links_by_mesh_offset, texture_paths_by_name, all_found_tex_names = build_texture_mesh_links(tmpRead)
+        texture_links_by_mesh_offset, texture_paths_by_name, all_found_tex_names = build_texture_mesh_links(tmpRead, str(self.filepath))
         # Create materials up-front for all discovered textures
         #_create_materials_for_all_textures(all_found_tex_names, texture_paths_by_name)
 
@@ -651,9 +699,11 @@ class SimpGameImport(bpy.types.Operator, ImportHelper):
 
             # Get gameroot path once
             gameroot_path = None
+            preinstanced_dir = None
             try:
                 if bpy.context and bpy.context.scene:
                     gameroot_path = bpy.context.scene.get("tsg_gameroot_path")
+                    preinstanced_dir = bpy.context.scene.get("tsg_preinstanced_dir")
             except Exception:
                 pass # Fail silently, will be handled in loop
 
@@ -663,10 +713,12 @@ class SimpGameImport(bpy.types.Operator, ImportHelper):
 
                 log_path = "NOT_FOUND_IN_DB"
                 if relative_path:
-                    if gameroot_path:
+                    if preinstanced_dir:
+                        log_path = str(Path(preinstanced_dir) / relative_path)
+                    elif gameroot_path:
                         log_path = str(Path(gameroot_path) / "GameFiles" / "STROUT" / relative_path)
                     else:
-                        log_path = f"{relative_path} (tsg_gameroot_path not set)"
+                        log_path = f"{relative_path} (tsg_preinstanced_dir not set)"
 
                 bPrinter(f"{name} -- {log_path}", to_blender_editor=True)
         else:
@@ -722,9 +774,11 @@ class SimpGameImport(bpy.types.Operator, ImportHelper):
 
                 # Get gameroot path once for this mesh's log
                 gameroot_path = None
+                preinstanced_dir = None
                 try:
                     if bpy.context and bpy.context.scene:
                         gameroot_path = bpy.context.scene.get("tsg_gameroot_path")
+                        preinstanced_dir = bpy.context.scene.get("tsg_preinstanced_dir")
                 except Exception:
                     pass # Fail silently, will be handled in loop
 
@@ -737,7 +791,16 @@ class SimpGameImport(bpy.types.Operator, ImportHelper):
 
                         log_path = "N/A_IN_CACHE"
                         if relative_path:
-                            if gameroot_path:
+                            if preinstanced_dir:
+                                full_path = Path(preinstanced_dir) / relative_path
+                                if sys.platform == 'win32':
+                                    full_path = Path(f"\\\\?\\{str(full_path)}")
+                                log_path = str(full_path)
+                                if not full_path.exists():
+                                    log_path += " (ERROR: texture file not found)"
+                                else:
+                                    log_path += " (note: texture detected)"
+                            elif gameroot_path:
                                 full_path = Path(gameroot_path) / "GameFiles" / "STROUT" / relative_path
                                 if sys.platform == 'win32':
                                     full_path = Path(f"\\\\?\\{str(full_path)}")
@@ -747,7 +810,7 @@ class SimpGameImport(bpy.types.Operator, ImportHelper):
                                 else:
                                     log_path += " (note: texture detected)"
                             else:
-                                log_path = f"{relative_path} (tsg_gameroot_path not set)"
+                                log_path = f"{relative_path} (tsg_preinstanced_dir not set)"
 
                         log_entries.append(f"{name} -- {log_path}")
                     bPrinter(f"[Mesh {mesh_iter}] Linked textures: {', '.join(log_entries)}", to_blender_editor=True)
@@ -1098,11 +1161,12 @@ class MyAddonPreferences(bpy.types.AddonPreferences):
         description="Enable or disable debug mode",
         default=False
     )
-    def draw(self, context: bpy.types.Context) -> None:
+    def draw(self, _context: bpy.types.Context) -> None:
+        """Draw the addon preferences UI."""
         layout = self.layout
         layout.prop(self, "debugmode")
 
-def menu_func_import(self: bpy.types.Menu, context: bpy.types.Context) -> None:
+def menu_func_import(self: bpy.types.Menu, _context: bpy.types.Context) -> None:
     """
     Function to add the importer to the Blender file import menu.
     """

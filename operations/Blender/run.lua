@@ -435,9 +435,9 @@ local function main()
     -- blend_dir       : working folder for .blend files
     -- glb_dir         : location of GLB files
     -- output_dir      : database output location
-    local preinstanced_dir = cli.preinstanced_dir or join(cli.game_root, "GameFiles", "STROUT")
+    local preinstanced_dir = cli.preinstanced_dir --or join(cli.game_root, "GameFiles", "STROUT")
     preinstanced_dir = preinstanced_dir and normalize_separators(preinstanced_dir) or preinstanced_dir
-    local blend_dir = cli.blend_dir or join(cli.game_root, "GameFiles", "TEMP_BLEND")
+    local blend_dir = cli.blend_dir --or join(cli.game_root, "GameFiles", "TEMP_BLEND")
     blend_dir = blend_dir and normalize_separators(blend_dir) or blend_dir
     local blank_blend_source = cli.blank_blend_source or join(cli.game_root, "blank.blend")
     blank_blend_source = blank_blend_source and normalize_separators(blank_blend_source) or blank_blend_source
@@ -540,7 +540,8 @@ local function main()
         export_formats = cli.formats,
         db_file_path = join(cli.asset_map_db),
         blender_exe_path = blender_exe_path,
-        game_root = cli.game_root
+        game_root = cli.game_root,
+        preinstanced_dir = preinstanced_dir
     }
 
     -- Phase 2: actual Blender processing and export
