@@ -16,141 +16,22 @@ import bpy
 from bpy.props import StringProperty, CollectionProperty
 from bpy_extras.io_utils import ImportHelper
 
+from . import utils as addon_utils
+
+# meta data now located in blender_manifest.toml
+#bl_info = {
+#    "name": "The Simpsons Game 3d Asset Importer",
+#    "author": "Turk & Mister_Nebula & Samarixum",
+#    "version": (1, 5, 8),
+#    "blender": (4, 0, 0),  # highest supportable version
+#    "location": "File > Import-Export",
+#    "description": "Import .rws.preinstanced, .dff.preinstanced mesh files from The Simpsons Game (PS3), detect embedded strings, and link textures to meshes.",
+#    "warning": "",
+#    "category": "Import-Export",
+#}
 bl_info = {
-    "name": "The Simpsons Game 3d Asset Importer",
-    "author": "Turk & Mister_Nebula & Samarixum",
-    "version": (1, 5, 8),
-    "blender": (4, 0, 0),  # highest supportable version
-    "location": "File > Import-Export",
-    "description": "Import .rws.preinstanced, .dff.preinstanced mesh files from The Simpsons Game (PS3), detect embedded strings, and link textures to meshes.",
-    "warning": "",
-    "category": "Import-Export",
+    "version": (1, 5, 8), ## later update the code to read the toml
 }
-
-
-# --- Global Settings ---
-global debug_mode
-debug_mode = False  # Default value, can be set in the addon preferences
-
-# --- Utility Functions ---
-
-def printc(message: str, colour: str | None = None) -> None:
-    """
-    Print a message to the console with optional ANSI color coding.
-    """
-    colours = {
-        'red': '\033[91m', 'green': '\033[92m', 'yellow': '\033[93m',
-        'blue': '\033[94m', 'magenta': '\033[95m', 'cyan': '\033[96m',
-        'white': '\033[97m', 'darkcyan': '\033[36m', 'darkyellow': '\033[33m',
-        'darkred': '\033[31m', 'reset': '\033[0m'
-    }
-    endc = '\033[0m'
-    if colour and colour.lower() in colours:
-        print(f"{colours['magenta']}EXTENSION:{endc} {colours[colour.lower()]}{message}{endc}")
-    else:
-        print(f"{colours['magenta']}EXTENSION:{endc} {colours['blue']}{message}{endc}")
-
-def get_unique_metadata_key(container: dict, base_key: str) -> str:
-    """
-    generate a unique key for storing metadata in the given container (e.g. bpy.types.Scene) by appending a numeric suffix if needed to avoid overwriting existing keys.
-    """
-    if base_key not in container.keys():
-        return base_key
-    i = 1
-    while True:
-        new_key = f"{base_key}.{i:03d}"
-        if new_key not in container.keys():
-            return new_key
-        i += 1
-
-def bPrinter(
-    text: str,
-    block_name: str = "SimpGame_Importer_Log",
-    to_blender_editor: bool = False,
-    print_to_console: bool = True,
-    console_colour: str = "blue",
-    require_debug_mode: bool = False,
-    log_as_metadata: bool = False,
-    metadata_key: str = "log_metadata"
-) -> None:
-    """Robust logging function that can print to console with colors, write to a Blender text block, and/or store logs as metadata on the scene. Respects a global debug_mode flag and can be configured to only log when debug_mode is True."""
-    global debug_mode
-    try:
-        if __name__ in bpy.context.preferences.addons:
-            debug_mode = bpy.context.preferences.addons[__name__].preferences.debugmode
-    except Exception as e:
-        printc(f"[Log Error] Could not access addon preferences for '{__name__}': {e}. Assuming debug_mode=False.")
-        debug_mode = False
-
-    if not require_debug_mode or debug_mode:
-        if print_to_console:
-            printc(text, colour=console_colour)
-        if log_as_metadata:
-            try:
-                scene = bpy.context.scene
-                key_to_use = get_unique_metadata_key(scene, metadata_key)
-                scene[key_to_use] = text
-                printc(f"[Log] Stored log at metadata key: {key_to_use}", colour="green")
-            except Exception as e:
-                printc(f"[Log Error] Failed to store log as metadata: {e}")
-        if to_blender_editor and hasattr(bpy.data, "texts"):
-            try:
-                if block_name not in bpy.data.texts:
-                    text_block = bpy.data.texts.new(block_name)
-                    bPrinter(f"[Log] Created new text block: '{block_name}'")
-                else:
-                    text_block = bpy.data.texts[block_name]
-                text_block.write(text + "\n")
-            except Exception as e:
-                printc(f"[Log Error] Failed to write to Blender text block '{block_name}': {e}")
-
-def sanitize_uvs(uv_layer: bpy.types.MeshUVLoopLayer) -> None:
-    """Sanitize UV coordinates by replacing non-finite values with (0.0, 0.0) and logging any occurrences."""
-    bPrinter(f"[Sanitize] Checking UV layer: {uv_layer.name}")
-    if not uv_layer.data:
-        bPrinter(f"[Sanitize] Warning: UV layer '{uv_layer.name}' has no data.")
-        return
-    sanitized_count = 0
-    for uv_loop in uv_layer.data:
-        if not all(math.isfinite(c) for c in uv_loop.uv):
-            bPrinter(f"[Sanitize] Non-finite UV replaced with (0.0, 0.0): {uv_loop.uv[:]}", require_debug_mode=True)
-            uv_loop.uv.x = 0.0
-            uv_loop.uv.y = 0.0
-            sanitized_count += 1
-    if sanitized_count > 0:
-        bPrinter(f"[Sanitize] Sanitized {sanitized_count} non-finite UV coordinates in layer '{uv_layer.name}'.")
-
-def utils_set_mode(mode: str) -> None:
-    """Utility function to set the current mode in Blender, with error handling and logging."""
-    bPrinter(f"[SetMode] Setting mode to {mode}")
-    if bpy.ops.object.mode_set.poll():
-        bpy.ops.object.mode_set(mode=mode, toggle=False)
-
-def strip2face(strip: list) -> list:
-    """Convert a triangle strip (list of vertex indices) into a list of faces (triplets of vertex indices), handling the winding order correctly and skipping degenerate faces."""
-    #bPrinter(f"[Strip2Face] Converting strip of length {len(strip)} to faces", require_debug_mode=True)
-    flipped = False
-    tmp_table = []
-    if len(strip) < 3:
-        #bPrinter(f"[Strip2Face] Strip too short ({len(strip)}) to form faces. Skipping.")
-        return []
-    for x in range(len(strip)-2):
-        v1 = strip[x]
-        v2 = strip[x+1]
-        v3 = strip[x+2]
-        if v1 == v2 or v1 == v3 or v2 == v3:
-            #bPrinter(f"[Strip2Face] Skipping degenerate face in strip at index {x} with indices ({v1}, {v2}, {v3})", require_debug_mode=True)
-            flipped = not flipped
-            continue
-        if flipped:
-            tmp_table.append((v3, v2, v1))
-        else:
-            tmp_table.append((v2, v3, v1))
-        flipped = not flipped
-    #bPrinter(f"[Strip2Face] Generated {len(tmp_table)} faces from strip.", require_debug_mode=True)
-    return tmp_table
-
-# --- String Detection (original) ---
 
 ALLOWED_CHARS = string.ascii_letters + string.digits + '_-.'
 ALLOWED_CHARS_BYTES = ALLOWED_CHARS.encode('ascii')
@@ -174,20 +55,20 @@ def find_strings_by_signature_in_data(data: bytes, signatures_info: list, max_st
     """
     results = []
     data_len = len(data)
-    bPrinter("[String Search] Starting search for configured fixed signatures...")
+    addon_utils.bPrinter("[String Search] Starting search for configured fixed signatures...")
     for sig_info in signatures_info:
         signature = sig_info['signature']
         relative_string_offset = sig_info['relative_string_offset']
         signature_len = len(signature)
         current_offset = 0
-        bPrinter(f"[String Search] Searching for signature: {signature.hex()} ('{sig_info['description']}')")
+        addon_utils.bPrinter(f"[String Search] Searching for signature: {signature.hex()} ('{sig_info['description']}')")
         while current_offset < data_len:
             signature_offset = data.find(signature, current_offset)
             if signature_offset == -1:
                 break
             string_start_offset = signature_offset + relative_string_offset
             if string_start_offset < 0 or string_start_offset >= data_len:
-                bPrinter(f"Warning: Calculated string offset {string_start_offset:08X} for signature at {signature_offset:08X} is out of data bounds.")
+                addon_utils.bPrinter(f"Warning: Calculated string offset {string_start_offset:08X} for signature at {signature_offset:08X} is out of data bounds.")
                 current_offset = signature_offset + signature_len
                 continue
             extracted_string_bytes = b""
@@ -217,7 +98,7 @@ def find_strings_by_signature_in_data(data: bytes, signatures_info: list, max_st
                         string_context_before_data = data[string_context_before_start : string_start_offset]
                         string_context_after_data = data[string_end_offset : string_context_after_end]
                 except UnicodeDecodeError:
-                    bPrinter(f"Warning: UnicodeDecodeError at {string_start_offset:08X} trying to decode potential string.")
+                    addon_utils.bPrinter(f"Warning: UnicodeDecodeError at {string_start_offset:08X} trying to decode potential string.")
                     pass
             context_before_start = max(0, signature_offset - context_bytes)
             context_after_end = min(data_len, signature_offset + signature_len + context_bytes)
@@ -237,8 +118,9 @@ def find_strings_by_signature_in_data(data: bytes, signatures_info: list, max_st
                 'string_context_after': string_context_after_data.hex() if string_context_after_data is not None else None
             })
             current_offset = signature_offset + signature_len
-    bPrinter("[String Search] Fixed signature search complete.")
+    addon_utils.bPrinter("[String Search] Fixed signature search complete.")
     return results
+
 
 # --- New: Robust texture & mesh linking pass ---------------------------------
 
@@ -270,16 +152,16 @@ def _check_required_headers(data: bytes) -> bool:
     ok = True
     for off, sig in SOF_HDR0_CONSTS:
         if len(data) < off + len(sig) or data[off:off+len(sig)] != sig:
-            bPrinter(f"[Header Check] SOF main header mismatch at 0x{off:02X}.", console_colour="yellow")
+            addon_utils.bPrinter(f"[Header Check] SOF main header mismatch at 0x{off:02X}.", console_colour="yellow")
             ok = False
     for off, sig in SOF_HDR1_CONSTS:
         if len(data) < off + len(sig) or data[off:off+len(sig)] != sig:
-            bPrinter(f"[Header Check] SOF second header mismatch at 0x{off:02X}.", console_colour="yellow")
+            addon_utils.bPrinter(f"[Header Check] SOF second header mismatch at 0x{off:02X}.", console_colour="yellow")
             ok = False
     if ok:
-        bPrinter("[Header Check] Required SOF headers present (both).", console_colour="green")
+        addon_utils.bPrinter("[Header Check] Required SOF headers present (both).", console_colour="green")
     else:
-        bPrinter("[Header Check] One or more required headers missing; continuing defensively.", console_colour="red")
+        addon_utils.bPrinter("[Header Check] One or more required headers missing; continuing defensively.", console_colour="red")
     return ok
 
 def _iter_all_occurrences(data: bytes, needle: bytes):
@@ -343,31 +225,31 @@ def build_texture_mesh_links(data: bytes, preinstanced_filepath: str = None) -> 
                 # Attempt to resolve to a full path via JSON DB
                 _maybe_cache_texture_path(name, resolved_paths, preinstanced_filepath)
     if tex_hits == 0:
-        bPrinter("[TexScan] No texture strings found via header variants.", console_colour="yellow")
+        addon_utils.bPrinter("[TexScan] No texture strings found via header variants.", console_colour="yellow")
     else:
-        bPrinter(f"[TexScan] Collected {tex_hits} texture name(s).", console_colour="green")
+        addon_utils.bPrinter(f"[TexScan] Collected {tex_hits} texture name(s).", console_colour="green")
 
     # TLFD markers
     tlfd_hits = 0
     for off in _iter_all_occurrences(data, TLFD_MARKER):
         tlfd_hits += 1
         events.append((off, "tlfd", None))
-    bPrinter(f"[TLFD] Found {tlfd_hits} TLFD marker(s).", console_colour="green" if tlfd_hits > 0 else "yellow")
+    addon_utils.bPrinter(f"[TLFD] Found {tlfd_hits} TLFD marker(s).", console_colour="green" if tlfd_hits > 0 else "yellow")
 
     # Mesh chunks
     mesh_hits = 0
     for m in MESH_REGEX.finditer(data):
         events.append((m.start(), "mesh", None))
         mesh_hits += 1
-    bPrinter(f"[MeshScan] Found {mesh_hits} mesh chunk header(s).", console_colour="green" if mesh_hits > 0 else "yellow")
+    addon_utils.bPrinter(f"[MeshScan] Found {mesh_hits} mesh chunk header(s).", console_colour="green" if mesh_hits > 0 else "yellow")
 
     # EOF
     eof_off = data.find(EOF_MARKER)
     if eof_off != -1:
         events.append((eof_off, "eof", None))
-        bPrinter(f"[EOF] EOF marker detected at {eof_off:08X}.", console_colour="green")
+        addon_utils.bPrinter(f"[EOF] EOF marker detected at {eof_off:08X}.", console_colour="green")
     else:
-        bPrinter("[EOF] EOF marker not detected; file may still be valid.", console_colour="yellow")
+        addon_utils.bPrinter("[EOF] EOF marker not detected; file may still be valid.", console_colour="yellow")
 
     # Sort by offset
     events.sort(key=lambda x: x[0])
@@ -403,13 +285,13 @@ def build_texture_mesh_links(data: bytes, preinstanced_filepath: str = None) -> 
             break
 
     # Log summary to Blender text editor
-    bPrinter("\n--- Texture ↔ Mesh Links ---", to_blender_editor=True)
+    addon_utils.bPrinter("\n--- Texture ↔ Mesh Links ---", to_blender_editor=True)
     if links:
         for moff, names in links.items():
             line = f"[Link] MeshChunk@{moff:08X} -> {', '.join(names) if names else '(no textures)'}"
-            bPrinter(line, to_blender_editor=True)
+            addon_utils.bPrinter(line, to_blender_editor=True)
     else:
-        bPrinter("[Link] No mesh↔texture associations could be established.", to_blender_editor=True)
+        addon_utils.bPrinter("[Link] No mesh↔texture associations could be established.", to_blender_editor=True)
     return links, resolved_paths, all_texture_names_found
 
 # --- JSON texture index -----------------------------------------
@@ -432,28 +314,28 @@ def _load_json_db_if_configured() -> list | None:
         if bpy.context and bpy.context.scene:
             main_db_path = bpy.context.scene.get("tsg_db_path")
         else:
-            bPrinter("[JSON DB] bpy.context.scene is not available. DB lookup unavailable.", console_colour="red", to_blender_editor=True)
+            addon_utils.bPrinter("[JSON DB] bpy.context.scene is not available. DB lookup unavailable.", console_colour="red", to_blender_editor=True)
             main_db_path = None
 
     except Exception as e:
-        bPrinter(f"[JSON DB] Failed to access bpy.context.scene: {e}", console_colour="red", to_blender_editor=True)
+        addon_utils.bPrinter(f"[JSON DB] Failed to access bpy.context.scene: {e}", console_colour="red", to_blender_editor=True)
         main_db_path = None
 
     if not main_db_path:
-        bPrinter("[JSON DB] 'tsg_db_path' custom property not found or empty on scene. DB lookup unavailable.", console_colour="red", to_blender_editor=True)
+        addon_utils.bPrinter("[JSON DB] 'tsg_db_path' custom property not found or empty on scene. DB lookup unavailable.", console_colour="red", to_blender_editor=True)
         return None
 
     try:
         db_path = Path(main_db_path)
         if not db_path.exists():
-            bPrinter(f"[JSON DB] DB not found at: {main_db_path}", console_colour="yellow", to_blender_editor=True)
+            addon_utils.bPrinter(f"[JSON DB] DB not found at: {main_db_path}", console_colour="yellow", to_blender_editor=True)
             return None
         with open(db_path, 'r', encoding='utf-8') as f:
             _json_db_cache = json.load(f)
-        bPrinter(f"[JSON DB] Loaded DB at: {main_db_path} with {len(_json_db_cache)} entries", console_colour="green", to_blender_editor=True)
+        addon_utils.bPrinter(f"[JSON DB] Loaded DB at: {main_db_path} with {len(_json_db_cache)} entries", console_colour="green", to_blender_editor=True)
         return _json_db_cache
     except Exception as e:
-        bPrinter(f"[JSON DB] Failed to load DB at '{main_db_path}': {e}", console_colour="red", to_blender_editor=True)
+        addon_utils.bPrinter(f"[JSON DB] Failed to load DB at '{main_db_path}': {e}", console_colour="red", to_blender_editor=True)
         return None
 
 def _normalize_tex_name(name: str) -> str:
@@ -483,7 +365,7 @@ def _resolve_texture_path_from_db(tex_name: str, preinstanced_filepath: str = No
                 matches.append(entry)
 
         if not matches:
-            bPrinter(f"[JSON DB] Lookup for '{tex_name}' (normalized: '{norm}') returned no results.", console_colour="yellow", to_blender_editor=True)
+            addon_utils.bPrinter(f"[JSON DB] Lookup for '{tex_name}' (normalized: '{norm}') returned no results.", console_colour="yellow", to_blender_editor=True)
             return None
 
         best_match = matches[0]
@@ -516,21 +398,21 @@ def _resolve_texture_path_from_db(tex_name: str, preinstanced_filepath: str = No
         if new_path.lower().endswith('.dds'):
             new_path = new_path[:-4] + ".png"
 
-        bPrinter(f"[JSON DB] Lookup for '{tex_name}' (normalized: '{norm}') returned: {new_path}", console_colour="green", to_blender_editor=True)
+        addon_utils.bPrinter(f"[JSON DB] Lookup for '{tex_name}' (normalized: '{norm}') returned: {new_path}", console_colour="green", to_blender_editor=True)
         return new_path
     except Exception as e:
-        bPrinter(f"[JSON DB] Lookup error for '{tex_name}': {e}", console_colour="yellow", to_blender_editor=True)
+        addon_utils.bPrinter(f"[JSON DB] Lookup error for '{tex_name}': {e}", console_colour="yellow", to_blender_editor=True)
         return None
 
 def _maybe_cache_texture_path(tex_name: str, cache: dict[str, str], preinstanced_filepath: str = None) -> None: # pyright: ignore[reportArgumentType]
     key = _normalize_tex_name(tex_name)
     if key in cache:
-        bPrinter(f"[JSON DB] Cache hit for '{tex_name}': {cache[key]}", console_colour="green", to_blender_editor=True)
+        addon_utils.bPrinter(f"[JSON DB] Cache hit for '{tex_name}': {cache[key]}", console_colour="green", to_blender_editor=True)
         return
     path = _resolve_texture_path_from_db(tex_name, preinstanced_filepath)
     if path:
         cache[key] = path
-    bPrinter(f"[JSON DB] Cached path for '{tex_name}': {path if path else 'NOT_FOUND'}", console_colour="green" if path else "yellow", to_blender_editor=True)
+    addon_utils.bPrinter(f"[JSON DB] Cached path for '{tex_name}': {path if path else 'NOT_FOUND'}", console_colour="green" if path else "yellow", to_blender_editor=True)
 
 # --- Material helpers ---------------------------------------------------------
 
@@ -573,9 +455,9 @@ def _ensure_material_for_texture(tex_name: str, resolved_paths: dict[str, str]) 
                 if bpy.context and bpy.context.scene:
                     db_path_str = bpy.context.scene.get("tsg_db_path")
                 else:
-                    bPrinter("[Material] bpy.context.scene not available.", console_colour="red")
+                    addon_utils.bPrinter("[Material] bpy.context.scene not available.", console_colour="red")
             except Exception as e:
-                bPrinter(f"[Material] Error accessing scene or scene property 'tsg_db_path': {e}", console_colour="red")
+                addon_utils.bPrinter(f"[Material] Error accessing scene or scene property 'tsg_db_path': {e}", console_colour="red")
 
             if db_path_str:
                 # Construct the full absolute path relative to the JSON DB file
@@ -584,21 +466,21 @@ def _ensure_material_for_texture(tex_name: str, resolved_paths: dict[str, str]) 
                 # Prepend the long path prefix if on Windows
                 if sys.platform == 'win32' and not str(absolute_path).startswith('\\\\?\\'):
                     absolute_path = Path(f"\\\\?\\{str(absolute_path)}")
-                    bPrinter(f"[Material] Applied Windows long path prefix. Attempting load from: {absolute_path}", require_debug_mode=True)
+                    addon_utils.bPrinter(f"[Material] Applied Windows long path prefix. Attempting load from: {absolute_path}", require_debug_mode=True)
                 else:
-                    bPrinter(f"[Material] Attempting to load '{tex_name}' from: {absolute_path}", require_debug_mode=True)
+                    addon_utils.bPrinter(f"[Material] Attempting to load '{tex_name}' from: {absolute_path}", require_debug_mode=True)
 
                 if absolute_path.exists():
                     try:
                         img = bpy.data.images.load(str(absolute_path), check_existing=True)
                     except Exception as e:
-                        bPrinter(f"[Material] Failed to load image for '{tex_name}' from '{absolute_path}': {e}", console_colour="yellow")
+                        addon_utils.bPrinter(f"[Material] Failed to load image for '{tex_name}' from '{absolute_path}': {e}", console_colour="yellow")
                 else:
-                    bPrinter(f"[Material] File not found at constructed path: {absolute_path}", console_colour="yellow")
+                    addon_utils.bPrinter(f"[Material] File not found at constructed path: {absolute_path}", console_colour="yellow")
             else:
-                bPrinter(f"[Material] 'tsg_db_path' not set in scene. Cannot resolve '{relative_path}'.", console_colour="red")
+                addon_utils.bPrinter(f"[Material] 'tsg_db_path' not set in scene. Cannot resolve '{relative_path}'.", console_colour="red")
         else:
-            bPrinter(f"[Material] No resolved DB path found for '{tex_name}' (key: '{key}').", console_colour="yellow")
+            addon_utils.bPrinter(f"[Material] No resolved DB path found for '{tex_name}' (key: '{key}').", console_colour="yellow")
 
         img_node.image = img
         # --- MODIFICATION END ---
@@ -619,13 +501,13 @@ def _ensure_material_for_texture(tex_name: str, resolved_paths: dict[str, str]) 
         _material_cache[key] = mat
         return mat
     except Exception as e:
-        bPrinter(f"[Material] Error creating material for '{tex_name}': {e}", console_colour="red")
+        addon_utils.bPrinter(f"[Material] Error creating material for '{tex_name}': {e}", console_colour="red")
         return None
 
 def _create_materials_for_all_textures(all_names: set[str], resolved_paths: dict[str, str]) -> None:
     if not all_names:
         return
-    bPrinter(f"[Material] Creating materials for {len(all_names)} texture(s).")
+    addon_utils.bPrinter(f"[Material] Creating materials for {len(all_names)} texture(s).")
     for n in sorted(all_names):
         _ensure_material_for_texture(n, resolved_paths)
 
@@ -653,37 +535,37 @@ class SimpGameImport(bpy.types.Operator, ImportHelper):
         """
         Main execution method for the importer. Reads the file, detects textures and meshes, logs information, and prepares for mesh creation.
         """
-        bPrinter("== The Simpsons Game Import Log ==", to_blender_editor=True, log_as_metadata=False)
-        bPrinter(f"Importer Version: {bl_info['version'][0]}.{bl_info['version'][1]}.{bl_info['version'][2]}", to_blender_editor=True, log_as_metadata=False)
-        bPrinter(f"Importing file: {self.filepath}", to_blender_editor=True, log_as_metadata=True)
+        addon_utils.bPrinter("== The Simpsons Game Import Log ==", to_blender_editor=True, log_as_metadata=False)
+        addon_utils.bPrinter(f"Importer Version: {bl_info['version'][0]}.{bl_info['version'][1]}.{bl_info['version'][2]}", to_blender_editor=True, log_as_metadata=False)
+        addon_utils.bPrinter(f"Importing file: {self.filepath}", to_blender_editor=True, log_as_metadata=True)
         file_path = Path(self.filepath)
-        bPrinter(f"File size: {file_path.stat().st_size} bytes", to_blender_editor=True, log_as_metadata=False)
-        bPrinter(f"File name: {file_path.name}", to_blender_editor=True, log_as_metadata=False)
-        bPrinter(f"Output file: {file_path.stem}.blend", to_blender_editor=True, log_as_metadata=False)
+        addon_utils.bPrinter(f"File size: {file_path.stat().st_size} bytes", to_blender_editor=True, log_as_metadata=False)
+        addon_utils.bPrinter(f"File name: {file_path.name}", to_blender_editor=True, log_as_metadata=False)
+        addon_utils.bPrinter(f"Output file: {file_path.stem}.blend", to_blender_editor=True, log_as_metadata=False)
         filename = file_path.stem
-        bPrinter(f"{filename}", log_as_metadata=True, metadata_key="LOD")
+        addon_utils.bPrinter(f"{filename}", log_as_metadata=True, metadata_key="LOD")
 
         try:
             with open(self.filepath, "rb") as cur_file:
                 tmpRead = cur_file.read()
         except FileNotFoundError:
-            bPrinter(f"[Error] File not found: {self.filepath})", console_colour="red")
+            addon_utils.bPrinter(f"[Error] File not found: {self.filepath})", console_colour="red")
             return {'CANCELLED'}
         except Exception as e:
-            bPrinter(f"[Error] Failed to read file {self.filepath}: {e}", console_colour="red")
+            addon_utils.bPrinter(f"[Error] Failed to read file {self.filepath}: {e}", console_colour="red")
             return {'CANCELLED'}
 
         # --- Dedicated texture pass ---
-        bPrinter("\n--- Texture String Pass ---", to_blender_editor=True)
+        addon_utils.bPrinter("\n--- Texture String Pass ---", to_blender_editor=True)
         texture_links_by_mesh_offset, texture_paths_by_name, all_found_tex_names = build_texture_mesh_links(tmpRead, str(self.filepath))
         # Create materials up-front for all discovered textures
         _create_materials_for_all_textures(all_found_tex_names, texture_paths_by_name)
 
         # --- Log all found texture strings and their resolved paths ---
-        bPrinter("\n--- All Found Texture Strings & DB Paths ---", to_blender_editor=True)
+        addon_utils.bPrinter("\n--- All Found Texture Strings & DB Paths ---", to_blender_editor=True)
         if all_found_tex_names:
             sorted_names = sorted(list(all_found_tex_names), key=lambda s: s.lower())
-            bPrinter(f"Found {len(sorted_names)} unique texture strings. Querying DB...", to_blender_editor=True)
+            addon_utils.bPrinter(f"Found {len(sorted_names)} unique texture strings. Querying DB...", to_blender_editor=True)
 
             # Get gameroot path once
             gameroot_path = None
@@ -708,13 +590,13 @@ class SimpGameImport(bpy.types.Operator, ImportHelper):
                     else:
                         log_path = f"{relative_path} (tsg_preinstanced_dir not set)"
 
-                bPrinter(f"{name} -- {log_path}", to_blender_editor=True)
+                addon_utils.bPrinter(f"{name} -- {log_path}", to_blender_editor=True)
         else:
-            bPrinter("No texture strings were found in the file.", to_blender_editor=True)
+            addon_utils.bPrinter("No texture strings were found in the file.", to_blender_editor=True)
 
 
         # --- Perform original fixed signature detection (kept for extra visibility) ---
-        bPrinter("\n--- Found Embedded Strings (Fixed Signature Scan) ---", to_blender_editor=True)
+        addon_utils.bPrinter("\n--- Found Embedded Strings (Fixed Signature Scan) ---", to_blender_editor=True)
         string_results = find_strings_by_signature_in_data(
             tmpRead,
             FIXED_SIGNATURES_TO_CHECK,
@@ -727,15 +609,15 @@ class SimpGameImport(bpy.types.Operator, ImportHelper):
         for item in string_results:
             if item['type'] == 'fixed_signature_string' and item['string_found']:
                 found_string_count += 1
-                bPrinter(f"{item['string_offset']:08X}: {item['string']}", to_blender_editor=True)
+                addon_utils.bPrinter(f"{item['string_offset']:08X}: {item['string']}", to_blender_editor=True)
 
         if found_string_count == 0:
-            bPrinter("[String Found] No valid strings found for configured signatures.", to_blender_editor=True)
+            addon_utils.bPrinter("[String Found] No valid strings found for configured signatures.", to_blender_editor=True)
         else:
-            bPrinter(f"[String Found] Total {found_string_count} valid strings found.", to_blender_editor=True)
+            addon_utils.bPrinter(f"[String Found] Total {found_string_count} valid strings found.", to_blender_editor=True)
 
         # --- Mesh Import Process ---
-        bPrinter("\n--- Mesh Import Process ---")
+        addon_utils.bPrinter("\n--- Mesh Import Process ---")
         cur_collection = bpy.data.collections.new("New Mesh")
         bpy.context.scene.collection.children.link(cur_collection)
 
@@ -755,7 +637,7 @@ class SimpGameImport(bpy.types.Operator, ImportHelper):
                 data_io.seek(0x14, 1)
                 mDataTableCount = int.from_bytes(data_io.read(4), byteorder='big')
                 mDataSubCount = int.from_bytes(data_io.read(4), byteorder='big')
-                bPrinter(f"[Mesh {mesh_iter}] Found chunk at {x.start():08X}. FaceDataOff: {FaceDataOff}, MeshDataSize: {MeshDataSize}, mDataTableCount: {mDataTableCount}, mDataSubCount: {mDataSubCount}")
+                addon_utils.bPrinter(f"[Mesh {mesh_iter}] Found chunk at {x.start():08X}. FaceDataOff: {FaceDataOff}, MeshDataSize: {MeshDataSize}, mDataTableCount: {mDataTableCount}, mDataSubCount: {mDataSubCount}")
 
                 # --- Log linked textures with their full paths ---
                 linked_tex_names = texture_links_by_mesh_offset.get(mesh_chunk_off, [])
@@ -801,13 +683,13 @@ class SimpGameImport(bpy.types.Operator, ImportHelper):
                                 log_path = f"{relative_path} (tsg_preinstanced_dir not set)"
 
                         log_entries.append(f"{name} -- {log_path}")
-                    bPrinter(f"[Mesh {mesh_iter}] Linked textures: {', '.join(log_entries)}", to_blender_editor=True)
+                    addon_utils.bPrinter(f"[Mesh {mesh_iter}] Linked textures: {', '.join(log_entries)}", to_blender_editor=True)
                 else:
-                    bPrinter(f"[Mesh {mesh_iter}] Linked textures: (none)", to_blender_editor=True)
+                    addon_utils.bPrinter(f"[Mesh {mesh_iter}] Linked textures: (none)", to_blender_editor=True)
                 # --- END ---
 
             except Exception as e:
-                bPrinter(f"[Error] Failed to read mesh chunk header data at {x.start():08X}: {e}")
+                addon_utils.bPrinter(f"[Error] Failed to read mesh chunk header data at {x.start():08X}: {e}")
                 continue
 
             for i in range(mDataTableCount):
@@ -826,7 +708,7 @@ class SimpGameImport(bpy.types.Operator, ImportHelper):
                     VertChunkTotalSize = int.from_bytes(data_io.read(4), byteorder='big')
                     VertChunkSize = int.from_bytes(data_io.read(4), byteorder='big')
                     if VertChunkSize <= 0:
-                        bPrinter(f"[Mesh {mesh_iter}_{i}] Warning: VertChunkSize is non-positive ({VertChunkSize}). Skipping mesh part.")
+                        addon_utils.bPrinter(f"[Mesh {mesh_iter}_{i}] Warning: VertChunkSize is non-positive ({VertChunkSize}). Skipping mesh part.")
                         continue
                     VertCount = int(VertChunkTotalSize / VertChunkSize)
                     data_io.seek(8, 1)
@@ -834,16 +716,16 @@ class SimpGameImport(bpy.types.Operator, ImportHelper):
                     data_io.seek(0x14, 1)
                     face_count_bytes_offset = data_io.tell()
                     if face_count_bytes_offset + 4 > len(tmpRead):
-                        bPrinter(f"[Mesh {mesh_iter}_{i}] Error: Insufficient data to read FaceCount at offset {face_count_bytes_offset:08X}. Skipping mesh part.")
+                        addon_utils.bPrinter(f"[Mesh {mesh_iter}_{i}] Error: Insufficient data to read FaceCount at offset {face_count_bytes_offset:08X}. Skipping mesh part.")
                         continue
                     FaceCount = int(int.from_bytes(data_io.read(4), byteorder='big') / 2)
                     data_io.seek(4, 1)
                     FaceStart = int.from_bytes(data_io.read(4), byteorder='big') + FaceDataOff + MeshChunkStart
 
-                    bPrinter(f"[MeshPart {mesh_iter}_{i}] Reading data. VertCount: {VertCount}, FaceCount: {FaceCount}, VertexStart: {VertexStart:08X}, FaceStart: {FaceStart:08X}")
+                    addon_utils.bPrinter(f"[MeshPart {mesh_iter}_{i}] Reading data. VertCount: {VertCount}, FaceCount: {FaceCount}, VertexStart: {VertexStart:08X}, FaceStart: {FaceStart:08X}")
 
                 except Exception as e:
-                    bPrinter(f"[Error] Failed to read sub-mesh header data for part {mesh_iter}_{i}: {e}")
+                    addon_utils.bPrinter(f"[Error] Failed to read sub-mesh header data for part {mesh_iter}_{i}: {e}")
                     continue
 
                 data_io.seek(FaceStart)
@@ -851,18 +733,18 @@ class SimpGameImport(bpy.types.Operator, ImportHelper):
                 tmpList = []
                 try:
                     if FaceStart < 0 or FaceStart >= len(tmpRead):
-                        bPrinter(f"[MeshPart {mesh_iter}_{i}] Error: FaceStart offset {FaceStart:08X} is out of bounds. Skipping face data read.")
+                        addon_utils.bPrinter(f"[MeshPart {mesh_iter}_{i}] Error: FaceStart offset {FaceStart:08X} is out of bounds. Skipping face data read.")
                         FaceCount = 0
                     else:
                         data_io.seek(FaceStart)
                         if FaceStart + FaceCount * 2 > len(tmpRead):
-                            bPrinter(f"[MeshPart {mesh_iter}_{i}] Warning: Predicted face data size ({FaceCount * 2} bytes) exceeds file bounds from FaceStart {FaceStart:08X}. Reading available data.")
+                            addon_utils.bPrinter(f"[MeshPart {mesh_iter}_{i}] Warning: Predicted face data size ({FaceCount * 2} bytes) exceeds file bounds from FaceStart {FaceStart:08X}. Reading available data.")
                             FaceCount = (len(tmpRead) - FaceStart) // 2
-                            bPrinter(f"[MeshPart {mesh_iter}_{i}] Adjusted FaceCount to {FaceCount} based on available data.")
+                            addon_utils.bPrinter(f"[MeshPart {mesh_iter}_{i}] Adjusted FaceCount to {FaceCount} based on available data.")
 
                     for f in range(FaceCount):
                         if data_io.tell() + 2 > len(tmpRead):
-                            bPrinter(f"[MeshPart {mesh_iter}_{i}] Warning: Hit end of data while reading face index {f}. Stopping face index read.")
+                            addon_utils.bPrinter(f"[MeshPart {mesh_iter}_{i}] Warning: Hit end of data while reading face index {f}. Stopping face index read.")
                             break
                         Indice = int.from_bytes(data_io.read(2), byteorder='big')
                         if Indice == 65535:
@@ -874,31 +756,31 @@ class SimpGameImport(bpy.types.Operator, ImportHelper):
                     if tmpList:
                         StripList.append(tmpList.copy())
                 except Exception as e:
-                    bPrinter(f"[Error] Failed to read face indices for mesh part {mesh_iter}_{i}: {e}")
+                    addon_utils.bPrinter(f"[Error] Failed to read face indices for mesh part {mesh_iter}_{i}: {e}")
                     continue
 
                 FaceTable = []
                 for f in StripList:
-                    FaceTable.extend(strip2face(f))
+                    FaceTable.extend(addon_utils.strip2face(f))
 
                 VertTable = []
                 UVTable = []
                 CMTable = []
                 try:
                     if VertexStart < 0 or VertexStart >= len(tmpRead):
-                        bPrinter(f"[MeshPart {mesh_iter}_{i}] Error: VertexStart offset {VertexStart:08X} is out of bounds. Skipping vertex data read.")
+                        addon_utils.bPrinter(f"[MeshPart {mesh_iter}_{i}] Error: VertexStart offset {VertexStart:08X} is out of bounds. Skipping vertex data read.")
                         VertCount = 0
 
                     for v in range(VertCount):
                         vert_data_start = VertexStart + v * VertChunkSize
                         if vert_data_start + VertChunkSize > len(tmpRead):
-                            bPrinter(f"[MeshPart {mesh_iter}_{i}] Warning: Hit end of data while reading vertex {v}. Stopping vertex read.")
+                            addon_utils.bPrinter(f"[MeshPart {mesh_iter}_{i}] Warning: Hit end of data while reading vertex {v}. Stopping vertex read.")
                             break
 
                         data_io.seek(vert_data_start)
 
                         if data_io.tell() + 12 > len(tmpRead):
-                            bPrinter(f"[MeshPart {mesh_iter}_{i}] Warning: Insufficient data for vertex coords at {data_io.tell():08X} for vertex {v}. Skipping.")
+                            addon_utils.bPrinter(f"[MeshPart {mesh_iter}_{i}] Warning: Insufficient data for vertex coords at {data_io.tell():08X} for vertex {v}. Skipping.")
                             continue
 
                         TempVert = struct.unpack('>fff', data_io.read(4 * 3))
@@ -918,12 +800,12 @@ class SimpGameImport(bpy.types.Operator, ImportHelper):
                             data_io.seek(u_off)
                             TempU = struct.unpack('>f', data_io.read(4))[0]
                         else:
-                            bPrinter(f"[MeshPart {mesh_iter}_{i}] Warning: Insufficient data for U at {u_off:08X} for vertex {v}.", require_debug_mode=True)
+                            addon_utils.bPrinter(f"[MeshPart {mesh_iter}_{i}] Warning: Insufficient data for U at {u_off:08X} for vertex {v}.", require_debug_mode=True)
                         if v_off + 4 <= len(tmpRead):
                             data_io.seek(v_off)
                             TempV = struct.unpack('>f', data_io.read(4))[0]
                         else:
-                            bPrinter(f"[MeshPart {mesh_iter}_{i}] Warning: Insufficient data for V at {v_off:08X} for vertex {v}.", require_debug_mode=True)
+                            addon_utils.bPrinter(f"[MeshPart {mesh_iter}_{i}] Warning: Insufficient data for V at {v_off:08X} for vertex {v}.", require_debug_mode=True)
                         # Flip V per findings
                         UVTable.append((TempU, 1.0 - TempV))
 
@@ -933,23 +815,23 @@ class SimpGameImport(bpy.types.Operator, ImportHelper):
                             data_io.seek(cm_off)
                             cm_u, cm_v = struct.unpack('>ff', data_io.read(8))
                         else:
-                            bPrinter(f"[MeshPart {mesh_iter}_{i}] Warning: Insufficient data for CM at {cm_off:08X} for vertex {v}.", require_debug_mode=True)
+                            addon_utils.bPrinter(f"[MeshPart {mesh_iter}_{i}] Warning: Insufficient data for CM at {cm_off:08X} for vertex {v}.", require_debug_mode=True)
                             cm_u, cm_v = (0.0, 0.0)
                         CMTable.append((cm_u, 1.0 - cm_v))
 
                     # Diagnostics: stride and UV uniqueness
                     try:
                         uniq_uvs = len({(round(u,5), round(v,5)) for (u,v) in UVTable})
-                        bPrinter(f"[MeshPart {mesh_iter}_{i}] Read {len(VertTable)} vertices, {len(UVTable)} UVs, {len(CMTable)} CMs. Stride={VertChunkSize} (0x{VertChunkSize:X}) UniqueUV={uniq_uvs}")
+                        addon_utils.bPrinter(f"[MeshPart {mesh_iter}_{i}] Read {len(VertTable)} vertices, {len(UVTable)} UVs, {len(CMTable)} CMs. Stride={VertChunkSize} (0x{VertChunkSize:X}) UniqueUV={uniq_uvs}")
                     except Exception:
-                        bPrinter(f"[MeshPart {mesh_iter}_{i}] Read {len(VertTable)} vertices, {len(UVTable)} UVs, {len(CMTable)} CMs.")
+                        addon_utils.bPrinter(f"[MeshPart {mesh_iter}_{i}] Read {len(VertTable)} vertices, {len(UVTable)} UVs, {len(CMTable)} CMs.")
 
                 except Exception as e:
-                    bPrinter(f"[Error] Failed to read vertex data for mesh part {mesh_iter}_{i}: {e}")
+                    addon_utils.bPrinter(f"[Error] Failed to read vertex data for mesh part {mesh_iter}_{i}: {e}")
                     continue
 
                 if not VertTable or not FaceTable:
-                    bPrinter(f"[MeshPart {mesh_iter}_{i}] Warning: No valid vertices or faces read for mesh part. Skipping mesh creation.")
+                    addon_utils.bPrinter(f"[MeshPart {mesh_iter}_{i}] Warning: No valid vertices or faces read for mesh part. Skipping mesh creation.")
                     continue
 
                 mesh1 = bpy.data.meshes.new(f"Mesh_{mesh_iter}_{i}")
@@ -957,7 +839,7 @@ class SimpGameImport(bpy.types.Operator, ImportHelper):
                 if hasattr(mesh1, 'use_auto_smooth'):
                     mesh1.use_auto_smooth = True
                 else:
-                    bPrinter(f"[MeshPart {mesh_iter}_{i}] Warning: Mesh object does not support 'use_auto_smooth'. Skipping this setting.", require_debug_mode=True, console_colour="yellow", to_blender_editor=True)
+                    addon_utils.bPrinter(f"[MeshPart {mesh_iter}_{i}] Warning: Mesh object does not support 'use_auto_smooth'. Skipping this setting.", require_debug_mode=True, console_colour="yellow", to_blender_editor=True)
 
                 obj = bpy.data.objects.new(f"Mesh_{mesh_iter}_{i}", mesh1)
 
@@ -971,7 +853,7 @@ class SimpGameImport(bpy.types.Operator, ImportHelper):
                     bm.verts.new(v_co)
                 bm.verts.ensure_lookup_table()
                 bm.verts.index_update()
-                bPrinter(f"[MeshPart {mesh_iter}_{i}] Added {len(bm.verts)} vertices to BMesh.")
+                addon_utils.bPrinter(f"[MeshPart {mesh_iter}_{i}] Added {len(bm.verts)} vertices to BMesh.")
 
                 faces_created_count = 0
                 for f_indices in FaceTable:
@@ -980,7 +862,7 @@ class SimpGameImport(bpy.types.Operator, ImportHelper):
                         face_verts = []
                         for idx in f_indices:
                             if idx < 0 or idx >= len(bm.verts):
-                                bPrinter(f"[FaceError] Invalid vertex index {idx} in face {f_indices}. Skipping face.")
+                                addon_utils.bPrinter(f"[FaceError] Invalid vertex index {idx} in face {f_indices}. Skipping face.")
                                 valid_face = False
                                 break
                             face_verts.append(bm.verts[idx])
@@ -989,14 +871,14 @@ class SimpGameImport(bpy.types.Operator, ImportHelper):
                                 bm.faces.new(face_verts)
                                 faces_created_count += 1
                             except ValueError as e:
-                                bPrinter(f"[FaceWarning] Failed to create face {f_indices} ({len(face_verts)} verts): {e}. Skipping.")
+                                addon_utils.bPrinter(f"[FaceWarning] Failed to create face {f_indices} ({len(face_verts)} verts): {e}. Skipping.")
                             except Exception as e:
-                                bPrinter(f"[FaceError] Unexpected error creating face {f_indices}: {e}. Skipping.")
+                                addon_utils.bPrinter(f"[FaceError] Unexpected error creating face {f_indices}: {e}. Skipping.")
                     except Exception as e:
-                        bPrinter(f"[FaceError] Unhandled error processing face indices {f_indices}: {e}")
+                        addon_utils.bPrinter(f"[FaceError] Unhandled error processing face indices {f_indices}: {e}")
                         continue
 
-                bPrinter(f"[MeshPart {mesh_iter}_{i}] Attempted to create {len(FaceTable)} faces, successfully created {faces_created_count}.")
+                addon_utils.bPrinter(f"[MeshPart {mesh_iter}_{i}] Attempted to create {len(FaceTable)} faces, successfully created {faces_created_count}.")
                 # Ensure element indices are valid before using l.vert.index
                 bm.verts.ensure_lookup_table()
                 bm.faces.ensure_lookup_table()
@@ -1005,30 +887,30 @@ class SimpGameImport(bpy.types.Operator, ImportHelper):
                 bm.faces.index_update()
 
                 if not bm.faces:
-                    bPrinter(f"[BMeshWarning] No faces created for mesh {mesh_iter}_{i}. Skipping UV assignment and further processing for this mesh part.")
+                    addon_utils.bPrinter(f"[BMeshWarning] No faces created for mesh {mesh_iter}_{i}. Skipping UV assignment and further processing for this mesh part.")
                     bm.free()
                     if mesh1:
                         if mesh1.users == 1:
                             bpy.data.meshes.remove(mesh1)
-                            bPrinter(f"[BMeshWarning] Removed unused mesh data block '{mesh1.name}'.")
+                            addon_utils.bPrinter(f"[BMeshWarning] Removed unused mesh data block '{mesh1.name}'.")
                     if obj:
                         if obj.users == 1:
                             for col in bpy.data.collections:
                                 if obj.name in col.objects:
                                     col.objects.unlink(obj)
                             bpy.data.objects.remove(obj)
-                            bPrinter(f"[BMeshWarning] Removed unused object '{obj.name}'.")
+                            addon_utils.bPrinter(f"[BMeshWarning] Removed unused object '{obj.name}'.")
                     continue
 
                 uv_layer = bm.loops.layers.uv.get("uvmap")
                 if uv_layer is None:
                     uv_layer = bm.loops.layers.uv.new("uvmap")
-                    bPrinter("[Info] Created new 'uvmap' layer.")
+                    addon_utils.bPrinter("[Info] Created new 'uvmap' layer.")
 
                 cm_layer = bm.loops.layers.uv.get("CM_uv")
                 if cm_layer is None:
                     cm_layer = bm.loops.layers.uv.new("CM_uv")
-                    bPrinter("[Info] Created new 'CM_uv' layer.")
+                    addon_utils.bPrinter("[Info] Created new 'CM_uv' layer.")
 
                 uv_layer_name = uv_layer.name
                 cm_layer_name = cm_layer.name
@@ -1044,7 +926,7 @@ class SimpGameImport(bpy.types.Operator, ImportHelper):
                         vert_index = l.vert.index
                         used_vert_indices.add(vert_index)
                         if vert_index < 0 or vert_index >= len(UVTable) or vert_index >= len(CMTable):
-                            bPrinter(f"[UVError] Vertex index {vert_index} out of range for UV/CM tables ({len(UVTable)}/{len(CMTable)}) during assignment for mesh part {mesh_iter}_{i}. Skipping UV assignment for this loop.")
+                            addon_utils.bPrinter(f"[UVError] Vertex index {vert_index} out of range for UV/CM tables ({len(UVTable)}/{len(CMTable)}) during assignment for mesh part {mesh_iter}_{i}. Skipping UV assignment for this loop.")
                             l[uv_layer].uv = (0.0, 0.0)
                             l[cm_layer].uv = (0.0, 0.0)
                             continue
@@ -1055,7 +937,7 @@ class SimpGameImport(bpy.types.Operator, ImportHelper):
                                 uv_assigned_count += 1
                                 unique_loop_uvs.add((round(uv_coords[0],5), round(uv_coords[1],5)))
                             else:
-                                bPrinter(f"[Inline-Sanitize] Non-finite main UV for vertex {vert_index} in loop of mesh part {mesh_iter}_{i}. Assigning (0.0, 0.0).", require_debug_mode=True)
+                                addon_utils.bPrinter(f"[Inline-Sanitize] Non-finite main UV for vertex {vert_index} in loop of mesh part {mesh_iter}_{i}. Assigning (0.0, 0.0).", require_debug_mode=True)
                                 l[uv_layer].uv = (0.0, 0.0)
                                 uv_assigned_count += 1
                             cm_coords = CMTable[vert_index]
@@ -1064,22 +946,22 @@ class SimpGameImport(bpy.types.Operator, ImportHelper):
                                 cm_assigned_count += 1
                                 unique_loop_cmuvs.add((round(cm_coords[0],5), round(cm_coords[1],5)))
                             else:
-                                bPrinter(f"[Inline-Sanitize] Non-finite CM UV for vertex {vert_index} in loop of mesh part {mesh_iter}_{i}. Assigning (0.0, 0.0).", require_debug_mode=True)
+                                addon_utils.bPrinter(f"[Inline-Sanitize] Non-finite CM UV for vertex {vert_index} in loop of mesh part {mesh_iter}_{i}. Assigning (0.0, 0.0).", require_debug_mode=True)
                                 l[cm_layer].uv = (0.0, 0.0)
                                 cm_assigned_count += 1
                         except Exception as e:
-                            bPrinter(f"[UVError] Failed to assign UV/CM for vertex {vert_index} in loop of mesh part {mesh_iter}_{i}: {e}")
+                            addon_utils.bPrinter(f"[UVError] Failed to assign UV/CM for vertex {vert_index} in loop of mesh part {mesh_iter}_{i}: {e}")
                             l[uv_layer].uv = (0.0, 0.0)
                             l[cm_layer].uv = (0.0, 0.0)
                             continue
 
                 try:
-                    bPrinter(f"[MeshPart {mesh_iter}_{i}] Assigned UVs to {uv_assigned_count} loops, CM UVs to {cm_assigned_count} loops. UniqueLoopUV={len(unique_loop_uvs)} UniqueLoopCMUV={len(unique_loop_cmuvs)} UsedVerts={len(used_vert_indices)}")
+                    addon_utils.bPrinter(f"[MeshPart {mesh_iter}_{i}] Assigned UVs to {uv_assigned_count} loops, CM UVs to {cm_assigned_count} loops. UniqueLoopUV={len(unique_loop_uvs)} UniqueLoopCMUV={len(unique_loop_cmuvs)} UsedVerts={len(used_vert_indices)}")
                 except Exception:
-                    bPrinter(f"[MeshPart {mesh_iter}_{i}] Assigned UVs to {uv_assigned_count} loops, CM UVs to {cm_assigned_count} loops.")
+                    addon_utils.bPrinter(f"[MeshPart {mesh_iter}_{i}] Assigned UVs to {uv_assigned_count} loops, CM UVs to {cm_assigned_count} loops.")
                 bm.to_mesh(mesh)
                 bm.free()
-                bPrinter(f"[MeshPart {mesh_iter}_{i}] BMesh converted to mesh data.")
+                addon_utils.bPrinter(f"[MeshPart {mesh_iter}_{i}] BMesh converted to mesh data.")
 
                 # Ensure the intended UV layer is active for viewport/export
                 try:
@@ -1100,62 +982,62 @@ class SimpGameImport(bpy.types.Operator, ImportHelper):
                                 if layer.name == cm_layer_name:
                                     layer.active_render = False
                                     break
-                        bPrinter(f"[MeshPart {mesh_iter}_{i}] Set active UV layer to '{uv_layer_name}'.")
+                        addon_utils.bPrinter(f"[MeshPart {mesh_iter}_{i}] Set active UV layer to '{uv_layer_name}'.")
                 except Exception as e:
-                    bPrinter(f"[UV-Active] Failed to set active UV layer: {e}")
+                    addon_utils.bPrinter(f"[UV-Active] Failed to set active UV layer: {e}")
 
                 if uv_layer_name in mesh.uv_layers:
-                    sanitize_uvs(mesh.uv_layers[uv_layer_name])
+                    addon_utils.sanitize_uvs(mesh.uv_layers[uv_layer_name])
                 else:
-                    bPrinter(f"[Sanitize] Warning: Main UV layer '{uv_layer_name}' not found on mesh data block after to_mesh for mesh {mesh_iter}_{i}.")
+                    addon_utils.bPrinter(f"[Sanitize] Warning: Main UV layer '{uv_layer_name}' not found on mesh data block after to_mesh for mesh {mesh_iter}_{i}.")
 
                 if cm_layer_name in mesh.uv_layers:
-                    sanitize_uvs(mesh.uv_layers[cm_layer_name])
+                    addon_utils.sanitize_uvs(mesh.uv_layers[cm_layer_name])
                 else:
-                    bPrinter(f"[Sanitize] Warning: CM UV layer '{cm_layer_name}' not found on mesh data block after to_mesh for mesh {mesh_iter}_{i}.")
+                    addon_utils.bPrinter(f"[Sanitize] Warning: CM UV layer '{cm_layer_name}' not found on mesh data block after to_mesh for mesh {mesh_iter}_{i}.")
 
                 # Apply the first linked texture's material to this object by default
                 try:
                     # Use the original variable that just has names for material linking
                     linked_tex_for_mat = texture_links_by_mesh_offset.get(mesh_chunk_off, [])
-                    
+
                     if linked_tex_for_mat:
                         # Deduplicate while preserving order
                         unique_tex_names = []
                         for tex_name in linked_tex_for_mat:
                             if tex_name not in unique_tex_names:
                                 unique_tex_names.append(tex_name)
-                        
+
                         # Append all unique materials to the object
                         for tex_name in unique_tex_names:
                             mat = _ensure_material_for_texture(tex_name, texture_paths_by_name)
                             if mat:
                                 obj.data.materials.append(mat)
-                        
+
                         # Determine target texture for this submesh
                         target_tex_name = linked_tex_for_mat[i] if i < len(linked_tex_for_mat) else linked_tex_for_mat[0]
-                        
+
                         # Find the index of the target material
                         target_mat_index = 0
                         if target_tex_name in unique_tex_names:
                             target_mat_index = unique_tex_names.index(target_tex_name)
-                        
+
                         # Assign the material index to all polygons
                         for poly in obj.data.polygons:
                             poly.material_index = target_mat_index
-                        
+
                         obj.active_material_index = target_mat_index
-                        
-                        bPrinter(f"[MeshPart {mesh_iter}_{i}] Assigned material '{target_tex_name}' (index {target_mat_index}) and added {len(unique_tex_names)} materials to slots.")
+
+                        addon_utils.bPrinter(f"[MeshPart {mesh_iter}_{i}] Assigned material '{target_tex_name}' (index {target_mat_index}) and added {len(unique_tex_names)} materials to slots.")
                 except Exception as e:
-                    bPrinter(f"[Material] Failed to assign material on mesh part {mesh_iter}_{i}: {e}", console_colour="yellow")
+                    addon_utils.bPrinter(f"[Material] Failed to assign material on mesh part {mesh_iter}_{i}: {e}", console_colour="yellow")
 
                 obj.rotation_euler = (1.5707963705062866, 0, 0)
-                bPrinter(f"[MeshPart {mesh_iter}_{i}] Object created '{obj.name}' and rotated.")
+                addon_utils.bPrinter(f"[MeshPart {mesh_iter}_{i}] Object created '{obj.name}' and rotated.")
 
             mesh_iter += 1
 
-        bPrinter("== Import Complete ==", to_blender_editor=True)
+        addon_utils.bPrinter("== Import Complete ==", to_blender_editor=True)
         return {'FINISHED'}
 
 class MyAddonPreferences(bpy.types.AddonPreferences):
@@ -1190,7 +1072,7 @@ def register() -> None:
     """
     Register the addon classes and add the menu item.
     """
-    bPrinter("[Register] Registering addon components")
+    addon_utils.bPrinter("[Register] Registering addon components")
     for cls in classes:
         bpy.utils.register_class(cls)
     bpy.types.TOPBAR_MT_file_import.append(menu_func_import)
@@ -1199,18 +1081,17 @@ def unregister() -> None:
     """
     Unregister the addon classes and remove the menu item.
     """
-    bPrinter("[Unregister] Unregistering addon components")
+    addon_utils.bPrinter("[Unregister] Unregistering addon components")
     try:
         bpy.types.TOPBAR_MT_file_import.remove(menu_func_import)
     except Exception as e:
-        bPrinter(f"[Unregister] Warning removing menu item: {e}", to_blender_editor=True)
+        addon_utils.bPrinter(f"[Unregister] Warning removing menu item: {e}", to_blender_editor=True)
     for cls in reversed(classes):
         try:
             bpy.utils.unregister_class(cls)
         except RuntimeError as e:
-            bPrinter(f"[Unregister] Warning unregistering class {cls.__name__}: {e}", to_blender_editor=True)
-
+            addon_utils.bPrinter(f"[Unregister] Warning unregistering class {cls.__name__}: {e}", to_blender_editor=True)
 
 if __name__ == "__main__":
-    bPrinter("[Main] Running as main script. Registering.")
+    addon_utils.bPrinter("[Main] Running as main script. Registering.")
     register()

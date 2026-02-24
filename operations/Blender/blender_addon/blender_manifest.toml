@@ -1,0 +1,24 @@
+schema_version = "1.0.0"
+
+id = "the_simpsons_game_3d_asset_importer"
+version = "1.5.8"
+name = "The Simpsons Game 3d Asset Importer"
+tagline = "Import .rws.preinstanced, .dff.preinstanced mesh files from The Simpsons Game (PS3), detect embedded strings, and link textures to meshes."
+maintainer = "Turk & Mister_Nebula & Samarixum"
+type = "add-on"
+
+blender_version_min = "3.0.0"
+blender_version_max = "5.0.0"
+
+permissions = [
+  "files"
+]
+
+[url]
+website = "github.com/Superposition28/TheSimpsonsGame-PS3"
+issue_tracker = "github.com/Superposition28/TheSimpsonsGame-PS3/issues"
+
+[build]
+paths = [
+    ".",
+]

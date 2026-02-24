@@ -35,67 +35,17 @@ Usage
 --]]
 
 local function main()
-    -- Path separator for current platform ("/" on Unix, "\\" on Windows)
+    -- Bootstrap central utilities using the environment's script_dir
     local path_sep = package.config:sub(1, 1)
-    -- Log prefix so messages are easy to filter downstream
-    local PREFIX = "BlenderRun"
-    -- Console colour names (used only if host SDK supports coloured printing)
-    local Colours = {
-        DEFAULT = "default",
-        WHITE = "white",
-        RED = "red",
-        GREEN = "green",
-        YELLOW = "yellow",
-        BLUE = "blue",
-        MAGENTA = "magenta",
-        CYAN = "cyan",
-        GRAY = "gray",
-        GREY = "gray",
-        DARK_GREEN = "darkgreen",
-        DARKGRAY = "darkgray",
-        DARKGREY = "darkgray",
-        DARKCYAN = "darkcyan",
-        DARKYELLOW = "darkyellow",
-        DARKRED = "darkred"
-    }
-
-    -- Convenience logger that prepends a prefix and colourizes output
-    local function log(colour, message)
-        sdk.colour_print({ colour = colour or Colours.DEFAULT, message = string.format("[%s] %s", PREFIX, message or "") })
-    end
-
-    -- Normalize path separators in a single string to the current platform
-    local function normalize_separators(path)
-        if not path then
-            return path
-        end
-        if path_sep == "\\" then
-            return path:gsub("/", "\\")
-        end
-        return path:gsub("\\", "/")
-    end
-
-    -- Join an arbitrary number of path segments with exactly one separator between them
-    -- Trims duplicate leading/trailing separators from middle parts
-    local function join(...)
-        local parts = { ... }
-        local buffer = {}
-        for index = 1, #parts do
-            local part = parts[index]
-            if part and part ~= "" then
-                part = normalize_separators(part)
-                if index > 1 then
-                    part = part:gsub("^" .. path_sep .. "+", "")
-                end
-                if index < #parts then
-                    part = part:gsub(path_sep .. "+$", "")
-                end
-                table.insert(buffer, part)
-            end
-        end
-        return table.concat(buffer, path_sep)
-    end
-
+    local function simple_join(p1, p2) return p1 .. path_sep .. p2 end
+    
+    local fh, err = io.open(simple_join(script_dir, simple_join("init", "BlenderUtils.lua")), "r")
+    if not fh then error("Failed to open Utils: " .. tostring(err)) end
+    local src = fh:read("*a")
+    fh:close()
+    local chunk = assert(load(src, "@" .. simple_join(script_dir, simple_join("init", "BlenderUtils.lua")), "t", _ENV))
+    local Utils = chunk()
+    
     -- Parse argv-style table into a structured options table
     -- Returns:
     -- {
@@ -337,62 +287,13 @@ local function main()
         return result
     end
 
-    -- Load a Lua module from file expecting it to return a table API
-    -- Note: loadfile/dofile are disabled in the engine sandbox; use io + load instead.
-    local function load_module(path)
-        local fh, open_err = io.open(path, "r")
-        if not fh then
-            error(string.format("Failed to open module '%s': %s", path, tostring(open_err)))
-        end
-        local src = fh:read("*a")
-        fh:close()
-        local chunk, err = load(src, "@" .. path, "t", _ENV)
-        if not chunk then
-            error(string.format("Failed to compile module '%s': %s", path, err))
-        end
-        local module = chunk()
-        if type(module) ~= "table" then
-            error(string.format("Module '%s' did not return a table", path))
-        end
-        return module
-    end
-
-    -- Split a Windows drive prefix (e.g., "C:") from a path; returns drive, remainder
-    local function split_drive(path)
-        if not path then
-            return nil, path
-        end
-        local drive = path:match("^(%a:)")
-        if drive then
-            local remainder = path:sub(#drive + 1)
-            return drive, remainder
-        end
-        return nil, path
-    end
-
-    local function tableToString(t)
-        if next(t) == nil then
-            return "none"
-        end
-        local result = {}
-        for k, v in pairs(t) do
-            if type(v) == "table" then
-                table.insert(result, tostring(k) .. "=" .. tableToString(v))
-            else
-                table.insert(result, tostring(k) .. "=" .. tostring(v))
-            end
-        end
-        return "{" .. table.concat(result, ", ") .. "}"
-    end
-
-
     -- Quick diagnostic: print raw argv as seen by this script
     do
         local buf = {}
         for idx = 1, #argv do
             table.insert(buf, tostring(argv[idx]))
         end
-        sdk.colour_print({ colour = Colours.GRAY, message = string.format("[" .. PREFIX .. "] raw argv: %s", table.concat(buf, ", ")) })
+        Utils.log(Utils.Colours.GRAY, string.format("raw argv: %s", table.concat(buf, ", ")))
     end
 
     local cli = parse_arguments(argv)
@@ -400,35 +301,35 @@ local function main()
     for _, key in ipairs(path_fields) do
         local value = cli[key]
         if type(value) == "string" and #value > 0 then
-            cli[key] = normalize_separators(value)
+            cli[key] = Utils.normalize_separators(value)
         end
     end
-    log(Colours.BLUE, string.format("cli arg export: %s", tostring(cli.export)))
-    log(Colours.BLUE, string.format("cli arg formats: %s", tableToString(cli.formats)))
-    log(Colours.BLUE, string.format("cli arg verbose: %s", tostring(cli.verbose)))
-    log(Colours.BLUE, string.format("cli arg debug_sleep: %s", tostring(cli.debug_sleep)))
-    log(Colours.BLUE, string.format("cli arg game_root: %s", tostring(cli.game_root)))
-    log(Colours.BLUE, string.format("cli arg base_dir: %s", tostring(cli.base_dir)))
-    log(Colours.BLUE, string.format("cli arg operations_dir: %s", tostring(cli.operations_dir)))
-    log(Colours.BLUE, string.format("cli arg blender_dir: %s", tostring(cli.blender_dir)))
-    log(Colours.BLUE, string.format("cli arg preinstanced_dir: %s", tostring(cli.preinstanced_dir)))
-    log(Colours.BLUE, string.format("cli arg blend_dir: %s", tostring(cli.blend_dir)))
-    log(Colours.BLUE, string.format("cli arg blank_blend_source: %s", tostring(cli.blank_blend_source)))
-    log(Colours.BLUE, string.format("cli arg symlink_path: %s", tostring(cli.symlink_path)))
-    log(Colours.BLUE, string.format("cli arg asset_map_db: %s", tostring(cli.asset_map_db)))
+    Utils.log(Utils.Colours.BLUE, string.format("cli arg export: %s", tostring(cli.export)))
+    Utils.log(Utils.Colours.BLUE, string.format("cli arg formats: %s", sdk.text.json.encode(cli.formats)))
+    Utils.log(Utils.Colours.BLUE, string.format("cli arg verbose: %s", tostring(cli.verbose)))
+    Utils.log(Utils.Colours.BLUE, string.format("cli arg debug_sleep: %s", tostring(cli.debug_sleep)))
+    Utils.log(Utils.Colours.BLUE, string.format("cli arg game_root: %s", tostring(cli.game_root)))
+    Utils.log(Utils.Colours.BLUE, string.format("cli arg base_dir: %s", tostring(cli.base_dir)))
+    Utils.log(Utils.Colours.BLUE, string.format("cli arg operations_dir: %s", tostring(cli.operations_dir)))
+    Utils.log(Utils.Colours.BLUE, string.format("cli arg blender_dir: %s", tostring(cli.blender_dir)))
+    Utils.log(Utils.Colours.BLUE, string.format("cli arg preinstanced_dir: %s", tostring(cli.preinstanced_dir)))
+    Utils.log(Utils.Colours.BLUE, string.format("cli arg blend_dir: %s", tostring(cli.blend_dir)))
+    Utils.log(Utils.Colours.BLUE, string.format("cli arg blank_blend_source: %s", tostring(cli.blank_blend_source)))
+    Utils.log(Utils.Colours.BLUE, string.format("cli arg symlink_path: %s", tostring(cli.symlink_path)))
+    Utils.log(Utils.Colours.BLUE, string.format("cli arg asset_map_db: %s", tostring(cli.asset_map_db)))
 
     -- Establish working directory for resolving relative project paths
-    local working_dir = normalize_separators(sdk.currentdir())
-    log(Colours.CYAN, string.format("Working directory: %s", working_dir))
+    local working_dir = Utils.normalize_separators(sdk.currentdir())
+    Utils.log(Utils.Colours.CYAN, string.format("Working directory: %s", working_dir))
 
     -- Project-relative paths for the game's operations
     -- If --game-root is provided, use it as the base directory; otherwise use repo-relative path
-    local base_dir = cli.base_dir or cli.game_root or join("EngineApps", "Games", "TheSimpsonsGame-PS3")
-    base_dir = normalize_separators(base_dir)
-    local operations_dir = cli.operations_dir or join(base_dir, "operations")
-    operations_dir = normalize_separators(operations_dir)
-    local blender_dir = cli.blender_dir or join(operations_dir, "Blender")
-    blender_dir = normalize_separators(blender_dir)
+    local base_dir = cli.base_dir or cli.game_root or Utils.join("EngineApps", "Games", "TheSimpsonsGame-PS3")
+    base_dir = Utils.normalize_separators(base_dir)
+    local operations_dir = cli.operations_dir or Utils.join(base_dir, "operations")
+    operations_dir = Utils.normalize_separators(operations_dir)
+    local blender_dir = cli.blender_dir or Utils.join(operations_dir, "Blender")
+    blender_dir = Utils.normalize_separators(blender_dir)
 
     -- Input/output locations within the repo working tree
     -- preinstanced_dir: source GLBs and support assets
@@ -436,45 +337,36 @@ local function main()
     -- glb_dir         : location of GLB files
     -- output_dir      : database output location
     local preinstanced_dir = cli.preinstanced_dir --or join(cli.game_root, "GameFiles", "STROUT")
-    preinstanced_dir = preinstanced_dir and normalize_separators(preinstanced_dir) or preinstanced_dir
+    preinstanced_dir = preinstanced_dir and Utils.normalize_separators(preinstanced_dir) or preinstanced_dir
     local blend_dir = cli.blend_dir --or join(cli.game_root, "GameFiles", "TEMP_BLEND")
-    blend_dir = blend_dir and normalize_separators(blend_dir) or blend_dir
-    local blank_blend_source = cli.blank_blend_source or join(cli.game_root, "blank.blend")
-    blank_blend_source = blank_blend_source and normalize_separators(blank_blend_source) or blank_blend_source
+    blend_dir = blend_dir and Utils.normalize_separators(blend_dir) or blend_dir
+    local blank_blend_source = cli.blank_blend_source or Utils.join(cli.game_root, "blank.blend")
+    blank_blend_source = blank_blend_source and Utils.normalize_separators(blank_blend_source) or blank_blend_source
     -- Use the resolved blender_dir as output_dir to stay consistent with base_dir choice
     local output_dir = blender_dir
 
-    log(Colours.CYAN, string.format("Resolved base_dir: %s", tostring(base_dir)))
-    log(Colours.CYAN, string.format("Resolved operations_dir: %s", tostring(operations_dir)))
-    log(Colours.CYAN, string.format("Resolved blender_dir: %s", tostring(blender_dir)))
-    log(Colours.CYAN, string.format("Resolved preinstanced_dir: %s", tostring(preinstanced_dir)))
-    log(Colours.CYAN, string.format("Resolved blend_dir: %s", tostring(blend_dir)))
-    log(Colours.CYAN, string.format("Resolved blank_blend_source: %s", tostring(blank_blend_source)))
-
-    -- Template/marker artifacts for Blender scene creation
-    local function is_absolute(path)
-        if not path then return false end
-        if path:match("^%a:[/\\]") then return true end
-        if path:sub(1, 2) == "\\\\" then return true end
-        if path:sub(1, 1) == "/" then return true end
-        return false
-    end
+    Utils.log(Utils.Colours.CYAN, string.format("Resolved base_dir: %s", tostring(base_dir)))
+    Utils.log(Utils.Colours.CYAN, string.format("Resolved operations_dir: %s", tostring(operations_dir)))
+    Utils.log(Utils.Colours.CYAN, string.format("Resolved blender_dir: %s", tostring(blender_dir)))
+    Utils.log(Utils.Colours.CYAN, string.format("Resolved preinstanced_dir: %s", tostring(preinstanced_dir)))
+    Utils.log(Utils.Colours.CYAN, string.format("Resolved blend_dir: %s", tostring(blend_dir)))
+    Utils.log(Utils.Colours.CYAN, string.format("Resolved blank_blend_source: %s", tostring(blank_blend_source)))
 
     -- Compute a root for temporary symlinks
-    local drive, _ = split_drive(working_dir)
+    local drive, _ = Utils.split_drive(working_dir)
     local symlink_path
     if cli.symlink_path and #cli.symlink_path > 0 then
-        if is_absolute(cli.symlink_path) then
+        if Utils.is_absolute(cli.symlink_path) then
             symlink_path = cli.symlink_path
         else
-            symlink_path = normalize_separators(join(working_dir, cli.symlink_path))
+            symlink_path = Utils.normalize_separators(Utils.join(working_dir, cli.symlink_path))
         end
     elseif drive then
-        symlink_path = normalize_separators(join(drive .. path_sep, "TMP_TSG_LNKS"))
+        symlink_path = Utils.normalize_separators(Utils.join(drive .. path_sep, "TMP_TSG_LNKS"))
     else
-        symlink_path = normalize_separators(join(cli.game_root, "TMP_TSG_LNKS"))
+        symlink_path = Utils.normalize_separators(Utils.join(cli.game_root, "TMP_TSG_LNKS"))
     end
-    log(Colours.CYAN, string.format("Resolved symlink_path: %s", tostring(symlink_path)))
+    Utils.log(Utils.Colours.CYAN, string.format("Resolved symlink_path: %s", tostring(symlink_path)))
 
     local marker = preinstanced_dir and (preinstanced_dir .. path_sep) or ""
 
@@ -482,12 +374,12 @@ local function main()
     sdk.ensure_dir(output_dir)
 
     -- Load phase modules (must export a `main(opts)` function)
-    local BlenderInit = load_module(join(output_dir, join("init", "BlenderInit.lua")))
+    local BlenderInit = _G.import(Utils.join(output_dir, Utils.join("init", "BlenderInit.lua")))
     if not BlenderInit or type(BlenderInit.main) ~= "function" then
         error("BlenderInit module did not return a table with a main(opts) function")
         os.exit(1)
     end
-    local BlenderCore = load_module(join(output_dir, "BlenderCore.lua"))
+    local BlenderCore = _G.import(Utils.join(output_dir, "BlenderCore.lua"))
     if not BlenderCore or type(BlenderCore.main) ~= "function" then
         error("BlenderCore module did not return a table with a main(opts) function")
         os.exit(1)
@@ -505,18 +397,18 @@ local function main()
         marker = marker,
         debug_sleep = cli.debug_sleep,
         verbose = cli.verbose,
-        db_file_path = join(cli.asset_map_db),
+        db_file_path = Utils.join(cli.asset_map_db),
         rename_map_file = cli.rename_map_file
     }
 
     -- Phase 1: setup, link creation, and environment preparation
     local ok, err = pcall(function()
-        log(Colours.CYAN, "Running Blender initialization phase")
+        Utils.log(Utils.Colours.CYAN, "Running Blender initialization phase")
         BlenderInit.main(init_opts)
     end)
 
     if not ok then
-        log(Colours.RED, string.format("Initialization failed: %s", err))
+        Utils.log(Utils.Colours.RED, string.format("Initialization failed: %s", err))
     error(string.format("run blend init error: %s", err))
     end
 
@@ -527,8 +419,8 @@ local function main()
     if type(tool_fn) == "function" then
         blender_exe = tool_fn("Blender")
         if blender_exe and blender_exe ~= "" then
-            blender_exe_path = normalize_separators(blender_exe)
-            log(Colours.CYAN, string.format("Resolved Blender executable via engine tool resolver: %s", tostring(blender_exe_path)))
+            blender_exe_path = Utils.normalize_separators(blender_exe)
+            Utils.log(Utils.Colours.CYAN, string.format("Resolved Blender executable via engine tool resolver: %s", tostring(blender_exe_path)))
         end
     end
 
@@ -538,7 +430,7 @@ local function main()
         debug_sleep = cli.debug_sleep,
         export = cli.export,
         export_formats = cli.formats,
-        db_file_path = join(cli.asset_map_db),
+        db_file_path = Utils.join(cli.asset_map_db),
         blender_exe_path = blender_exe_path,
         game_root = cli.game_root,
         preinstanced_dir = preinstanced_dir
@@ -546,17 +438,17 @@ local function main()
 
     -- Phase 2: actual Blender processing and export
     local ok_core, err_core = pcall(function()
-        log(Colours.CYAN, "Running Blender processing phase with opts: " .. tableToString(core_opts))
+        Utils.log(Utils.Colours.CYAN, "Running Blender processing phase with opts: " .. sdk.text.json.encode(core_opts))
         BlenderCore.main(core_opts)
     end)
 
     if not ok_core then
-        log(Colours.RED, string.format("Processing failed: %s", err_core))
+        Utils.log(Utils.Colours.RED, string.format("Processing failed: %s", err_core))
     error(string.format("run blend core error: %s", err_core))
     end
 
     -- All done
-    log(Colours.GREEN, "Blender pipeline finished successfully.")
+    Utils.log(Utils.Colours.GREEN, "Blender pipeline finished successfully.")
 end
 
 -- Execute main wrapped in pcall to avoid leaking errors outside

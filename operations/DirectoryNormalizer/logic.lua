@@ -559,19 +559,23 @@ function logic.load_rename_map(db_path)
     if not db then
         return map
     end
+    local prog = progress.start(0, "Loading rename mappings...")
     local ok, rows = pcall(function()
         return db:query("SELECT old_name, new_name FROM rename_mappings")
     end)
     if ok and rows then
+        prog:SetTotal(#rows)
         for _, row in ipairs(rows) do
             local old_name = row.old_name
             local new_name = row.new_name
             if old_name and new_name then
                 map[string.lower(new_name)] = old_name
             end
+            prog:Update(1, "Loaded " .. _ .. " mappings")
         end
     end
     db:close()
+    prog:Complete()
     return map
 end
 
@@ -594,6 +598,7 @@ end
 function logic.walk_files(root, ignore_list)
     local stack = { root }
     local files = {}
+    local prog = progress.start(0, "Scanning directory...")
     while #stack > 0 do
         local dir = table.remove(stack)
         local entries = sdk.list_dir(dir)
@@ -609,10 +614,12 @@ function logic.walk_files(root, ignore_list)
                 local ext = utils.ext_lower(entry)
                 if not logic.IgnoredExtensions[ext] then
                     table.insert(files, p)
+                    prog:Update(1, "Found " .. #files .. " files")
                 end
             end
         end
     end
+    prog:Complete()
     return files
 end
 

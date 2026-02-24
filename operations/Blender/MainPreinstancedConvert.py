@@ -12,6 +12,7 @@ import os
 import time
 import importlib
 import json
+import argparse
 from dataclasses import dataclass
 from typing import Set, Optional
 
@@ -19,7 +20,7 @@ import bpy # pyright: ignore[reportMissingImports]
 
 
 # --- Constants ---
-ADDON_MODULE_NAME = 'PreinstancedImportExtension'
+ADDON_MODULE_NAME = 'blender_addon'
 LOG_TEXT_BLOCK_NAME = "SimpGame_Import_Log"
 
 # --- MODIFIED: Custom Exception for Better Error Handling ---
@@ -32,7 +33,7 @@ class BlenderScriptError(Exception):
 class ScriptConfig:
     """A data class to hold all script configuration parameters."""
     batch_file: str
-    python_extension_file: str
+    python_extension_path: str
     current_dir: str
     verbose: bool
     debug_sleep: bool
@@ -89,32 +90,47 @@ def get_script_config() -> ScriptConfig:
     """Parses command-line arguments and returns a populated ScriptConfig object."""
     try:
         argv = sys.argv
+        if "--" not in argv:
+            raise BlenderScriptError("Missing '--' separator for script arguments.")
+        
         arg_start_index = argv.index('--') + 1
-        def to_bool(arg_str: str) -> bool:
-            return arg_str.strip().lower() == "true"
+        script_args = argv[arg_start_index:]
 
-        db_path = None
-        if len(argv) > arg_start_index + 8:
-            db_path = argv[arg_start_index + 8]
+        parser = argparse.ArgumentParser(description="Batch Blender export driver script")
+        parser.add_argument("--batch_file", required=True, help="Path to batch JSON file")
+        parser.add_argument("--python_extension_path", required=True, help="Path to blender_addon directory")
+        parser.add_argument("--current_dir", required=True, help="Current operations directory")
+        parser.add_argument("--temp_addon_dir", required=True, help="Temporary directory for addon files")
+        parser.add_argument("--game_root_path", required=True, help="Root path of the game")
+        parser.add_argument("--verbose", action="store_true", help="Enable verbose logging")
+        parser.add_argument("--debug_sleep", action="store_true", help="Enable debug sleep")
+        parser.add_argument("--export_formats", required=True, help="Comma-separated list of formats (glb,fbx)")
+        parser.add_argument("--db_path", help="Path to texture database")
+        parser.add_argument("--preinstanced_dir", help="Path to preinstanced files directory")
 
-        preinstanced_dir = None
-        if len(argv) > arg_start_index + 9:
-            preinstanced_dir = argv[arg_start_index + 9]
+        args = parser.parse_args(script_args)
+        
+        def filter_none(val):
+            return None if val == "NONE" else val
 
+        fmts = {fmt.strip().lower() for fmt in args.export_formats.replace(",", " ").split() if fmt.strip().lower() in {"glb", "fbx"}}
+        
         return ScriptConfig(
-            batch_file=argv[arg_start_index],
-            python_extension_file=argv[arg_start_index + 1],
-            verbose=to_bool(argv[arg_start_index + 2]),
-            debug_sleep=to_bool(argv[arg_start_index + 3]),
-            current_dir=argv[arg_start_index + 4],
-            temp_addon_dir=argv[arg_start_index + 5],
-            game_root_path=argv[arg_start_index + 6],
-            export_formats={fmt.strip() for fmt in argv[arg_start_index + 7].lower().replace(",", " ").split() if fmt.strip() in {"glb", "fbx"}} or None,
-            db_path=db_path,
-            preinstanced_dir=preinstanced_dir
+            batch_file=args.batch_file,
+            python_extension_path=args.python_extension_path,
+            verbose=args.verbose,
+            debug_sleep=args.debug_sleep,
+            current_dir=args.current_dir,
+            temp_addon_dir=args.temp_addon_dir,
+            game_root_path=args.game_root_path,
+            export_formats=fmts if fmts else None,
+            db_path=filter_none(args.db_path),
+            preinstanced_dir=filter_none(args.preinstanced_dir)
         )
-    except (ValueError, IndexError) as e:
-        printc("Usage: ... -- <batch_file.json> <python_extension_file> <verbose> <debug_sleep> <current_dir> <temp_addon_dir> <game_root_path> <export_formats> <db_path> <preinstanced_dir>", colour='yellow')
+    except SystemExit:
+        # argparse raises SystemExit on error or --help
+        raise BlenderScriptError("Failed to parse script arguments. Check usage with --help.")
+    except Exception as e:
         raise BlenderScriptError(f"Argument parsing failed: {e}") from e
 
 def log_script_config(config: ScriptConfig) -> None:
@@ -127,7 +143,7 @@ def log_script_config(config: ScriptConfig) -> None:
 def validate_file_paths(config: ScriptConfig) -> None:
     """Validates that all necessary input files and output directories exist."""
     log_to_blender("Validating file paths...")
-    paths_to_check = {"Batch file": config.batch_file, "Python extension file": config.python_extension_file}
+    paths_to_check = {"Batch file": config.batch_file, "Python extension path": config.python_extension_path}
     for name, path in paths_to_check.items():
         if not os.path.exists(path):
             raise FileNotFoundError(f"{name} not found at: {path}")
@@ -166,7 +182,7 @@ def setup_blender_environment(config: ScriptConfig) -> None:
             log_to_blender(f"Warning: Preinstanced dir not found: {config.preinstanced_dir}")
 
         # Direct module loading avoids global addon install race conditions.
-        addon_path = os.path.abspath(config.python_extension_file)
+        addon_path = os.path.normpath(os.path.abspath(config.python_extension_path))
         addon_dir = os.path.dirname(addon_path)
         addon_name = os.path.splitext(os.path.basename(addon_path))[0]
 

@@ -116,6 +116,7 @@ local function main()
     local copyonly_files = {}
 
     local prog = progress.new(#files, "normalize", "Normalizing directory")
+    local script_prog = progress.start(#files, "Normalizing directory")
     local ok, err = pcall(function()
         Diagnostics.Trace(string.format("Starting normalization: %d files found", #files))
 
@@ -139,6 +140,7 @@ local function main()
                 end
                 total = total + 1
                 if prog then prog:Update(1) end
+                if script_prog then script_prog:Update(1, "Normalizing " .. rel) end
             end
             sdk.color_print("green", string.format("Camel-only pass complete. Copied %d files.", total))
             return -- Exit early, completely bypassing full normalization
@@ -177,6 +179,7 @@ local function main()
                 -- Add this conceptual path to the tree for Pass 2
                 logic.add_to_tree(target_tree, rel_no_build)
             end
+            if script_prog then script_prog:Update(0, "Scanning " .. rel) end
         end
 
         -- PASS 2: Build the collapse map
@@ -233,6 +236,7 @@ local function main()
 
             total = total + 1
             if prog then prog:Update(1) end
+            if script_prog then script_prog:Update(1, "Normalizing " .. target.rel) end
         end
 
         -- PASS 4: Copy copy-only directories as-is (no normalization)
@@ -263,6 +267,7 @@ local function main()
             end
             total = total + 1
             if prog then prog:Update(1) end
+            if script_prog then script_prog:Update(1, "Copying " .. rel) end
         end
 
         -- Sort rows
@@ -316,6 +321,7 @@ local function main()
     end)
 
     if prog then prog:Complete() end
+    if script_prog then script_prog:Complete() end
     if not ok then error(err) end
 end
 

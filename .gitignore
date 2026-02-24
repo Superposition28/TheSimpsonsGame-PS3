@@ -3,6 +3,7 @@
 /.history/
 **/.history/**
 
+.VSCodeCounter/
 
 # godot project artifacts, in Game.*/**
 *.uid

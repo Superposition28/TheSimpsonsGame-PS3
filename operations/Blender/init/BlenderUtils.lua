@@ -19,9 +19,10 @@ local Colours = {
     DARKRED = "darkred"
 }
 
-local M = {}
-M.path_sep = path_sep
-M.Colours = Colours
+local M = {
+    path_sep = path_sep,
+    Colours = Colours
+}
 
 function M.log(colour, message)
     sdk.colour_print({ colour = colour or Colours.DEFAULT, message = string.format("[%s] %s", PREFIX, message or "") })
@@ -152,11 +153,49 @@ function M.iterate_files(root_dir, visitor)
     end
 end
 
-function M.md5_hash(value)
-    if sdk and sdk.md5 then
-        return sdk.md5(value)
+function M.to_long_path(path)
+    if not path or path == "" or path_sep ~= "\\" then return path end
+    if path:find("^\\\\%?\\") then return path end
+    
+    local normalized = M.normalize_separators(path)
+    if normalized:match("^%a:") and #normalized > 255 then
+        return "\\\\?\\" .. normalized
     end
-    error("sdk.md5 helper is unavailable")
+    return normalized
+end
+
+function M.get_path(base_path, filename, extension)
+    if not base_path or base_path == "" then return "" end
+    base_path = M.normalize_separators(base_path)
+    local expected_suffix = filename .. extension
+
+    local lower_base = base_path:lower()
+    local lower_suffix = expected_suffix:lower()
+    local lower_ext = extension:lower()
+
+    local result = ""
+    if lower_base:sub(-#lower_suffix) == lower_suffix or lower_base:sub(-#lower_ext) == lower_ext then
+        result = base_path
+    elseif base_path:match("%.[a-zA-Z0-9]+$") then
+        local dir = base_path:match("(.*)[\\/]")
+        result = dir and M.join(dir, expected_suffix) or expected_suffix
+    else
+        result = M.join(base_path, expected_suffix)
+    end
+
+    return M.to_long_path(result)
+end
+
+function M.split_drive(path)
+    if not path then
+        return nil, path
+    end
+    local drive = path:match("^(%a:)")
+    if drive then
+        local remainder = path:sub(#drive + 1)
+        return drive, remainder
+    end
+    return nil, path
 end
 
 function M.get_canonical_id(rel_path)
@@ -180,9 +219,21 @@ function M.get_canonical_id(rel_path)
         stem = canonical:sub(1, last_dot - 1)
     end
 
-    local hash = M.md5_hash(stem)
+    local hash = sdk.md5(stem)
     if not hash or hash == "" then return "000000" end
     return string.lower(hash:sub(1, 6))
+end
+
+-- Expose polyfill global for the sandbox
+function _G.import(path)
+    local fh, open_err = io.open(path, "r")
+    if not fh then error(string.format("Failed to open module '%s': %s", path, tostring(open_err))) end
+    local src = fh:read("*a")
+    fh:close()
+    
+    local chunk, err = load(src, "@" .. path, "t", _ENV)
+    if not chunk then error(string.format("Failed to compile module '%s': %s", path, err)) end
+    return chunk()
 end
 
 return M

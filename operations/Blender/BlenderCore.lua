@@ -51,148 +51,13 @@ if not sdk.run_process then
     error("sdk.run_process helper is required for BlenderCore.lua")
 end
 
--- host OS path separator (first character of package.config)
-local path_sep = package.config:sub(1, 1)
--- Colour names used by sdk.colour_print when available
-local Colours = {
-    DEFAULT = "default",
-    WHITE = "white",
-    RED = "red",
-    GREEN = "green",
-    YELLOW = "yellow",
-    BLUE = "blue",
-    MAGENTA = "magenta",
-    CYAN = "cyan",
-    GRAY = "gray",
-    GREY = "gray",
-    DARK_GREEN = "darkgreen",
-    DARKGRAY = "darkgray",
-    DARKGREY = "darkgray",
-    DARKCYAN = "darkcyan",
-    DARKYELLOW = "darkyellow",
-    DARKRED = "darkred"
-}
+local Utils = _G.import(script_dir .. "/init/BlenderUtils.lua")
+if not Utils then
+    error("BlenderUtils not found")
+end
 
-local PREFIX = "BlenderCore"
-local VERBOSE = false
-
---- Log a message with a module prefix and an optional colour.
--- @param colour string|nil
--- @param message string
 local function log(colour, message)
-    sdk.colour_print({ colour = colour or Colours.DEFAULT, message = string.format("[%s] %s", PREFIX, message or "") })
-end
-
---- Normalize path separators to match the host OS.
--- @param path string|nil
--- @return string|nil
-local function normalize_separators(path)
-    if not path then
-        return path
-    end
-    if path_sep == "\\" then
-        path = path:gsub("/", "\\")
-    else
-        path = path:gsub("\\", "/")
-    end
-    return path
-end
-
---- Add the Windows long path prefix (\\?\) to absolute paths if running on Windows.
--- This helps bypass the 260-character path limit.
--- @param path string|nil
--- @return string|nil
-local function to_long_path(path)
-    if not path or path == "" or path_sep ~= "\\" then
-        return path
-    end
-    -- If already prefixed return as is
-    if path:find("^\\\\%?\\") then
-        return path
-    end
-    -- Normalize separators first
-    local normalized = normalize_separators(path)
-    -- If it's an absolute path with drive letter, return with prefix
-    -- Only apply if the path is actually long (> 255 chars) to avoid "saved with @" errors for short paths.
-    if normalized:match("^%a:") and #normalized > 255 then
-        return "\\\\?\\" .. normalized
-    end
-    return normalized
-end
-
---- Join path segments and trim redundant separators.
--- @vararg string
--- @return string
-local function join(...)
-    local parts = { ... }
-    local buffer = {}
-    for index = 1, #parts do
-        local part = parts[index]
-        if part and part ~= "" then
-            part = normalize_separators(part)
-            if index > 1 then
-                part = part:gsub("^" .. path_sep .. "+", "")
-            end
-            if index < #parts then
-                part = part:gsub(path_sep .. "+$", "")
-            end
-            table.insert(buffer, part)
-        end
-    end
-    return table.concat(buffer, path_sep)
-end
-
---- Get the appropriate path for an asset file, handling both directory roots and full file paths.
--- @param base_path string The path from the DB (could be a directory or a full file path)
--- @param filename string The asset filename
--- @param extension string The desired extension (e.g. ".blend")
--- @return string The resolved path
-local function get_path(base_path, filename, extension)
-    if not base_path or base_path == "" then
-        return ""
-    end
-    base_path = normalize_separators(base_path)
-    local expected_suffix = filename .. extension
-
-    local result = ""
-    -- Case 1: base_path is already the full path we want or already has the extension
-    -- Use a case-insensitive check and ensure separators are consistent
-    local lower_base = base_path:lower()
-    local lower_suffix = expected_suffix:lower()
-    local lower_ext = extension:lower()
-
-    if lower_base:sub(-#lower_suffix) == lower_suffix then
-        result = base_path
-    elseif lower_base:sub(-#lower_ext) == lower_ext then
-        -- Already has extension but filename might be different (e.g. case)
-        -- If it's a file, trust the base_path
-        result = base_path
-    -- Case 2: base_path is a full path to a DIFFERENT extension
-    elseif base_path:match("%.[a-zA-Z0-9]+$") then
-        -- Find last separator
-        local dir = base_path:match("(.*)[\\/]")
-        if dir then
-            result = join(dir, expected_suffix)
-        else
-            -- No separator, just a filename with extension?
-            result = expected_suffix
-        end
-    -- Case 3: base_path is a directory
-    else
-        result = join(base_path, expected_suffix)
-    end
-
-    return to_long_path(result)
-end
-
---- Return true when path exists.
-local function path_exists(path)
-    return sdk.path_exists(path)
-end
-
---- Return true when path is a file.
-local function is_file(path)
-    return sdk.is_file(path)
+    Utils.log(colour, message, "BlenderCore")
 end
 
 --- Create and return a temporary directory path for per-run addon files.
@@ -202,9 +67,9 @@ end
 local function make_temp_dir(prefix)
     prefix = prefix or "blender_addon_"
     -- Use a workspace-local temp root to avoid relying on os.tmpname (not available in sandbox)
-    local temp_root = join("TMP", "blender_temp")
+    local temp_root = Utils.join("TMP", "blender_temp")
     sdk.ensure_dir(temp_root)
-    local dir = join(temp_root, prefix .. tostring(os.time()) .. "_" .. tostring(math.random(100000, 999999)))
+    local dir = Utils.join(temp_root, prefix .. tostring(os.time()) .. "_" .. tostring(math.random(100000, 999999)))
     sdk.ensure_dir(dir)
     return dir
 end
@@ -214,10 +79,10 @@ math.randomseed(os.time())
 
 --TODO make run script pass these paths
 -- Repository-relative locations used by this pipeline
-local script_root = join("EngineApps", "Games", "TheSimpsonsGame-PS3", "operations")
-local blender_dir = join(script_root, "Blender")
-local python_script_path = join(blender_dir, "MainPreinstancedConvert.py")
-local python_extension_file = join(blender_dir, "PreinstancedImportExtension.py")
+local script_root = Utils.join("EngineApps", "Games", "TheSimpsonsGame-PS3", "operations")
+local blender_dir = Utils.join(script_root, "Blender")
+local python_script_path = Utils.join(blender_dir, "MainPreinstancedConvert.py")
+local python_extension_path = Utils.join(blender_dir, "blender_addon")
 --- Convert a list of export format hints to a set and an ordered list.
 -- Recognized tokens: "glb", "fbx" (case-insensitive). Duplicates removed.
 -- @param list table|nil
@@ -247,7 +112,7 @@ end
 -- @param db_path string
 -- @return table array of asset tables
 local function load_assets(db_path)
-    local db = sqlite.open(to_long_path(db_path))
+    local db = sqlite.open(Utils.to_long_path(db_path))
     local rows = db.query("SELECT identifier, filename, preinstanced_symlink, blend_symlink, glb_symlink FROM asset_map")
     local assets = {}
     for index, row in ipairs(rows) do
@@ -272,8 +137,8 @@ local function should_process_asset(asset, export_set)
         return false, false, "Missing required symlink paths"
     end
 
-    local blend_file = get_path(asset.blend_symlink, asset.filename, ".blend")
-    if not is_file(blend_file) then
+    local blend_file = Utils.get_path(asset.blend_symlink, asset.filename, ".blend")
+    if not sdk.is_file(blend_file) then
         return false, false, string.format("Blend file not found: %s", blend_file)
     end
 
@@ -282,8 +147,8 @@ local function should_process_asset(asset, export_set)
         if not asset.glb_symlink then
             return false, false, "GLB symlink path missing"
         end
-        local glb_file = get_path(asset.glb_symlink, asset.filename, ".glb")
-        if not is_file(glb_file) then
+        local glb_file = Utils.get_path(asset.glb_symlink, asset.filename, ".glb")
+        if not sdk.is_file(glb_file) then
             run_needed = true
         end
     end
@@ -292,8 +157,8 @@ local function should_process_asset(asset, export_set)
         if not asset.glb_symlink then
             return false, false, "FBX symlink path missing"
         end
-        local fbx_file = get_path(asset.glb_symlink, asset.filename, ".fbx")
-        if not is_file(fbx_file) then
+        local fbx_file = Utils.get_path(asset.glb_symlink, asset.filename, ".fbx")
+        if not sdk.is_file(fbx_file) then
             run_needed = true
         end
     end
@@ -321,21 +186,21 @@ local function run_blender_for_asset(asset, export_set, ordered_formats, verbose
     end
 
     -- Informational log for the upcoming Blender run
-    log(Colours.DARKCYAN, string.format("running blender for asset %s", tostring(asset.identifier)))
+    log(Utils.Colours.DARKCYAN, string.format("running blender for asset %s", tostring(asset.identifier)))
 
-    local blend_file = get_path(asset.blend_symlink, asset.filename, ".blend")
-    local glb_file = get_path(asset.glb_symlink, asset.filename, ".glb")
-    local fbx_file = get_path(asset.glb_symlink, asset.filename, ".fbx")
-    local preinstanced_file = get_path(asset.preinstanced_symlink, asset.filename, ".preinstanced")
+    local blend_file = Utils.get_path(asset.blend_symlink, asset.filename, ".blend")
+    local glb_file = Utils.get_path(asset.glb_symlink, asset.filename, ".glb")
+    local fbx_file = Utils.get_path(asset.glb_symlink, asset.filename, ".fbx")
+    local preinstanced_file = Utils.get_path(asset.preinstanced_symlink, asset.filename, ".preinstanced")
 
-    if not is_file(preinstanced_file) then
+    if not sdk.is_file(preinstanced_file) then
         return { asset_id = asset.identifier, success = false, skipped = false, message = string.format("Preinstanced symlink missing: %s", preinstanced_file) }
     end
 
     -- Create a per-run temp addon directory; will be removed after execution
     local temp_addon_dir = make_temp_dir("blender_addon_")
     
-    local batch_file = join(temp_addon_dir, "batch.json")
+    local batch_file = Utils.join(temp_addon_dir, "batch.json")
     local batch_data = {
         {
             asset_id = asset.identifier,
@@ -350,7 +215,7 @@ local function run_blender_for_asset(asset, export_set, ordered_formats, verbose
         fh:write(sdk.text.json.encode(batch_data))
         fh:close()
     else
-        log(Colours.RED, "Failed to write batch file: " .. batch_file)
+        log(Utils.Colours.RED, "Failed to write batch file: " .. batch_file)
         return { asset_id = asset.identifier, success = false, skipped = false, message = "Failed to write batch file" }
     end
 
@@ -360,17 +225,24 @@ local function run_blender_for_asset(asset, export_set, ordered_formats, verbose
         "-b",
         "--python", python_script_path,
         "--",
-        batch_file,
-        python_extension_file,
-        verbose and "true" or "false",
-        debug_sleep and "true" or "false",
-        blender_dir,
-        temp_addon_dir,
-        game_root_path,
-        table.concat(ordered_formats, ","),
-        json_db_path,
-        preinstanced_dir
+        "--batch_file", batch_file,
+        "--python_extension_path", python_extension_path,
+        "--current_dir", blender_dir,
+        "--temp_addon_dir", temp_addon_dir,
+        "--game_root_path", game_root_path,
+        "--export_formats", table.concat(ordered_formats, ",")
     }
+
+    if verbose then table.insert(command, "--verbose") end
+    if debug_sleep then table.insert(command, "--debug_sleep") end
+    if json_db_path then
+        table.insert(command, "--db_path")
+        table.insert(command, json_db_path)
+    end
+    if preinstanced_dir then
+        table.insert(command, "--preinstanced_dir")
+        table.insert(command, preinstanced_dir)
+    end
 
     local result
     local status, err = pcall(function()
@@ -386,14 +258,14 @@ local function run_blender_for_asset(asset, export_set, ordered_formats, verbose
     end
 
     -- Subprocess output is echoed to help debug Blender/Python failures
-    log(Colours.DARKGRAY, string.format("\n--- Output for Asset ID: %s ---", asset.identifier))
+    log(Utils.Colours.DARKGRAY, string.format("\n--- Output for Asset ID: %s ---", asset.identifier))
     if result.stdout and #result.stdout > 0 then
-        log(Colours.GRAY, result.stdout)
+        log(Utils.Colours.GRAY, result.stdout)
     end
     if result.stderr and #result.stderr > 0 then
-        log(Colours.YELLOW, result.stderr)
+        log(Utils.Colours.YELLOW, result.stderr)
     end
-    log(Colours.DARKGRAY, string.format("--- End of Output for Asset ID: %s ---\n", asset.identifier))
+    log(Utils.Colours.DARKGRAY, string.format("--- End of Output for Asset ID: %s ---\n", asset.identifier))
 
     if sdk.remove_dir then
         sdk.remove_dir(temp_addon_dir)
@@ -407,29 +279,7 @@ local function run_blender_for_asset(asset, export_set, ordered_formats, verbose
     return { asset_id = asset.identifier, success = true, skipped = false, message = string.format("Processed asset %s", asset.identifier) }
 end
 
---- Remove a file path if it exists (safe no-op when helpers missing).
-local function remove_file_if_exists(path)
-    if path_exists(path) and sdk.remove_file then
-        sdk.remove_file(path)
-    end
-end
-
 local BlenderCore = {}
-
-local function tableToString(t)
-    if next(t) == nil then
-        return "none"
-    end
-    local result = {}
-    for k, v in pairs(t) do
-        if type(v) == "table" then
-            table.insert(result, tostring(k) .. "=" .. tableToString(v))
-        else
-            table.insert(result, tostring(k) .. "=" .. tostring(v))
-        end
-    end
-    return "{" .. table.concat(result, ", ") .. "}"
-end
 
 --- Entry point for batch processing.
 -- Validates resources, loads assets, processes sequentially, and summarizes.
@@ -441,45 +291,47 @@ function BlenderCore.main(opts)
     local debug_sleep = not not opts.debug_sleep
     local export_set, ordered_formats = normalize_export_formats(opts.export_formats)
 
-    local db_path = opts.db_file_path and normalize_separators(opts.db_file_path)
-    db_path = to_long_path(normalize_separators(db_path))
+    local db_path = opts.db_file_path and Utils.normalize_separators(opts.db_file_path)
+    db_path = Utils.to_long_path(Utils.normalize_separators(db_path))
     if not db_path or db_path == "" then
         error("DB file path must be specified in opts.db_file_path")
         os.exit(1)
     end
 
-    local json_db_path = opts.preinstanced_dir and join(opts.preinstanced_dir, "normalized_map.json") or ""
-    json_db_path = to_long_path(normalize_separators(json_db_path))
+    local json_db_path = opts.preinstanced_dir and Utils.join(opts.preinstanced_dir, "normalized_map.json")
+    if json_db_path then
+        json_db_path = Utils.to_long_path(Utils.normalize_separators(json_db_path))
+    end
 
-    local blender_exe_path = opts.blender_exe_path and to_long_path(normalize_separators(opts.blender_exe_path)) or ""
-    local game_root_path = opts.game_root and to_long_path(normalize_separators(opts.game_root))
+    local blender_exe_path = opts.blender_exe_path and Utils.to_long_path(Utils.normalize_separators(opts.blender_exe_path)) or ""
+    local game_root_path = opts.game_root and Utils.to_long_path(Utils.normalize_separators(opts.game_root))
 
-    log(Colours.CYAN, "all input opts: " .. tableToString(opts))
+    log(Utils.Colours.CYAN, "all input opts: " .. sdk.text.json.encode(opts))
 
-    log(Colours.CYAN, string.format("Export formats: %s", (#ordered_formats > 0) and table.concat(ordered_formats, ", ") or "None"))
-    log(Colours.CYAN, string.format("Using DB: %s", db_path))
-    log(Colours.CYAN, string.format("Using Blender executable: %s", blender_exe_path))
+    log(Utils.Colours.CYAN, string.format("Export formats: %s", (#ordered_formats > 0) and table.concat(ordered_formats, ", ") or "None"))
+    log(Utils.Colours.CYAN, string.format("Using DB: %s", db_path))
+    log(Utils.Colours.CYAN, string.format("Using Blender executable: %s", blender_exe_path))
     if not game_root_path then
         error("Game root path must be specified in opts.game_root_path")
         os.exit(1)
     end
-    log(Colours.CYAN, string.format("Using game root path: %s", game_root_path))
+    log(Utils.Colours.CYAN, string.format("Using game root path: %s", game_root_path))
 
-    if not path_exists(blender_exe_path) then
+    if not sdk.path_exists(blender_exe_path) then
         error(string.format("Blender executable not found: %s", blender_exe_path))
     end
-    if not path_exists(python_script_path) then
+    if not sdk.path_exists(python_script_path) then
         error(string.format("Python driver not found: %s", python_script_path))
     end
-    if not path_exists(python_extension_file) then
-        error(string.format("Python extension not found: %s", python_extension_file))
+    if not sdk.path_exists(python_extension_path) then
+        error(string.format("Python extension not found: %s", python_extension_path))
     end
-    if not path_exists(db_path) then
+    if not sdk.path_exists(db_path) then
         error(string.format("DB not found: %s", db_path))
     end
 
     local assets = load_assets(db_path)
-    log(Colours.CYAN, string.format("Loaded %d assets from DB", #assets))
+    log(Utils.Colours.CYAN, string.format("Loaded %d assets from DB", #assets))
 
     local successes = {}
     local failures = {}
@@ -503,8 +355,8 @@ function BlenderCore.main(opts)
     local has_spawn = (sdk.spawn_process ~= nil)
     -- Default workers: user-specified opts.workers -> global cpu_count -> sdk.cpu_count -> 1
     local default_workers = 1
-    if cpu_count then
-        default_workers = tonumber(cpu_count) or default_workers
+    if _G.cpu_count then
+        default_workers = tonumber(_G.cpu_count) or default_workers
     elseif sdk and sdk.cpu_count then
         default_workers = tonumber(sdk.cpu_count) or default_workers
     end
@@ -513,7 +365,7 @@ function BlenderCore.main(opts)
 
     if not has_spawn then
         -- Fallback: run sequentially using existing run_blender_for_asset implementation
-        log(Colours.YELLOW, "spawn_process unavailable; running sequentially using sdk.run_process")
+        log(Utils.Colours.YELLOW, "spawn_process unavailable; running sequentially using sdk.run_process")
         for _, asset in ipairs(work_queue) do
             local rec = run_blender_for_asset(asset, export_set, ordered_formats, VERBOSE, debug_sleep, blender_exe_path, game_root_path, json_db_path, opts.preinstanced_dir)
             if rec.success then
@@ -525,18 +377,19 @@ function BlenderCore.main(opts)
         end
     else
         -- Concurrent execution using spawn/poll with JSON batching
-        log(Colours.GREEN, string.format("Spawning up to %d workers using sdk.spawn_process", max_workers))
+        log(Utils.Colours.GREEN, string.format("Spawning up to %d workers using sdk.spawn_process", max_workers))
 
         local active = {} -- pid -> { batch_file=..., temp_dir=..., assets=... }
         local batches = {}
 
-        -- Partition work_queue into max_workers batches
-        for i = 1, max_workers do
-            table.insert(batches, {})
-        end
-        for i, asset in ipairs(work_queue) do
-            local batch_idx = ((i - 1) % max_workers) + 1
-            table.insert(batches[batch_idx], asset)
+        -- Partition work_queue into discrete batches for parallel processing
+        local batch_size = tonumber(opts.batch_size) or 50
+        for i = 1, #work_queue, batch_size do
+            local batch = {}
+            for j = i, math.min(i + batch_size - 1, #work_queue) do
+                table.insert(batch, work_queue[j])
+            end
+            table.insert(batches, batch)
         end
 
         local function active_count()
@@ -553,14 +406,14 @@ function BlenderCore.main(opts)
             if #batch_assets == 0 then return end
 
             local temp_addon_dir = make_temp_dir("blender_addon_")
-            local batch_file = join(temp_addon_dir, "batch.json")
+            local batch_file = Utils.join(temp_addon_dir, "batch.json")
 
             local batch_data = {}
             for _, asset in ipairs(batch_assets) do
-                local blend_file = get_path(asset.blend_symlink, asset.filename, ".blend")
-                local glb_file = get_path(asset.glb_symlink, asset.filename, ".glb")
-                local fbx_file = get_path(asset.glb_symlink, asset.filename, ".fbx")
-                local preinstanced_file = get_path(asset.preinstanced_symlink, asset.filename, ".preinstanced")
+                local blend_file = Utils.get_path(asset.blend_symlink, asset.filename, ".blend")
+                local glb_file = Utils.get_path(asset.glb_symlink, asset.filename, ".glb")
+                local fbx_file = Utils.get_path(asset.glb_symlink, asset.filename, ".fbx")
+                local preinstanced_file = Utils.get_path(asset.preinstanced_symlink, asset.filename, ".preinstanced")
 
                 table.insert(batch_data, {
                     asset_id = asset.identifier,
@@ -576,7 +429,7 @@ function BlenderCore.main(opts)
                 fh:write(sdk.text.json.encode(batch_data))
                 fh:close()
             else
-                log(Colours.RED, "Failed to write batch file: " .. batch_file)
+                log(Utils.Colours.RED, "Failed to write batch file: " .. batch_file)
                 return
             end
 
@@ -585,17 +438,24 @@ function BlenderCore.main(opts)
                 "-b",
                 "--python", python_script_path,
                 "--",
-                batch_file,
-                python_extension_file,
-                VERBOSE and "true" or "false",
-                debug_sleep and "true" or "false",
-                blender_dir,
-                temp_addon_dir,
-                game_root_path,
-                table.concat(ordered_formats, ","),
-                json_db_path,
-                opts.preinstanced_dir
+                "--batch_file", batch_file,
+                "--python_extension_path", python_extension_path,
+                "--current_dir", blender_dir,
+                "--temp_addon_dir", temp_addon_dir,
+                "--game_root_path", game_root_path,
+                "--export_formats", table.concat(ordered_formats, ",")
             }
+
+            if VERBOSE then table.insert(cmd, "--verbose") end
+            if debug_sleep then table.insert(cmd, "--debug_sleep") end
+            if json_db_path then
+                table.insert(cmd, "--db_path")
+                table.insert(cmd, json_db_path)
+            end
+            if opts.preinstanced_dir then
+                table.insert(cmd, "--preinstanced_dir")
+                table.insert(cmd, opts.preinstanced_dir)
+            end
 
             local ok, res = pcall(function()
                 return sdk.spawn_process(cmd, { capture_stdout = true, capture_stderr = true, cwd = nil })
@@ -614,7 +474,7 @@ function BlenderCore.main(opts)
 
             local pid = res.pid
             active[pid] = { batch_file = batch_file, temp_dir = temp_addon_dir, assets = batch_assets }
-            log(Colours.DARKCYAN, string.format("Launched PID %s for batch of %d assets", tostring(pid), #batch_assets))
+            log(Utils.Colours.DARKCYAN, string.format("Launched PID %s for batch of %d assets", tostring(pid), #batch_assets))
         end
 
         -- seed initial workers
@@ -642,23 +502,23 @@ function BlenderCore.main(opts)
                     -- Process stdout delta for progress markers
                     if pol.stdout_delta and #pol.stdout_delta > 0 then
                         for line in pol.stdout_delta:gmatch("[^\r\n]+") do
-                            local asset_id, status, msg = line:match("__REMAKE_ASSET_DONE__:(.-):(.-):?(.*)")
+                            local asset_id, status, msg = line:match("__REMAKE_ASSET_DONE__:([^:]+):([^:]+):?(.*)")
                             if asset_id and status then
                                 if status == "SUCCESS" then
                                     table.insert(successes, { asset_id = asset_id, success = true, skipped = false, message = "Processed asset " .. asset_id })
                                 else
-                                    table.insert(failures, { asset_id = asset_id, success = false, skipped = false, message = msg or "Failed" })
+                                    table.insert(failures, { asset_id = asset_id, success = false, skipped = false, message = (msg and msg ~= "") and msg or "Failed" })
                                 end
                                 p:Update(1)
                             else
-                                log(Colours.GRAY, string.format("[PID %s] %s", tostring(pid), line))
+                                log(Utils.Colours.GRAY, string.format("[PID %s] %s", tostring(pid), line))
                             end
                         end
                     end
 
                     if pol.stderr_delta and #pol.stderr_delta > 0 then
                         for line in pol.stderr_delta:gmatch("[^\r\n]+") do
-                            log(Colours.YELLOW, string.format("[PID %s] %s", tostring(pid), line))
+                            log(Utils.Colours.YELLOW, string.format("[PID %s] %s", tostring(pid), line))
                         end
                     end
 
@@ -669,9 +529,9 @@ function BlenderCore.main(opts)
                         local exit_code = pol.exit_code or 1
                         if exit_code ~= 0 then
                             local message = (pol.stderr and #pol.stderr > 0 and pol.stderr:match("^[^\n]*")) or pol.stdout or "Blender process reported failure"
-                            log(Colours.RED, string.format("Batch PID %s failed: %s", tostring(pid), message))
+                            log(Utils.Colours.RED, string.format("Batch PID %s failed: %s", tostring(pid), message))
                         else
-                            log(Colours.DARKGRAY, string.format("Batch PID %s finished successfully", tostring(pid)))
+                            log(Utils.Colours.DARKGRAY, string.format("Batch PID %s finished successfully", tostring(pid)))
                         end
 
                         active[pid] = nil
@@ -691,16 +551,16 @@ function BlenderCore.main(opts)
     p:Complete()
 
     -- Summarize and error on failures (same behaviour as before)
-    log(Colours.CYAN, string.format("Successes: %d, Failures: %d, Skipped: %d", #successes, #failures, #skipped))
+    log(Utils.Colours.CYAN, string.format("Successes: %d, Failures: %d, Skipped: %d", #successes, #failures, #skipped))
     if #failures > 0 then
-        log(Colours.RED, "Some assets failed to process. See messages for details.")
+        log(Utils.Colours.RED, "Some assets failed to process. See messages for details.")
         for _, f in ipairs(failures) do
-            log(Colours.RED, string.format("Asset %s: %s", tostring(f.asset_id), tostring(f.message)))
+            log(Utils.Colours.RED, string.format("Asset %s: %s", tostring(f.asset_id), tostring(f.message)))
         end
         error(string.format("%d asset(s) failed to process", #failures))
     end
 
-    log(Colours.GREEN, "\nProcessing complete.")
+    log(Utils.Colours.GREEN, "\nProcessing complete.")
 end
 
 return BlenderCore

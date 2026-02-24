@@ -886,6 +886,4 @@ do
     if result == false then
         os.exit(1)
     end
-    -- Success
-    -- do not exit, the operation should just complete
 end

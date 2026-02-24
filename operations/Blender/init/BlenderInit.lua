@@ -2,40 +2,16 @@
     error("sqlite module is not available; ensure LuaScriptAction exposes sqlite helpers")
 end
 
--- Load module helper for the sandboxed environment
-local function load_module(path)
-    local fh, open_err = io.open(path, "r")
-    if not fh then
-        error(string.format("Failed to open module '%s': %s", path, tostring(open_err)))
-    end
-    local src = fh:read("*a")
-    fh:close()
-    local chunk, err = load(src, "@" .. path, "t", _ENV)
-    if not chunk then
-        error(string.format("Failed to compile module '%s': %s", path, err))
-    end
-    local module = chunk()
-    if type(module) ~= "table" then
-        error(string.format("Module '%s' did not return a table", path))
-    end
-    return module
-end
-
 local function run(args)
     -- Determine the directory where this script and its modules reside
     local base_path = args.blender_dir or (args.output_dir and sdk.realpath(args.output_dir)) or sdk.currentdir()
 
-    local function join(p1, p2)
-        local sep = package.config:sub(1, 1)
-        return p1 .. sep .. p2
-    end
-
     -- Load sub-modules
-    local init_path = join(base_path, "init")
-    local Utils = load_module(join(init_path, "BlenderUtils.lua"))
-    local DB_Module = load_module(join(init_path, "BlenderDB.lua")).setup(Utils)
-    local Processor_Module = load_module(join(init_path, "BlenderProcessor.lua")).setup(Utils)
-    local Symlink_Module = load_module(join(init_path, "BlenderSymlink.lua")).setup(Utils)
+    local init_path = base_path .. package.config:sub(1, 1) .. "init"
+    local Utils = _G.import(init_path .. package.config:sub(1, 1) .. "BlenderUtils.lua")
+    local DB_Module = _G.import(init_path .. package.config:sub(1, 1) .. "BlenderDB.lua").setup(Utils)
+    local Processor_Module = _G.import(init_path .. package.config:sub(1, 1) .. "BlenderProcessor.lua").setup(Utils)
+    local Symlink_Module = _G.import(init_path .. package.config:sub(1, 1) .. "BlenderSymlink.lua").setup(Utils)
 
     local VERBOSE = not not args.verbose
     Utils.log(Utils.Colours.CYAN, string.format("Input args: %s", sdk.text.json.encode(args)))
