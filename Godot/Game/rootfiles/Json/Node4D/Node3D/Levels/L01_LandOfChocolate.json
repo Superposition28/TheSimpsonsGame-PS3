@@ -25,8 +25,7 @@
                         "asset_id": "c8c552",
                         "asset_type": "glb",
                         "paths": [
-                            "L01_LandOfChocolate/loc/zone01_str/assets_environs/export/terrain/lodmodel1_c8c552.rws.PS3.glb",
-                            "loc/loc/zone01_str/build/PS3/pal_en/assets/environs/loc/loc/zone01/export/terrain/lodmodel1.rws.PS3.glb"
+                            "L01_LandOfChocolate/loc/zone01str/assetsEnvirons/export/terrain/lodmodel1_c8c552.rws.PS3.glb"
                         ]
                     },
                     "collision": {
@@ -44,12 +43,11 @@
                 },
                 {
                     "name": "Zone02_Terrain",
-                    "path": "assets/L01_LandOfChocolate/loc/zone02_str/assets/environs_zone02/export/terrain/lodmodel1_41ea3c.rws.PS3.glb",
                     "asset": {
                         "asset_id": "41ea3c",
                         "paths": [
-                            "L01_LandOfChocolate/loc/zone02_str/assets/environs_zone02/export/terrain/lodmodel1_41ea3c.rws.PS3.glb",
-                            "loc/loc/zone02_str/build/PS3/pal_en/assets/environs/loc/loc/zone02/export/terrain/lodmodel1.rws.PS3.glb"
+                            "L01_LandOfChocolate/loc/zone02str/assets/environs_zone02/export/terrain/lodmodel1_41ea3c.rws.PS3.glb",
+                            "loc/loc/zone02str/build/PS3/pal_en/assets/environs/loc/loc/zone02/export/terrain/lodmodel1.rws.PS3.glb"
                         ]
                     },
                     "collision": {
@@ -61,15 +59,15 @@
                 },
                 {
                     "name": "Zone02_opt",
-                    "path": "assets/L01_LandOfChocolate/loc/zone02_str/assets/environs_zone02/opt/export_zone02/opt_model1_427e88.rws.PS3.glb",
+                    "path": "assets/L01_LandOfChocolate/loc/zone02str/assets/environs_zone02/opt/export_zone02/opt_model1_427e88.rws.PS3.glb",
                     "asset": {
                         "asset_id": "427e88",
                         "asset_source_file_name": "opt_model1.rws.PS3.glb",
-                        "asset_source_path": "L01_LandOfChocolate/loc/zone02_str/assets/environs_zone02/opt/export_zone02/opt_model1_427e88.rws.PS3.glb",
+                        "asset_source_path": "L01_LandOfChocolate/loc/zone02str/assets/environs_zone02/opt/export_zone02/opt_model1_427e88.rws.PS3.glb",
                         "asset_file_hash": "3ac90cb6d5d9b58fba53f608ee296696f301ea0c70b496efc07c1cef322ccaa8",
                         "paths": [
-                            "L01_LandOfChocolate/loc/zone02_str/assets/environs_zone02/opt/export_zone02/opt_model1_427e88.rws.PS3.glb",
-                            "loc/loc/zone02_str/build/PS3/pal_en/assets/environs/loc/loc/zone02/opt/export/zone02/opt_model1.rws.PS3.glb"
+                            "L01_LandOfChocolate/loc/zone02str/assets/environs_zone02/opt/export_zone02/opt_model1_427e88.rws.PS3.glb",
+                            "loc/loc/zone02str/build/PS3/pal_en/assets/environs/loc/loc/zone02/opt/export/zone02/opt_model1.rws.PS3.glb"
                         ]
                     },
                     "collision": {
@@ -81,15 +79,15 @@
                 },
                 {
                     "name": "Zone03_Terrain",
-                    "path": "assets/L01_LandOfChocolate/loc/zone03_str/assets_environs/export/terrain/lodmodel1_5d2e2e.rws.PS3.glb",
+                    "path": "assets/L01_LandOfChocolate/loc/zone03str/assets_environs/export/terrain/lodmodel1_5d2e2e.rws.PS3.glb",
                     "asset": {
                         "asset_id": "5d2e2e",
                         "asset_source_file_name": "lodmodel1.rws.PS3.glb",
-                        "asset_source_path": "L01_LandOfChocolate/loc/zone03_str/assets_environs/export/terrain/lodmodel1_5d2e2e.rws.PS3.glb",
+                        "asset_source_path": "L01_LandOfChocolate/loc/zone03str/assets_environs/export/terrain/lodmodel1_5d2e2e.rws.PS3.glb",
                         "asset_file_hash": "4580305904c51c57f555391cb85647e5231b36572216bc2c946465bf31b7c895",
                         "paths": [
-                            "L01_LandOfChocolate/loc/zone03_str/assets_environs/export/terrain/lodmodel1_5d2e2e.rws.PS3.glb",
-                            "loc/loc/zone03_str/build/PS3/pal_en/assets/environs/loc/loc/zone03/export/terrain/lodmodel1.rws.PS3.glb"
+                            "L01_LandOfChocolate/loc/zone03str/assets_environs/export/terrain/lodmodel1_5d2e2e.rws.PS3.glb",
+                            "loc/loc/zone03str/build/PS3/pal_en/assets/environs/loc/loc/zone03/export/terrain/lodmodel1.rws.PS3.glb"
                         ]
                     },
                     "collision": {
@@ -101,15 +99,15 @@
                 },
                 {
                     "name": "Zone04_opt",
-                    "path": "assets/L01_LandOfChocolate/loc/zone04_str/assets/environs_zone04/opt/export_zone04/opt_model1_964017.rws.PS3.glb",
+                    "path": "assets/L01_LandOfChocolate/loc/zone04str/assets/environs_zone04/opt/export_zone04/opt_model1_964017.rws.PS3.glb",
                     "asset": {
                         "asset_id": "964017",
                         "asset_source_file_name": "opt_model1.rws.PS3.glb",
-                        "asset_source_path": "L01_LandOfChocolate/loc/zone04_str/assets/environs_zone04/opt/export_zone04/opt_model1_964017.rws.PS3.glb",
+                        "asset_source_path": "L01_LandOfChocolate/loc/zone04str/assets/environs_zone04/opt/export_zone04/opt_model1_964017.rws.PS3.glb",
                         "asset_file_hash": "53f5d216b6d963ea6cdb28dfa437f2d7d80d0524dba7fe62d8a1f9b00c167b7f",
                         "paths": [
-                            "L01_LandOfChocolate/loc/zone04_str/assets/environs_zone04/opt/export_zone04/opt_model1_964017.rws.PS3.glb",
-                            "loc/loc/zone04_str/build/PS3/pal_en/assets/environs/loc/loc/zone04/opt/export/zone04/opt_model1.rws.PS3.glb"
+                            "L01_LandOfChocolate/loc/zone04str/assets/environs_zone04/opt/export_zone04/opt_model1_964017.rws.PS3.glb",
+                            "loc/loc/zone04str/build/PS3/pal_en/assets/environs/loc/loc/zone04/opt/export/zone04/opt_model1.rws.PS3.glb"
                         ]
                     },
                     "collision": {
@@ -121,15 +119,15 @@
                 },
                 {
                     "name": "Zone04_Terrain",
-                    "path": "assets/L01_LandOfChocolate/loc/zone04_str/assets/environs_zone04/export/terrain/lodmodel1_805e5a.rws.PS3.glb",
+                    "path": "assets/L01_LandOfChocolate/loc/zone04str/assets/environs_zone04/export/terrain/lodmodel1_805e5a.rws.PS3.glb",
                     "asset": {
                         "asset_id": "805e5a",
                         "asset_source_file_name": "lodmodel1.rws.PS3.glb",
-                        "asset_source_path": "L01_LandOfChocolate/loc/zone04_str/assets/environs_zone04/export/terrain/lodmodel1_805e5a.rws.PS3.glb",
+                        "asset_source_path": "L01_LandOfChocolate/loc/zone04str/assets/environs_zone04/export/terrain/lodmodel1_805e5a.rws.PS3.glb",
                         "asset_file_hash": "9b6ef9bfd10a8418e5f6ac200478479c7f2671de3386f7ea103678cce016c4e1",
                         "paths": [
-                            "L01_LandOfChocolate/loc/zone04_str/assets/environs_zone04/export/terrain/lodmodel1_805e5a.rws.PS3.glb",
-                            "loc/loc/zone04_str/build/PS3/pal_en/assets/environs/loc/loc/zone04/export/terrain/lodmodel1.rws.PS3.glb"
+                            "L01_LandOfChocolate/loc/zone04str/assets/environs_zone04/export/terrain/lodmodel1_805e5a.rws.PS3.glb",
+                            "loc/loc/zone04str/build/PS3/pal_en/assets/environs/loc/loc/zone04/export/terrain/lodmodel1.rws.PS3.glb"
                         ]
                     },
                     "collision": {
@@ -141,15 +139,15 @@
                 },
                 {
                     "name": "Zone05_Terrain",
-                    "path": "assets/L01_LandOfChocolate/loc/zone05_str/assets_environs/export/terrain/lodmodel1_98db0d.rws.PS3.glb",
+                    "path": "assets/L01_LandOfChocolate/loc/zone05str/assets_environs/export/terrain/lodmodel1_98db0d.rws.PS3.glb",
                     "asset": {
                         "asset_id": "98db0d",
                         "asset_source_file_name": "lodmodel1.rws.PS3.glb",
-                        "asset_source_path": "L01_LandOfChocolate/loc/zone05_str/assets_environs/export/terrain/lodmodel1_98db0d.rws.PS3.glb",
+                        "asset_source_path": "L01_LandOfChocolate/loc/zone05str/assets_environs/export/terrain/lodmodel1_98db0d.rws.PS3.glb",
                         "asset_file_hash": "28ecf446760818d77d472826956afa08e010b479aa9a9ea0c9d52d5ec9707edb",
                         "paths": [
-                            "L01_LandOfChocolate/loc/zone05_str/assets_environs/export/terrain/lodmodel1_98db0d.rws.PS3.glb",
-                            "loc/loc/zone05_str/build/PS3/pal_en/assets/environs/loc/loc/zone05/export/terrain/lodmodel1.rws.PS3.glb"
+                            "L01_LandOfChocolate/loc/zone05str/assets_environs/export/terrain/lodmodel1_98db0d.rws.PS3.glb",
+                            "loc/loc/zone05str/build/PS3/pal_en/assets/environs/loc/loc/zone05/export/terrain/lodmodel1.rws.PS3.glb"
                         ]
                     },
                     "collision": {
@@ -161,15 +159,15 @@
                 },
                 {
                     "name": "Zone06_Terrain",
-                    "path": "assets/L01_LandOfChocolate/loc/zone06_str/assets_environs/export/terrain/lodmodel1_5be553.rws.PS3.glb",
+                    "path": "assets/L01_LandOfChocolate/loc/zone06str/assets_environs/export/terrain/lodmodel1_5be553.rws.PS3.glb",
                     "asset": {
                         "asset_id": "5be553",
                         "asset_source_file_name": "lodmodel1.rws.PS3.glb",
-                        "asset_source_path": "L01_LandOfChocolate/loc/zone06_str/assets_environs/export/terrain/lodmodel1_5be553.rws.PS3.glb",
+                        "asset_source_path": "L01_LandOfChocolate/loc/zone06str/assets_environs/export/terrain/lodmodel1_5be553.rws.PS3.glb",
                         "asset_file_hash": "fc36dcc7bad31129b4e248bb5bd3497ac95a48e12feeecde1a8eedfa69fc7721",
                         "paths": [
-                            "L01_LandOfChocolate/loc/zone06_str/assets_environs/export/terrain/lodmodel1_5be553.rws.PS3.glb",
-                            "loc/loc/zone06_str/build/PS3/pal_en/assets/environs/loc/loc/zone06/export/terrain/lodmodel1.rws.PS3.glb"
+                            "L01_LandOfChocolate/loc/zone06str/assets_environs/export/terrain/lodmodel1_5be553.rws.PS3.glb",
+                            "loc/loc/zone06str/build/PS3/pal_en/assets/environs/loc/loc/zone06/export/terrain/lodmodel1.rws.PS3.glb"
                         ]
                     },
                     "collision": {

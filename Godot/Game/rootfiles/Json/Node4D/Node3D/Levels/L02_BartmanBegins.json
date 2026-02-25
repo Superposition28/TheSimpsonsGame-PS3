@@ -19,16 +19,9 @@
             "children": [
                 {
                     "name": "Zone01_Terrain",
-                    "path": "assets/L02_BartmanBegins/brt/zone01_str/assets/environs_zone01/export/terrain/lodmodel1_459e37.rws.PS3.glb",
-                    "index": {
-                        "index_id": -1,
-                        "index_source_file_name": "lodmodel1.rws.PS3.glb",
-                        "index_source_path": "",
-                        "index_file_hash": "",
-                        "paths": [
-                            "L02_BartmanBegins/brt/zone01_str/assets/environs_zone01/export/terrain/lodmodel1_459e37.rws.PS3.glb",
-                            ""
-                        ]
+                    "asset": {
+                        "asset_id": "459e37",
+                        "paths": []
                     },
                     "collision": {
                         "enabled": true,
@@ -39,16 +32,9 @@
                 },
                 {
                     "name": "Zone02_Terrain",
-                    "path": "assets/L02_BartmanBegins/brt/zone02_str/assets/environs_zone02/export/terrain/lodmodel1_999873.rws.PS3.glb",
-                    "index": {
-                        "index_id": -1,
-                        "index_source_file_name": "lodmodel1.rws.PS3.glb",
-                        "index_source_path": "",
-                        "index_file_hash": "",
-                        "paths": [
-                            "L02_BartmanBegins/brt/zone02_str/assets/environs_zone02/export/terrain/lodmodel1_999873.rws.PS3.glb",
-                            ""
-                        ]
+                    "asset": {
+                        "asset_id": "999873",
+                        "paths": []
                     },
                     "collision": {
                         "enabled": true,
@@ -59,16 +45,9 @@
                 },
                 {
                     "name": "Zone03_Terrain",
-                    "path": "assets/L02_BartmanBegins/brt/zone03_str/assets/environs_zone03/export/terrain/lodmodel1_3b9e19.rws.PS3.glb",
-                    "index": {
-                        "index_id": -1,
-                        "index_source_file_name": "lodmodel1.rws.PS3.glb",
-                        "index_source_path": "",
-                        "index_file_hash": "",
-                        "paths": [
-                            "L02_BartmanBegins/brt/zone03_str/assets/environs_zone03/export/terrain/lodmodel1_3b9e19.rws.PS3.glb",
-                            ""
-                        ]
+                    "asset": {
+                        "asset_id": "3b9e19",
+                        "paths": []
                     },
                     "collision": {
                         "enabled": true,
@@ -79,16 +58,9 @@
                 },
                 {
                     "name": "Zone04_Terrain",
-                    "path": "assets/L02_BartmanBegins/brt/zone04_str/assets/environs_zone04/export/terrain/lodmodel1_2de7bd.rws.PS3.glb",
-                    "index": {
-                        "index_id": -1,
-                        "index_source_file_name": "lodmodel1.rws.PS3.glb",
-                        "index_source_path": "",
-                        "index_file_hash": "",
-                        "paths": [
-                            "L02_BartmanBegins/brt/zone04_str/assets/environs_zone04/export/terrain/lodmodel1_2de7bd.rws.PS3.glb",
-                            ""
-                        ]
+                    "asset": {
+                        "asset_id": "2de7bd",
+                        "paths": []
                     },
                     "collision": {
                         "enabled": true,

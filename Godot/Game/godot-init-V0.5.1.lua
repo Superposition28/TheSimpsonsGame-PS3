@@ -91,12 +91,6 @@ local function fatal(msg)
     assert(false, msg)
 end
 
--- Small utils
-local function join(a,b)
-    if a:sub(-1) == path_sep then return a .. b end
-    return a .. path_sep .. b
-end
-
 local function basename(p)
     return (p and p:match("([^/\\]+)$")) or p
 end
@@ -196,7 +190,9 @@ end
 
 -- File ops
 local function copy_file(src, dst)
-    sdk.ensure_dir(normalize(dirname(dst)))
+    src = normalize(src)
+    dst = normalize(dst)
+    sdk.ensure_dir(dirname(dst))
     local ok = sdk.copy_file(src, dst, true)
     if not ok then
         fatal(string.format("SDK copy failed: '%s' -> '%s'", src, dst))
@@ -505,19 +501,19 @@ local AUDIO_LANG_FOLDERS = { EN=true, ES=true, FR=true, IT=true, Global=true }
 
 -- Create and import Godot project
 local function create_godot_project(project_name, project_path, assetSourcePath, addons_folder, rootfiles, godot_exe, no_exit, logo_images, asset_exts)
-    local project_dir = join(project_path, project_name)
-    sdk.ensure_dir(normalize(project_dir))
+    local project_dir = normalize(join(project_path, project_name))
+    sdk.ensure_dir(project_dir)
     log_info("Godot Project Directory: " .. project_dir)
 
     -- Engine diagnostics replaces local project log
     Diagnostics.Log(string.format("[godot-init] info: init.lua started for project '%s'", project_name))
 
-    local assets_dst_root = join(project_dir, "assets")
+    local assets_dst_root = normalize(join(project_dir, "assets"))
 
     -- Logos
     if logo_images and #logo_images > 0 then
-        local logos_dst = join(project_dir, "logos")
-        sdk.ensure_dir(normalize(logos_dst))
+        local logos_dst = normalize(join(project_dir, "logos"))
+        sdk.ensure_dir(logos_dst)
         for _,f in ipairs(logo_images) do
             local ok, err = pcall(copy_file, f, join(logos_dst, basename(f)))
             if not ok then
@@ -532,11 +528,11 @@ local function create_godot_project(project_name, project_path, assetSourcePath,
     -- importing assets; move it here to ensure tools/scripts are present.
     if addons_folder and sdk.is_dir(addons_folder) then
         -- copy tree into project_dir/addons (dirs_exist_ok)
-        local dst = join(project_dir, "addons")
+        local dst = normalize(join(project_dir, "addons"))
         local function copytree(src, dstroot)
             walk_files(src, function(ap, rp, _)
-                local outp = join(dstroot, rp)
-                sdk.ensure_dir(normalize(dirname(outp)))
+                local outp = normalize(join(dstroot, rp))
+                sdk.ensure_dir(dirname(outp))
                 local ok, err = pcall(copy_file, ap, outp)
                 if not ok then
                     log_warn(string.format("Warn: addon copy failed '%s' -> '%s': %s", ap, outp, tostring(err)))
@@ -551,8 +547,8 @@ local function create_godot_project(project_name, project_path, assetSourcePath,
         local dst = project_dir -- copy rootfiles contents into project root
         local function copytree(src, dstroot)
             walk_files(src, function(ap, rp, _)
-                local outp = join(dstroot, rp)
-                sdk.ensure_dir(normalize(dirname(outp)))
+                local outp = normalize(join(dstroot, rp))
+                sdk.ensure_dir(dirname(outp))
                 local ok, err = pcall(copy_file, ap, outp)
                 if not ok then
                     log_warn(string.format("Warn: conf copy failed '%s' -> '%s': %s", ap, outp, tostring(err)))
@@ -570,7 +566,7 @@ local function create_godot_project(project_name, project_path, assetSourcePath,
         for i = 1, #entries do
             local d = entries[i]
             if d ~= "." and d ~= ".." then
-                local p = join(assetSourcePath, d)
+                local p = normalize(join(assetSourcePath, d))
                 if sdk.is_dir(p) then table.insert(top_folders, d) end
             end
         end
@@ -606,7 +602,7 @@ local function create_godot_project(project_name, project_path, assetSourcePath,
         log_info("Skipping asset copy and import.")
     else
         for batch_idx, top in ipairs(top_folders) do
-            local src_top = join(assetSourcePath, top)
+            local src_top = normalize(join(assetSourcePath, top))
             if top == AUDIO_TOP1 or top == AUDIO_TOP2 then
                 -- sub-batch by language folders
                 local langs = {}
@@ -615,7 +611,7 @@ local function create_godot_project(project_name, project_path, assetSourcePath,
                     for i = 1, #entries2 do
                         local name = entries2[i]
                         if name ~= "." and name ~= ".." then
-                            local p = join(src_top, name)
+                            local p = normalize(join(src_top, name))
                             if sdk.is_dir(p) then table.insert(langs, name) end
                         end
                     end
@@ -628,12 +624,12 @@ local function create_godot_project(project_name, project_path, assetSourcePath,
                 end)
 
                 for _,lang in ipairs(langs) do
-                    local src_lang = join(src_top, lang)
-                    local dst_lang = join(join(assets_dst_root, top), lang)
-                    sdk.ensure_dir(normalize(dst_lang))
+                    local src_lang = normalize(join(src_top, lang))
+                    local dst_lang = normalize(join(join(assets_dst_root, top), lang))
+                    sdk.ensure_dir(dst_lang)
 
                     -- gate with .gdignore during placement
-                    local gdignore_path = join(dst_lang, ".gdignore")
+                    local gdignore_path = normalize(join(dst_lang, ".gdignore"))
                     sdk.write_file(gdignore_path, "")
 
                     log_info(string.format("\n=== Batch %d: %s/%s ===", batch_idx, top, lang))
@@ -665,9 +661,9 @@ local function create_godot_project(project_name, project_path, assetSourcePath,
                     run_godot({ godot_exe, "--headless", "--path", project_dir, "--import", "-v", "--quit" }, string.format("Headless Import: %s/%s", top, lang))
                 end
             else
-                local dst_top = join(assets_dst_root, top)
-                sdk.ensure_dir(normalize(dst_top))
-                local gdignore_path = join(dst_top, ".gdignore")
+                local dst_top = normalize(join(assets_dst_root, top))
+                sdk.ensure_dir(dst_top)
+                local gdignore_path = normalize(join(dst_top, ".gdignore"))
                 sdk.write_file(gdignore_path, "")
 
                 log_info(string.format("\n=== Batch %d: %s ===", batch_idx, top))
@@ -707,9 +703,9 @@ local function create_godot_project(project_name, project_path, assetSourcePath,
         for i = 1, #entries do
             local name = entries[i]
             if name ~= "." and name ~= ".." then
-                local p = join(assetSourcePath, name)
+                local p = normalize(join(assetSourcePath, name))
                 if sdk.is_file(p) and name:lower():sub(-5) == ".json" then
-                    local dst = join(assets_dst_root, name)
+                    local dst = normalize(join(assets_dst_root, name))
                     local ok, err = pcall(copy_file, p, dst)
                     if not ok then
                         log_warn(string.format("Warn: JSON copy failed '%s' -> '%s': %s", p, dst, tostring(err)))
@@ -740,8 +736,8 @@ end
 
 local function main(project_name, repo_root, no_exit, assetSourcePath, iconPath)
     -- Locate this module directory
-    local godot_module_root = script_dir
-    local module_root = dirname(godot_module_root)
+    local godot_module_root = normalize(script_dir)
+    local module_root = normalize(dirname(godot_module_root))
 
     -- Engine diagnostics replaces local bootstrapping
     Diagnostics.Log("[godot-init] info: bootstrap logging started")
@@ -756,9 +752,9 @@ local function main(project_name, repo_root, no_exit, assetSourcePath, iconPath)
 
     --local sourcePath = assetSourcePath -- EngineApps\Games\TheSimpsonsGame-PS3\GameFiles\STROUT-EU_FullFlattened-audio_reorg-isRenamed
     log_info("Using assetSourcePath: " .. assetSourcePath)
-    local addons_folder = join(godot_module_root, "addons")
-    local rootfiles = join(godot_module_root, "rootfiles")
-    local project_path = join(godot_module_root, "GodotGame")
+    local addons_folder = normalize(join(godot_module_root, "addons"))
+    local rootfiles = normalize(join(godot_module_root, "rootfiles"))
+    local project_path = normalize(join(godot_module_root, "GodotGame"))
 
     local godot_exe = resolve_godot()
 

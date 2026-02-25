@@ -53,11 +53,22 @@ func _resolve_asset_path(item_info: Dictionary) -> String:
     if item_info.has("asset") and item_info["asset"] is Dictionary:
         var asset_cfg: Dictionary = item_info["asset"]
         var aid = asset_cfg.get("asset_id", "")
+        var a_type = asset_cfg.get("asset_type", "") # Fetch the target extension (e.g., "glb")
 
         if aid != "" and _asset_map.has(aid):
-            var mapped_path = ASSET_ROOT + _asset_map[aid]
-            if FileAccess.file_exists(mapped_path):
-                return mapped_path
+            var mapped_path: String = _asset_map[aid]
+
+            # If the JSON specifies an asset_type, swap the extension
+            if a_type != "":
+                # get_basename() removes the last extension (e.g. '.preinstanced')
+                mapped_path = mapped_path.get_basename() + "." + a_type
+
+            var full_path = ASSET_ROOT + mapped_path
+
+            if FileAccess.file_exists(full_path):
+                return full_path
+            else:
+                print("    [Map Miss] File not found at swapped path: ", full_path)
 
         # 2. Try Fallback Paths
         if asset_cfg.has("paths") and asset_cfg["paths"] is Array:

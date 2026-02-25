@@ -19,16 +19,9 @@
             "children": [
                 {
                     "name": "Zone0_Terrain",
-                    "path": "assets/L04_TreeHugger/tree_hugger/zone00_str/assets/environs_zone00/export/terrain/lodmodel1_7fec86.rws.PS3.glb",
-                    "index": {
-                        "index_id": -1,
-                        "index_source_file_name": "lodmodel1.rws.PS3.glb",
-                        "index_source_path": "",
-                        "index_file_hash": "",
-                        "paths": [
-                            "L04_TreeHugger/tree_hugger/zone00_str/assets/environs_zone00/export/terrain/lodmodel1_7fec86.rws.PS3.glb",
-                            ""
-                        ]
+                    "asset": {
+                        "asset_id": "7fec86",
+                        "paths": []
                     },
                     "collision": {
                         "enabled": true,
@@ -39,16 +32,9 @@
                 },
                 {
                     "name": "Zone2_Terrain",
-                    "path": "assets/L04_TreeHugger/tree_hugger/zone02_str/assets/environs_zone02/export/terrain/lodmodel1_4280a0.rws.PS3.glb",
-                    "index": {
-                        "index_id": -1,
-                        "index_source_file_name": "lodmodel1.rws.PS3.glb",
-                        "index_source_path": "",
-                        "index_file_hash": "",
-                        "paths": [
-                            "L04_TreeHugger/tree_hugger/zone02_str/assets/environs_zone02/export/terrain/lodmodel1_4280a0.rws.PS3.glb",
-                            ""
-                        ]
+                    "asset": {
+                        "asset_id": "4280a0",
+                        "paths": []
                     },
                     "collision": {
                         "enabled": true,
@@ -59,16 +45,9 @@
                 },
                 {
                     "name": "Zone3_Terrain",
-                    "path": "assets/L04_TreeHugger/tree_hugger/zone03_str/assets/environs_zone03/export/terrain/lodmodel1_b0bfb4.rws.PS3.glb",
-                    "index": {
-                        "index_id": -1,
-                        "index_source_file_name": "lodmodel1.rws.PS3.glb",
-                        "index_source_path": "",
-                        "index_file_hash": "",
-                        "paths": [
-                            "L04_TreeHugger/tree_hugger/zone03_str/assets/environs_zone03/export/terrain/lodmodel1_b0bfb4.rws.PS3.glb",
-                            ""
-                        ]
+                    "asset": {
+                        "asset_id": "b0bfb4",
+                        "paths": []
                     },
                     "collision": {
                         "enabled": true,
@@ -79,16 +58,9 @@
                 },
                 {
                     "name": "Zone4_Terrain",
-                    "path": "assets/L04_TreeHugger/tree_hugger/zone04_str/assets/environs_zone04/export/terrain/lodmodel1_fa496a.rws.PS3.glb",
-                    "index": {
-                        "index_id": -1,
-                        "index_source_file_name": "lodmodel1.rws.PS3.glb",
-                        "index_source_path": "",
-                        "index_file_hash": "",
-                        "paths": [
-                            "L04_TreeHugger/tree_hugger/zone04_str/assets/environs_zone04/export/terrain/lodmodel1_fa496a.rws.PS3.glb",
-                            ""
-                        ]
+                    "asset": {
+                        "asset_id": "fa496a",
+                        "paths": []
                     },
                     "collision": {
                         "enabled": true,
@@ -99,16 +71,9 @@
                 },
                 {
                     "name": "Zone5_Terrain",
-                    "path": "assets/L04_TreeHugger/tree_hugger/zone05_str/assets/environs_zone05/export/terrain/lodmodel1_5f4c5f.rws.PS3.glb",
-                    "index": {
-                        "index_id": -1,
-                        "index_source_file_name": "lodmodel1.rws.PS3.glb",
-                        "index_source_path": "",
-                        "index_file_hash": "",
-                        "paths": [
-                            "L04_TreeHugger/tree_hugger/zone05_str/assets/environs_zone05/export/terrain/lodmodel1_5f4c5f.rws.PS3.glb",
-                            ""
-                        ]
+                    "asset": {
+                        "asset_id": "5f4c5f",
+                        "paths": []
                     },
                     "collision": {
                         "enabled": true,
@@ -119,16 +84,9 @@
                 },
                 {
                     "name": "Zone6_Terrain",
-                    "path": "assets/L04_TreeHugger/tree_hugger/zone06_str/assets_environs_zone06/export/terrain/lodmodel1_c47c86.rws.PS3.glb",
-                    "index": {
-                        "index_id": -1,
-                        "index_source_file_name": "lodmodel1.rws.PS3.glb",
-                        "index_source_path": "",
-                        "index_file_hash": "",
-                        "paths": [
-                            "L04_TreeHugger/tree_hugger/zone06_str/assets_environs_zone06/export/terrain/lodmodel1_c47c86.rws.PS3.glb",
-                            ""
-                        ]
+                    "asset": {
+                        "asset_id": "c47c86",
+                        "paths": []
                     },
                     "collision": {
                         "enabled": true,
@@ -139,16 +97,9 @@
                 },
                 {
                     "name": "Zone7_Terrain",
-                    "path": "assets/L04_TreeHugger/tree_hugger/zone07_str/assets_environs_zone07/export/terrain/lodmodel1_3d96ca.rws.PS3.glb",
-                    "index": {
-                        "index_id": -1,
-                        "index_source_file_name": "lodmodel1.rws.PS3.glb",
-                        "index_source_path": "",
-                        "index_file_hash": "",
-                        "paths": [
-                            "L04_TreeHugger/tree_hugger/zone07_str/assets_environs_zone07/export/terrain/lodmodel1_3d96ca.rws.PS3.glb",
-                            ""
-                        ]
+                    "asset": {
+                        "asset_id": "3d96ca",
+                        "paths": []
                     },
                     "collision": {
                         "enabled": true,
@@ -159,16 +110,9 @@
                 },
                 {
                     "name": "Zone9_Terrain",
-                    "path": "assets/L04_TreeHugger/tree_hugger/zone09_str/assets/environs_zone09/export/terrain/lodmodel1_12dcba.rws.PS3.glb",
-                    "index": {
-                        "index_id": -1,
-                        "index_source_file_name": "lodmodel1.rws.PS3.glb",
-                        "index_source_path": "",
-                        "index_file_hash": "",
-                        "paths": [
-                            "L04_TreeHugger/tree_hugger/zone09_str/assets/environs_zone09/export/terrain/lodmodel1_12dcba.rws.PS3.glb",
-                            ""
-                        ]
+                    "asset": {
+                        "asset_id": "12dcba",
+                        "paths": []
                     },
                     "collision": {
                         "enabled": true,
@@ -179,16 +123,9 @@
                 },
                 {
                     "name": "Background_Terrain",
-                    "path": "assets/L04_TreeHugger/tree_hugger_str/assets/props/eps_treehugger_hug_background_geo/export_hug_background/model1_46445a.rws.PS3.glb",
-                    "index": {
-                        "index_id": -1,
-                        "index_source_file_name": "model1.rws.PS3.glb",
-                        "index_source_path": "",
-                        "index_file_hash": "",
-                        "paths": [
-                            "L04_TreeHugger/tree_hugger_str/assets/props/eps_treehugger_hug_background_geo/export_hug_background/model1_46445a.rws.PS3.glb",
-                            ""
-                        ]
+                    "asset": {
+                        "asset_id": "46445a",
+                        "paths": []
                     },
                     "collision": {
                         "enabled": false

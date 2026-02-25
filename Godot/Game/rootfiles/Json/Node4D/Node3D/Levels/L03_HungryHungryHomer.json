@@ -19,16 +19,9 @@
             "children": [
                 {
                     "name": "Zone1_Terrain",
-                    "path": "assets/L03_HungryHungryHomer/eighty_bites/Zone1_str/assets_environs_zone1/export/terrain/lodmodel1_592a6f.rws.PS3.glb",
-                    "index": {
-                        "index_id": -1,
-                        "index_source_file_name": "lodmodel1.rws.PS3.glb",
-                        "index_source_path": "",
-                        "index_file_hash": "",
-                        "paths": [
-                            "L03_HungryHungryHomer/eighty_bites/Zone1_str/assets_environs_zone1/export/terrain/lodmodel1_592a6f.rws.PS3.glb",
-                            ""
-                        ]
+                    "asset": {
+                        "asset_id": "592a6f",
+                        "paths": []
                     },
                     "collision": {
                         "enabled": true,
@@ -39,16 +32,9 @@
                 },
                 {
                     "name": "Zone2_Terrain",
-                    "path": "assets/L03_HungryHungryHomer/eighty_bites/Zone2_str/assets_environs_zone2/export/terrain/lodmodel1_eacd0a.rws.PS3.glb",
-                    "index": {
-                        "index_id": -1,
-                        "index_source_file_name": "lodmodel1.rws.PS3.glb",
-                        "index_source_path": "",
-                        "index_file_hash": "",
-                        "paths": [
-                            "L03_HungryHungryHomer/eighty_bites/Zone2_str/assets_environs_zone2/export/terrain/lodmodel1_eacd0a.rws.PS3.glb",
-                            ""
-                        ]
+                    "asset": {
+                        "asset_id": "eacd0a",
+                        "paths": []
                     },
                     "collision": {
                         "enabled": true,
@@ -59,16 +45,9 @@
                 },
                 {
                     "name": "Zone3_Terrain",
-                    "path": "assets/L03_HungryHungryHomer/eighty_bites/Zone3_str/assets_environs_zone3/export/terrain/lodmodel1_2ff71d.rws.PS3.glb",
-                    "index": {
-                        "index_id": -1,
-                        "index_source_file_name": "lodmodel1.rws.PS3.glb",
-                        "index_source_path": "",
-                        "index_file_hash": "",
-                        "paths": [
-                            "L03_HungryHungryHomer/eighty_bites/Zone3_str/assets_environs_zone3/export/terrain/lodmodel1_2ff71d.rws.PS3.glb",
-                            ""
-                        ]
+                    "asset": {
+                        "asset_id": "2ff71d",
+                        "paths": []
                     },
                     "collision": {
                         "enabled": true,
@@ -79,16 +58,9 @@
                 },
                 {
                     "name": "Zone4_Terrain",
-                    "path": "assets/L03_HungryHungryHomer/eighty_bites/Zone4_str/assets_environs_zone4/export/terrain/lodmodel1_833f42.rws.PS3.glb",
-                    "index": {
-                        "index_id": -1,
-                        "index_source_file_name": "lodmodel1.rws.PS3.glb",
-                        "index_source_path": "",
-                        "index_file_hash": "",
-                        "paths": [
-                            "L03_HungryHungryHomer/eighty_bites/Zone4_str/assets_environs_zone4/export/terrain/lodmodel1_833f42.rws.PS3.glb",
-                            ""
-                        ]
+                    "asset": {
+                        "asset_id": "833f42",
+                        "paths": []
                     },
                     "collision": {
                         "enabled": true,
@@ -99,16 +71,9 @@
                 },
                 {
                     "name": "Zone5_Terrain",
-                    "path": "assets/L03_HungryHungryHomer/eighty_bites/Zone5_str/assets_environs_zone5/export/terrain/lodmodel1_36aea4.rws.PS3.glb",
-                    "index": {
-                        "index_id": -1,
-                        "index_source_file_name": "lodmodel1.rws.PS3.glb",
-                        "index_source_path": "",
-                        "index_file_hash": "",
-                        "paths": [
-                            "L03_HungryHungryHomer/eighty_bites/Zone5_str/assets_environs_zone5/export/terrain/lodmodel1_36aea4.rws.PS3.glb",
-                            ""
-                        ]
+                    "asset": {
+                        "asset_id": "36aea4",
+                        "paths": []
                     },
                     "collision": {
                         "enabled": true,
@@ -119,16 +84,9 @@
                 },
                 {
                     "name": "Zone6_Terrain",
-                    "path": "assets/L03_HungryHungryHomer/eighty_bites/Zone6_str/assets_environs_zone6/export/terrain/lodmodel1_b9da23.rws.PS3.glb",
-                    "index": {
-                        "index_id": -1,
-                        "index_source_file_name": "lodmodel1.rws.PS3.glb",
-                        "index_source_path": "",
-                        "index_file_hash": "",
-                        "paths": [
-                            "L03_HungryHungryHomer/eighty_bites/Zone6_str/assets_environs_zone6/export/terrain/lodmodel1_b9da23.rws.PS3.glb",
-                            ""
-                        ]
+                    "asset": {
+                        "asset_id": "b9da23",
+                        "paths": []
                     },
                     "collision": {
                         "enabled": true,
@@ -139,16 +97,9 @@
                 },
                 {
                     "name": "Zone7_Terrain",
-                    "path": "assets/L03_HungryHungryHomer/eighty_bites/Zone7_str/assets_environs_zone7/export/terrain/lodmodel1_93345b.rws.PS3.glb",
-                    "index": {
-                        "index_id": -1,
-                        "index_source_file_name": "lodmodel1.rws.PS3.glb",
-                        "index_source_path": "",
-                        "index_file_hash": "",
-                        "paths": [
-                            "L03_HungryHungryHomer/eighty_bites/Zone7_str/assets_environs_zone7/export/terrain/lodmodel1_93345b.rws.PS3.glb",
-                            ""
-                        ]
+                    "asset": {
+                        "asset_id": "93345b",
+                        "paths": []
                     },
                     "collision": {
                         "enabled": true,

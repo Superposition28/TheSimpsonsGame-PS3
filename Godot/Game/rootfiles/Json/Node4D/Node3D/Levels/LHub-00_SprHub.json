@@ -19,16 +19,9 @@
             "children": [
                 {
                     "name": "Zone01_Terrain",
-                    "path": "assets/LHub-00_SprHub/spr_hub/zone01_str/assets/environs_zone01/export/terrain/lodmodel1_aba164.rws.PS3.glb",
-                    "index": {
-                        "index_id": 3901,
-                        "index_source_file_name": "lodmodel1.rws.PS3.glb",
-                        "index_source_path": "LHub-00_SprHub/spr_hub/zone01_str/assets/environs_zone01/export/terrain/lodmodel1.rws.PS3.glb",
-                        "index_file_hash": "da75e05c1711766196696be7db58bff242befa04d938cf39b43310c38a7ffbdc",
-                        "paths": [
-                            "LHub-00_SprHub/spr_hub/zone01_str/assets/environs_zone01/export/terrain/lodmodel1_aba164.rws.PS3.glb",
-                            "LHub-00_SprHub/spr_hub/zone01_str/assets/environs_zone01/export/terrain/lodmodel1.rws.PS3.glb"
-                        ]
+                    "asset": {
+                        "asset_id": "aba164",
+                        "paths": []
                     },
                     "collision": {
                         "enabled": true,
@@ -39,16 +32,9 @@
                 },
                 {
                     "name": "Zone01_opt",
-                    "path": "assets/LHub-00_SprHub/spr_hub/zone01_str/assets/environs_zone01/opt/export_zone01/opt_model1_d6d44b.rws.PS3.glb",
-                    "index": {
-                        "index_id": 3902,
-                        "index_source_file_name": "opt_model1.rws.PS3.glb",
-                        "index_source_path": "LHub-00_SprHub/spr_hub/zone01_str/assets/environs_zone01/opt/export/zone01/opt_model1.rws.PS3.glb",
-                        "index_file_hash": "1988121a77a5cba05047edcf3f5e538879322439d694b1a522574be1401af98e",
-                        "paths": [
-                            "LHub-00_SprHub/spr_hub/zone01_str/assets/environs_zone01/opt/export_zone01/opt_model1_d6d44b.rws.PS3.glb",
-                            "LHub-00_SprHub/spr_hub/zone01_str/assets/environs_zone01/opt/export/zone01/opt_model1.rws.PS3.glb"
-                        ]
+                    "asset": {
+                        "asset_id": "d6d44b",
+                        "paths": []
                     },
                     "collision": {
                         "enabled": true,
@@ -59,16 +45,9 @@
                 },
                 {
                     "name": "Zone02_Terrain",
-                    "path": "assets/LHub-00_SprHub/spr_hub/zone02_str/assets/environs/zone02/export/terrain/lodmodel1_f8c09c.rws.PS3.glb",
-                    "index": {
-                        "index_id": 3962,
-                        "index_source_file_name": "lodmodel1.rws.PS3.glb",
-                        "index_source_path": "LHub-00_SprHub/spr_hub/zone02_str/assets/environs_zone02/export/terrain/lodmodel1.rws.PS3.glb",
-                        "index_file_hash": "b186fbf30f618925ec4e2212e422da4a9317e186ecd8f5893fbf35a7afef7757",
-                        "paths": [
-                            "LHub-00_SprHub/spr_hub/zone02_str/assets/environs_zone02/export/terrain/lodmodel1_f8c09c.rws.PS3.glb",
-                            "LHub-00_SprHub/spr_hub/zone02_str/assets/environs_zone02/export/terrain/lodmodel1.rws.PS3.glb"
-                        ]
+                    "asset": {
+                        "asset_id": "f8c09c",
+                        "paths": []
                     },
                     "collision": {
                         "enabled": true,
@@ -79,16 +58,9 @@
                 },
                 {
                     "name": "Zone02_opt",
-                    "path": "assets/LHub-00_SprHub/spr_hub/zone02_str/assets/environs/zone02/opt/export_zone02/opt_model1_4b1edb.rws.PS3.glb",
-                    "index": {
-                        "index_id": 3963,
-                        "index_source_file_name": "opt_model1.rws.PS3.glb",
-                        "index_source_path": "LHub-00_SprHub/spr_hub/zone02_str/assets/environs_zone02/opt/export/zone02/opt_model1.rws.PS3.glb",
-                        "index_file_hash": "3ea75ee2e6335c16c6346345d515a7ecd96b85c5b721e4ae8e8553f20960569a",
-                        "paths": [
-                            "LHub-00_SprHub/spr_hub/zone02_str/assets/environs_zone02/opt/export_zone02/opt_model1_4b1edb.rws.PS3.glb",
-                            "LHub-00_SprHub/spr_hub/zone02_str/assets/environs_zone02/opt/export/zone02/opt_model1.rws.PS3.glb"
-                        ]
+                    "asset": {
+                        "asset_id": "4b1edb",
+                        "paths": []
                     },
                     "collision": {
                         "enabled": true,
@@ -99,12 +71,9 @@
                 },
                 {
                     "name": "Zone03_Terrain",
-                    "path": "assets/LHub-00_SprHub/spr_hub/zone03_str/assets/environs/zone03/export/terrain/lodmodel1_214810.rws.PS3.glb",
-                    "index": {
-                        "paths": [
-                            "LHub-00_SprHub/spr_hub/zone03_str/assets/environs/zone03/export/terrain/lodmodel1_214810.rws.PS3.glb",
-                            ""
-                        ]
+                    "asset": {
+                        "asset_id": "214810",
+                        "paths": []
                     },
                     "collision": {
                         "enabled": true,
@@ -115,12 +84,9 @@
                 },
                 {
                     "name": "Zone03_opt",
-                    "path": "assets/LHub-00_SprHub/spr_hub/zone03_str/assets/environs/zone03/opt/export_zone03/opt_model1_1c4c5e.rws.PS3.glb",
-                    "index": {
-                        "paths": [
-                            "LHub-00_SprHub/spr_hub/zone03_str/assets/environs/zone03/opt/export_zone03/opt_model1_1c4c5e.rws.PS3.glb",
-                            ""
-                        ]
+                    "asset": {
+                        "asset_id": "1c4c5e",
+                        "paths": []
                     },
                     "collision": {
                         "enabled": true,
@@ -131,12 +97,9 @@
                 },
                 {
                     "name": "bldg_school",
-                    "path": "assets/LHub-00_SprHub/spr_hub/zone04_str/assets/environs/spr_downtown_bldg_school_geo/export_bldg_school/lodmodel1_0bfaa9.rws.PS3.glb",
-                    "index": {
-                        "paths": [
-                            "LHub-00_SprHub/spr_hub/zone04_str/assets/environs/spr_downtown_bldg_school_geo/export_bldg_school/lodmodel1_0bfaa9.rws.PS3.glb",
-                            ""
-                        ]
+                    "asset": {
+                        "asset_id": "0bfaa9",
+                        "paths": []
                     },
                     "collision": {
                         "enabled": true,
@@ -147,12 +110,9 @@
                 },
                 {
                     "name": "Zone04_Terrain",
-                    "path": "assets/LHub-00_SprHub/spr_hub/zone04_str/assets/environs/zone04/export/terrain/lodmodel1_d886be.rws.PS3.glb",
-                    "index": {
-                        "paths": [
-                            "LHub-00_SprHub/spr_hub/zone04_str/assets/environs/zone04/export/terrain/lodmodel1_d886be.rws.PS3.glb",
-                            ""
-                        ]
+                    "asset": {
+                        "asset_id": "d886be",
+                        "paths": []
                     },
                     "collision": {
                         "enabled": true,
@@ -163,12 +123,9 @@
                 },
                 {
                     "name": "Zone04_opt",
-                    "path": "assets/LHub-00_SprHub/spr_hub/zone04_str/assets/environs/zone04/opt/export_zone04/opt_model1_6c7f69.rws.PS3.glb",
-                    "index": {
-                        "paths": [
-                            "LHub-00_SprHub/spr_hub/zone04_str/assets/environs/zone04/opt/export_zone04/opt_model1_6c7f69.rws.PS3.glb",
-                            ""
-                        ]
+                    "asset": {
+                        "asset_id": "6c7f69",
+                        "paths": []
                     },
                     "collision": {
                         "enabled": true,
@@ -179,12 +136,9 @@
                 },
                 {
                     "name": "Zone05_Terrain",
-                    "path": "assets/LHub-00_SprHub/spr_hub/zone05_str/assets/environs_zone05/export/terrain/lodmodel1_d0a787.rws.PS3.glb",
-                    "index": {
-                        "paths": [
-                            "LHub-00_SprHub/spr_hub/zone05_str/assets/environs_zone05/export/terrain/lodmodel1_d0a787.rws.PS3.glb",
-                            ""
-                        ]
+                    "asset": {
+                        "asset_id": "d0a787",
+                        "paths": []
                     },
                     "collision": {
                         "enabled": true,
@@ -195,12 +149,9 @@
                 },
                 {
                     "name": "Zone05_opt",
-                    "path": "assets/LHub-00_SprHub/spr_hub/zone05_str/assets/environs_zone05/opt/export_zone05/opt_model1_3e3f59.rws.PS3.glb",
-                    "index": {
-                        "paths": [
-                            "",
-                            ""
-                        ]
+                    "asset": {
+                        "asset_id": "3e3f59",
+                        "paths": []
                     },
                     "collision": {
                         "enabled": true,
@@ -211,12 +162,9 @@
                 },
                 {
                     "name": "bowlarama",
-                    "path": "assets/LHub-00_SprHub/spr_hub/zone06_str/assets/environs/spr_commercial_bldg_bowlarama/export_bowlarama/lodmodel1_62f0fd.rws.PS3.glb",
-                    "index": {
-                        "paths": [
-                            "",
-                            ""
-                        ]
+                    "asset": {
+                        "asset_id": "62f0fd",
+                        "paths": []
                     },
                     "collision": {
                         "enabled": true,
@@ -227,12 +175,9 @@
                 },
                 {
                     "name": "Zone06_Terrain",
-                    "path": "assets/LHub-00_SprHub/spr_hub/zone06_str/assets/environs/zone06/export/terrain/lodmodel1_91bbe5.rws.PS3.glb",
-                    "index": {
-                        "paths": [
-                            "",
-                            ""
-                        ]
+                    "asset": {
+                        "asset_id": "91bbe5",
+                        "paths": []
                     },
                     "collision": {
                         "enabled": true,
@@ -243,12 +188,9 @@
                 },
                 {
                     "name": "Zone07_Terrain",
-                    "path": "assets/LHub-00_SprHub/spr_hub/zone07_str/assets/environs_zone07/export/terrain/lodmodel1_990018.rws.PS3.glb",
-                    "index": {
-                        "paths": [
-                            "",
-                            ""
-                        ]
+                    "asset": {
+                        "asset_id": "990018",
+                        "paths": []
                     },
                     "collision": {
                         "enabled": true,
@@ -259,12 +201,9 @@
                 },
                 {
                     "name": "Zone07_opt",
-                    "path": "assets/LHub-00_SprHub/spr_hub/zone07_str/assets/environs_zone07/opt/export_zone07/opt_model1_dd2605.rws.PS3.glb",
-                    "index": {
-                        "paths": [
-                            "",
-                            ""
-                        ]
+                    "asset": {
+                        "asset_id": "dd2605",
+                        "paths": []
                     },
                     "collision": {
                         "enabled": true,
@@ -275,12 +214,9 @@
                 },
                 {
                     "name": "Zone08_Terrain",
-                    "path": "assets/LHub-00_SprHub/spr_hub/zone08_str/assets/environs/zone08/export/terrain/lodmodel1_c14d62.rws.PS3.glb",
-                    "index": {
-                        "paths": [
-                            "",
-                            ""
-                        ]
+                    "asset": {
+                        "asset_id": "c14d62",
+                        "paths": []
                     },
                     "collision": {
                         "enabled": true,
@@ -291,12 +227,9 @@
                 },
                 {
                     "name": "bldg_duff_brewery",
-                    "path": "assets/LHub-00_SprHub/spr_hub/zone08_str/assets/environs/spr_industrial_bldg_duff_brewery_geo/export_bldg_duff_brewery/lodmodel1_3f18fc.rws.PS3.glb",
-                    "index": {
-                        "paths": [
-                            "",
-                            ""
-                        ]
+                    "asset": {
+                        "asset_id": "3f18fc",
+                        "paths": []
                     },
                     "collision": {
                         "enabled": true,
@@ -307,12 +240,9 @@
                 },
                 {
                     "name": "Zone09_Terrain",
-                    "path": "assets/LHub-00_SprHub/spr_hub/zone09_str/assets/environs_zone09/export/terrain/lodmodel1_7304c0.rws.PS3.glb",
-                    "index": {
-                        "paths": [
-                            "",
-                            ""
-                        ]
+                    "asset": {
+                        "asset_id": "7304c0",
+                        "paths": []
                     },
                     "collision": {
                         "enabled": true,
@@ -323,12 +253,9 @@
                 },
                 {
                     "name": "Zone10_Terrain",
-                    "path": "assets/LHub-00_SprHub/spr_hub/zone10_str/assets/environs_zone10/export/terrain/lodmodel1_b58cd1.rws.PS3.glb",
-                    "index": {
-                        "paths": [
-                            "",
-                            ""
-                        ]
+                    "asset": {
+                        "asset_id": "b58cd1",
+                        "paths": []
                     },
                     "collision": {
                         "enabled": true,
@@ -339,12 +266,9 @@
                 },
                 {
                     "name": "Zone11_Terrain",
-                    "path": "assets/LHub-00_SprHub/spr_hub/zone11_str/assets_environs_zone11/export/terrain/lodmodel1_a8e457.rws.PS3.glb",
-                    "index": {
-                        "paths": [
-                            "",
-                            ""
-                        ]
+                    "asset": {
+                        "asset_id": "a8e457",
+                        "paths": []
                     },
                     "collision": {
                         "enabled": true,
@@ -355,12 +279,9 @@
                 },
                 {
                     "name": "Zone12_Terrain",
-                    "path": "assets/LHub-00_SprHub/spr_hub/zone12_str/assets_environs_zone12/export/terrain/lodmodel1_a8f54e.rws.PS3.glb",
-                    "index": {
-                        "paths": [
-                            "",
-                            ""
-                        ]
+                    "asset": {
+                        "asset_id": "a8f54e",
+                        "paths": []
                     },
                     "collision": {
                         "enabled": true,
@@ -371,12 +292,9 @@
                 },
                 {
                     "name": "Zone13_Terrain",
-                    "path": "assets/LHub-00_SprHub/spr_hub/zone13_str/assets/environs_zone13/export/terrain/lodmodel1_9ebc72.rws.PS3.glb",
-                    "index": {
-                        "paths": [
-                            "",
-                            ""
-                        ]
+                    "asset": {
+                        "asset_id": "9ebc72",
+                        "paths": []
                     },
                     "collision": {
                         "enabled": true,
@@ -387,12 +305,9 @@
                 },
                 {
                     "name": "Zone14_Terrain",
-                    "path": "assets/LHub-00_SprHub/spr_hub/zone14_str/assets/environs_zone14/export/terrain/lodmodel1_f4f926.rws.PS3.glb",
-                    "index": {
-                        "paths": [
-                            "",
-                            ""
-                        ]
+                    "asset": {
+                        "asset_id": "f4f926",
+                        "paths": []
                     },
                     "collision": {
                         "enabled": true,
@@ -403,12 +318,9 @@
                 },
                 {
                     "name": "Zone15_Terrain",
-                    "path": "assets/LHub-00_SprHub/spr_hub/zone15_str/assets/environs_zone15/export/terrain/lodmodel1_77cd4f.rws.PS3.glb",
-                    "index": {
-                        "paths": [
-                            "",
-                            ""
-                        ]
+                    "asset": {
+                        "asset_id": "77cd4f",
+                        "paths": []
                     },
                     "collision": {
                         "enabled": true,
@@ -419,12 +331,9 @@
                 },
                 {
                     "name": "Zone15_opt",
-                    "path": "assets/LHub-00_SprHub/spr_hub/zone15_str/assets/environs_zone15/opt/export_zone15/opt_model1_97ab4d.rws.PS3.glb",
-                    "index": {
-                        "paths": [
-                            "",
-                            ""
-                        ]
+                    "asset": {
+                        "asset_id": "97ab4d",
+                        "paths": []
                     },
                     "collision": {
                         "enabled": true,
@@ -435,12 +344,9 @@
                 },
                 {
                     "name": "Zone16_Terrain",
-                    "path": "assets/LHub-00_SprHub/spr_hub/zone16_str/assets/environs_zone16/export/terrain/lodmodel1_7290ef.rws.PS3.glb",
-                    "index": {
-                        "paths": [
-                            "",
-                            ""
-                        ]
+                    "asset": {
+                        "asset_id": "7290ef",
+                        "paths": []
                     },
                     "collision": {
                         "enabled": true,
@@ -451,12 +357,9 @@
                 },
                 {
                     "name": "Zone17_Terrain",
-                    "path": "assets/LHub-00_SprHub/spr_hub/zone17_str/assets/environs_zone17/export/terrain/lodmodel1_d07c36.rws.PS3.glb",
-                    "index": {
-                        "paths": [
-                            "",
-                            ""
-                        ]
+                    "asset": {
+                        "asset_id": "d07c36",
+                        "paths": []
                     },
                     "collision": {
                         "enabled": true,
@@ -467,12 +370,9 @@
                 },
                 {
                     "name": "Zone18_Terrain",
-                    "path": "assets/LHub-00_SprHub/spr_hub/zone18_str/assets_environs_zone18/export/terrain/lodmodel1_82c755.rws.PS3.glb",
-                    "index": {
-                        "paths": [
-                            "",
-                            ""
-                        ]
+                    "asset": {
+                        "asset_id": "82c755",
+                        "paths": []
                     },
                     "collision": {
                         "enabled": true,
@@ -483,12 +383,9 @@
                 },
                 {
                     "name": "Zone19_Terrain",
-                    "path": "assets/LHub-00_SprHub/spr_hub/zone19_str/assets/environs_zone19/export/terrain/lodmodel1_1b66cd.rws.PS3.glb",
-                    "index": {
-                        "paths": [
-                            "",
-                            ""
-                        ]
+                    "asset": {
+                        "asset_id": "1b66cd",
+                        "paths": []
                     },
                     "collision": {
                         "enabled": true,
@@ -499,12 +396,9 @@
                 },
                 {
                     "name": "Zone20_Terrain",
-                    "path": "assets/LHub-00_SprHub/spr_hub/zone20_str/assets/environs_zone20/export/terrain/lodmodel1_d238a5.rws.PS3.glb",
-                    "index": {
-                        "paths": [
-                            "",
-                            ""
-                        ]
+                    "asset": {
+                        "asset_id": "d238a5",
+                        "paths": []
                     },
                     "collision": {
                         "enabled": true,
@@ -515,12 +409,9 @@
                 },
                 {
                     "name": "Zone21_Terrain",
-                    "path": "assets/LHub-00_SprHub/spr_hub/zone21_str/assets/environs_zone21/export/terrain/lodmodel1_4b2bf3.rws.PS3.glb",
-                    "index": {
-                        "paths": [
-                            "",
-                            ""
-                        ]
+                    "asset": {
+                        "asset_id": "4b2bf3",
+                        "paths": []
                     },
                     "collision": {
                         "enabled": true,
@@ -531,12 +422,9 @@
                 },
                 {
                     "name": "Zone21_opt",
-                    "path": "assets/LHub-00_SprHub/spr_hub/zone21_str/assets/environs_zone21/opt/export/zone21/opt_model1_bc673d.rws.PS3.glb",
-                    "index": {
-                        "paths": [
-                            "",
-                            ""
-                        ]
+                    "asset": {
+                        "asset_id": "bc673d",
+                        "paths": []
                     },
                     "collision": {
                         "enabled": true,
