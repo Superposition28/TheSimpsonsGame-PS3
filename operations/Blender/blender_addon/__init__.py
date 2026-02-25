@@ -1,3 +1,7 @@
+"""
+
+"""
+
 # SPDX-License-Identifier: MIT
 # Blender addon for importing The Simpsons Game 3D assets with texture↔mesh linking
 
@@ -17,20 +21,19 @@ from bpy.props import StringProperty, CollectionProperty
 from bpy_extras.io_utils import ImportHelper
 
 from . import utils as addon_utils
+from . import bl_info as bl_info_helper
 
-# meta data now located in blender_manifest.toml
-#bl_info = {
-#    "name": "The Simpsons Game 3d Asset Importer",
-#    "author": "Turk & Mister_Nebula & Samarixum",
-#    "version": (1, 5, 8),
-#    "blender": (4, 0, 0),  # highest supportable version
-#    "location": "File > Import-Export",
-#    "description": "Import .rws.preinstanced, .dff.preinstanced mesh files from The Simpsons Game (PS3), detect embedded strings, and link textures to meshes.",
-#    "warning": "",
-#    "category": "Import-Export",
-#}
+# Get values from TOML
+_manifest = bl_info_helper.get_manifest_data()
+
 bl_info = {
-    "version": (1, 5, 8), ## later update the code to read the toml
+    "name": _manifest.get("name", "The Simpsons Game 3d Asset Importer"),
+    "author": _manifest.get("maintainer", "Turk & Mister_Nebula & Samarixum"),
+    "version": bl_info_helper.get_version_tuple(_manifest.get("version", "1.5.8")),
+    "blender": bl_info_helper.get_version_tuple(_manifest.get("blender_version_min", "4.0.0")),
+    "location": "File > Import-Export",
+    "description": _manifest.get("tagline", ""),
+    "category": "Import-Export",
 }
 
 ALLOWED_CHARS = string.ascii_letters + string.digits + '_-.'
