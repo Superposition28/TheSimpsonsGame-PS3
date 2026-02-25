@@ -115,25 +115,8 @@ function M.absolute_path(path)
 end
 
 function M.join(...)
-    local parts = { ... }
-    local buffer = {}
-    for index = 1, #parts do
-        local part = parts[index]
-        if part and part ~= "" then
-            if type(part) ~= 'string' then
-                part = tostring(part)
-            end
-            part = M.normalize_separators(part)
-            if index > 1 then
-                part = part:gsub("^" .. path_sep .. "+", "")
-            end
-            if index < #parts then
-                part = part:gsub(path_sep .. "+$", "")
-            end
-            table.insert(buffer, part)
-        end
-    end
-    return table.concat(buffer, path_sep)
+    local res = join(...)
+    return M.normalize_separators(res)
 end
 
 function M.iterate_files(root_dir, visitor)

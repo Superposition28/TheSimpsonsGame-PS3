@@ -7,8 +7,11 @@ tagline = "Import .rws.preinstanced, .dff.preinstanced mesh files from The Simps
 maintainer = "Turk & Mister_Nebula & Samarixum"
 type = "add-on"
 
+license = ["SPDX:MIT"]
+
+
 blender_version_min = "4.0.0"
-blender_version_max = "5.0.0"
+blender_version_max = "5.0.99"
 
 permissions = [
   "files"
