@@ -13,24 +13,12 @@
             },
             {
                 "name": "Player",
-                "class": "Node3D",
+                "class": "CharacterBody3D",
                 "path": "Node4D/Node3D/Characters/player.tscn",
                 "type": "scene",
-                "children": [
-                    {
-                        "name": "CollisionShape3D",
-                        "type": "node",
-                        "class": "CollisionShape3D",
-                        "config": {
-                            "transform": {
-                                "position": {"x": 0, "y": 0, "z": 0},
-                                "rotation_degrees": {"x": 0, "y": 0, "z": 0},
-                                "scale": {"x": 1, "y": 1, "z": 1}
-                            }
-                        }
-                    }
-                ],
+                "script": "addons/srcoder_thirdperson_controller/assets/player.gd",
                 "config": {
+                    "collision_layer": 2,
                     "transform": {
                         "position": {
                             "x": 1000,
@@ -48,7 +36,105 @@
                             "z": 1
                         }
                     }
-                }
+                },
+                "children": [
+                    {
+                        "name": "CollisionShape3D",
+                        "class": "CollisionShape3D",
+                        "config": {
+                            "transform": {
+                                "position": {
+                                    "x": 0,
+                                    "y": 0.358072,
+                                    "z": 0
+                                }
+                            },
+                            "shape": {
+                                "type": "Capsule",
+                                "radius": 0.274773,
+                                "height": 0.721095
+                            }
+                        }
+                    },
+                    {
+                        "name": "camera_pivot",
+                        "class": "Node3D",
+                        "script": "addons/srcoder_thirdperson_controller/assets/camera_pivot.gd",
+                        "children": [
+                            {
+                                "name": "SpringArm3D",
+                                "class": "SpringArm3D",
+                                "config": {
+                                    "transform": {
+                                        "position": {
+                                            "x": 0,
+                                            "y": 0.512907,
+                                            "z": 0
+                                        }
+                                    },
+                                    "shape": {
+                                        "type": "SeparationRay"
+                                    },
+                                    "properties": {
+                                        "spring_length": 3.0
+                                    }
+                                },
+                                "children": [
+                                    {
+                                        "name": "Camera3D",
+                                        "class": "Camera3D"
+                                    }
+                                ]
+                            }
+                        ]
+                    },
+                    {
+                        "name": "playermodel",
+                        "class": "Node3D",
+                        "children": [
+                            {
+                                "name": "character-male-e2",
+                                "path": "addons/srcoder_thirdperson_controller/assets/character-male-e.glb",
+                                "type": "scene",
+                                "config": {
+                                    "transform": {
+                                        "position": {
+                                            "x": 0,
+                                            "y": 0.0071882,
+                                            "z": 0
+                                        },
+                                        "rotation_degrees": {
+                                            "x": 0,
+                                            "y": 180,
+                                            "z": 0
+                                        }
+                                    },
+                                    "bone_overrides": {
+                                        "skeleton_path": "character-male-e/Skeleton3D",
+                                        "poses": {
+                                            "4": {
+                                                "rotation": {
+                                                    "x": 0,
+                                                    "y": 0,
+                                                    "z": -0.382683,
+                                                    "w": 0.92388
+                                                }
+                                            },
+                                            "5": {
+                                                "rotation": {
+                                                    "x": 0,
+                                                    "y": 0,
+                                                    "z": 0.382683,
+                                                    "w": 0.92388
+                                                }
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        ]
+                    }
+                ]
             },
             {
                 "name": "All",

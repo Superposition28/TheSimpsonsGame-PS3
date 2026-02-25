@@ -1,5 +1,6 @@
 [
     {
-        "name": "OutputField"
+        "name": "OutputField",
+        "class": "RichTextLabel"
     }
 ]

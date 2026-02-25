@@ -21,6 +21,7 @@
                     "name": "Zone1_Terrain",
                     "asset": {
                         "asset_id": "592a6f",
+                        "asset_type": "glb",
                         "paths": []
                     },
                     "collision": {
@@ -34,6 +35,7 @@
                     "name": "Zone2_Terrain",
                     "asset": {
                         "asset_id": "eacd0a",
+                        "asset_type": "glb",
                         "paths": []
                     },
                     "collision": {
@@ -47,6 +49,7 @@
                     "name": "Zone3_Terrain",
                     "asset": {
                         "asset_id": "2ff71d",
+                        "asset_type": "glb",
                         "paths": []
                     },
                     "collision": {
@@ -60,6 +63,7 @@
                     "name": "Zone4_Terrain",
                     "asset": {
                         "asset_id": "833f42",
+                        "asset_type": "glb",
                         "paths": []
                     },
                     "collision": {
@@ -73,6 +77,7 @@
                     "name": "Zone5_Terrain",
                     "asset": {
                         "asset_id": "36aea4",
+                        "asset_type": "glb",
                         "paths": []
                     },
                     "collision": {
@@ -86,6 +91,7 @@
                     "name": "Zone6_Terrain",
                     "asset": {
                         "asset_id": "b9da23",
+                        "asset_type": "glb",
                         "paths": []
                     },
                     "collision": {
@@ -99,6 +105,7 @@
                     "name": "Zone7_Terrain",
                     "asset": {
                         "asset_id": "93345b",
+                        "asset_type": "glb",
                         "paths": []
                     },
                     "collision": {

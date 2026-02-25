@@ -1,5 +1,6 @@
 [
     {
-        "name": "InputField"
+        "name": "InputField",
+        "class": "LineEdit"
     }
 ]

@@ -33,6 +33,7 @@
                     "name": "Zone01_Terrain",
                     "asset": {
                         "asset_id": "a70bb3",
+                        "asset_type": "glb",
                         "paths": []
                     },
                     "collision": {

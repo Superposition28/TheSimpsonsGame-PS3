@@ -21,6 +21,7 @@
                     "name": "Zone01_Terrain",
                     "asset": {
                         "asset_id": "459e37",
+                        "asset_type": "glb",
                         "paths": []
                     },
                     "collision": {
@@ -34,6 +35,7 @@
                     "name": "Zone02_Terrain",
                     "asset": {
                         "asset_id": "999873",
+                        "asset_type": "glb",
                         "paths": []
                     },
                     "collision": {
@@ -47,6 +49,7 @@
                     "name": "Zone03_Terrain",
                     "asset": {
                         "asset_id": "3b9e19",
+                        "asset_type": "glb",
                         "paths": []
                     },
                     "collision": {
@@ -60,6 +63,7 @@
                     "name": "Zone04_Terrain",
                     "asset": {
                         "asset_id": "2de7bd",
+                        "asset_type": "glb",
                         "paths": []
                     },
                     "collision": {

@@ -1,506 +1,506 @@
 [
-  {
-    "children": [
-      {
+    {
         "children": [
-          {
-            "class": "Sprite2D",
-            "asset": {
-              "asset_id": "f5dc4b",
-              "asset_type": "png",
-              "paths": [
-                "A2_Frontend/frontend_str/assets_rws/txd/frontend_split20_txd/9_cliche_summary_f5dc4b.png"
-              ]
-            },
-            "config": {
-              "position": {
-                "x": 4520.0,
-                "y": 1224.0
-              }
-            },
-            "name": "9ClicheSummary"
-          },
-          {
-            "class": "Sprite2D",
-            "asset": {
-              "asset_id": "a284d5",
-              "asset_type": "png",
-              "paths": [
-                "A2_Frontend/frontend_str/assets_rws/txd/frontend_split24_txd/88_cliche_summary_a284d5.png"
-              ]
-            },
-            "config": {
-              "position": {
-                "x": 1568.0,
-                "y": 824.0
-              }
-            },
-            "name": "88ClicheSummary"
-          },
-          {
-            "class": "Sprite2D",
-            "asset": {
-              "asset_id": "44f26d",
-              "asset_type": "png",
-              "paths": [
-                "A2_Frontend/frontend_str/assets_rws/txd/frontend_split24_txd/91_cliche_summary_44f26d.png"
-              ]
-            },
-            "config": {
-              "position": {
-                "x": 3632.0,
-                "y": 1200.0
-              }
-            },
-            "name": "91ClicheSummary"
-          },
-          {
-            "class": "Sprite2D",
-            "asset": {
-              "asset_id": "b6ebf5",
-              "asset_type": "png",
-              "paths": [
-                "A2_Frontend/frontend_str/assets_rws/txd/frontend_split24_txd/94_cliche_summary_b6ebf5.png"
-              ]
-            },
-            "config": {
-              "position": {
-                "x": 3336.0,
-                "y": 1408.0
-              }
-            },
-            "name": "94ClicheSummary"
-          },
-          {
-            "class": "Sprite2D",
-            "asset": {
-              "asset_id": "9b7373",
-              "asset_type": "png",
-              "paths": [
-                "A2_Frontend/frontend_str/assets_rws/txd/frontend_split24_txd/97_cliche_summary_9b7373.png"
-              ]
-            },
-            "config": {
-              "position": {
-                "x": 2992.0,
-                "y": 872.0
-              }
-            },
-            "name": "97ClicheSummary"
-          },
-          {
-            "class": "Sprite2D",
-            "asset": {
-              "asset_id": "b0dc20",
-              "asset_type": "png",
-              "paths": [
-                "A2_Frontend/frontend_str/assets_rws/txd/frontend_split25_txd/37_cliche_summary_b0dc20.png"
-              ]
-            },
-            "config": {
-              "position": {
-                "x": 2976.0,
-                "y": 1504.0
-              }
-            },
-            "name": "37ClicheSummary"
-          },
-          {
-            "class": "Sprite2D",
-            "asset": {
-              "asset_id": "800bc4",
-              "asset_type": "png",
-              "paths": [
-                "A2_Frontend/frontend_str/assets_rws/txd/frontend_split25_txd/67_cliche_summary_800bc4.png"
-              ]
-            },
-            "config": {
-              "position": {
-                "x": 3336.0,
-                "y": 1032.0
-              }
-            },
-            "name": "67ClicheSummary"
-          },
-          {
-            "class": "Sprite2D",
-            "asset": {
-              "asset_id": "4846c1",
-              "asset_type": "png",
-              "paths": [
-                "A2_Frontend/frontend_str/assets_rws/txd/frontend_split25_txd/70_cliche_summary_4846c1.png"
-              ]
-            },
-            "config": {
-              "position": {
-                "x": 2280.0,
-                "y": 872.0
-              }
-            },
-            "name": "70ClicheSummary"
-          },
-          {
-            "class": "Sprite2D",
-            "asset": {
-              "asset_id": "047b1a",
-              "asset_type": "png",
-              "paths": [
-                "A2_Frontend/frontend_str/assets_rws/txd/frontend_split25_txd/73_cliche_summary_047b1a.png"
-              ]
-            },
-            "config": {
-              "position": {
-                "x": 192.0,
-                "y": 832.0
-              }
-            },
-            "name": "73ClicheSummary"
-          },
-          {
-            "class": "Sprite2D",
-            "asset": {
-              "asset_id": "29fd1b",
-              "asset_type": "png",
-              "paths": [
-                "A2_Frontend/frontend_str/assets_rws/txd/frontend_split25_txd/76_cliche_summary_29fd1b.png"
-              ]
-            },
-            "config": {
-              "position": {
-                "x": 2632.0,
-                "y": 896.0
-              }
-            },
-            "name": "76ClicheSummary"
-          },
-          {
-            "class": "Sprite2D",
-            "asset": {
-              "asset_id": "169c7b",
-              "asset_type": "png",
-              "paths": [
-                "A2_Frontend/frontend_str/assets_rws/txd/frontend_split25_txd/79_cliche_summary_169c7b.png"
-              ]
-            },
-            "config": {
-              "position": {
-                "x": 192.0,
-                "y": 1152.0
-              }
-            },
-            "name": "79ClicheSummary"
-          },
-          {
-            "class": "Sprite2D",
-            "asset": {
-              "asset_id": "afc3a9",
-              "asset_type": "png",
-              "paths": [
-                "A2_Frontend/frontend_str/assets_rws/txd/frontend_split25_txd/82_cliche_summary_afc3a9.png"
-              ]
-            },
-            "config": {
-              "position": {
-                "x": 512.0,
-                "y": 1472.0
-              }
-            },
-            "name": "82ClicheSummary"
-          },
-          {
-            "class": "Sprite2D",
-            "asset": {
-              "asset_id": "1e582e",
-              "asset_type": "png",
-              "paths": [
-                "A2_Frontend/frontend_str/assets_rws/txd/frontend_split25_txd/85_cliche_summary_1e582e.png"
-              ]
-            },
-            "config": {
-              "position": {
-                "x": 192.0,
-                "y": 1480.0
-              }
-            },
-            "name": "85ClicheSummary"
-          },
-          {
-            "class": "Sprite2D",
-            "asset": {
-              "asset_id": "4da782",
-              "asset_type": "png",
-              "paths": [
-                "A2_Frontend/frontend_str/assets_rws/txd/frontend_split26_txd/46_cliche_summary_4da782.png"
-              ]
-            },
-            "config": {
-              "position": {
-                "x": 512.0,
-                "y": 1152.0
-              }
-            },
-            "name": "46ClicheSummary"
-          },
-          {
-            "class": "Sprite2D",
-            "asset": {
-              "asset_id": "882fb7",
-              "asset_type": "png",
-              "paths": [
-                "A2_Frontend/frontend_str/assets_rws/txd/frontend_split26_txd/49_cliche_summary_882fb7.png"
-              ]
-            },
-            "config": {
-              "position": {
-                "x": 1256.0,
-                "y": 840.0
-              }
-            },
-            "name": "49ClicheSummary"
-          },
-          {
-            "class": "Sprite2D",
-            "asset": {
-              "asset_id": "41feec",
-              "asset_type": "png",
-              "paths": [
-                "A2_Frontend/frontend_str/assets_rws/txd/frontend_split26_txd/52_cliche_summary_41feec.png"
-              ]
-            },
-            "config": {
-              "position": {
-                "x": 2296.0,
-                "y": 1200.0
-              }
-            },
-            "name": "52ClicheSummary"
-          },
-          {
-            "class": "Sprite2D",
-            "asset": {
-              "asset_id": "d6dcff",
-              "asset_type": "png",
-              "paths": [
-                "A2_Frontend/frontend_str/assets_rws/txd/frontend_split26_txd/55_cliche_summary_d6dcff.png"
-              ]
-            },
-            "config": {
-              "position": {
-                "x": 1544.0,
-                "y": 1520.0
-              }
-            },
-            "name": "55ClicheSummary"
-          },
-          {
-            "class": "Sprite2D",
-            "asset": {
-              "asset_id": "08739a",
-              "asset_type": "png",
-              "paths": [
-                "A2_Frontend/frontend_str/assets_rws/txd/frontend_split26_txd/58_cliche_summary_08739a.png"
-              ]
-            },
-            "config": {
-              "position": {
-                "x": 2664.0,
-                "y": 1520.0
-              }
-            },
-            "name": "58ClicheSummary"
-          },
-          {
-            "class": "Sprite2D",
-            "asset": {
-              "asset_id": "27ab64",
-              "asset_type": "png",
-              "paths": [
-                "A2_Frontend/frontend_str/assets_rws/txd/frontend_split26_txd/61_cliche_summary_27ab64.png"
-              ]
-            },
-            "config": {
-              "position": {
-                "x": 2632.0,
-                "y": 1160.0
-              }
-            },
-            "name": "61ClicheSummary"
-          },
-          {
-            "class": "Sprite2D",
-            "asset": {
-              "asset_id": "06e603",
-              "asset_type": "png",
-              "paths": [
-                "A2_Frontend/frontend_str/assets_rws/txd/frontend_split27_txd/30_cliche_summary_06e603.png"
-              ]
-            },
-            "config": {
-              "position": {
-                "x": 1208.0,
-                "y": 1168.0
-              }
-            },
-            "name": "30ClicheSummary"
-          },
-          {
-            "class": "Sprite2D",
-            "asset": {
-              "asset_id": "241d8b",
-              "asset_type": "png",
-              "paths": [
-                "A2_Frontend/frontend_str/assets_rws/txd/frontend_split27_txd/34_cliche_summary_241d8b.png"
-              ]
-            },
-            "config": {
-              "position": {
-                "x": 872.0,
-                "y": 1144.0
-              }
-            },
-            "name": "34ClicheSummary"
-          },
-          {
-            "class": "Sprite2D",
-            "asset": {
-              "asset_id": "9cf20c",
-              "asset_type": "png",
-              "paths": [
-                "A2_Frontend/frontend_str/assets_rws/txd/frontend_split27_txd/43_cliche_summary_9cf20c.png"
-              ]
-            },
-            "config": {
-              "position": {
-                "x": 1952.0,
-                "y": 1544.0
-              }
-            },
-            "name": "43ClicheSummary"
-          },
-          {
-            "class": "Sprite2D",
-            "asset": {
-              "asset_id": "d07fb4",
-              "asset_type": "png",
-              "paths": [
-                "A2_Frontend/frontend_str/assets_rws/txd/frontend_split27_txd/100_cliche_summary_d07fb4.png"
-              ]
-            },
-            "config": {
-              "position": {
-                "x": 1936.0,
-                "y": 1200.0
-              }
-            },
-            "name": "100ClicheSummary"
-          },
-          {
-            "class": "Sprite2D",
-            "config": {
-              "position": {
-                "x": 880.0,
-                "y": 1512.0
-              },
-              "texture_path": "res://assets/A2_Frontend/frontend_str/assets_rws/txd/frontend_split27_txd/103_cliche_summary_24b5cf.png"
-            },
-            "name": "103ClicheSummary"
-          },
-          {
-            "class": "Sprite2D",
-            "config": {
-              "position": {
-                "x": 512.0,
-                "y": 832.0
-              },
-              "texture_path": "res://assets/A2_Frontend/frontend_str/assets_rws/txd/frontend_split27_txd/106_cliche_summary_621c82.png"
-            },
-            "name": "106ClicheSummary"
-          },
-          {
-            "class": "Sprite2D",
-            "config": {
-              "position": {
-                "x": 2960.0,
-                "y": 1144.0
-              },
-              "texture_path": "res://assets/A2_Frontend/frontend_str/assets_rws/txd/frontend_split27_txd/109_cliche_summary_39cfb2.png"
-            },
-            "name": "109ClicheSummary"
-          },
-          {
-            "class": "Sprite2D",
-            "config": {
-              "position": {
-                "x": 2280.0,
-                "y": 1520.0
-              },
-              "texture_path": "res://assets/A2_Frontend/frontend_str/assets_rws/txd/frontend_split27_txd/112_cliche_summary_ff9096.png"
-            },
-            "name": "112ClicheSummary"
-          },
-          {
-            "class": "Sprite2D",
-            "config": {
-              "position": {
-                "x": 1176.0,
-                "y": 1528.0
-              },
-              "texture_path": "res://assets/A2_Frontend/frontend_str/assets_rws/txd/frontend_split27_txd/115_cliche_summary_35f3fe.png"
-            },
-            "name": "115ClicheSummary"
-          },
-          {
-            "class": "Sprite2D",
-            "config": {
-              "position": {
-                "x": 1576.0,
-                "y": 1176.0
-              },
-              "texture_path": "res://assets/A2_Frontend/frontend_str/assets_rws/txd/frontend_split27_txd/118_cliche_summary_b482fb.png"
+            {
+                "children": [
+                    {
+                        "class": "Sprite2D",
+                        "asset": {
+                            "asset_id": "f5dc4b",
+                            "asset_type": "png",
+                            "paths": [
+                                "A2_Frontend/frontend_str/assets_rws/txd/frontend_split20_txd/9_cliche_summary_f5dc4b.png"
+                            ]
+                        },
+                        "config": {
+                            "position": {
+                                "x": 4520.0,
+                                "y": 1224.0
+                            }
+                        },
+                        "name": "9ClicheSummary"
+                    },
+                    {
+                        "class": "Sprite2D",
+                        "asset": {
+                            "asset_id": "a284d5",
+                            "asset_type": "png",
+                            "paths": [
+                                "A2_Frontend/frontend_str/assets_rws/txd/frontend_split24_txd/88_cliche_summary_a284d5.png"
+                            ]
+                        },
+                        "config": {
+                            "position": {
+                                "x": 1568.0,
+                                "y": 824.0
+                            }
+                        },
+                        "name": "88ClicheSummary"
+                    },
+                    {
+                        "class": "Sprite2D",
+                        "asset": {
+                            "asset_id": "44f26d",
+                            "asset_type": "png",
+                            "paths": [
+                                "A2_Frontend/frontend_str/assets_rws/txd/frontend_split24_txd/91_cliche_summary_44f26d.png"
+                            ]
+                        },
+                        "config": {
+                            "position": {
+                                "x": 3632.0,
+                                "y": 1200.0
+                            }
+                        },
+                        "name": "91ClicheSummary"
+                    },
+                    {
+                        "class": "Sprite2D",
+                        "asset": {
+                            "asset_id": "b6ebf5",
+                            "asset_type": "png",
+                            "paths": [
+                                "A2_Frontend/frontend_str/assets_rws/txd/frontend_split24_txd/94_cliche_summary_b6ebf5.png"
+                            ]
+                        },
+                        "config": {
+                            "position": {
+                                "x": 3336.0,
+                                "y": 1408.0
+                            }
+                        },
+                        "name": "94ClicheSummary"
+                    },
+                    {
+                        "class": "Sprite2D",
+                        "asset": {
+                            "asset_id": "9b7373",
+                            "asset_type": "png",
+                            "paths": [
+                                "A2_Frontend/frontend_str/assets_rws/txd/frontend_split24_txd/97_cliche_summary_9b7373.png"
+                            ]
+                        },
+                        "config": {
+                            "position": {
+                                "x": 2992.0,
+                                "y": 872.0
+                            }
+                        },
+                        "name": "97ClicheSummary"
+                    },
+                    {
+                        "class": "Sprite2D",
+                        "asset": {
+                            "asset_id": "b0dc20",
+                            "asset_type": "png",
+                            "paths": [
+                                "A2_Frontend/frontend_str/assets_rws/txd/frontend_split25_txd/37_cliche_summary_b0dc20.png"
+                            ]
+                        },
+                        "config": {
+                            "position": {
+                                "x": 2976.0,
+                                "y": 1504.0
+                            }
+                        },
+                        "name": "37ClicheSummary"
+                    },
+                    {
+                        "class": "Sprite2D",
+                        "asset": {
+                            "asset_id": "800bc4",
+                            "asset_type": "png",
+                            "paths": [
+                                "A2_Frontend/frontend_str/assets_rws/txd/frontend_split25_txd/67_cliche_summary_800bc4.png"
+                            ]
+                        },
+                        "config": {
+                            "position": {
+                                "x": 3336.0,
+                                "y": 1032.0
+                            }
+                        },
+                        "name": "67ClicheSummary"
+                    },
+                    {
+                        "class": "Sprite2D",
+                        "asset": {
+                            "asset_id": "4846c1",
+                            "asset_type": "png",
+                            "paths": [
+                                "A2_Frontend/frontend_str/assets_rws/txd/frontend_split25_txd/70_cliche_summary_4846c1.png"
+                            ]
+                        },
+                        "config": {
+                            "position": {
+                                "x": 2280.0,
+                                "y": 872.0
+                            }
+                        },
+                        "name": "70ClicheSummary"
+                    },
+                    {
+                        "class": "Sprite2D",
+                        "asset": {
+                            "asset_id": "047b1a",
+                            "asset_type": "png",
+                            "paths": [
+                                "A2_Frontend/frontend_str/assets_rws/txd/frontend_split25_txd/73_cliche_summary_047b1a.png"
+                            ]
+                        },
+                        "config": {
+                            "position": {
+                                "x": 192.0,
+                                "y": 832.0
+                            }
+                        },
+                        "name": "73ClicheSummary"
+                    },
+                    {
+                        "class": "Sprite2D",
+                        "asset": {
+                            "asset_id": "29fd1b",
+                            "asset_type": "png",
+                            "paths": [
+                                "A2_Frontend/frontend_str/assets_rws/txd/frontend_split25_txd/76_cliche_summary_29fd1b.png"
+                            ]
+                        },
+                        "config": {
+                            "position": {
+                                "x": 2632.0,
+                                "y": 896.0
+                            }
+                        },
+                        "name": "76ClicheSummary"
+                    },
+                    {
+                        "class": "Sprite2D",
+                        "asset": {
+                            "asset_id": "169c7b",
+                            "asset_type": "png",
+                            "paths": [
+                                "A2_Frontend/frontend_str/assets_rws/txd/frontend_split25_txd/79_cliche_summary_169c7b.png"
+                            ]
+                        },
+                        "config": {
+                            "position": {
+                                "x": 192.0,
+                                "y": 1152.0
+                            }
+                        },
+                        "name": "79ClicheSummary"
+                    },
+                    {
+                        "class": "Sprite2D",
+                        "asset": {
+                            "asset_id": "afc3a9",
+                            "asset_type": "png",
+                            "paths": [
+                                "A2_Frontend/frontend_str/assets_rws/txd/frontend_split25_txd/82_cliche_summary_afc3a9.png"
+                            ]
+                        },
+                        "config": {
+                            "position": {
+                                "x": 512.0,
+                                "y": 1472.0
+                            }
+                        },
+                        "name": "82ClicheSummary"
+                    },
+                    {
+                        "class": "Sprite2D",
+                        "asset": {
+                            "asset_id": "1e582e",
+                            "asset_type": "png",
+                            "paths": [
+                                "A2_Frontend/frontend_str/assets_rws/txd/frontend_split25_txd/85_cliche_summary_1e582e.png"
+                            ]
+                        },
+                        "config": {
+                            "position": {
+                                "x": 192.0,
+                                "y": 1480.0
+                            }
+                        },
+                        "name": "85ClicheSummary"
+                    },
+                    {
+                        "class": "Sprite2D",
+                        "asset": {
+                            "asset_id": "4da782",
+                            "asset_type": "png",
+                            "paths": [
+                                "A2_Frontend/frontend_str/assets_rws/txd/frontend_split26_txd/46_cliche_summary_4da782.png"
+                            ]
+                        },
+                        "config": {
+                            "position": {
+                                "x": 512.0,
+                                "y": 1152.0
+                            }
+                        },
+                        "name": "46ClicheSummary"
+                    },
+                    {
+                        "class": "Sprite2D",
+                        "asset": {
+                            "asset_id": "882fb7",
+                            "asset_type": "png",
+                            "paths": [
+                                "A2_Frontend/frontend_str/assets_rws/txd/frontend_split26_txd/49_cliche_summary_882fb7.png"
+                            ]
+                        },
+                        "config": {
+                            "position": {
+                                "x": 1256.0,
+                                "y": 840.0
+                            }
+                        },
+                        "name": "49ClicheSummary"
+                    },
+                    {
+                        "class": "Sprite2D",
+                        "asset": {
+                            "asset_id": "41feec",
+                            "asset_type": "png",
+                            "paths": [
+                                "A2_Frontend/frontend_str/assets_rws/txd/frontend_split26_txd/52_cliche_summary_41feec.png"
+                            ]
+                        },
+                        "config": {
+                            "position": {
+                                "x": 2296.0,
+                                "y": 1200.0
+                            }
+                        },
+                        "name": "52ClicheSummary"
+                    },
+                    {
+                        "class": "Sprite2D",
+                        "asset": {
+                            "asset_id": "d6dcff",
+                            "asset_type": "png",
+                            "paths": [
+                                "A2_Frontend/frontend_str/assets_rws/txd/frontend_split26_txd/55_cliche_summary_d6dcff.png"
+                            ]
+                        },
+                        "config": {
+                            "position": {
+                                "x": 1544.0,
+                                "y": 1520.0
+                            }
+                        },
+                        "name": "55ClicheSummary"
+                    },
+                    {
+                        "class": "Sprite2D",
+                        "asset": {
+                            "asset_id": "08739a",
+                            "asset_type": "png",
+                            "paths": [
+                                "A2_Frontend/frontend_str/assets_rws/txd/frontend_split26_txd/58_cliche_summary_08739a.png"
+                            ]
+                        },
+                        "config": {
+                            "position": {
+                                "x": 2664.0,
+                                "y": 1520.0
+                            }
+                        },
+                        "name": "58ClicheSummary"
+                    },
+                    {
+                        "class": "Sprite2D",
+                        "asset": {
+                            "asset_id": "27ab64",
+                            "asset_type": "png",
+                            "paths": [
+                                "A2_Frontend/frontend_str/assets_rws/txd/frontend_split26_txd/61_cliche_summary_27ab64.png"
+                            ]
+                        },
+                        "config": {
+                            "position": {
+                                "x": 2632.0,
+                                "y": 1160.0
+                            }
+                        },
+                        "name": "61ClicheSummary"
+                    },
+                    {
+                        "class": "Sprite2D",
+                        "asset": {
+                            "asset_id": "06e603",
+                            "asset_type": "png",
+                            "paths": [
+                                "A2_Frontend/frontend_str/assets_rws/txd/frontend_split27_txd/30_cliche_summary_06e603.png"
+                            ]
+                        },
+                        "config": {
+                            "position": {
+                                "x": 1208.0,
+                                "y": 1168.0
+                            }
+                        },
+                        "name": "30ClicheSummary"
+                    },
+                    {
+                        "class": "Sprite2D",
+                        "asset": {
+                            "asset_id": "241d8b",
+                            "asset_type": "png",
+                            "paths": [
+                                "A2_Frontend/frontend_str/assets_rws/txd/frontend_split27_txd/34_cliche_summary_241d8b.png"
+                            ]
+                        },
+                        "config": {
+                            "position": {
+                                "x": 872.0,
+                                "y": 1144.0
+                            }
+                        },
+                        "name": "34ClicheSummary"
+                    },
+                    {
+                        "class": "Sprite2D",
+                        "asset": {
+                            "asset_id": "9cf20c",
+                            "asset_type": "png",
+                            "paths": [
+                                "A2_Frontend/frontend_str/assets_rws/txd/frontend_split27_txd/43_cliche_summary_9cf20c.png"
+                            ]
+                        },
+                        "config": {
+                            "position": {
+                                "x": 1952.0,
+                                "y": 1544.0
+                            }
+                        },
+                        "name": "43ClicheSummary"
+                    },
+                    {
+                        "class": "Sprite2D",
+                        "asset": {
+                            "asset_id": "d07fb4",
+                            "asset_type": "png",
+                            "paths": [
+                                "A2_Frontend/frontend_str/assets_rws/txd/frontend_split27_txd/100_cliche_summary_d07fb4.png"
+                            ]
+                        },
+                        "config": {
+                            "position": {
+                                "x": 1936.0,
+                                "y": 1200.0
+                            }
+                        },
+                        "name": "100ClicheSummary"
+                    },
+                    {
+                        "class": "Sprite2D",
+                        "config": {
+                            "position": {
+                                "x": 880.0,
+                                "y": 1512.0
+                            },
+                            "texture_path": "res://assets/A2_Frontend/frontend_str/assets_rws/txd/frontend_split27_txd/103_cliche_summary_24b5cf.png"
+                        },
+                        "name": "103ClicheSummary"
+                    },
+                    {
+                        "class": "Sprite2D",
+                        "config": {
+                            "position": {
+                                "x": 512.0,
+                                "y": 832.0
+                            },
+                            "texture_path": "res://assets/A2_Frontend/frontend_str/assets_rws/txd/frontend_split27_txd/106_cliche_summary_621c82.png"
+                        },
+                        "name": "106ClicheSummary"
+                    },
+                    {
+                        "class": "Sprite2D",
+                        "config": {
+                            "position": {
+                                "x": 2960.0,
+                                "y": 1144.0
+                            },
+                            "texture_path": "res://assets/A2_Frontend/frontend_str/assets_rws/txd/frontend_split27_txd/109_cliche_summary_39cfb2.png"
+                        },
+                        "name": "109ClicheSummary"
+                    },
+                    {
+                        "class": "Sprite2D",
+                        "config": {
+                            "position": {
+                                "x": 2280.0,
+                                "y": 1520.0
+                            },
+                            "texture_path": "res://assets/A2_Frontend/frontend_str/assets_rws/txd/frontend_split27_txd/112_cliche_summary_ff9096.png"
+                        },
+                        "name": "112ClicheSummary"
+                    },
+                    {
+                        "class": "Sprite2D",
+                        "config": {
+                            "position": {
+                                "x": 1176.0,
+                                "y": 1528.0
+                            },
+                            "texture_path": "res://assets/A2_Frontend/frontend_str/assets_rws/txd/frontend_split27_txd/115_cliche_summary_35f3fe.png"
+                        },
+                        "name": "115ClicheSummary"
+                    },
+                    {
+                        "class": "Sprite2D",
+                        "config": {
+                            "position": {
+                                "x": 1576.0,
+                                "y": 1176.0
+                            },
+                            "texture_path": "res://assets/A2_Frontend/frontend_str/assets_rws/txd/frontend_split27_txd/118_cliche_summary_b482fb.png"
+                                },
+                        "name": "118ClicheSummary"
+                    },
+                    {
+                        "class": "Sprite2D",
+                        "config": {
+                            "position": {
+                                "x": 880.0,
+                                "y": 848.0
+                            },
+                            "texture_path": "res://assets/A2_Frontend/frontend_str/assets_rws/txd/frontend_split27_txd/121_cliche_summary_de45d5.png"
+                        },
+                        "name": "121ClicheSummary"
+                    },
+                    {
+                        "class": "Sprite2D",
+                        "config": {
+                            "position": {
+                                "x": 1936.0,
+                                "y": 880.0
+                            },
+                            "texture_path": "res://assets/A2_Frontend/frontend_str/assets_rws/txd/frontend_split28_txd/40_cliche_summary_298db3.png"
+                        },
+                        "name": "40ClicheSummary"
+                    }
+                ],
+                "class": "Panel",
+                "config": {
+                    "layout_mode": 0,
+                    "offsets": {
+                        "offset_bottom": 0.0,
+                        "offset_left": 0.0,
+                        "offset_right": 0.0,
+                        "offset_top": 0.0
+                    }
                 },
-            "name": "118ClicheSummary"
-          },
-          {
-            "class": "Sprite2D",
-            "config": {
-              "position": {
-                "x": 880.0,
-                "y": 848.0
-              },
-              "texture_path": "res://assets/A2_Frontend/frontend_str/assets_rws/txd/frontend_split27_txd/121_cliche_summary_de45d5.png"
-            },
-            "name": "121ClicheSummary"
-          },
-          {
-            "class": "Sprite2D",
-            "config": {
-              "position": {
-                "x": 1936.0,
-                "y": 880.0
-              },
-              "texture_path": "res://assets/A2_Frontend/frontend_str/assets_rws/txd/frontend_split28_txd/40_cliche_summary_298db3.png"
-            },
-            "name": "40ClicheSummary"
-          }
+                "name": "Panel"
+            }
         ],
-        "class": "Panel",
-        "config": {
-          "layout_mode": 0,
-          "offsets": {
-            "offset_bottom": 0.0,
-            "offset_left": 0.0,
-            "offset_right": 0.0,
-            "offset_top": 0.0
-          }
-        },
-        "name": "Panel"
-      }
-    ],
-    "class": "Control",
-    "editable_children": true,
-    "name": "Cliche_ControlNode",
-    "overwrite": true,
-    "path": "Node4D/Node2D/Cliche_ControlNode/cliche_control_node.tscn",
-    "type": "scene"
-  }
+        "class": "Control",
+        "editable_children": true,
+        "name": "Cliche_ControlNode",
+        "overwrite": true,
+        "path": "Node4D/Node2D/Cliche_ControlNode/cliche_control_node.tscn",
+        "type": "scene"
+    }
 ]
