@@ -7,7 +7,7 @@
 ## - execute_command(line): runs a command via Console registry
 ##
 ## Each registered command delegates to a private helper (_cmd_*).
-
+class_name ConsoleCommands
 extends Node
 
 var _term_node: Node = null  # set by register_ui_commands()

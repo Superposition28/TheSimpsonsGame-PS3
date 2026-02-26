@@ -1,7 +1,7 @@
 ## Path: Scripts/InputHandler.gd
 ## New autoload singleton.
 ## Captures all player input and translates it into console commands or CVar updates.
-
+class_name InputHandler
 extends Node
 
 func _ready() -> void:

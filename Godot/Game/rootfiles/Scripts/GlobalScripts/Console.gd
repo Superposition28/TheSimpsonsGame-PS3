@@ -6,7 +6,7 @@
 ##
 ##
 ##
-
+class_name Console
 extends Node
 
 signal printed(text: String)
