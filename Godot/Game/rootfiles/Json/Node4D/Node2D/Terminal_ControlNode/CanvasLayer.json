@@ -4,6 +4,7 @@
         "class": "CanvasLayer",
         "path": "Node4D/Node2D/Terminal_ControlNode/CanvasLayer.tscn",
         "type": "scene",
+        "editable_children": true,
         "children": [
             {
                 "name": "Panel",

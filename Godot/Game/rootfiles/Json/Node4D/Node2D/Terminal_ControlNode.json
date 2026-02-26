@@ -5,6 +5,7 @@
         "script": "Scripts/Node4D/Node2D/Terminal_ControlNode.gd",
         "class": "Control",
         "type": "scene",
+        "editable_children": true,
         "children": [
             {
                 "name": "CanvasLayer",

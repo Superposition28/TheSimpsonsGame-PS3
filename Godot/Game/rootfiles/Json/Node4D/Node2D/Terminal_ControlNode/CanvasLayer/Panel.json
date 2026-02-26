@@ -4,6 +4,7 @@
         "class": "Panel",
         "path": "Node4D/Node2D/Terminal_ControlNode/CanvasLayer/Panel.tscn",
         "type": "scene",
+        "editable_children": true,
         "children": [
             {
                 "name": "VideoPlayer",

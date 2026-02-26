@@ -69,6 +69,11 @@
         "name": "Menus",
         "overwrite": true,
         "path": "Node4D/Node2D/Menus/menus.tscn",
-        "type": "scene"
+        "type": "scene",
+        "config": {
+            "properties": {
+                "visible": false
+            }
+        }
     }
 ]

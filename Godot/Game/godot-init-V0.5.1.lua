@@ -1,4 +1,4 @@
--- EngineApps/Games/TheSimpsonsGame-PS3/Game/init.lua
+-- EngineApps/Games/TheSimpsonsGame-PS3/Godot\Game\godot-init-V0.5.1.lua
 --[[
 Folder-batched Godot import with per-language sub-batches for audio.
 - No temp projects

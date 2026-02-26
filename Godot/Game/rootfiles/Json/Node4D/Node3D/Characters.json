@@ -8,8 +8,8 @@
         "children": [
             {
                 "name": "MouseLock",
-                "path": "Node4D/Node3D/Characters/mouse_lock.tscn",
-                "class": "Node"
+                "path": "addons/srcoder_thirdperson_controller/mouse_lock.tscn",
+                "class": "Scene"
             },
             {
                 "name": "Player",
