@@ -3,10 +3,9 @@ Main Blender Operator for importing The Simpsons Game files with texture↔mesh 
 """
 # SPDX-License-Identifier: MIT
 
-import struct
 import io
+import struct
 import math
-import sys
 from pathlib import Path
 
 # blender imports
@@ -30,7 +29,9 @@ from ..parser import (
 from ..materials import (
     _create_materials_for_all_textures,
     _normalize_tex_name,
-    _ensure_material_for_texture
+    _ensure_material_for_texture,
+    clear_material_cache,
+    resolve_asset_paths_from_db
 )
 from ..bl_info import get_manifest_data, get_version_tuple
 
@@ -56,12 +57,29 @@ class SimpGameImport(bpy.types.Operator, ImportHelper):
         """
         Main execution method for the importer. Reads the file, detects textures and meshes, logs information, and prepares for mesh creation.
         """
+        # Clear global caches to ensure a fresh state
+        clear_material_cache()
+
+        # --- NEW: Clear old log text blocks ---
+        for log_name in ["SimpGame_Import_Log", "SimpGame_Importer_Log"]:
+            if log_name in bpy.data.texts:
+                bpy.data.texts.remove(bpy.data.texts[log_name])
+        # --------------------------------------
+
         manifest = get_manifest_data()
         version = get_version_tuple(manifest.get("version", "1.5.8"))
 
         bPrinter("== The Simpsons Game Import Log ==", to_blender_editor=True, log_as_metadata=False)
         bPrinter(f"Importer Version: {version[0]}.{version[1]}.{version[2]}", to_blender_editor=True, log_as_metadata=False)
         bPrinter(f"Importing file: {self.filepath}", to_blender_editor=True, log_as_metadata=True)
+        # Extract base name (e.g., lodmodel1_9c6d15 from lodmodel1_9c6d15.rws.PS3.preinstanced)
+        filename = Path(self.filepath).name.split('.')[0]
+        orig_p, new_p = resolve_asset_paths_from_db(filename, self.filepath)
+        if orig_p:
+            bPrinter(f"Original mapping: {orig_p}", console_colour="green", to_blender_editor=True)
+        if new_p:
+            bPrinter(f"New mapping: {new_p}", console_colour="green", to_blender_editor=True)
+
         file_path = Path(self.filepath)
         bPrinter(f"File size: {file_path.stat().st_size} bytes", to_blender_editor=True, log_as_metadata=False)
         bPrinter(f"File name: {file_path.name}", to_blender_editor=True, log_as_metadata=False)
@@ -80,8 +98,8 @@ class SimpGameImport(bpy.types.Operator, ImportHelper):
             return {'CANCELLED'}
 
         # --- Dedicated texture pass ---
-        bPrinter("\n--- Texture String Pass ---", to_blender_editor=True)
         texture_links_by_mesh_offset, texture_paths_by_name, all_found_tex_names = build_texture_mesh_links(tmpRead, str(self.filepath))
+        bPrinter(f"\n--- Texture String Pass ({len(all_found_tex_names)} unique textures) ---", to_blender_editor=True)
         # Create materials up-front for all discovered textures
         _create_materials_for_all_textures(all_found_tex_names, texture_paths_by_name)
 
@@ -91,30 +109,10 @@ class SimpGameImport(bpy.types.Operator, ImportHelper):
             sorted_names = sorted(list(all_found_tex_names), key=lambda s: s.lower())
             bPrinter(f"Found {len(sorted_names)} unique texture strings. Querying DB...", to_blender_editor=True)
 
-            # Get gameroot path once
-            gameroot_path = None
-            preinstanced_dir = None
-            try:
-                if bpy.context and bpy.context.scene:
-                    gameroot_path = bpy.context.scene.get("tsg_gameroot_path")
-                    preinstanced_dir = bpy.context.scene.get("tsg_preinstanced_dir")
-            except Exception:
-                pass # Fail silently, will be handled in loop
-
             for name in sorted_names:
                 key = _normalize_tex_name(name)
-                relative_path = texture_paths_by_name.get(key)
-
-                log_path = "NOT_FOUND_IN_DB"
-                if relative_path:
-                    if preinstanced_dir:
-                        log_path = str(Path(preinstanced_dir) / relative_path)
-                    elif gameroot_path:
-                        log_path = str(Path(gameroot_path) / "GameFiles" / "STROUT" / relative_path)
-                    else:
-                        log_path = f"{relative_path} (tsg_preinstanced_dir not set)"
-
-                bPrinter(f"{name} -- {log_path}", to_blender_editor=True)
+                final_path = texture_paths_by_name.get(key, "NOT_FOUND")
+                bPrinter(f"{name} -- {final_path}", to_blender_editor=True)
         else:
             bPrinter("No texture strings were found in the file.", to_blender_editor=True)
 
@@ -141,16 +139,51 @@ class SimpGameImport(bpy.types.Operator, ImportHelper):
             bPrinter(f"[String Found] Total {found_string_count} valid strings found.", to_blender_editor=True)
 
         # --- Mesh Import Process ---
-        bPrinter("\n--- Mesh Import Process ---")
-        cur_collection = bpy.data.collections.new("New Mesh")
+        mesh_chunks = list(MESH_REGEX.finditer(tmpRead))
+        total_meshes = len(mesh_chunks)
+
+        if total_meshes == 0:
+            bPrinter(f"Skipping import: No mesh data found in {filename} (Likely an empty/dummy LOD).", console_colour="yellow", to_blender_editor=True)
+            return {'FINISHED'}
+
+        total_submeshes = 0
+
+        # Pre-scan for total submesh count for summary
+        temp_io = io.BytesIO(tmpRead)
+        for x in mesh_chunks:
+            try:
+                temp_io.seek(x.end() + 4 + 8 + 0x14 + 4)
+                total_submeshes += int.from_bytes(temp_io.read(4), byteorder='big')
+            except Exception:
+                pass
+
+        bPrinter(f"\n--- Mesh Import Process (Total Meshes: {total_meshes}, Total Submeshes: {total_submeshes}) ---", to_blender_editor=True)
+
+        # --- Cleanup existing "New Mesh" collection ---
+        collection_name = "New Mesh"
+        if collection_name in bpy.data.collections:
+            old_collection = bpy.data.collections[collection_name]
+            bPrinter(f"Found existing '{collection_name}' collection. Cleaning up old meshes...", to_blender_editor=True, console_colour="yellow")
+
+            # Remove all objects inside the collection and their mesh data
+            for obj in list(old_collection.objects):
+                mesh_data = obj.data if obj.type == 'MESH' else None
+                bpy.data.objects.remove(obj, do_unlink=True)
+                # Clean up the orphaned mesh data if nothing else is using it
+                if mesh_data and mesh_data.users == 0:
+                    bpy.data.meshes.remove(mesh_data, do_unlink=True)
+
+            # Remove the old collection itself
+            bpy.data.collections.remove(old_collection)
+
+        # --- Create fresh collection ---
+        cur_collection = bpy.data.collections.new(collection_name)
         bpy.context.scene.collection.children.link(cur_collection)
 
-        mshBytes = MESH_REGEX  # use the compiled regex
         mesh_iter = 0
-
         data_io = io.BytesIO(tmpRead)
 
-        for x in mshBytes.finditer(tmpRead):
+        for x in mesh_chunks:
             mesh_chunk_off = x.start()
 
             data_io.seek(x.end() + 4)
@@ -161,55 +194,21 @@ class SimpGameImport(bpy.types.Operator, ImportHelper):
                 data_io.seek(0x14, 1)
                 mDataTableCount = int.from_bytes(data_io.read(4), byteorder='big')
                 mDataSubCount = int.from_bytes(data_io.read(4), byteorder='big')
-                bPrinter(f"[Mesh {mesh_iter}] Found chunk at {x.start():08X}. FaceDataOff: {FaceDataOff}, MeshDataSize: {MeshDataSize}, mDataTableCount: {mDataTableCount}, mDataSubCount: {mDataSubCount}")
+
+                bPrinter(f"[Mesh {mesh_iter}] Chunk Offset: {x.start():08X} | Submeshes: {mDataSubCount}", to_blender_editor=True)
 
                 # --- Log linked textures with their full paths ---
                 linked_tex_names = texture_links_by_mesh_offset.get(mesh_chunk_off, [])
 
-                # Get gameroot path once for this mesh's log
-                gameroot_path = None
-                preinstanced_dir = None
-                try:
-                    if bpy.context and bpy.context.scene:
-                        gameroot_path = bpy.context.scene.get("tsg_gameroot_path")
-                        preinstanced_dir = bpy.context.scene.get("tsg_preinstanced_dir")
-                except Exception:
-                    pass # Fail silently, will be handled in loop
-
                 if linked_tex_names:
                     log_entries = []
                     for name in linked_tex_names:
-                        # Use the same normalization as the DB cache to find the path
                         key = _normalize_tex_name(name)
-                        relative_path = texture_paths_by_name.get(key) # Get path, default if not found
-
-                        log_path = "N/A_IN_CACHE"
-                        if relative_path:
-                            if preinstanced_dir:
-                                full_path = Path(preinstanced_dir) / relative_path
-                                if sys.platform == 'win32':
-                                    full_path = Path(f"\\\\?\\{str(full_path)}")
-                                log_path = str(full_path)
-                                if not full_path.exists():
-                                    log_path += " (ERROR: texture file not found)"
-                                else:
-                                    log_path += " (note: texture detected)"
-                            elif gameroot_path:
-                                full_path = Path(gameroot_path) / "GameFiles" / "STROUT" / relative_path
-                                if sys.platform == 'win32':
-                                    full_path = Path(f"\\\\?\\{str(full_path)}")
-                                log_path = str(full_path)
-                                if not full_path.exists():
-                                    log_path += " (ERROR: texture file not found)"
-                                else:
-                                    log_path += " (note: texture detected)"
-                            else:
-                                log_path = f"{relative_path} (tsg_preinstanced_dir not set)"
-
-                        log_entries.append(f"{name} -- {log_path}")
-                    bPrinter(f"[Mesh {mesh_iter}] Linked textures: {', '.join(log_entries)}", to_blender_editor=True)
+                        final_path = texture_paths_by_name.get(key, "NOT_FOUND")
+                        log_entries.append(f"{name}")
+                    bPrinter(f"  Likely associated textures: {', '.join(log_entries)}", to_blender_editor=True)
                 else:
-                    bPrinter(f"[Mesh {mesh_iter}] Linked textures: (none)", to_blender_editor=True)
+                    bPrinter("  Likely associated textures: (none)", to_blender_editor=True)
                 # --- END ---
 
             except Exception as e:
@@ -538,13 +537,11 @@ class SimpGameImport(bpy.types.Operator, ImportHelper):
                             if mat:
                                 obj.data.materials.append(mat)
 
-                        # Determine target texture for this submesh
-                        target_tex_name = linked_tex_for_mat[i] if i < len(linked_tex_for_mat) else linked_tex_for_mat[0]
+                        # Determine target texture for this submesh (loop if more submeshes than textures)
+                        target_tex_name = linked_tex_for_mat[i % len(linked_tex_for_mat)]
 
                         # Find the index of the target material
-                        target_mat_index = 0
-                        if target_tex_name in unique_tex_names:
-                            target_mat_index = unique_tex_names.index(target_tex_name)
+                        target_mat_index = unique_tex_names.index(target_tex_name) if target_tex_name in unique_tex_names else 0
 
                         # Assign the material index to all polygons
                         for poly in obj.data.polygons:
@@ -552,14 +549,44 @@ class SimpGameImport(bpy.types.Operator, ImportHelper):
 
                         obj.active_material_index = target_mat_index
 
-                        bPrinter(f"[MeshPart {mesh_iter}_{i}] Assigned material '{target_tex_name}' (index {target_mat_index}) and added {len(unique_tex_names)} materials to slots.")
+                        bPrinter(f"    Submesh {i}: Assigned material 'TEX_{_normalize_tex_name(target_tex_name)}'", to_blender_editor=True)
                 except Exception as e:
-                    bPrinter(f"[Material] Failed to assign material on mesh part {mesh_iter}_{i}: {e}", console_colour="yellow")
+                    bPrinter(f"[Material] Failed to assign material on mesh part {mesh_iter}_{i}: {e}", console_colour="yellow", to_blender_editor=True)
 
                 obj.rotation_euler = (1.5707963705062866, 0, 0)
                 bPrinter(f"[MeshPart {mesh_iter}_{i}] Object created '{obj.name}' and rotated.")
 
-            mesh_iter += 1
+                # --- NEW: Weld surfaces and separate by loose parts ---
+                try:
+                    # Distance threshold (in meters).
+                    # 0.005 is usually perfect for sewing game engine cuts back together.
+                    # If things are still splitting, try increasing this slightly (e.g., 0.05)
+                    MERGE_DISTANCE = 0.005
+
+                    bpy.ops.object.select_all(action='DESELECT')
+                    bpy.context.view_layer.objects.active = obj
+                    obj.select_set(True)
+
+                    # 1. Switch to Edit Mode
+                    bpy.ops.object.mode_set(mode='EDIT')
+                    bpy.ops.mesh.select_all(action='SELECT')
+
+                    # 2. Weld vertices that are extremely close to each other
+                    # This sews the broken surfaces back into a single continuous piece
+                    bpy.ops.mesh.remove_doubles(threshold=MERGE_DISTANCE)
+
+                    # 3. Now separate the truly loose parts (like the sign and fence)
+                    bpy.ops.mesh.separate(type='LOOSE')
+
+                    # 4. Switch back to Object Mode
+                    bpy.ops.object.mode_set(mode='OBJECT')
+
+                    bPrinter(f"    Welded seams and separated '{obj.name}' into independent parts.", to_blender_editor=True)
+                except Exception as e:
+                    # Failsafe to ensure we don't get stuck in Edit mode if an error occurs
+                    if bpy.context.object and bpy.context.object.mode == 'EDIT':
+                        bpy.ops.object.mode_set(mode='OBJECT')
+                    bPrinter(f"    [Warning] Failed to separate parts for {obj.name}: {e}", console_colour="yellow")
 
         bPrinter("== Import Complete ==", to_blender_editor=True)
         return {'FINISHED'}

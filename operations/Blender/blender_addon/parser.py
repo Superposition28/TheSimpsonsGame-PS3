@@ -164,22 +164,20 @@ def build_texture_mesh_links(data: bytes, preinstanced_filepath: str | None = No
 
     events.sort(key=lambda x: x[0])
 
-    pending_textures: list[str] = []
-    snapshot_after_tlfd: list[str] | None = None
+    # --- FIXED ASSOCIATION LOGIC ---
+    active_textures: list[str] = []
+    has_seen_tex_since_mesh = False
 
     for off, etype, payload in events:
         if etype == "tex_name":
-            pending_textures.append(payload)
-        elif etype == "tlfd":
-            snapshot_after_tlfd = pending_textures.copy() if pending_textures else []
+            if not has_seen_tex_since_mesh:
+                active_textures.clear()
+                has_seen_tex_since_mesh = True
+            active_textures.append(payload)
         elif etype == "mesh":
-            if snapshot_after_tlfd is not None:
-                links[off] = snapshot_after_tlfd.copy()
-                snapshot_after_tlfd = None
-                pending_textures.clear()
-            elif pending_textures:
-                links[off] = pending_textures.copy()
-                pending_textures.clear()
+            has_seen_tex_since_mesh = False
+            if active_textures:
+                links[off] = active_textures.copy()
         elif etype == "eof":
             break
 

@@ -9,6 +9,7 @@ import bpy
 from . import bl_info as bl_info_helper
 from .Core.MyAddonPreferences import MyAddonPreferences
 from .Core.SimpGameImport import SimpGameImport, menu_func_import
+from .materials import clear_material_cache
 from .utils.logger import bPrinter
 
 # Get values from TOML
@@ -43,6 +44,13 @@ def unregister() -> None:
     Unregisters the addon classes and removes the import menu item.
     """
     bPrinter("[Unregister] Unregistering addon components")
+
+    # Clear global caches on unregister
+    try:
+        clear_material_cache()
+    except Exception as e:
+        bPrinter(f"[Unregister] Warning clearing material cache: {e}", to_blender_editor=True)
+
     try:
         bpy.types.TOPBAR_MT_file_import.remove(menu_func_import)
     except Exception as e:

@@ -68,7 +68,7 @@ script_type = "lua"
 script = "{{Game_Root}}/rename.lua"
 args = [
     "--old_path", "{{Game_Root}}/GameFiles/{{Region}}-{{Type}}-audio_none-{{isRenamed}}",
-    "--new_path", "{{Game_Root}}/GameFiles/{{Region}}-{{Type}}-audio_og-{{isRenamed}}"
+    "--new_path", "{{Game_Root}}/GameFiles/{{Region}}-{{Type}}-{{audio_state}}-{{isRenamed}}"
 ]
 
 [[operation]]
