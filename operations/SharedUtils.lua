@@ -35,15 +35,19 @@ function M.colour_print(opts)
     sdk.colour_print({ colour = colour, message = message, newline = newline })
 end
 
---- Log wrapper used by Blender scripts (maintains compatibility)
+
 function M.log(colour, message, prefix)
-    prefix = prefix or "SharedUtils"
-    M.colour_print({ colour = colour or M.Colours.DEFAULT, message = string.format("[%s] %s", prefix, message or "") })
+    --prefix should be filename to identify source of log, e.g. "BlenderRun" for blender/run.lua
+    local prefix_str = tostring(prefix or "LOG")
+    M.colour_print({ colour = colour or M.Colours.DEFAULT, message = string.format("[%s] %s", prefix_str, message or "") })
 end
 
 --- Path Manipulations -------------------------------------------------------
 
 --- Normalize path separators to host OS default
+function M.Normalize(path)
+    return M.normalize(path)
+end
 function M.normalize(path)
     if not path then return path end
     if type(path) ~= "string" then path = tostring(path) end
@@ -80,34 +84,12 @@ function M.dirname(p)
 end
 
 function M.is_absolute(path)
-    if not path then return false end
-    if path:match("^%a:[/\\]") then return true end -- Windows drive
-    if path:sub(1, 2) == "\\\\" then return true end -- Windows UNC
-    if path:sub(1, 1) == "/" then return true end -- Unix root
-    return false
+    return sdk.is_absolute(path)
 end
 
 --- Get absolute path (robust version with long path support on Windows)
 function M.absolute_path(path)
-    if not path then return path end
-    local resolved = sdk.realpath(path)
-    local result = path
-    if resolved and #resolved > 0 then
-        result = resolved
-    elseif not M.is_absolute(path) then
-        local cwd = sdk.currentdir()
-        result = M.join(cwd, path)
-    end
-
-    result = M.normalize(result)
-
-    -- Ensure \\?\ prefix on Windows for long path support in Blender 4.5+
-    -- Only apply if the path is actually long (> 255 chars) to avoid "saved with @" errors for short paths.
-    if M.path_sep == "\\" and result:match("^%a:") and not result:find("^\\\\%?\\") and #result > 255 then
-        result = "\\\\?\\" .. result
-    end
-
-    return result
+    return sdk.absolute_path(path)
 end
 
 --- Prefix with \\?\ on Windows for long path support
@@ -283,5 +265,11 @@ function M.copy_tree(src, dst, total, state)
         end
     end
 end
+
+
+
+
+
+
 
 return M

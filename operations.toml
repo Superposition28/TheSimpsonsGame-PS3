@@ -65,7 +65,7 @@ args = ["--group", "placeholders", "--key", "audio_state", "--value", "audio_og"
 [[operation.onsuccess]]
 Name = "rename folder STROUT-{{Region}}-{{Type}}-{{audio_state}}-{{isRenamed}} to STROUT-{{Region}}-{{Type}}-{{audio_state}}-isRenamed"
 script_type = "lua"
-script = "{{Game_Root}}/rename.lua"
+script = "{{Game_Root}}/operations/rename.lua"
 args = [
     "--old_path", "{{Game_Root}}/GameFiles/{{Region}}-{{Type}}-audio_none-{{isRenamed}}",
     "--new_path", "{{Game_Root}}/GameFiles/{{Region}}-{{Type}}-{{audio_state}}-{{isRenamed}}"
@@ -97,10 +97,10 @@ args = ["--group", "placeholders", "--key", "isRenamed", "--value", "isRenamed",
 [[operation.onsuccess]]
 Name = "rename folder STROUT-{{Region}}-{{Type}}-{{audio_state}}-{{isRenamed}} to STROUT-{{Region}}-{{Type}}-{{audio_state}}-isRenamed"
 script_type = "lua"
-script = "{{Game_Root}}/rename.lua"
+script = "{{Game_Root}}/operations/rename.lua"
 args = [
     "--old_path", "{{Game_Root}}/GameFiles/{{Region}}-{{Type}}-{{audio_state}}-notRenamed",
-    "--new_path", "{{Game_Root}}/GameFiles/{{Region}}-{{Type}}-{{audio_state}}-isRenamed"
+    "--new_path", "{{Game_Root}}/GameFiles/{{Region}}-{{Type}}-{{audio_state}}-{{isRenamed}}"
 ]
 
 [[operation]]
@@ -119,10 +119,10 @@ args = ["--group", "placeholders", "--key", "audio_state", "--value", "audio_reo
 [[operation.onsuccess]]
 Name = "rename folder STROUT-{{Region}}-{{Type}}-{{audio_state}}-{{isRenamed}} to STROUT-{{Region}}-{{Type}}-audio_reorg-{{isRenamed}}"
 script_type = "lua"
-script = "{{Game_Root}}/rename.lua"
+script = "{{Game_Root}}/operations/rename.lua"
 args = [
     "--old_path", "{{Game_Root}}/GameFiles/{{Region}}-{{Type}}-audio_og-{{isRenamed}}",
-    "--new_path", "{{Game_Root}}/GameFiles/{{Region}}-{{Type}}-audio_reorg-{{isRenamed}}"
+    "--new_path", "{{Game_Root}}/GameFiles/{{Region}}-{{Type}}-{{audio_state}}-{{isRenamed}}"
 ]
 
 [[operation]]
@@ -175,8 +175,6 @@ depends-on = [7] # depends on blender, str extraction for assets, and texture ex
 script_type = "lua"
 script = "{{Game_Root}}/operations/Blender/run.lua"
 args = [
-    "--game-root", "{{Game_Root}}",
-    "--base-dir", "{{Game_Root}}",
     "--operations-dir", "{{Game_Root}}/operations",
     "--blender-dir", "{{Game_Root}}/operations/Blender",
     "--GameFiles", "{{Game_Root}}/GameFiles/{{Region}}-{{Type}}-{{audio_state}}-{{isRenamed}}",
@@ -246,7 +244,8 @@ args = [
     "-t", "{{Game_Root}}/GameFiles/{{Region}}-{{Type}}-{{audio_state}}-{{isRenamed}}",
     "-i", ".snu",
     "-o", ".wav",
-    "--godot-compatible"
+    "--godot-compatible",
+    "--replace"
 ]
 
 
@@ -264,7 +263,8 @@ args = [
     "-s", "{{Game_Root}}/GameFiles/{{Region}}-{{Type}}-{{audio_state}}-{{isRenamed}}",
     "-t", "{{Game_Root}}/GameFiles/{{Region}}-{{Type}}-{{audio_state}}-{{isRenamed}}",
     "-i", ".vp6",
-    "-o", ".ogv"
+    "-o", ".ogv",
+    "--replace"
 ]
 
 

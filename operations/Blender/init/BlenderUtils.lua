@@ -1,222 +1,133 @@
-local path_sep = package.config:sub(1, 1)
-local PREFIX = "BlenderUtils"
-local Colours = {
-    DEFAULT = "default",
-    WHITE = "white",
-    RED = "red",
-    GREEN = "green",
-    YELLOW = "yellow",
-    BLUE = "blue",
-    MAGENTA = "magenta",
-    CYAN = "cyan",
-    GRAY = "gray",
-    GREY = "gray",
-    DARK_GREEN = "darkgreen",
-    DARKGRAY = "darkgray",
-    DARKGREY = "darkgray",
-    DARKCYAN = "darkcyan",
-    DARKYELLOW = "darkyellow",
-    DARKRED = "darkred"
-}
+
+Utils = import(join(Game_Root, "operations", "SharedUtils"))
+
+local path_sep = Utils.path_sep
+local Colours = Utils.Colours
 
 local M = {
     path_sep = path_sep,
-    Colours = Colours
+    Colours = Colours,
+    log = Utils.log
 }
 
-function M.log(colour, message)
-    sdk.colour_print({ colour = colour or Colours.DEFAULT, message = string.format("[%s] %s", PREFIX, message or "") })
-end
-
 function M.normalize_separators(path)
-    if not path then
-        return path
-    end
-    if type(path) ~= "string" then
-        path = tostring(path)
-    end
-    if path_sep == "\\" then
-        path = path:gsub("/", "\\")
-    else
-        path = path:gsub("\\", "/")
-    end
-    return path
+    return Utils.normalize(path)
 end
 
 function M.ends_with(str, suffix)
-    if not str or not suffix then
-        return false
-    end
-    if #suffix == 0 then
-        return true
-    end
-    if #str < #suffix then
-        return false
-    end
-    return str:sub(-#suffix) == suffix
+    return Utils.ends_with(str, suffix)
 end
 
 function M.parent_dir(path)
-    if not path then
-        return nil
-    end
-    local normalized = M.normalize_separators(path)
-    local last_sep = 0
-    for i = 1, #normalized do
-        local ch = normalized:sub(i, i)
-        if ch == '/' or ch == '\\' then last_sep = i end
-    end
-    if last_sep > 0 then
-        local dir = normalized:sub(1, last_sep - 1)
-        if #dir > 0 then return dir end
-    end
-    return nil
+    local dir = Utils.dirname(path)
+    if dir == "." or dir == path then return nil end
+    return dir
 end
 
 function M.is_absolute(path)
-    if not path then
-        return false
-    end
-    if path:match("^%a:[/\\]") then
-        return true
-    end
-    if path:sub(1, 2) == "\\\\" then
-        return true
-    end
-    if path:sub(1, 1) == "/" then
-        return true
-    end
-    return false
+    return Utils.is_absolute(path)
 end
 
 function M.absolute_path(path)
-    if not path then
-        return path
-    end
-    -- Use sdk.realpath directly (always available in engine runtime)
-    local resolved = sdk.realpath(path)
-    local result = path
-    if resolved and #resolved > 0 then
-        result = resolved
-    elseif not M.is_absolute(path) then
-        local cwd = sdk.currentdir()
-        result = cwd .. path_sep .. path
-    end
-
-    result = M.normalize_separators(result)
-
-    -- Ensure \\?\ prefix on Windows for long path support in Blender 4.5+
-    -- Only apply if the path is actually long (> 255 chars) to avoid "saved with @" errors for short paths.
-    if path_sep == "\\" and result:match("^%a:") and not result:find("^\\\\%?\\") and #result > 255 then
-        result = "\\\\?\\" .. result
-    end
-
-    return result
+    return Utils.absolute_path(path)
 end
 
 function M.join(...)
-    local res = join(...)
-    return M.normalize_separators(res)
+    return Utils.join(...)
 end
 
 function M.iterate_files(root_dir, visitor)
-    if not sdk.is_dir(root_dir) then
-        M.log(Colours.RED, string.format("Directory '%s' does not exist for iteration.", root_dir))
-        return
-    end
-
-    local entries = sdk.list_dir(root_dir)
-    for _, entry in ipairs(entries) do
-        local full_path = M.join(root_dir, entry)
-        if sdk.is_dir(full_path) then
-            M.iterate_files(full_path, visitor)
-        elseif sdk.is_file(full_path) then
-            visitor(full_path, entry)
-        end
-    end
+    return Utils.iterate_files(root_dir, visitor)
 end
 
 function M.to_long_path(path)
-    if not path or path == "" or path_sep ~= "\\" then return path end
-    if path:find("^\\\\%?\\") then return path end
-    
-    local normalized = M.normalize_separators(path)
-    if normalized:match("^%a:") and #normalized > 255 then
-        return "\\\\?\\" .. normalized
-    end
-    return normalized
+    return Utils.to_long_path(path)
 end
 
 function M.get_path(base_path, filename, extension)
-    if not base_path or base_path == "" then return "" end
-    base_path = M.normalize_separators(base_path)
-    local expected_suffix = filename .. extension
-
-    local lower_base = base_path:lower()
-    local lower_suffix = expected_suffix:lower()
-    local lower_ext = extension:lower()
-
-    local result = ""
-    if lower_base:sub(-#lower_suffix) == lower_suffix or lower_base:sub(-#lower_ext) == lower_ext then
-        result = base_path
-    elseif base_path:match("%.[a-zA-Z0-9]+$") then
-        local dir = base_path:match("(.*)[\\/]")
-        result = dir and M.join(dir, expected_suffix) or expected_suffix
-    else
-        result = M.join(base_path, expected_suffix)
-    end
-
-    return M.to_long_path(result)
+    return Utils.get_path(base_path, filename, extension)
 end
 
 function M.split_drive(path)
-    if not path then
-        return nil, path
-    end
-    local drive = path:match("^(%a:)")
-    if drive then
-        local remainder = path:sub(#drive + 1)
-        return drive, remainder
-    end
-    return nil, path
+    return Utils.split_drive(path)
 end
 
 function M.get_canonical_id(rel_path)
-    if not rel_path then return nil end
-    local normalized = M.normalize_separators(rel_path):gsub("\\", "/")
-
-    local parts = {}
-    for part in normalized:gmatch("[^/]+") do
-        table.insert(parts, part)
-    end
-
-    local canonical = table.concat(parts, "/")
-
-    -- Strip last extension (stem logic matching DirectoryNormalizer's multi_ext)
-    local stem = canonical
-    local last_dot = 0
-    for i = 1, #canonical do
-        if canonical:sub(i, i) == "." then last_dot = i end
-    end
-    if last_dot > 0 then
-        stem = canonical:sub(1, last_dot - 1)
-    end
-
-    local hash = sdk.md5(stem)
-    if not hash or hash == "" then return "000000" end
-    return string.lower(hash:sub(1, 6))
+    return Utils.get_canonical_id(rel_path)
 end
 
--- Expose polyfill global for the sandbox
-function _G.import(path)
-    local fh, open_err = io.open(path, "r")
-    if not fh then error(string.format("Failed to open module '%s': %s", path, tostring(open_err))) end
-    local src = fh:read("*a")
-    fh:close()
-    
-    local chunk, err = load(src, "@" .. path, "t", _ENV)
-    if not chunk then error(string.format("Failed to compile module '%s': %s", path, err)) end
-    return chunk()
+-- Byte-wise helpers to avoid Lua pattern engine entirely
+function M.is_space_byte(b)
+    return b == 9 or b == 10 or b == 11 or b == 12 or b == 13 or b == 32
 end
+function M.trim_ascii(s)
+    if s == nil then return s end
+    local str = tostring(s)
+    local i, j = 1, #str
+    while i <= j do
+        local b = string.byte(str, i)
+        if not M.is_space_byte(b) then break end
+        i = i + 1
+    end
+    while j >= i do
+        local b = string.byte(str, j)
+        if not M.is_space_byte(b) then break end
+        j = j - 1
+    end
+    if i > j then return "" end
+    return string.sub(str, i, j)
+end
+function M.strip_surrounding_quotes(s)
+    if not s or #s < 2 then return s end
+    local first = string.sub(s, 1, 1)
+    local last = string.sub(s, -1)
+    if (first == '"' and last == '"') or (first == "'" and last == "'") then
+        return string.sub(s, 2, -2)
+    end
+    return s
+end
+function M.trim_trailing_punct_ws(s)
+    if not s or #s == 0 then return s end
+    local j = #s
+    while j >= 1 do
+        local ch = string.sub(s, j, j)
+        local b = string.byte(ch)
+        if ch == ',' or ch == ';' or M.is_space_byte(b) then
+            j = j - 1
+        else
+            break
+        end
+    end
+    if j < 1 then return "" end
+    return string.sub(s, 1, j)
+end
+function M.clean_value(v)
+    if v == nil then return v end
+    local s =  M.trim_ascii(tostring(v))
+    s =  M.strip_surrounding_quotes(s)
+    s =  M.trim_trailing_punct_ws(s)
+    return M.trim_ascii(s)
+end
+function M.match_assignment(token)
+    local eq = string.find(token, "=", 1, true)
+    local colon = string.find(token, ":", 1, true)
+    local idx
+    if eq and colon then
+        if eq < colon then
+            idx = eq
+        else
+            idx = colon
+        end
+    else
+        idx = eq or colon
+    end
+    if idx then
+        local opt = string.sub(token, 1, idx - 1)
+        local value = string.sub(token, idx + 1)
+        return opt, value
+    end
+    return token, nil
+end
+
 
 return M

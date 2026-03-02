@@ -9,7 +9,6 @@
 --
 
 -- Bootstrap the Utils module
-local path_sep = package.config:sub(1, 1)
 
 local function bootstrap_utils()
     local utils_path = join(script_dir, "SharedUtils.lua")
@@ -21,7 +20,7 @@ local function bootstrap_utils()
     return chunk()
 end
 
-local Utils = bootstrap_utils()
+local Utils = import("SharedUtils")
 local Colours = Utils.Colours
 
 -- Local application-specific helpers

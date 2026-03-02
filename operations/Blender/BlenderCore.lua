@@ -175,7 +175,7 @@ end
 -- @param verbose boolean
 -- @param debug_sleep boolean
 -- @return table { asset_id, success, skipped, message }
-local function run_blender_for_asset(asset, export_set, ordered_formats, verbose, debug_sleep, blender_exe_path, game_root_path, json_db_path, preinstanced_dir)
+local function run_blender_for_asset(asset, export_set, ordered_formats, verbose, debug_sleep, blender_exe_path, Game_Root, json_db_path, preinstanced_dir)
     local ok, run_needed, reason = should_process_asset(asset, export_set)
     if not ok then
         return { asset_id = asset.identifier, success = false, skipped = false, message = reason }
@@ -229,7 +229,7 @@ local function run_blender_for_asset(asset, export_set, ordered_formats, verbose
         "--python_extension_path", python_extension_path,
         "--current_dir", blender_dir,
         "--temp_addon_dir", temp_addon_dir,
-        "--game_root_path", game_root_path,
+        "--game_root_path", Game_Root,
         "--export_formats", table.concat(ordered_formats, ",")
     }
 
@@ -304,18 +304,17 @@ function BlenderCore.main(opts)
     end
 
     local blender_exe_path = opts.blender_exe_path and Utils.to_long_path(Utils.normalize_separators(opts.blender_exe_path)) or ""
-    local game_root_path = opts.game_root and Utils.to_long_path(Utils.normalize_separators(opts.game_root))
 
     log(Utils.Colours.CYAN, "all input opts: " .. sdk.text.json.encode(opts))
 
     log(Utils.Colours.CYAN, string.format("Export formats: %s", (#ordered_formats > 0) and table.concat(ordered_formats, ", ") or "None"))
     log(Utils.Colours.CYAN, string.format("Using DB: %s", db_path))
     log(Utils.Colours.CYAN, string.format("Using Blender executable: %s", blender_exe_path))
-    if not game_root_path then
-        error("Game root path must be specified in opts.game_root_path")
+    if not Game_Root then
+        error("Game root path must be specified in opts.Game_Root")
         os.exit(1)
     end
-    log(Utils.Colours.CYAN, string.format("Using game root path: %s", game_root_path))
+    log(Utils.Colours.CYAN, string.format("Using game root path: %s", Game_Root))
 
     if not sdk.path_exists(blender_exe_path) then
         error(string.format("Blender executable not found: %s", blender_exe_path))
@@ -367,7 +366,7 @@ function BlenderCore.main(opts)
         -- Fallback: run sequentially using existing run_blender_for_asset implementation
         log(Utils.Colours.YELLOW, "spawn_process unavailable; running sequentially using sdk.run_process")
         for _, asset in ipairs(work_queue) do
-            local rec = run_blender_for_asset(asset, export_set, ordered_formats, VERBOSE, debug_sleep, blender_exe_path, game_root_path, json_db_path, opts.preinstanced_dir)
+            local rec = run_blender_for_asset(asset, export_set, ordered_formats, VERBOSE, debug_sleep, blender_exe_path, Game_Root, json_db_path, opts.preinstanced_dir)
             if rec.success then
                 table.insert(successes, rec)
             else
@@ -442,7 +441,7 @@ function BlenderCore.main(opts)
                 "--python_extension_path", python_extension_path,
                 "--current_dir", blender_dir,
                 "--temp_addon_dir", temp_addon_dir,
-                "--game_root_path", game_root_path,
+                "--game_root_path", Game_Root,
                 "--export_formats", table.concat(ordered_formats, ",")
             }
 

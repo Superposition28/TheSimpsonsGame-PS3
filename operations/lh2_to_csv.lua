@@ -13,46 +13,7 @@ Lua conversion by samarixum for RemakeEngine
 --]]
 
 -- Small utilities -----------------------------------------------------------
-local path_sep = package.config:sub(1,1) or "/"
-
-local function join(a, b)
-    if not a or a == "" then return b end
-    if not b or b == "" then return a end
-    local last = a:sub(-1)
-    if last == "/" or last == "\\" then return a .. b end
-    return a .. path_sep .. b
-end
-
-local function norm_slashes(p)
-    if not p then return p end
-    if path_sep == "\\" then
-        p = p:gsub("/", "\\")
-    else
-        p = p:gsub("\\", "/")
-    end
-    p = p:gsub("[/\\]+", path_sep)
-    return p
-end
-
-local function walk_files(root)
-    local stack = { root }
-    local files = {}
-    while #stack > 0 do
-        local dir = table.remove(stack)
-        local entries = sdk.list_dir(dir)
-        for i = 1, #entries do
-            local entry = entries[i]
-            local p = join(dir, entry)
-            local attr = sdk.attributes(p)
-            if attr and attr.mode == "directory" then
-                table.insert(stack, p)
-            else
-                table.insert(files, p)
-            end
-        end
-    end
-    return files
-end
+local Utils = import("SharedUtils")
 
 -- Utility function to read big-endian uint32
 local function read_uint32_be(file)
@@ -91,25 +52,25 @@ end
 
 -- Main LH2 decode function
 local function decode_lh2(path)
-    --sdk.color_print('cyan', 'Processing: ' .. path)
+    --sdk.colour_print({ colour = 'cyan', message = 'Processing: ' .. path })
 
     -- Check if file exists
     if not sdk.path_exists(path) then
-        sdk.color_print('red', 'Error: File not found: ' .. path)
+        Utils.colour_print({ colour = 'red', message = 'Error: File not found: ' .. path })
         return false
     end
 
     -- Open file for binary reading
     local file = io.open(path, "rb")
     if not file then
-        sdk.color_print('red', 'Error: Could not open file: ' .. path)
+        Utils.colour_print({ colour = 'red', message = 'Error: Could not open file: ' .. path })
         return false
     end
 
     -- Check Magic Number
     local magic = file:read(4)
     if not magic or #magic ~= 4 then
-        sdk.color_print('red', 'Error: Could not read magic number from file: ' .. path)
+        Utils.colour_print({ colour = 'red', message = 'Error: Could not read magic number from file: ' .. path })
         file:close()
         return false
     end
@@ -120,8 +81,8 @@ local function decode_lh2(path)
         for i = 1, #magic do
             hex = hex .. string.format("%02X ", magic:byte(i))
         end
-        sdk.color_print('red', string.format('Error: Not a valid .LH2 file (bad magic): %s', path))
-        sdk.color_print('yellow', string.format('  Expected: "2HCL" (32 48 43 4C), Got: "%s" (%s)', magic, hex))
+        Utils.colour_print({ colour = 'red', message = string.format('Error: Not a valid .LH2 file (bad magic): %s', path) })
+        Utils.colour_print({ colour = 'yellow', message = string.format('  Expected: "2HCL" (32 48 43 4C), Got: "%s" (%s)', magic, hex) })
         file:close()
         return false
     end
@@ -133,7 +94,7 @@ local function decode_lh2(path)
     local _ = file:read(8) -- Skip magic and size we already read
 
     if file_size ~= actual_size then
-        sdk.color_print('yellow', 'Warning: File size mismatch (header=' .. file_size .. ', actual=' .. actual_size .. ')')
+        Utils.colour_print({ colour = 'yellow', message = 'Warning: File size mismatch (header=' .. file_size .. ', actual=' .. actual_size .. ')' })
     end
 
     -- Read Header Info
@@ -142,12 +103,12 @@ local function decode_lh2(path)
     local tables = read_uint32_be(file)
 
     if not entries or not tables then
-        sdk.color_print('red', 'Error: Failed to read header')
+        Utils.colour_print({ colour = 'red', message = 'Error: Failed to read header' })
         file:close()
         return false
     end
 
-    --sdk.color_print('white', string.format('  Entries: %d, Tables: %d', entries, tables))
+    --Utils.colour_print({ colour = 'white', message = string.format('  Entries: %d, Tables: %d', entries, tables) })
 
     -- Skip reserved/runtime pointers (8 bytes at 0x18)
     file:seek("set", 0x20)
@@ -157,7 +118,7 @@ local function decode_lh2(path)
     for i = 1, entries do
         local id = read_uint32_be(file)
         if not id then
-            sdk.color_print('red', 'Error: Failed to read string ID at index ' .. i)
+            Utils.colour_print({ colour = 'red', message = 'Error: Failed to read string ID at index ' .. i })
             file:close()
             return false
         end
@@ -172,7 +133,7 @@ local function decode_lh2(path)
         for e = 1, entries do
             local offset = read_uint32_be(file)
             if not offset then
-                sdk.color_print('red', 'Error: Failed to read offset pointer')
+                Utils.colour_print({ colour = 'red', message = 'Error: Failed to read offset pointer' })
                 file:close()
                 return false
             end
@@ -204,7 +165,7 @@ local function decode_lh2(path)
     -- Open output file
     local out = io.open(output_path, "w")
     if not out then
-        sdk.color_print('red', 'Error: Could not create output file: ' .. output_path)
+        Utils.colour_print({ colour = 'red', message = 'Error: Could not create output file: ' .. output_path })
         return false
     end
 
@@ -260,7 +221,7 @@ local function parse_args(list)
             i = i + 1
             opts.input_file = list[i]
         else
-            sdk.color_print('yellow', 'Unknown argument: ' .. arg)
+            Utils.colour_print({ colour = 'yellow', message = 'Unknown argument: ' .. arg })
         end
         i = i + 1
     end
@@ -269,7 +230,7 @@ end
 
 -- Main execution
 local function main()
-    sdk.color_print('white', '=== LH2 to CSV Converter ===')
+    Utils.colour_print({ colour = 'white', message = '=== LH2 to CSV Converter ===' })
 
     -- Parse command line arguments
     local opts = parse_args(argv or {})
@@ -282,31 +243,30 @@ local function main()
         end
     elseif opts.input_dir then
         -- Directory mode - find all .lh2 files
-        opts.input_dir = norm_slashes(opts.input_dir)
-        sdk.color_print('cyan', 'Scanning directory: ' .. opts.input_dir)
+        opts.input_dir = Utils.normalize(opts.input_dir)
+        Utils.colour_print({ colour = 'cyan', message = 'Scanning directory: ' .. opts.input_dir })
         Diagnostics.Trace('[lh2_to_csv] Scanning directory: ' .. opts.input_dir)
 
         if not sdk.path_exists(opts.input_dir) then
             error("Input directory does not exist: " .. opts.input_dir)
         end
 
-        local all_files = walk_files(opts.input_dir)
         local lh2_files = {}
-        for _, f in ipairs(all_files) do
-            if f:lower():match("%.lh2$") then
-                table.insert(lh2_files, f)
+        Utils.iterate_files(opts.input_dir, function(full_path, entry)
+            if entry:lower():match("%.lh2$") then
+                table.insert(lh2_files, full_path)
             end
-        end
+        end)
 
         local files_found = #lh2_files
         local files_processed = 0
 
         if files_found == 0 then
-            sdk.color_print('yellow', 'No .LH2 files found in directory')
+            Utils.colour_print({ colour = 'yellow', message = 'No .LH2 files found in directory' })
             return
         end
 
-        sdk.color_print('white', string.format('Found %d .LH2 files. Starting conversion...', files_found))
+        Utils.colour_print({ colour = 'white', message = string.format('Found %d .LH2 files. Starting conversion...', files_found) })
 
         local prog = progress.new(files_found, "lh2-csv", "Converting LH2 to CSV")
 
@@ -319,9 +279,9 @@ local function main()
 
         if prog then prog:Complete() end
 
-        sdk.color_print('white', '=== Processing Complete ===')
-        sdk.color_print('cyan', string.format('Files found: %d', files_found))
-        sdk.color_print('green', string.format('Files processed: %d', files_processed))
+        Utils.colour_print({ colour = 'white', message = '=== Processing Complete ===' })
+        Utils.colour_print({ colour = 'cyan', message = string.format('Files found: %d', files_found) })
+        Utils.colour_print({ colour = 'green', message = string.format('Files processed: %d', files_processed) })
         Diagnostics.Trace(string.format('[lh2_to_csv] Processed %d/%d files', files_processed, files_found))
 
         if files_processed < files_found then

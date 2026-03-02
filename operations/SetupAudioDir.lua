@@ -8,42 +8,7 @@ Purpose:
 Runtime guarantees: sdk, argv are provided by engine
 ]]
 
--- small path helpers
-local path_sep = package.config:sub(1,1) or "/"
-local function join(a, b)
-	if not a or a == "" then return b end
-	if not b or b == "" then return a end
-	local last = a:sub(-1)
-	if last == "/" or last == "\\" then return a .. b end
-	return a .. path_sep .. b
-end
-local function normalize(p)
-	if not p then return p end
-	if path_sep == "\\" then
-		p = p:gsub("/", "\\")
-	else
-		p = p:gsub("\\", "/")
-	end
-	p = p:gsub("[/\\]+", path_sep)
-	return p
-end
-local function is_dir(p)
-	return sdk.is_dir(p)
-end
-local function path_exists(p)
-	return sdk.path_exists(p)
-end
-local function ensure_dir(p)
-	return sdk.ensure_dir(p)
-end
-local function move_dir(src, dst)
-	return sdk.move_dir(src, dst, false)
-end
-
--- Colour print via SDK (guaranteed by engine runtime)
-local function cprint(colour, message)
-	sdk.colour_print({ colour = colour or "default", message = message or "", newline = true })
-end
+local Utils = import("SharedUtils")
 
 -- Hardcoded Language Blacklist and Global Dirs (mirrors Python script)
 local language_blacklist = { it=true, es=true, fr=true }
@@ -58,7 +23,9 @@ local global_dirs = {
 	["mtp_heav"]=true, ["mus_simp"]=true, ["sss_cont"]=true, ["sss_lab_"]=true, ["sss_mall"]=true
 }
 
-local function lower(s) return s and string.lower(s) or s end
+local function lower(s)
+	return s and string.lower(s) or s
+end
 
 local function parse_argv()
 	-- Engine guarantees argv global; try index 1 first, then 0 for compatibility
@@ -71,68 +38,63 @@ local function parse_argv()
 	return nil
 end
 
-local function get_user_input(msg)
-	-- Use engine's global prompt() function
-	return prompt(msg, "audio_dir_prompt", false)
-end
-
 local function main()
 	local input = parse_argv()
 	if not input or input == "" then
-		input = get_user_input("Enter Audio Source Directory path:") or ""
+		input = prompt("Enter Audio Source Directory path:", "audio_dir_prompt", false) or ""
 	end
 
-	input = normalize(input)
+	input = Utils.normalize(input)
 
 	if not input or input == "" then
 		sdk.colour_print{ colour = "Red", message = "Error: AUDIO_SOURCE_DIR not provided or empty." }
 		return
 	end
-	if not is_dir(input) then
+	if not sdk.is_dir(input) then
 		sdk.colour_print{ colour = "Red", message = string.format("Error: Audio source directory does not exist: %s", input) }
 		return
 	end
 
 	-- check if input dir contains audiostreams/ folder or the A1_Audio/ folder
-	if path_exists(join(input, "audiostreams")) then
-		input = join(input, "audiostreams")
-	elseif path_exists(join(input, "A1_Audio")) then
-		input = join(input, "A1_Audio")
+	if sdk.path_exists(Utils.join(input, "audiostreams")) then
+		input = Utils.join(input, "audiostreams")
+	elseif sdk.path_exists(Utils.join(input, "A1_Audio")) then
+		input = Utils.join(input, "A1_Audio")
 	end
 
 	local en_dir_name = "EN"
 	local global_dir_name = "Global"
-	local en_dir_path = join(input, en_dir_name)
-	local global_dir_path = join(input, global_dir_name)
+	local en_dir_path = Utils.join(input, en_dir_name)
+	local global_dir_path = Utils.join(input, global_dir_name)
 
-	ensure_dir(en_dir_path)
-	ensure_dir(global_dir_path)
+	sdk.ensure_dir(en_dir_path)
+	sdk.ensure_dir(global_dir_path)
 
-	cprint("cyan", string.format("Organizing directories in '%s' into '%s' and '%s'...", input, en_dir_path, global_dir_path))
+	Utils.colour_print({ colour = "cyan", message = string.format("Organizing directories in '%s' into '%s' and '%s'...", input, en_dir_path, global_dir_path) })
 
 	local moved, skipped, errors = 0, 0, 0
 
 	local entries = sdk.list_dir(input)
 	for _, name in ipairs(entries) do
-		local item = join(input, name)
-		if is_dir(item) then
+		local item = Utils.join(input, name)
+		if sdk.is_dir(item) then
 			local lname = lower(name)
 			if name == en_dir_name or name == global_dir_name or language_blacklist[lname] then
-				cprint("darkgray", string.format("Skipping directory: '%s'", name))
+				Utils.colour_print({ colour = "darkgray", message = string.format("Skipping directory: '%s'", name) })
 				skipped = skipped + 1
 			else
 				local parent = global_dirs[name] and global_dir_path or en_dir_path
-				local target = join(parent, name)
-				cprint("gray", string.format("Moving '%s' to '%s'...", name, target))
-				if path_exists(target) then
-					cprint("yellow", string.format("Warning: Target directory '%s' already exists. Skipping move for '%s'.", target, name))
+				local target = Utils.join(parent, name)
+				Utils.colour_print({ colour = "gray", message = string.format("Moving '%s' to '%s'...", name, target) })
+				if sdk.path_exists(target) then
+					Utils.colour_print({ colour = "yellow", message = string.format("Warning: Target directory '%s' already exists. Skipping move for '%s'.", target, name) })
 					skipped = skipped + 1
 				else
-					local ok = move_dir(item, target)
+					local ok = sdk.move_dir(item, target, true) -- true = overwrite existing target
 					if ok then
 						moved = moved + 1
 					else
-						cprint("red", string.format("Error moving directory %s to %s", name, (global_dirs[name] and global_dir_name or en_dir_name)))
+						Utils.colour_print({ colour = "red", message = string.format("Error moving directory %s to %s", name, (global_dirs[name] and global_dir_name or en_dir_name)) })
 						errors = errors + 1
 					end
 				end

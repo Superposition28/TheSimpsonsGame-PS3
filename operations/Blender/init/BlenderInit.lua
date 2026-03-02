@@ -1,48 +1,51 @@
-﻿if not sqlite then
-    error("sqlite module is not available; ensure LuaScriptAction exposes sqlite helpers")
-end
+﻿
+
+local Utils = import(join(Game_Root, "operations", "SharedUtils"))
 
 local function run(args)
+
+    Utils.log(Utils.Colours.CYAN, "Starting Blender Initialization with arguments:", "BlenderInit")
+
     -- Determine the directory where this script and its modules reside
     local base_path = args.blender_dir or (args.output_dir and sdk.realpath(args.output_dir)) or sdk.currentdir()
 
     -- Load sub-modules
     local init_path = base_path .. package.config:sub(1, 1) .. "init"
-    local Utils = _G.import(init_path .. package.config:sub(1, 1) .. "BlenderUtils.lua")
-    local DB_Module = _G.import(init_path .. package.config:sub(1, 1) .. "BlenderDB.lua").setup(Utils)
-    local Processor_Module = _G.import(init_path .. package.config:sub(1, 1) .. "BlenderProcessor.lua").setup(Utils)
-    local Symlink_Module = _G.import(init_path .. package.config:sub(1, 1) .. "BlenderSymlink.lua").setup(Utils)
+    local BUtils = import(join(base_path, "init", "BlenderUtils.lua"))
+    local DB_Module = import(join(base_path, "init", "BlenderDB.lua")).setup(BUtils)
+    local Processor_Module = import(join(init_path, "BlenderProcessor.lua")).setup(BUtils)
+    local Symlink_Module = import(join(init_path, "BlenderSymlink.lua")).setup(BUtils)
 
     local VERBOSE = not not args.verbose
-    Utils.log(Utils.Colours.CYAN, string.format("Input args: %s", sdk.text.json.encode(args)))
+    BUtils.log(BUtils.Colours.CYAN, string.format("Input args: %s", sdk.text.json.encode(args)), "BlenderInit")
 
     local marker = args.marker
-    local preinstanced_dir = Utils.absolute_path(args.preinstanced_dir)
-    local blend_dir = Utils.absolute_path(args.blend_dir)
-    local glb_dir = Utils.absolute_path(args.glb_dir)
-    local database_output_directory = Utils.absolute_path(args.output_dir)
+    local preinstanced_dir = BUtils.absolute_path(args.preinstanced_dir)
+    local blend_dir = BUtils.absolute_path(args.blend_dir)
+    local glb_dir = BUtils.absolute_path(args.glb_dir)
+    local database_output_directory = BUtils.absolute_path(args.output_dir)
     sdk.ensure_dir(database_output_directory)
 
     local db_filename = args.db_file_path
-    local symlink_path = Utils.absolute_path(args.symlink_path)
-    local blank_blend_source = Utils.absolute_path(args.blank_blend_source)
+    local symlink_path = BUtils.absolute_path(args.symlink_path)
+    local blank_blend_source = BUtils.absolute_path(args.blank_blend_source)
     local debug_mode_enabled = not not args.debug_sleep
 
     local db
     -- Ensure parent directory for DB file exists
-    local db_dir = Utils.parent_dir(db_filename)
+    local db_dir = BUtils.parent_dir(db_filename)
     if db_dir and not sdk.is_dir(db_dir) then
-        Utils.log(Utils.Colours.CYAN, string.format("Ensuring database directory exists: %s", db_dir))
+        BUtils.log(BUtils.Colours.CYAN, string.format("Ensuring database directory exists: %s", db_dir), "BlenderInit")
         sdk.ensure_dir(db_dir)
     end
 
     local ok, err = pcall(function()
-        Utils.log(Utils.Colours.CYAN, "--- Initializing Database ---")
+        BUtils.log(BUtils.Colours.CYAN, "--- Initializing Database ---", "BlenderInit")
         if sdk.path_exists and sdk.path_exists(db_filename) and debug_mode_enabled then
             if not (sdk.remove_file and sdk.remove_file(db_filename)) then
                 error("Failed to delete existing database file: " .. db_filename)
             end
-            Utils.log(Utils.Colours.GREEN, string.format("Deleted existing database file: %s", db_filename))
+            BUtils.log(BUtils.Colours.GREEN, string.format("Deleted existing database file: %s", db_filename), "BlenderInit")
         end
 
         if (sdk.path_exists(db_filename) and not debug_mode_enabled) then
