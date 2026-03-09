@@ -10,16 +10,6 @@
 
 -- Bootstrap the Utils module
 
-local function bootstrap_utils()
-    local utils_path = join(script_dir, "SharedUtils.lua")
-    local fh, err = io.open(utils_path, "r")
-    if not fh then error("Failed to open SharedUtils.lua: " .. tostring(err)) end
-    local src = fh:read("*a")
-    fh:close()
-    local chunk = assert(load(src, "@" .. utils_path, "t", _ENV))
-    return chunk()
-end
-
 local Utils = import("SharedUtils")
 local Colours = Utils.Colours
 
@@ -475,7 +465,7 @@ local function main()
                         Utils.copy_tree(src, dst, total, state)
                     end
                     if io and type(io.write) == "function" then io.write("\n") end
-                    if io and type(io.flush) == "function" then io.flush() end
+                    if io and type(io.flush) == "function" then io.flush() end -- todo: update to use sdk file handler as io.flush is disabled
                     Utils.colour_print{colour=Colours.GREEN, message="Copy complete."}
                     -- Set effective_source_path to the USRDIR inside the copied folder
                     local copied_usrdir = join(dst, "USRDIR")

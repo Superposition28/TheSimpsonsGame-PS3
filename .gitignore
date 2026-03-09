@@ -7,6 +7,7 @@
 
 # godot project artifacts, in Game.*/**
 *.uid
+.godot/
 *.md5
 **/GodotGame/
 
