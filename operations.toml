@@ -73,13 +73,16 @@ args = [
 
 [[operation]]
 id = 3
-Name = "Extract Textures (.txd -> .dds)"
+Name = "Extract Textures (.txd -> .png)"
 run-all = true
 depends-on = [2] # depends on STR extraction
 script_type = "engine"
 script = "format-extract"
 format = "txd"
-args = ["{{Game_Root}}/GameFiles/{{Region}}-{{Type}}-{{audio_state}}-{{isRenamed}}"]
+args = [
+    "--source", "{{Game_Root}}/GameFiles/{{Region}}-{{Type}}-{{audio_state}}-{{isRenamed}}",
+    "--output-ext", ".png"
+]
 
 [[operation]]
 id = 4
@@ -149,29 +152,13 @@ args = [
     "--set", "Type=FullFlattened:string"
 ]
 
-[[operation]]
-id = 7
-Name = "Convert Textures (.dds -> .png)"
-run-all = true
-depends-on = [6]
-script_type = "engine"
-script = "format-convert"
-tool = "ImageMagick"
-args = [
-    "--source", "{{Game_Root}}/GameFiles/{{Region}}-{{Type}}-{{audio_state}}-{{isRenamed}}",
-    "--target", "{{Game_Root}}/GameFiles/{{Region}}-{{Type}}-{{audio_state}}-{{isRenamed}}",
-    "--input-ext", ".dds",
-    "--output-ext", ".png",
-    "--replace"
-]
-
 ## convert 3d models into .blend files, and export to glb for godot use
 ## auto apply textures within blender as well, however materials will need to be manually adjusted within godot
 [[operation]]
 id = 8
 Name = "Convert Models (.preinstanced -> .blend)"
 run-all = true
-depends-on = [7] # depends on blender, str extraction for assets, and texture extraction and conversion for materials
+depends-on = [6] # depends on blender, str extraction for assets, and texture extraction and conversion for materials
 script_type = "lua"
 script = "{{Game_Root}}/operations/Blender/run.lua"
 args = [

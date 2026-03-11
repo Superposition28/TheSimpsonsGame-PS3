@@ -39,11 +39,3 @@ destination = "./TMP/Downloads"
 unpack = true
 unpack_destination = "./Tools/ffmpeg"
 
-[[tool]]
-name = "ImageMagick"
-version = "7.1.2-8-Q16-HDRI"
-destination = "./TMP/Downloads"
-unpack = true
-unpack_destination = "./Tools/ImageMagick"
-
-
