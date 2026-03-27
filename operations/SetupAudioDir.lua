@@ -28,12 +28,8 @@ local function lower(s)
 	return s and string.lower(s) or s
 end
 
-local function trim(s)
-	return Utils.trim(s or "") or ""
-end
-
 local function strip_xxx_suffix(name)
-	local value = trim(name)
+	local value = Utils.trim(name)
 	if value == "" then
 		return value
 	end
@@ -44,7 +40,7 @@ local function strip_xxx_suffix(name)
 end
 
 local function is_placeholder_character_name(name)
-	local value = lower(trim(name))
+	local value = lower(Utils.trim(name))
 	if value == "" then
 		return true
 	end
@@ -61,19 +57,19 @@ local function is_placeholder_character_name(name)
 end
 
 local function sanitize_character_prefix(name)
-	local value = trim(name)
+	local value = Utils.trim(name)
 	if value == "" then
 		return value
 	end
 	-- Keep readable names but remove filesystem-invalid characters.
 	value = value:gsub("[\\/:%*%?\"<>|]", "_")
 	value = value:gsub("%s+", " ")
-	value = trim(value)
+	value = Utils.trim(value)
 	return value
 end
 
 local function build_file_match_pattern(file_pattern)
-	local raw = trim(file_pattern)
+	local raw = Utils.trim(file_pattern)
 	if raw == "" then
 		return nil
 	end
@@ -131,9 +127,9 @@ local function build_rules_from_entries(entries)
 	local skipped_characters = 0
 
 	for _, entry in ipairs(entries) do
-		local old_name = trim(entry.OLD_DIR_NAME)
+		local old_name = Utils.trim(entry.OLD_DIR_NAME)
 		if old_name ~= "" then
-			local new_name = trim(entry.NEW_DIR_NAME)
+			local new_name = Utils.trim(entry.NEW_DIR_NAME)
 			if new_name == "" or lower(new_name) == "tbd" then
 				new_name = strip_xxx_suffix(old_name)
 			end
@@ -147,7 +143,7 @@ local function build_rules_from_entries(entries)
 			if type(entry.files) == "table" then
 				for _, file_entry in ipairs(entry.files) do
 					if type(file_entry) == "table" then
-						local character_name = trim(file_entry.CharacterName)
+						local character_name = Utils.trim(file_entry.CharacterName)
 						if is_placeholder_character_name(character_name) then
 							skipped_characters = skipped_characters + 1
 						else
@@ -189,8 +185,8 @@ local function load_audio_map_rules(audio_map_path)
 	end
 
 	local section_entries = {
-		["EN-Dialogue"] = {},
-		["EN-CUTSCENE"] = {},
+		["Dialogue"] = {},
+		["CUTSCENE"] = {},
 		["Global-Sound"] = {}
 	}
 
@@ -198,22 +194,22 @@ local function load_audio_map_rules(audio_map_path)
 		find_section_entries(parsed, section_name, entries)
 	end
 
-	local en_dialogue_rules, en_dialogue_skipped = build_rules_from_entries(section_entries["EN-Dialogue"])
-	local en_cutscene_rules, en_cutscene_skipped = build_rules_from_entries(section_entries["EN-CUTSCENE"])
+	local dialogue_rules, dialogue_skipped = build_rules_from_entries(section_entries["Dialogue"])
+	local cutscene_rules, cutscene_skipped = build_rules_from_entries(section_entries["CUTSCENE"])
 	local global_sound_rules, global_sound_skipped = build_rules_from_entries(section_entries["Global-Sound"])
 
-	if next(en_dialogue_rules) == nil and next(en_cutscene_rules) == nil and next(global_sound_rules) == nil then
-		return nil, "No EN-Dialogue/EN-CUTSCENE/Global-Sound entries found in AudioMap.yaml"
+	if next(dialogue_rules) == nil then
+		return nil, "No Dialogue entries found in AudioMap.yaml"
 	end
 
 	return {
-		ENDialogueRules = en_dialogue_rules,
-		ENCutsceneRules = en_cutscene_rules,
+		DialogueRules = dialogue_rules,
+		CutsceneRules = cutscene_rules,
 		GlobalSoundRules = global_sound_rules,
-		SkippedCharacters = en_dialogue_skipped + en_cutscene_skipped + global_sound_skipped,
+		SkippedCharacters = dialogue_skipped + cutscene_skipped + global_sound_skipped,
 		SectionCounts = {
-			ENDialogue = #section_entries["EN-Dialogue"],
-			ENCutscene = #section_entries["EN-CUTSCENE"],
+			Dialogue = #section_entries["Dialogue"],
+			Cutscene = #section_entries["CUTSCENE"],
 			GlobalSound = #section_entries["Global-Sound"]
 		}
 	}, nil
@@ -233,53 +229,53 @@ local function resolve_language_dirs(root_dir)
 	return resolved
 end
 
-local function apply_file_rename_rules(rule, folder_path, stats)
-	if type(rule.FileRules) ~= "table" or #rule.FileRules == 0 then
+local function same_path(path_a, path_b)
+	if not path_a or not path_b then
+		return false
+	end
+	return lower(Utils.normalize(path_a)) == lower(Utils.normalize(path_b))
+end
+
+local function resolve_character_subfolder(file_name, file_rules)
+	if type(file_rules) ~= "table" or #file_rules == 0 then
+		return nil, false
+	end
+
+	local matched_prefix = nil
+	local ambiguous = false
+
+	for _, file_rule in ipairs(file_rules) do
+		if string.match(file_name, file_rule.MatchPattern) then
+			if not matched_prefix then
+				matched_prefix = file_rule.CharacterPrefix
+			elseif matched_prefix ~= file_rule.CharacterPrefix then
+				ambiguous = true
+				break
+			end
+		end
+	end
+
+	return matched_prefix, ambiguous
+end
+
+local function move_file_with_conflict_checks(source_file_path, target_file_path, stats)
+	if same_path(source_file_path, target_file_path) then
+		stats.FileSkipped = stats.FileSkipped + 1
 		return
 	end
 
-	for _, file_name in ipairs(sdk.list_dir(folder_path)) do
-		local file_path = Utils.join(folder_path, file_name)
-		if sdk.is_file(file_path) then
-			local matched_prefix = nil
-			local ambiguous = false
+	if sdk.path_exists(target_file_path) then
+		stats.FileConflicts = stats.FileConflicts + 1
+		Utils.colour_print({ colour = "yellow", message = string.format("Skipping file move because target exists: %s", target_file_path) })
+		return
+	end
 
-			for _, file_rule in ipairs(rule.FileRules) do
-				if string.match(file_name, file_rule.MatchPattern) then
-					if not matched_prefix then
-						matched_prefix = file_rule.CharacterPrefix
-					elseif matched_prefix ~= file_rule.CharacterPrefix then
-						ambiguous = true
-						break
-					end
-				end
-			end
-
-			if ambiguous then
-				stats.FileConflicts = stats.FileConflicts + 1
-				Utils.colour_print({ colour = "yellow", message = string.format("Skipping ambiguous file mapping in '%s': %s", folder_path, file_name) })
-			elseif matched_prefix then
-				local prefixed_name = matched_prefix .. "_"
-				if string.sub(file_name, 1, #prefixed_name) == prefixed_name then
-					stats.FileSkipped = stats.FileSkipped + 1
-				else
-					local new_name = prefixed_name .. file_name
-					local new_path = Utils.join(folder_path, new_name)
-					if sdk.path_exists(new_path) then
-						stats.FileConflicts = stats.FileConflicts + 1
-						Utils.colour_print({ colour = "yellow", message = string.format("Skipping file rename because target exists: %s", new_path) })
-					else
-						local ok = sdk.rename_file(file_path, new_path)
-						if ok then
-							stats.FileRenamed = stats.FileRenamed + 1
-						else
-							stats.FileErrors = stats.FileErrors + 1
-							Utils.colour_print({ colour = "red", message = string.format("Failed to rename file: %s", file_path) })
-						end
-					end
-				end
-			end
-		end
+	local ok = sdk.rename_file(source_file_path, target_file_path)
+	if ok then
+		stats.FileRenamed = stats.FileRenamed + 1
+	else
+		stats.FileErrors = stats.FileErrors + 1
+		Utils.colour_print({ colour = "red", message = string.format("Failed to move file: %s", source_file_path) })
 	end
 end
 
@@ -296,7 +292,7 @@ local function create_rename_stats()
 	}
 end
 
-local function apply_rules_in_base_dir(base_dir, rules_by_old_name, stats)
+local function apply_rules_in_base_dir(base_dir, rules_by_old_name, stats, options)
 	if not base_dir or not sdk.is_dir(base_dir) then
 		return
 	end
@@ -304,45 +300,80 @@ local function apply_rules_in_base_dir(base_dir, rules_by_old_name, stats)
 		return
 	end
 
+	local use_character_subfolders = true
+	if type(options) == "table" and options.UseCharacterSubfolders == false then
+		use_character_subfolders = false
+	end
+
 	for _, rule in pairs(rules_by_old_name) do
 		local source_path = Utils.join(base_dir, rule.OldDirName)
 		local target_path = Utils.join(base_dir, rule.NewDirName)
-		local active_path = nil
 
-		if lower(rule.OldDirName) == lower(rule.NewDirName) then
-			if sdk.is_dir(source_path) then
-				active_path = source_path
-			end
+		if not sdk.is_dir(source_path) then
+			stats.FolderSkipped = stats.FolderSkipped + 1
 		else
-			if sdk.is_dir(target_path) then
-				active_path = target_path
-			elseif sdk.is_dir(source_path) then
-				if sdk.path_exists(target_path) then
-					stats.FolderConflicts = stats.FolderConflicts + 1
-					Utils.colour_print({ colour = "yellow", message = string.format("Skipping folder rename because target exists: %s", target_path) })
-					active_path = source_path
-				else
-					local ok = sdk.rename_file(source_path, target_path)
-					if ok then
-						stats.FolderRenamed = stats.FolderRenamed + 1
-						active_path = target_path
+			local target_ready = sdk.ensure_dir(target_path)
+			if not target_ready or not sdk.is_dir(target_path) then
+				stats.FolderErrors = stats.FolderErrors + 1
+				Utils.colour_print({ colour = "red", message = string.format("Failed to create/resolve target folder: %s", target_path) })
+			else
+				local entries = sdk.list_dir(source_path)
+				for _, name in ipairs(entries) do
+					local source_item_path = Utils.join(source_path, name)
+					if sdk.is_file(source_item_path) then
+						local character_folder_name, ambiguous = nil, false
+						if use_character_subfolders then
+							character_folder_name, ambiguous = resolve_character_subfolder(name, rule.FileRules)
+						end
+						local destination_dir = target_path
+						if ambiguous then
+							stats.FileConflicts = stats.FileConflicts + 1
+							Utils.colour_print({ colour = "yellow", message = string.format("Ambiguous character mapping, moving to target root: %s", source_item_path) })
+						elseif character_folder_name and character_folder_name ~= "" then
+							destination_dir = Utils.join(target_path, character_folder_name)
+							if not sdk.ensure_dir(destination_dir) or not sdk.is_dir(destination_dir) then
+								stats.FileErrors = stats.FileErrors + 1
+								Utils.colour_print({ colour = "red", message = string.format("Failed to create character folder: %s", destination_dir) })
+								destination_dir = target_path
+							end
+						end
+
+						local target_file_path = Utils.join(destination_dir, name)
+						move_file_with_conflict_checks(source_item_path, target_file_path, stats)
+					elseif sdk.is_dir(source_item_path) then
+						local target_item_path = Utils.join(target_path, name)
+						if not same_path(source_item_path, target_item_path) then
+							if sdk.path_exists(target_item_path) and not sdk.is_dir(target_item_path) then
+								stats.FolderConflicts = stats.FolderConflicts + 1
+								Utils.colour_print({ colour = "yellow", message = string.format("Skipping directory move because file exists at target path: %s", target_item_path) })
+							else
+								local moved_ok = sdk.rename_file(source_item_path, target_item_path)
+								if moved_ok then
+									stats.FolderRenamed = stats.FolderRenamed + 1
+								else
+									stats.FolderErrors = stats.FolderErrors + 1
+									Utils.colour_print({ colour = "red", message = string.format("Failed to move directory: %s", source_item_path) })
+								end
+							end
+						end
+					end
+				end
+
+				if not same_path(source_path, target_path) and sdk.is_dir(source_path) then
+					local remaining = sdk.list_dir(source_path)
+					if #remaining == 0 then
+						if sdk.remove_dir(source_path) then
+							stats.FolderRenamed = stats.FolderRenamed + 1
+						else
+							stats.FolderErrors = stats.FolderErrors + 1
+							Utils.colour_print({ colour = "red", message = string.format("Failed to remove emptied source folder: %s", source_path) })
+						end
 					else
-						stats.FolderErrors = stats.FolderErrors + 1
-						Utils.colour_print({ colour = "red", message = string.format("Failed to rename folder: %s", source_path) })
-						active_path = source_path
+						stats.FolderSkipped = stats.FolderSkipped + 1
+						Utils.colour_print({ colour = "darkgray", message = string.format("Source folder retained with remaining entries: %s", source_path) })
 					end
 				end
 			end
-		end
-
-		if not active_path and sdk.is_dir(source_path) then
-			active_path = source_path
-		end
-
-		if active_path and sdk.is_dir(active_path) then
-			apply_file_rename_rules(rule, active_path, stats)
-		else
-			stats.FolderSkipped = stats.FolderSkipped + 1
 		end
 	end
 end
@@ -375,10 +406,10 @@ local function apply_audio_map_renames(audio_root, global_dir_path)
 		local language_path = language_dirs[language_code]
 		if language_path and sdk.is_dir(language_path) then
 			language_dirs_processed = language_dirs_processed + 1
-			Utils.colour_print({ colour = "cyan", message = string.format("Applying AudioMap EN-Dialogue rules in language folder: %s", language_path) })
-			apply_rules_in_base_dir(language_path, parsed_rules.ENDialogueRules, dialogue_stats)
-			Utils.colour_print({ colour = "cyan", message = string.format("Applying AudioMap EN-CUTSCENE rules in language folder: %s", language_path) })
-			apply_rules_in_base_dir(language_path, parsed_rules.ENCutsceneRules, cutscene_stats)
+			Utils.colour_print({ colour = "cyan", message = string.format("Applying AudioMap Dialogue rules in language folder: %s", language_path) })
+			apply_rules_in_base_dir(language_path, parsed_rules.DialogueRules, dialogue_stats)
+			Utils.colour_print({ colour = "cyan", message = string.format("Applying AudioMap CUTSCENE rules in language folder: %s", language_path) })
+			apply_rules_in_base_dir(language_path, parsed_rules.CutsceneRules, cutscene_stats)
 		else
 			Utils.colour_print({ colour = "darkgray", message = string.format("Language folder not found, skipping: %s", language_code) })
 		end
@@ -386,16 +417,16 @@ local function apply_audio_map_renames(audio_root, global_dir_path)
 
 	if global_dir_path and sdk.is_dir(global_dir_path) then
 		Utils.colour_print({ colour = "cyan", message = string.format("Applying AudioMap Global-Sound rules in global folder: %s", global_dir_path) })
-		apply_rules_in_base_dir(global_dir_path, parsed_rules.GlobalSoundRules, global_sound_stats)
+		apply_rules_in_base_dir(global_dir_path, parsed_rules.GlobalSoundRules, global_sound_stats, { UseCharacterSubfolders = false })
 	else
 		Utils.colour_print({ colour = "darkgray", message = "Global folder not found, skipping Global-Sound rename phase." })
 	end
 
 	print("AudioMap rename phases complete.")
-	print(string.format("AudioMap sections loaded - EN-Dialogue: %d, EN-CUTSCENE: %d, Global-Sound: %d", parsed_rules.SectionCounts.ENDialogue, parsed_rules.SectionCounts.ENCutscene, parsed_rules.SectionCounts.GlobalSound))
+	print(string.format("AudioMap sections loaded - Dialogue: %d, CUTSCENE: %d, Global-Sound: %d", parsed_rules.SectionCounts.Dialogue, parsed_rules.SectionCounts.Cutscene, parsed_rules.SectionCounts.GlobalSound))
 	print(string.format("Languages Processed: %d", language_dirs_processed))
-	print_stats("EN-Dialogue", dialogue_stats)
-	print_stats("EN-CUTSCENE", cutscene_stats)
+	print_stats("Dialogue", dialogue_stats)
+	print_stats("CUTSCENE", cutscene_stats)
 	print_stats("Global-Sound", global_sound_stats)
 	print(string.format("AudioMap placeholder character entries skipped: %d", parsed_rules.SkippedCharacters or 0))
 end

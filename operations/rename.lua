@@ -6,6 +6,11 @@ local Utils = import("./SharedUtils")
 local old_path = nil
 local new_path = nil
 
+local function Fail(message)
+    error(message)
+    os.exit(1)
+end
+
 -- Parse command-line arguments
 for i = 1, argc do
     local arg = argv[i]
@@ -18,20 +23,17 @@ end
 
 -- Validate arguments
 if not old_path or not new_path then
-    error("Usage: --old_path <path> --new_path <path>")
-    return
+    Fail("Usage: --old_path <path> --new_path <path>")
 end
 
 -- Check if source exists
 if not sdk.path_exists(old_path) then
-    error("Source path does not exist: " .. old_path)
-    return
+    Fail("Source path does not exist: " .. old_path)
 end
 
 -- Check if destination already exists
 if sdk.path_exists(new_path) then
-    error("Destination path already exists: " .. new_path)
-    return
+    Fail("Destination path already exists: " .. new_path)
 end
 
 -- Perform rename
@@ -43,5 +45,5 @@ local success = sdk.rename_file(old_path, new_path)
 if success then
     sdk.colour_print({ colour = "Green", message = "✓ Rename successful" })
 else
-    error("Failed to rename: " .. old_path)
+    Fail("Failed to rename: " .. old_path)
 end

@@ -71,7 +71,7 @@ This module is fully automated and designed to be executed by [The Remake Engine
 - Validate source: engine `validate-files` using `config/GameFilesIndex_{...}.db`.
 - Download required tools: engine `download-tools` reading `Tools.toml`.
 - Rename base folders: engine `rename-folders` using `config/RenameMap.db` (sets `isRenamed`).
-- Reorganize audio: `operations/SetupAudioDir.lua` (sets `audio_state`, applies `EN-Dialogue` and `EN-CUTSCENE` folder rename rules from `reversing/docs/PS3_GAME/USRDIR/A1_Audio/AudioMap.yaml` across `EN/ES/FR/IT`, applies `Global-Sound` folder rename rules inside `A1_Audio/Global`, and prefixes mapped dialogue voice-line filenames with character names when known).
+- Reorganize audio: `operations/SetupAudioDir.lua` (sets `audio_state`, applies `Dialogue` and `EN-CUTSCENE` folder rename rules from `reversing/docs/PS3_GAME/USRDIR/A1_Audio/AudioMap.yaml` across `EN/ES/FR/IT`, applies `Global-Sound` folder rename rules inside `A1_Audio/Global`, supports nested destination folders like `Enemies/Bosses`, and places mapped dialogue voice-line files inside `NEW_DIR_NAME/<CharacterName>/` while moving unmatched files to `NEW_DIR_NAME` root).
 - Normalize folder structure: `operations/DirectoryNormalizer.lua` using `config/DirectoryNormalizer.rules.json` (sets `Type=FullFlattened` and updates `STROUT` to `STROUT_Normalized`).
 - Extract/convert: STR extract, TXD -> DDS, DDS -> PNG, with optional video/audio conversions.
 - Blender conversion: converts `.preinstanced` → `.blend` (and optionally `glb`/`fbx`), using the main index DB.
