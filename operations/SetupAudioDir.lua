@@ -4,6 +4,7 @@ SetupAudioDir.lua
 Purpose:
 - Prepare the audio source directory by grouping subfolders into 'EN' and 'Global'.
 - Skips language-specific folders in a blacklist.
+- Applies AudioMap-based rename phases when parser/data is available, otherwise logs and skips safely.
 
 Runtime guarantees: sdk, argv are provided by engine
 ]]
@@ -25,11 +26,31 @@ local global_dirs = {
 }
 
 local function lower(s)
-	return s and string.lower(s) or s
+	if type(s) ~= "string" then
+		return s
+	end
+	return string.lower(s)
+end
+
+local function safe_list_dir(path, label)
+	if not path or path == "" then
+		return {}
+	end
+
+	local entries = sdk.list_dir(path)
+	if type(entries) ~= "table" then
+		Utils.colour_print({ colour = "yellow", message = string.format("Unable to list directory, skipping %s: %s", label or "phase", tostring(path)) })
+		return {}
+	end
+
+	return entries
 end
 
 local function strip_xxx_suffix(name)
 	local value = Utils.trim(name)
+	if type(value) ~= "string" then
+		return ""
+	end
 	if value == "" then
 		return value
 	end
@@ -40,7 +61,12 @@ local function strip_xxx_suffix(name)
 end
 
 local function is_placeholder_character_name(name)
-	local value = lower(Utils.trim(name))
+	local raw_value = Utils.trim(name)
+	if type(raw_value) ~= "string" then
+		return true
+	end
+
+	local value = lower(raw_value)
 	if value == "" then
 		return true
 	end
@@ -58,6 +84,9 @@ end
 
 local function sanitize_character_prefix(name)
 	local value = Utils.trim(name)
+	if type(value) ~= "string" then
+		return ""
+	end
 	if value == "" then
 		return value
 	end
@@ -70,6 +99,9 @@ end
 
 local function build_file_match_pattern(file_pattern)
 	local raw = Utils.trim(file_pattern)
+	if type(raw) ~= "string" then
+		return nil
+	end
 	if raw == "" then
 		return nil
 	end
@@ -125,11 +157,14 @@ end
 local function build_rules_from_entries(entries)
 	local rules_by_old_name = {}
 	local skipped_characters = 0
+	if type(entries) ~= "table" then
+		return rules_by_old_name, skipped_characters
+	end
 
 	for _, entry in ipairs(entries) do
-		local old_name = Utils.trim(entry.OLD_DIR_NAME)
+		local old_name = type(entry.OLD_DIR_NAME) == "string" and Utils.trim(entry.OLD_DIR_NAME) or ""
 		if old_name ~= "" then
-			local new_name = Utils.trim(entry.NEW_DIR_NAME)
+			local new_name = type(entry.NEW_DIR_NAME) == "string" and Utils.trim(entry.NEW_DIR_NAME) or ""
 			if new_name == "" or lower(new_name) == "tbd" then
 				new_name = strip_xxx_suffix(old_name)
 			end
@@ -173,15 +208,28 @@ local function build_rules_from_entries(entries)
 end
 
 local function load_audio_map_rules(audio_map_path)
-	local parsed = nil
-	if sdk.text and sdk.text.yaml and sdk.text.yaml.read_file then
-		parsed = sdk.text.yaml.read_file(audio_map_path)
-	elseif sdk.yaml_read_file then
-		parsed = sdk.yaml_read_file(audio_map_path)
+	local yaml_reader = nil
+	if sdk.text and sdk.text.yaml and type(sdk.text.yaml.read_file) == "function" then
+		yaml_reader = sdk.text.yaml.read_file
+	elseif type(sdk.yaml_read_file) == "function" then
+		yaml_reader = sdk.yaml_read_file
 	end
 
-	if not parsed then
-		return nil, "Unable to parse AudioMap.yaml"
+	if not yaml_reader then
+		return nil, "YAML parser is unavailable (sdk.text.yaml.read_file and sdk.yaml_read_file not found)"
+	end
+
+	local ok, parsed = pcall(yaml_reader, audio_map_path)
+	if not ok then
+		return nil, string.format("AudioMap parser threw an exception: %s", tostring(parsed))
+	end
+
+	if type(parsed) ~= "table" then
+		return nil, string.format("AudioMap parser returned invalid root type: %s", type(parsed))
+	end
+
+	if next(parsed) == nil then
+		return nil, "AudioMap parser returned an empty table"
 	end
 
 	local section_entries = {
@@ -217,7 +265,7 @@ end
 
 local function resolve_language_dirs(root_dir)
 	local resolved = {}
-	for _, name in ipairs(sdk.list_dir(root_dir)) do
+	for _, name in ipairs(safe_list_dir(root_dir, "language directory discovery")) do
 		local candidate = Utils.join(root_dir, name)
 		if sdk.is_dir(candidate) then
 			local lname = lower(name)
@@ -317,7 +365,7 @@ local function apply_rules_in_base_dir(base_dir, rules_by_old_name, stats, optio
 				stats.FolderErrors = stats.FolderErrors + 1
 				Utils.colour_print({ colour = "red", message = string.format("Failed to create/resolve target folder: %s", target_path) })
 			else
-				local entries = sdk.list_dir(source_path)
+				local entries = safe_list_dir(source_path, "rule source folder")
 				for _, name in ipairs(entries) do
 					local source_item_path = Utils.join(source_path, name)
 					if sdk.is_file(source_item_path) then
@@ -360,7 +408,7 @@ local function apply_rules_in_base_dir(base_dir, rules_by_old_name, stats, optio
 				end
 
 				if not same_path(source_path, target_path) and sdk.is_dir(source_path) then
-					local remaining = sdk.list_dir(source_path)
+					local remaining = safe_list_dir(source_path, "remaining source entries")
 					if #remaining == 0 then
 						if sdk.remove_dir(source_path) then
 							stats.FolderRenamed = stats.FolderRenamed + 1
@@ -384,6 +432,11 @@ local function print_stats(label, stats)
 end
 
 local function apply_audio_map_renames(audio_root, global_dir_path)
+	if type(Game_Root) ~= "string" or Utils.trim(Game_Root) == "" then
+		Utils.colour_print({ colour = "yellow", message = "Game_Root is unavailable, skipping AudioMap rename phases." })
+		return
+	end
+
 	local audio_map_path = Utils.join(Game_Root, "reversing", "docs", "PS3_GAME", "USRDIR", "A1_Audio", "AudioMap.yaml")
 	if not sdk.path_exists(audio_map_path) then
 		Utils.colour_print({ colour = "yellow", message = string.format("AudioMap not found, skipping map rename phases: %s", audio_map_path) })
@@ -478,7 +531,7 @@ local function main()
 
 	local moved, skipped, errors = 0, 0, 0
 
-	local entries = sdk.list_dir(input)
+	local entries = safe_list_dir(input, "top-level audio source")
 	for _, name in ipairs(entries) do
 		local item = Utils.join(input, name)
 		if sdk.is_dir(item) then
