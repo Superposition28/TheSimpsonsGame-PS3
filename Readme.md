@@ -12,6 +12,12 @@ This module re-implements *The Simpsons Game* (2007, PS3 edition) using the [Rem
 
 - Re-implement the original game logic in GDScript and C#.
 
+## Module Platform Support
+
+- **Current Support:** Windows only
+- **Planned Support:** Linux support is expected as toolchain and script compatibility improves
+
+
 ## File Breakdown
 
 - `config/`

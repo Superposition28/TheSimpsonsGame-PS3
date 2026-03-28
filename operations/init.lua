@@ -13,165 +13,7 @@
 local Utils = import("SharedUtils")
 local Colours = Utils.Colours
 
--- Local application-specific helpers
-local function ends_with_usrdir(p)
-    if not p then return false end
-    local name = Utils.basename(p)
-    return name and name:lower() == "usrdir"
-end
-
-local function normalize_region(value)
-    if type(value) ~= "string" then return nil end
-    local region = Utils.trim(value)
-    if not region or region == "" then return nil end
-    region = region:upper()
-    if region == "US" or region == "EU" or region == "BOTH" then
-        return region
-    end
-    return nil
-end
-
--- Input helper using engine's guaranteed prompt() global
-local function get_input(msg, id)
-    return prompt(msg, id or "tsg_init", false)
-end
-
--- Required directory sets (either original or USRDIR layout is accepted)
-local USRDIR_DIRS = {
-    "A1_Audio", "A1_Video", "A2_Characters",
-    "A2_Frontend", "LHub-00_GameHub", "LHub-00_SprHub", "L01_LandOfChocolate",
-    "L02_BartmanBegins", "L03_HungryHungryHomer", "L04_TreeHugger",
-    "L05_MobRules", "L06_EnterTheCheatrix", "L07_DayOfTheDolphin",
-    "L08_TheColossalDonut", "L09_Invasion", "L10_BargainBin",
-    "L11_NeverQuest", "L12_GrandTheftScratchy", "L13_MedalOfHomer",
-    "L14_BigSuperHappy", "L15_Rhymes", "L16_MeetThyPlayer",
-}
-
-local USRDIR_DIRS_ORIGINAL = {
-    "audiostreams", "bargainbin", "bigsuperhappy", "brt", "cheater", "colossaldonut",
-    "dayofthedolphins", "dayspringfieldstoodstill", "eighty_bites", "frontend", "gamehub",
-    "grand_theft_scratchy", "loc", "medal_of_homer", "meetthyplayer", "mob_rules",
-    "movies", "neverquest", "rhymes", "simpsons_chars", "spr_hub", "text", "tree_hugger",
-}
-
-local function check_dirs_exist(base_path, required_dirs)
-    if not sdk.is_dir(base_path) then return false end
-    for _, dir_name in ipairs(required_dirs) do
-        local full_path = join(base_path, dir_name)
-        if not sdk.is_dir(full_path) then return false end
-    end
-    return true
-end
-
--- Verbose variant for logging which list is being checked
-local function check_dirs_exist_verbose(base_path, required_dirs, list_name)
-    if not sdk.is_dir(base_path) then return false end
-    local missing = {}
-    for _, dir_name in ipairs(required_dirs) do
-        local full_path = join(base_path, dir_name)
-        if not sdk.is_dir(full_path) then table.insert(missing, dir_name) end
-    end
-    if #missing == 0 then
-        Utils.colour_print{colour=Colours.GREEN, message=(list_name and ("All %d required '%s' subdirectories found in '"..base_path.."'."):format(#required_dirs, list_name) or ("All %d required subdirectories found in '"..base_path.."'."):format(#required_dirs))}
-        return true
-    end
-    return false
-end
-
--- TOML helpers via engine SDK
-local function read_placeholders(cfg_path)
-    local doc = sdk.toml_read_file(cfg_path)
-    if not doc then return {} end
-    local ph = doc["placeholders"]
-    if type(ph) == "table" then
-        if ph[1] and type(ph[1]) == "table" then
-            return ph[1]
-        end
-        return ph
-    end
-    return {}
-end
-
-local function write_placeholders(cfg_path, new_placeholders)
-    local doc = {}
-    doc["placeholders"] = { new_placeholders }
-    sdk.toml_write_file(cfg_path, doc)
-end
-
--- Count files recursively (files only)
-local function count_files(path)
-    local count = 0
-    for _, file in ipairs(sdk.list_dir(path)) do
-        local full = join(path, file)
-        local attr = sdk.attributes(full)
-        if attr and attr.mode == "file" then
-            count = count + 1
-        elseif attr and attr.mode == "directory" then
-            count = count + count_files(full)
-        end
-    end
-    return count
-end
-
-
--- Check if a folder contains USRDIR, PARAM.SFO, and at least one PNG (PS3_GAME folder structure)
-local function is_ps3_game_folder(path)
-    if not sdk.is_dir(path) then return false end
-    local has_usrdir = sdk.is_dir(join(path, "USRDIR"))
-    local has_sfo = sdk.path_exists(join(path, "PARAM.SFO"))
-    local has_png = false
-    -- Check for any PNG file
-    for _, file in ipairs(sdk.list_dir(path)) do
-        if file:match("%.png$") or file:match("%.PNG$") then
-            has_png = true
-            break
-        end
-    end
-    return has_usrdir and has_sfo and has_png
-end
-
--- Validate and resolve the source path, checking multiple possible locations for USRDIR
--- Returns: ok (bool), usrdir_path (for validation), folder_to_copy (the PS3_GAME parent folder)
-local function validate_source_path(path)
-    if not path or path == "" or not sdk.is_dir(path) then return false, path, path end
-
-    -- Check if path itself is USRDIR (has game directories)
-    local ok = check_dirs_exist(path, USRDIR_DIRS_ORIGINAL) or check_dirs_exist(path, USRDIR_DIRS)
-    if ok then
-        -- This is the USRDIR folder, so copy its parent (PS3_GAME)
-        local parent = Utils.dirname(path)
-        if is_ps3_game_folder(parent) then
-            return true, path, parent
-        end
-        -- Fallback if parent doesn't have PS3_GAME structure
-        return true, path, path
-    end
-
-    -- Check if path contains USRDIR subfolder (this is PS3_GAME folder)
-    local usrdir = join(path, "USRDIR")
-    if sdk.is_dir(usrdir) then
-        ok = check_dirs_exist(usrdir, USRDIR_DIRS_ORIGINAL) or check_dirs_exist(usrdir, USRDIR_DIRS)
-        if ok and is_ps3_game_folder(path) then
-            -- This is the PS3_GAME folder itself, copy this folder
-            return true, usrdir, path
-        end
-    end
-
-    -- Check path/PS3_GAME/USRDIR (for disc root like D:\)
-    local ps3_game = join(path, "PS3_GAME")
-    if sdk.is_dir(ps3_game) then
-        local ps3_usrdir = join(path, "PS3_GAME", "USRDIR")
-        if sdk.is_dir(ps3_usrdir) then
-            ok = check_dirs_exist(ps3_usrdir, USRDIR_DIRS_ORIGINAL) or check_dirs_exist(ps3_usrdir, USRDIR_DIRS)
-            if ok and is_ps3_game_folder(ps3_game) then
-                -- Found PS3_GAME subfolder, copy that folder
-                return true, ps3_usrdir, ps3_game
-            end
-        end
-    end
-
-    return false, path, path
-end
+local initutil = import("init/util")
 
 local function main()
     -- Determine module directory (two levels up from this script: operations/init.lua -> module root)
@@ -182,12 +24,12 @@ local function main()
     if not sdk.path_exists(cfg_path) then
         Utils.colour_print{colour=Colours.YELLOW, message="Config not found. Creating: " .. cfg_path}
         -- Include isRenamed = "notRenamed" by default
-        write_placeholders(cfg_path, { MainSourcePath = "", SourcePath = "", PostSourcePath = "", Region = "", isRenamed = "notRenamed" })
+        initutil.write_placeholders(cfg_path, { MainSourcePath = "", SourcePath = "", PostSourcePath = "", Region = "", isRenamed = "notRenamed" })
         Utils.colour_print{colour=Colours.GREEN, message="Created config.toml with default placeholders."}
     end
 
     Utils.colour_print{colour=Colours.BLUE, message="Reading module config: " .. cfg_path}
-    local placeholders = read_placeholders(cfg_path)
+    local placeholders = initutil.read_placeholders(cfg_path)
     -- Auto-add with defaults if missing
     local defaults = {
         isRenamed = "notRenamed",
@@ -206,29 +48,29 @@ local function main()
     end
 
     if updated then
-        write_placeholders(cfg_path, placeholders)
+        initutil.write_placeholders(cfg_path, placeholders)
     end
 
     -- ensure out placeholder exists if not set
     --if placeholders["STROUT"] == nil then
     --    placeholders["STROUT"] = "STROUT"
-    --    write_placeholders(cfg_path,placeholders)
+    --    initutil.write_placeholders(cfg_path,placeholders)
     --    Utils.colour_print{colour=Colours.GREEN, message="Initialized placeholders.STROUT = \"STROUT\""}
     --end
 
-    local region = normalize_region(placeholders["Region"])
+    local region = initutil.normalize_region(placeholders["Region"])
     if region then
         placeholders["Region"] = region
     else
         Utils.colour_print{colour=Colours.YELLOW, message="No valid Region set in config.toml. You'll be prompted to set one (US, EU, or Both)."}
                 while true do
-            local input = get_input("Enter the game region (US, EU, or Both) and press Enter (leave blank to cancel):", "tsg_region")
+            local input = initutil.get_input("Enter the game region (US, EU, or Both) and press Enter (leave blank to cancel):", "tsg_region")
             if not input or input == "" then
                 Utils.colour_print{colour=Colours.RED, message="Initialization aborted: no valid Region provided."}
                 Utils.colour_print{colour=Colours.YELLOW, message="Please update '" .. cfg_path .. "' with Region = \"US\", \"EU\", or \"Both\" and re-run this initializer."}
                 return false
             end
-            local normalized = normalize_region(input)
+            local normalized = initutil.normalize_region(input)
             if normalized then
                 region = normalized
                 if region == "BOTH" then
@@ -236,7 +78,7 @@ local function main()
                 else
                     placeholders["Region"] = region
                 end
-                write_placeholders(cfg_path, placeholders)
+                initutil.write_placeholders(cfg_path, placeholders)
                 Utils.colour_print{colour=Colours.GREEN, message="Set Region to '" .. region .. "'."}
                 break
             else
@@ -278,7 +120,7 @@ local function main()
             input = Utils.normalize(Utils.is_absolute(input) and input or join(sdk.currentdir(), input))
             Utils.colour_print{colour=Colours.CYAN, message="Checking path: '" .. input .. "'"}
             if  sdk.is_dir(input) then
-                local ok, resolved, folder_to_copy = validate_source_path(input)
+                local ok, resolved, folder_to_copy = initutil.validate_source_path(input)
                 if ok then
                     path_from_config = Utils.normalize(resolved)
                     copy_source_root = folder_to_copy
@@ -308,7 +150,7 @@ local function main()
             input = Utils.normalize(Utils.is_absolute(input) and input or join(sdk.currentdir(), input))
             Utils.colour_print{colour=Colours.CYAN, message="Checking path: '" .. input .. "'"}
             if  sdk.is_dir(input) then
-                local ok, resolved, folder_to_copy = validate_source_path(input)
+                local ok, resolved, folder_to_copy = initutil.validate_source_path(input)
                 if ok then
                     path_from_config_us = Utils.normalize(resolved)
                     copy_source_root_us = folder_to_copy
@@ -332,7 +174,7 @@ local function main()
         if existing and existing ~= "" then
         existing = Utils.normalize(existing)
         copy_source_root = existing
-        local ok, resolved, folder_to_copy = validate_source_path(existing)
+        local ok, resolved, folder_to_copy = initutil.validate_source_path(existing)
         if ok then
             path_from_config = Utils.normalize(resolved)
             copy_source_root = folder_to_copy -- Update to use the folder that should be copied
@@ -359,7 +201,7 @@ local function main()
             input = Utils.normalize(Utils.is_absolute(input) and input or join(sdk.currentdir(), input))
             Utils.colour_print{colour=Colours.CYAN, message="Checking path: '" .. input .. "'"}
             if  sdk.is_dir(input) then
-                local ok, resolved, folder_to_copy = validate_source_path(input)
+                local ok, resolved, folder_to_copy = initutil.validate_source_path(input)
                 if ok then
                     path_from_config = Utils.normalize(resolved)
                     copy_source_root = folder_to_copy -- Use the folder that should be copied
@@ -458,14 +300,14 @@ local function main()
                         end
                     end
                     if not copied then
-                        local total = count_files(src)
+                        local total = initutil.count_files(src)
                         local state = { count = 0 }
                         sdk.ensure_dir(dst)
                         -- copy entire folder to dst preserving structure
                         Utils.copy_tree(src, dst, total, state)
                     end
                     if io and type(io.write) == "function" then io.write("\n") end
-                    if io and type(io.flush) == "function" then io.flush() end -- todo: update to use sdk file handler as io.flush is disabled
+                    --if io and type(io.flush) == "function" then io.flush() end
                     Utils.colour_print{colour=Colours.GREEN, message="Copy complete."}
                     -- Set effective_source_path to the USRDIR inside the copied folder
                     local copied_usrdir = join(dst, "USRDIR")
@@ -494,7 +336,7 @@ local function main()
                         local moved_usrdir = join(moved_dir, "USRDIR")
                         if  sdk.is_dir(moved_usrdir) then
                             effective_source_path = moved_usrdir
-                        elseif ends_with_usrdir(moved_dir) then
+                        elseif initutil.ends_with_usrdir(moved_dir) then
                             effective_source_path = moved_dir
                         else
                             effective_source_path = moved_dir
@@ -599,13 +441,13 @@ local function main()
                             end
                         end
                         if not copied then
-                            local total = count_files(src)
+                            local total = initutil.count_files(src)
                             local state = { count = 0 }
                             sdk.ensure_dir(dst)
                             Utils.copy_tree(src, dst, total, state)
                         end
                         if io and type(io.write) == "function" then io.write("\n") end
-                        if io and type(io.flush) == "function" then io.flush() end
+                        --if io and type(io.flush) == "function" then io.flush() end
                         Utils.colour_print{colour=Colours.GREEN, message="US copy complete."}
                         local copied_usrdir = join(dst, "USRDIR")
                         if  sdk.is_dir(copied_usrdir) then
@@ -630,7 +472,7 @@ local function main()
                             local moved_usrdir = join(target_dir, "USRDIR")
                             if  sdk.is_dir(moved_usrdir) then
                                 effective_source_path_us = moved_usrdir
-                            elseif ends_with_usrdir(target_dir) then
+                            elseif initutil.ends_with_usrdir(target_dir) then
                                 effective_source_path_us = target_dir
                             else
                                 effective_source_path_us = target_dir
@@ -683,7 +525,7 @@ local function main()
     placeholders["MainSourcePath"] = effective_source_path
     placeholders["SourcePath"] = base_source_dir
     placeholders["PostSourcePath"] = post_source_relative
-    write_placeholders(cfg_path, placeholders)
+    initutil.write_placeholders(cfg_path, placeholders)
     Utils.colour_print{colour=Colours.GREEN, message="  Config updated."}
 
     -- Final validation (switch to USRDIR if present) and persist validated path
@@ -691,11 +533,11 @@ local function main()
     local potential_usrdir_path = join(effective_source_path, "USRDIR")
     local path_to_validate =  sdk.is_dir(potential_usrdir_path) and potential_usrdir_path or effective_source_path
 
-    local found_original = check_dirs_exist_verbose(path_to_validate, USRDIR_DIRS_ORIGINAL, "USRDIR_DIRS_ORIGINAL")
+    local found_original = initutil.check_dirs_exist_verbose(path_to_validate, initutil.USRDIR_DIRS_ORIGINAL, "USRDIR_DIRS_ORIGINAL")
     local found_usrdir = false
     if not found_original then
         Utils.colour_print{colour=Colours.BLUE, message="  ORIGINAL list not fully present. Checking USRDIR_DIRS..."}
-        found_usrdir = check_dirs_exist_verbose(path_to_validate, USRDIR_DIRS, "USRDIR_DIRS")
+        found_usrdir = initutil.check_dirs_exist_verbose(path_to_validate, initutil.USRDIR_DIRS, "USRDIR_DIRS")
     end
 
     if found_original or found_usrdir then
@@ -706,7 +548,7 @@ local function main()
         placeholders["MainSourcePath"] = path_to_validate
         placeholders["SourcePath"] = base_source_dir
         placeholders["PostSourcePath"] = post_source_relative
-        write_placeholders(cfg_path, placeholders)
+        initutil.write_placeholders(cfg_path, placeholders)
         Utils.colour_print{colour=Colours.GREEN, message="Success: Source validated and saved: " .. path_to_validate}
         return true
     else

@@ -27,11 +27,11 @@ depends-on = [0]
 script_type = "engine"
 script = "download-tools"
 tools_manifest = "{{Game_Root}}/Tools.toml"
-[[operation.prompts]]
-type = "confirm"
-Name = "force download"
-message = "Force override existing downloads?"
-default = false
+#[[operation.prompts]]
+#type = "confirm"
+#Name = "force download"
+#message = "Force override existing downloads?"
+#default = false
 
 
 [[operation]]

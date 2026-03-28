@@ -6,36 +6,26 @@ name = "Blender"
 version = "4.5.4"
 # when chaning version the blank.blend file needs to be re-saved in that version
 #version = "4.0.2" # this version cant handle long paths and requires symlinks
-destination = "./TMP/Downloads"
 unpack = true
-unpack_destination = "./Tools/Blender"
 
 [[tool]]
 name = "QuickBMS"
 version = "0.12.0"
-destination = "./TMP/Downloads"
 unpack = true
-unpack_destination = "./Tools/QuickBMS/exe"
 
 [[tool]]
 name = "Godot"
 version = "4.5-stable-mono"
 #version = "4.6-stable-mono"
-destination = "./TMP/Downloads"
 unpack = true
-unpack_destination = "./Tools/Godot"
 
 [[tool]]
 name = "vgmstream-cli"
 version = "r2023"
-destination = "./TMP/Downloads"
 unpack = true
-unpack_destination = "./Tools/vgmstream-cli"
 
 [[tool]]
 name = "ffmpeg"
 version = "8.0"
-destination = "./TMP/Downloads"
 unpack = true
-unpack_destination = "./Tools/ffmpeg"
 
