@@ -6,9 +6,17 @@
 ---   --source: The source USRDIR path containing movies and audiostreams.
 ---   --target: The target directory where the folders should be copied.
 
+---@type SharedUtils
 local Utils = import("SharedUtils")
 
+---@class CopySourceAudioVideoOptions
+---@field SourcePath string?
+---@field TargetPath string?
+
+---@param List string[]
+---@return CopySourceAudioVideoOptions
 local function ParseArgs(List)
+    ---@type CopySourceAudioVideoOptions
     local Opts = {}
     local I = 1
     while I <= #List do
@@ -27,8 +35,11 @@ local function ParseArgs(List)
 end
 
 -- Parse command line arguments
+---@type CopySourceAudioVideoOptions
 local Opts = ParseArgs(argv or {...})
+---@type string|nil
 local SourcePath = Opts.SourcePath
+---@type string|nil
 local TargetPath = Opts.TargetPath
 
 if not SourcePath or not TargetPath then

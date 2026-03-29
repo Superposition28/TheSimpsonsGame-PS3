@@ -1,5 +1,7 @@
 local M = {}
 
+
+---@param Utils BlenderUtils
 function M.setup(Utils)
     local lib = {}
 

@@ -34,6 +34,7 @@ Usage
 
 sdk.color_print({ colour = "cyan", message = "[BlenderRun] Starting Blender operations runner..." })
 
+---@type SharedUtils
 Utils = import("../SharedUtils.lua")
 
 sdk.color_print({ colour = "cyan", message = "[BlenderRun] Imported SharedUtils." })
@@ -43,6 +44,7 @@ local path_sep = package.config:sub(1, 1)
 
 sdk.color_print({ colour = "cyan", message = string.format("[BlenderRun] Detected path separator: '%s'", path_sep) })
 
+---@type BlenderUtils
 local BlenderUtils = import(join("init", "BlenderUtils.lua"))
 
 sdk.color_print({ colour = "cyan", message = "[BlenderRun] Imported BlenderUtils." })
@@ -201,6 +203,7 @@ local function main()
     -- Load phase modules (must export a `main(opts)` function)
     local initpath = Utils.Normalize(join(script_dir, join("init", "BlenderInit.lua")))
     Utils.log(Utils.Colours.CYAN, string.format("Importing BlenderInit from: %s", initpath), "BlenderRun")
+    ---@type BlenderInit
     local BlenderInit = import(initpath)
     if not BlenderInit or type(BlenderInit.main) ~= "function" then
         error("BlenderInit module did not return a table with a main(opts) function")
@@ -211,6 +214,7 @@ local function main()
 
     local corepath = Utils.Normalize(join(script_dir, "BlenderCore.lua"))
     Utils.log(Utils.Colours.CYAN, string.format("Importing BlenderCore from: %s", corepath), "BlenderRun")
+    ---@type BlenderCore
     local BlenderCore = import(corepath)
     if not BlenderCore or type(BlenderCore.main) ~= "function" then
         error("BlenderCore module did not return a table with a main(opts) function")

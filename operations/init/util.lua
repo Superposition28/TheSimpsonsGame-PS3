@@ -1,4 +1,19 @@
-local Utils = require("utils")
+---@class init
+---@field USRDIR_DIRS table<integer, string>
+---@field USRDIR_DIRS_ORIGINAL table<integer, string>
+---@field ends_with_usrdir fun(p: string|nil): boolean
+---@field normalize_region fun(value: string|nil): ("US"|"EU"|"BOTH")|nil
+---@field get_input fun(msg: string, id?: string): string
+---@field check_dirs_exist fun(base_path: string, required_dirs: table<integer, string>): boolean
+---@field check_dirs_exist_verbose fun(base_path: string, required_dirs: table<integer, string>, list_name?: string): boolean
+---@field read_placeholders fun(cfg_path: string): table
+---@field write_placeholders fun(cfg_path: string, new_placeholders: table): nil
+---@field count_files fun(path: string): integer
+---@field is_ps3_game_folder fun(path: string): boolean
+---@field validate_source_path fun(path: string): boolean, string, string
+
+---@type SharedUtils
+local Utils = import("../SharedUtils")
 local Colours = Utils.Colours
 local M = {}
 
@@ -43,7 +58,12 @@ local USRDIR_DIRS_ORIGINAL = {
     "movies", "neverquest", "rhymes", "simpsons_chars", "spr_hub", "text", "tree_hugger",
 }
 
+-- Expose required directory sets for callers that perform final validation.
+M.USRDIR_DIRS = USRDIR_DIRS
+M.USRDIR_DIRS_ORIGINAL = USRDIR_DIRS_ORIGINAL
+
 function M.check_dirs_exist(base_path, required_dirs)
+    if type(required_dirs) ~= "table" then return false end
     if not sdk.is_dir(base_path) then return false end
     for _, dir_name in ipairs(required_dirs) do
         local full_path = join(base_path, dir_name)
@@ -54,6 +74,7 @@ end
 
 -- Verbose variant for logging which list is being checked
 function M.check_dirs_exist_verbose(base_path, required_dirs, list_name)
+    if type(required_dirs) ~= "table" then return false end
     if not sdk.is_dir(base_path) then return false end
     local missing = {}
     for _, dir_name in ipairs(required_dirs) do

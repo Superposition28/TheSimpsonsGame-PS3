@@ -2,7 +2,24 @@
 -- Single, safe implementation: updates only the targeted key and preserves everything else.
 -- Runtime guarantees: sdk (with TOML helpers) and argv are provided by engine
 
+---@class ConfigSetToken
+---@field key string
+---@field value string
+---@field type_hint string?
 
+---@class ConfigOptions
+---@field group string
+---@field index integer
+---@field type_hint string
+---@field sets string[]
+---@field help boolean?
+---@field list boolean?
+---@field key string?
+---@field value string?
+---@field config_path string?
+
+
+---@param msg string?
 local function usage(msg)
     if msg then print(msg .. "\n") end
     print([[Usage:
@@ -22,7 +39,10 @@ Options:
 ]])
 end
 
+---@param list string[]
+---@return ConfigOptions
 local function parse_args(list)
+    ---@type ConfigOptions
     local opts = { group = 'placeholders', index = 1, type_hint = 'auto', sets = {} }
     local i = 1
     while i <= #list do
@@ -42,6 +62,8 @@ local function parse_args(list)
     return opts
 end
 
+---@param v any
+---@return string
 local function as_string(v)
     local t = type(v)
     if t == 'string' then return v
@@ -51,6 +73,9 @@ local function as_string(v)
     return '<' .. t .. '>'
 end
 
+---@param raw any
+---@param hint string?
+---@return string|boolean|number
 local function convert_value(raw, hint)
     hint = (hint or 'auto'):lower()
     if hint == 'string' then return raw
@@ -80,6 +105,8 @@ local function convert_value(raw, hint)
 end
 
 
+---@param cfg_path string
+---@param doc table
 local function list_doc(cfg_path, doc)
     print('Config file: ' .. cfg_path)
     local printed = false
@@ -106,6 +133,8 @@ local function list_doc(cfg_path, doc)
 end
 
 
+---@param token string?
+---@return ConfigSetToken?
 local function parse_set_token(token)
     -- token form: key=value[:type]
     if not token or token == '' then return nil end
@@ -127,6 +156,10 @@ local function parse_set_token(token)
 end
 
 
+---@param doc table
+---@param group string
+---@param index integer?
+---@return table
 local function ensure_group_entry(doc, group, index)
     local g = doc[group]
     if g == nil then
@@ -153,13 +186,14 @@ local function ensure_group_entry(doc, group, index)
 end
 
 
+---@return integer
 local function main()
     if not sdk or not sdk.toml_read_file or not sdk.toml_write_file then
         error('SDK TOML helpers unavailable - engine integrity issue')
         Diagnostics.Trace('SDK TOML helpers unavailable - engine integrity issue')
     end
 
-    local opts = parse_args(argv)
+    local opts = parse_args(argv or {})
     -- Handle help request
     if opts.help then usage(); return 0 end
 

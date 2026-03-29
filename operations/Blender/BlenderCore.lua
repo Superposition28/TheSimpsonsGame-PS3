@@ -51,6 +51,7 @@ if not sdk.run_process then
     error("sdk.run_process helper is required for BlenderCore.lua")
 end
 
+---@type BlenderUtils
 local Utils = _G.import(script_dir .. "/init/BlenderUtils.lua")
 if not Utils then
     error("BlenderUtils not found")
@@ -212,6 +213,7 @@ local function run_blender_for_asset(asset, export_set, ordered_formats, verbose
     }
     local fh = io.open(batch_file, "w")
     if fh then
+        ---@cast fh FileHandle
         fh:write(sdk.text.json.encode(batch_data))
         fh:close()
     else
@@ -291,8 +293,13 @@ function BlenderCore.main(opts)
     local debug_sleep = not not opts.debug_sleep
     local export_set, ordered_formats = normalize_export_formats(opts.export_formats)
 
-    local db_path = opts.db_file_path and Utils.normalize_separators(opts.db_file_path)
-    db_path = Utils.to_long_path(Utils.normalize_separators(db_path))
+    local db_path = opts.db_file_path and Utils.normalize_separators(opts.db_file_path) or nil
+    if db_path then
+        ---@cast db_path string
+        local normalized_db_path = Utils.normalize_separators(tostring(db_path))
+        ---@cast normalized_db_path string
+        db_path = Utils.to_long_path(normalized_db_path)
+    end
     if not db_path or db_path == "" then
         error("DB file path must be specified in opts.db_file_path")
         os.exit(1)
@@ -300,10 +307,18 @@ function BlenderCore.main(opts)
 
     local json_db_path = opts.preinstanced_dir and Utils.join(opts.preinstanced_dir, "normalized_map.json")
     if json_db_path then
-        json_db_path = Utils.to_long_path(Utils.normalize_separators(json_db_path))
+        ---@cast json_db_path string
+        local normalized_json_db_path = Utils.normalize_separators(tostring(json_db_path))
+        ---@cast normalized_json_db_path string
+        json_db_path = Utils.to_long_path(normalized_json_db_path)
     end
 
-    local blender_exe_path = opts.blender_exe_path and Utils.to_long_path(Utils.normalize_separators(opts.blender_exe_path)) or ""
+    local blender_exe_path = ""
+    if opts.blender_exe_path and opts.blender_exe_path ~= "" then
+        local normalized_blender_exe_path = Utils.normalize_separators(tostring(opts.blender_exe_path))
+        ---@cast normalized_blender_exe_path string
+        blender_exe_path = Utils.to_long_path(normalized_blender_exe_path) or ""
+    end
 
     log(Utils.Colours.CYAN, "all input opts: " .. sdk.text.json.encode(opts))
 
@@ -425,6 +440,7 @@ function BlenderCore.main(opts)
 
             local fh = io.open(batch_file, "w")
             if fh then
+                ---@cast fh FileHandle
                 fh:write(sdk.text.json.encode(batch_data))
                 fh:close()
             else

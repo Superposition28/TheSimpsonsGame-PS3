@@ -9,11 +9,64 @@ Purpose:
 Runtime guarantees: sdk, argv are provided by engine
 ]]
 
+---@type SharedUtils
 local Utils = import("SharedUtils")
 
+---@class AudioMapFilePatterns
+---@field file_pattern string?
+
+---@class AudioMapFilePatternEntry
+---@field file_pattern string?
+
+---@class AudioMapFileEntry
+---@field CharacterName string?
+---@field file_patterns AudioMapFilePatterns|AudioMapFilePatternEntry[]?
+
+---@class AudioMapSectionEntry
+---@field OLD_DIR_NAME string?
+---@field NEW_DIR_NAME string?
+---@field files AudioMapFileEntry[]?
+
+---@class AudioMapRenameFileRule
+---@field CharacterPrefix string
+---@field MatchPattern string
+
+---@class AudioMapRenameRule
+---@field OldDirName string
+---@field NewDirName string
+---@field FileRules AudioMapRenameFileRule[]
+
+---@class AudioMapRenameStats
+---@field FolderRenamed integer
+---@field FolderSkipped integer
+---@field FolderConflicts integer
+---@field FolderErrors integer
+---@field FileRenamed integer
+---@field FileSkipped integer
+---@field FileConflicts integer
+---@field FileErrors integer
+
+---@class AudioMapSectionCounts
+---@field Dialogue integer
+---@field Cutscene integer
+---@field GlobalSound integer
+
+---@class ParsedAudioMapRules
+---@field DialogueRules table<string, AudioMapRenameRule>
+---@field CutsceneRules table<string, AudioMapRenameRule>
+---@field GlobalSoundRules table<string, AudioMapRenameRule>
+---@field SkippedCharacters integer
+---@field SectionCounts AudioMapSectionCounts
+
+---@class ApplyRulesOptions
+---@field UseCharacterSubfolders boolean?
+
 -- Hardcoded Language Blacklist and Global Dirs (mirrors Python script)
+---@type table<string, boolean>
 local language_blacklist = { it=true, es=true, fr=true }
+---@type string[]
 local language_dirs_to_process = { "en", "es", "fr", "it" }
+---@type table<string, boolean>
 local global_dirs = {
 	["80b_crow"]=true, ["amb_airc"]=true, ["amb_chao"]=true, ["amb_cour"]=true, ["amb_dung"]=true, ["amb_ext_"]=true,
 	["amb_fore"]=true, ["amb_fren"]=true, ["amb_gara"]=true, ["amb_int_"]=true, ["amb_mans"]=true, ["amb_nort"]=true,
@@ -25,6 +78,8 @@ local global_dirs = {
 	["mtp_heav"]=true, ["mus_simp"]=true, ["sss_cont"]=true, ["sss_lab_"]=true, ["sss_mall"]=true
 }
 
+---@param s any
+---@return any
 local function lower(s)
 	if type(s) ~= "string" then
 		return s
@@ -32,6 +87,9 @@ local function lower(s)
 	return string.lower(s)
 end
 
+---@param path string?
+---@param label string?
+---@return string[]
 local function safe_list_dir(path, label)
 	if not path or path == "" then
 		return {}
@@ -46,6 +104,8 @@ local function safe_list_dir(path, label)
 	return entries
 end
 
+---@param name any
+---@return string
 local function strip_xxx_suffix(name)
 	local value = Utils.trim(name)
 	if type(value) ~= "string" then
@@ -60,6 +120,8 @@ local function strip_xxx_suffix(name)
 	return value
 end
 
+---@param name any
+---@return boolean
 local function is_placeholder_character_name(name)
 	local raw_value = Utils.trim(name)
 	if type(raw_value) ~= "string" then
@@ -82,6 +144,8 @@ local function is_placeholder_character_name(name)
 	return false
 end
 
+---@param name any
+---@return string
 local function sanitize_character_prefix(name)
 	local value = Utils.trim(name)
 	if type(value) ~= "string" then
@@ -97,6 +161,8 @@ local function sanitize_character_prefix(name)
 	return value
 end
 
+---@param file_pattern any
+---@return string?
 local function build_file_match_pattern(file_pattern)
 	local raw = Utils.trim(file_pattern)
 	if type(raw) ~= "string" then
@@ -113,7 +179,10 @@ local function build_file_match_pattern(file_pattern)
 	return "^" .. escaped .. "$"
 end
 
+---@param file_entry AudioMapFileEntry|table|nil
+---@return string[]
 local function extract_file_patterns(file_entry)
+	---@type string[]
 	local results = {}
 	local file_patterns = file_entry and file_entry.file_patterns
 	if type(file_patterns) ~= "table" then
@@ -133,6 +202,9 @@ local function extract_file_patterns(file_entry)
 	return results
 end
 
+---@param node table|nil
+---@param section_name string
+---@param collector AudioMapSectionEntry[]
 local function find_section_entries(node, section_name, collector)
 	if type(node) ~= "table" then
 		return
@@ -154,7 +226,11 @@ local function find_section_entries(node, section_name, collector)
 	end
 end
 
+---@param entries AudioMapSectionEntry[]|table|nil
+---@return table<string, AudioMapRenameRule>
+---@return integer
 local function build_rules_from_entries(entries)
+	---@type table<string, AudioMapRenameRule>
 	local rules_by_old_name = {}
 	local skipped_characters = 0
 	if type(entries) ~= "table" then
@@ -169,6 +245,7 @@ local function build_rules_from_entries(entries)
 				new_name = strip_xxx_suffix(old_name)
 			end
 
+			---@type AudioMapRenameRule
 			local rule = {
 				OldDirName = old_name,
 				NewDirName = new_name,
@@ -207,6 +284,9 @@ local function build_rules_from_entries(entries)
 	return rules_by_old_name, skipped_characters
 end
 
+---@param audio_map_path string
+---@return ParsedAudioMapRules|nil
+---@return string|nil
 local function load_audio_map_rules(audio_map_path)
 	local yaml_reader = nil
 	if sdk.text and sdk.text.yaml and type(sdk.text.yaml.read_file) == "function" then
@@ -232,6 +312,7 @@ local function load_audio_map_rules(audio_map_path)
 		return nil, "AudioMap parser returned an empty table"
 	end
 
+	---@type table<string, AudioMapSectionEntry[]>
 	local section_entries = {
 		["Dialogue"] = {},
 		["CUTSCENE"] = {},
@@ -263,7 +344,10 @@ local function load_audio_map_rules(audio_map_path)
 	}, nil
 end
 
+---@param root_dir string
+---@return table<string, string>
 local function resolve_language_dirs(root_dir)
+	---@type table<string, string>
 	local resolved = {}
 	for _, name in ipairs(safe_list_dir(root_dir, "language directory discovery")) do
 		local candidate = Utils.join(root_dir, name)
@@ -277,6 +361,9 @@ local function resolve_language_dirs(root_dir)
 	return resolved
 end
 
+---@param path_a string?
+---@param path_b string?
+---@return boolean
 local function same_path(path_a, path_b)
 	if not path_a or not path_b then
 		return false
@@ -284,6 +371,10 @@ local function same_path(path_a, path_b)
 	return lower(Utils.normalize(path_a)) == lower(Utils.normalize(path_b))
 end
 
+---@param file_name string
+---@param file_rules AudioMapRenameFileRule[]|nil
+---@return string|nil
+---@return boolean
 local function resolve_character_subfolder(file_name, file_rules)
 	if type(file_rules) ~= "table" or #file_rules == 0 then
 		return nil, false
@@ -306,6 +397,9 @@ local function resolve_character_subfolder(file_name, file_rules)
 	return matched_prefix, ambiguous
 end
 
+---@param source_file_path string
+---@param target_file_path string
+---@param stats AudioMapRenameStats
 local function move_file_with_conflict_checks(source_file_path, target_file_path, stats)
 	if same_path(source_file_path, target_file_path) then
 		stats.FileSkipped = stats.FileSkipped + 1
@@ -327,6 +421,7 @@ local function move_file_with_conflict_checks(source_file_path, target_file_path
 	end
 end
 
+---@return AudioMapRenameStats
 local function create_rename_stats()
 	return {
 		FolderRenamed = 0,
@@ -340,6 +435,10 @@ local function create_rename_stats()
 	}
 end
 
+---@param base_dir string?
+---@param rules_by_old_name table<string, AudioMapRenameRule>|nil
+---@param stats AudioMapRenameStats
+---@param options ApplyRulesOptions?
 local function apply_rules_in_base_dir(base_dir, rules_by_old_name, stats, options)
 	if not base_dir or not sdk.is_dir(base_dir) then
 		return
@@ -426,11 +525,15 @@ local function apply_rules_in_base_dir(base_dir, rules_by_old_name, stats, optio
 	end
 end
 
+---@param label string
+---@param stats AudioMapRenameStats
 local function print_stats(label, stats)
 	print(string.format("%s Folders Renamed: %d, Skipped: %d, Conflicts: %d, Errors: %d", label, stats.FolderRenamed, stats.FolderSkipped, stats.FolderConflicts, stats.FolderErrors))
 	print(string.format("%s Files Renamed: %d, Skipped: %d, Conflicts: %d, Errors: %d", label, stats.FileRenamed, stats.FileSkipped, stats.FileConflicts, stats.FileErrors))
 end
 
+---@param audio_root string
+---@param global_dir_path string?
 local function apply_audio_map_renames(audio_root, global_dir_path)
 	if type(Game_Root) ~= "string" or Utils.trim(Game_Root) == "" then
 		Utils.colour_print({ colour = "yellow", message = "Game_Root is unavailable, skipping AudioMap rename phases." })
@@ -484,6 +587,7 @@ local function apply_audio_map_renames(audio_root, global_dir_path)
 	print(string.format("AudioMap placeholder character entries skipped: %d", parsed_rules.SkippedCharacters or 0))
 end
 
+---@return string?
 local function parse_argv()
 	-- Engine guarantees argv global; try index 1 first, then 0 for compatibility
 	if argv and argv[1] and type(argv[1]) == "string" and argv[1] ~= "" then
@@ -495,6 +599,7 @@ local function parse_argv()
 	return nil
 end
 
+---@return nil
 local function main()
 	local input = parse_argv()
 	if not input or input == "" then

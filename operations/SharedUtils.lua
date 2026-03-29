@@ -1,11 +1,61 @@
--- SharedUtils.lua
--- Globally shared utility functions for RemakeEngine scripts
--- Combined from module helpers and BlenderUtils specialized logic
+---@class SharedUtilsColourPrintOptions
+---@field colour string?
+---@field message string?
+---@field newline boolean?
+
+---@class SharedUtilsColours
+---@field [string] string
+---@field DEFAULT string
+---@field WHITE string
+---@field RED string
+---@field GREEN string
+---@field YELLOW string
+---@field BLUE string
+---@field MAGENTA string
+---@field CYAN string
+---@field GRAY string
+---@field GREY string
+---@field DARK_GREEN string
+---@field DARKGRAY string
+---@field DARKGREY string
+---@field DARKCYAN string
+---@field DARKYELLOW string
+---@field DARKRED string
+
+---@class SharedUtilsCopyState
+---@field count integer
+
+---@class SharedUtils
+---@field normalize fun(path: any): any
+---@field Normalize fun(path: any): any
+---@field colour_print fun(opts: any)
+---@field log fun(colour: string, message: string, prefix?: string)
+---@field path_sep string
+---@field Colours SharedUtilsColours
+---@field join fun(...: string): string
+---@field basename fun(path: any): any
+---@field dirname fun(path: any): string
+---@field is_absolute fun(path: string): boolean
+---@field absolute_path fun(path: string): string|nil
+---@field to_long_path fun(path: any): any
+---@field get_path fun(base_path: string, filename: string, extension: string): string
+---@field split_drive fun(path: string|nil): (string|nil, string|nil)
+---@field get_relative_path fun(base: any, target: any): any
+---@field get_canonical_id fun(rel_path: string|nil): string|nil
+---@field trim fun(s: any): any
+---@field ends_with fun(str: string|nil, suffix: string|nil): boolean
+---@field count_files fun(path: string): integer
+---@field list_subdirs fun(path: string): string[]
+---@field iterate_files fun(root_dir: string, visitor: fun(full_path: string, filename: string): nil)
+---@field copy_tree fun(src: string, dst: string, total: integer?, state: SharedUtilsCopyState?)
+---@field move_tree fun(src: string, dst: string): boolean
+
 
 local M = {}
 
 M.path_sep = package.config:sub(1,1) or "/"
 
+---@type SharedUtilsColours
 M.Colours = {
     DEFAULT = "default",
     WHITE = "white",
@@ -26,7 +76,8 @@ M.Colours = {
 }
 
 --- Print a coloured message via SDK
-function M.colour_print(opts)
+---@param opts any
+function colour_print(opts)
     opts = opts or {}
     local colour = opts.colour or M.Colours.DEFAULT
     local message = opts.message or ""
@@ -36,6 +87,9 @@ function M.colour_print(opts)
 end
 
 
+---@param colour string
+---@param message string
+---@param prefix string?
 function M.log(colour, message, prefix)
     --prefix should be filename to identify source of log, e.g. "BlenderRun" for blender/run.lua
     local prefix_str = tostring(prefix or "LOG")
@@ -45,9 +99,13 @@ end
 --- Path Manipulations -------------------------------------------------------
 
 --- Normalize path separators to host OS default
+---@param path any
+---@return any
 function M.Normalize(path)
     return M.normalize(path)
 end
+---@param path any
+---@return any
 function M.normalize(path)
     if not path then return path end
     if type(path) ~= "string" then path = tostring(path) end
@@ -63,15 +121,21 @@ function M.normalize(path)
 end
 
 --- Join path parts safely
+---@param ... string
+---@return string
 function M.join(...)
     local res = join(...)
     return M.normalize(res)
 end
 
+---@param path string|nil
+---@return any
 function M.basename(path)
     return (path and path:match("([^/\\]+)$")) or path
 end
 
+---@param p string|nil
+---@return string
 function M.dirname(p)
     if not p or p == "" then return "." end
     local d = p:match("(.+)[/\\][^/\\]+$") or p:match("(.+)[/\\]$") or ""
@@ -83,16 +147,22 @@ function M.dirname(p)
     return d
 end
 
+---@param path string
+---@return boolean
 function M.is_absolute(path)
     return sdk.is_absolute(path)
 end
 
 --- Get absolute path (robust version with long path support on Windows)
+---@param path string
+---@return string|nil
 function M.absolute_path(path)
     return sdk.absolute_path(path)
 end
 
 --- Prefix with \\?\ on Windows for long path support
+---@param path string|nil
+---@return any
 function M.to_long_path(path)
     if not path or path == "" or M.path_sep ~= "\\" then return path end
     if path:find("^\\\\%?\\") then return path end
@@ -105,6 +175,10 @@ function M.to_long_path(path)
 end
 
 --- Build a full path string for specific filename + extension, ensuring it's valid
+---@param base_path string
+---@param filename string
+---@param extension string
+---@return string
 function M.get_path(base_path, filename, extension)
     if not base_path or base_path == "" then return "" end
     base_path = M.normalize(base_path)
@@ -130,6 +204,9 @@ function M.get_path(base_path, filename, extension)
     return M.to_long_path(result)
 end
 
+---@param path string|nil
+---@return string|nil drive
+---@return string|nil remainder
 function M.split_drive(path)
     if not path then return nil, path end
     local drive = path:match("^(%a:)")
@@ -141,6 +218,9 @@ function M.split_drive(path)
 end
 
 --- Calculate relative path from base to target
+---@param base any
+---@param target any
+---@return any
 function M.get_relative_path(base, target)
     if not base or not target then return target end
     base = M.normalize(base)
@@ -155,6 +235,8 @@ function M.get_relative_path(base, target)
 end
 
 --- Get a 6-character hash ID for a path (used for assets)
+---@param rel_path string|nil
+---@return string|nil
 function M.get_canonical_id(rel_path)
     if not rel_path then return nil end
     local normalized = M.normalize(rel_path):gsub("\\", "/")
@@ -176,11 +258,16 @@ end
 
 --- String Manipulations -----------------------------------------------------
 
+---@param s any
+---@return any
 function M.trim(s)
     if not s or type(s) ~= "string" then return s end
     return (s:gsub("^%s+", ""):gsub("%s+$", ""))
 end
 
+---@param str string|nil
+---@param suffix string|nil
+---@return boolean
 function M.ends_with(str, suffix)
     if not str or not suffix then return false end
     if #suffix == 0 then return true end
@@ -191,6 +278,8 @@ end
 --- File & Directory Iteration -----------------------------------------------
 
 --- Recursive list of file count
+---@param path string
+---@return integer
 function M.count_files(path)
     local count = 0
     if not sdk.is_dir(path) then return count end
@@ -208,6 +297,8 @@ function M.count_files(path)
 end
 
 --- Get a flat list of immediate subdirectories
+---@param path string
+---@return string[]
 function M.list_subdirs(path)
     local dirs = {}
     if not sdk.is_dir(path) then return dirs end
@@ -222,6 +313,8 @@ function M.list_subdirs(path)
 end
 
 --- Standardized visitor-based file iteration
+---@param root_dir string
+---@param visitor fun(full_path: string, filename: string): nil
 function M.iterate_files(root_dir, visitor)
     if not sdk.is_dir(root_dir) then
         return
@@ -239,6 +332,10 @@ function M.iterate_files(root_dir, visitor)
 end
 
 --- Recursive directory tree copy using SDK and progress tracking
+---@param src string
+---@param dst string
+---@param total integer?
+---@param state SharedUtilsCopyState?
 function M.copy_tree(src, dst, total, state)
     if not sdk.is_dir(src) then return end
     sdk.ensure_dir(dst)
@@ -272,4 +369,5 @@ end
 
 
 
+---@cast M SharedUtils
 return M

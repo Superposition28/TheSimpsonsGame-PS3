@@ -1,5 +1,4 @@
-﻿
-
+﻿---@type SharedUtils
 local Utils = import(join(Game_Root, "operations", "SharedUtils"))
 
 local function run(args)
@@ -11,9 +10,13 @@ local function run(args)
 
     -- Load sub-modules
     local init_path = base_path .. package.config:sub(1, 1) .. "init"
+    ---@type BlenderUtils
     local BUtils = import(join(base_path, "init", "BlenderUtils.lua"))
+    ---@type table
     local DB_Module = import(join(base_path, "init", "BlenderDB.lua")).setup(BUtils)
+    ---@type table
     local Processor_Module = import(join(init_path, "BlenderProcessor.lua")).setup(BUtils)
+    ---@type table
     local Symlink_Module = import(join(init_path, "BlenderSymlink.lua")).setup(BUtils)
 
     local VERBOSE = not not args.verbose
@@ -57,7 +60,7 @@ local function run(args)
             if row_count == 0 then
                 Utils.log(Utils.Colours.YELLOW, string.format("Database file %s exists but asset_map table is empty; deleting and re-initializing.", db_filename))
 
-                if collectgarbage then collectgarbage("collect") end
+                --if collectgarbage then collectgarbage("collect") end 
                 if sdk.sleep then sdk.sleep(0.1) end
 
                 local delete_success = sdk.remove_file and sdk.remove_file(db_filename)

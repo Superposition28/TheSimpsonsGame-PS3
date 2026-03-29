@@ -23,13 +23,19 @@ This script normalizes a directory by performing transformations:
 ]]
 
 -- Load a Lua module from file expecting it to return a table API
+---@param path string
+---@return table
 local function load_module(path)
     local fh, open_err = io.open(path, "r")
     if not fh then
         error(string.format("Failed to open module '%s': %s", path, tostring(open_err)))
     end
+    ---@cast fh FileHandle
     local src = fh:read("*a")
     fh:close()
+    if not src then
+        error(string.format("Failed to read module '%s': empty content", path))
+    end
     local chunk, err = load(src, "@" .. path, "t", _ENV)
     if not chunk then
         error(string.format("Failed to compile module '%s': %s", path, err))

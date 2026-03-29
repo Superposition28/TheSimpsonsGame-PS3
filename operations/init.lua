@@ -10,10 +10,25 @@
 
 -- Bootstrap the Utils module
 
+---@type SharedUtils
 local Utils = import("SharedUtils")
+---@type any
 local Colours = Utils.Colours
 
+---@type init
 local initutil = import("init/util")
+
+---@class InitPlaceholders
+---@field MainSourcePath string?
+---@field SourcePath string?
+---@field PostSourcePath string?
+---@field Region string?
+---@field isRenamed string?
+---@field num string?
+---@field audio_state string?
+---@field Type string?
+---@field _temp_us_source_root string?
+---@field _temp_us_path string?
 
 local function main()
     -- Determine module directory (two levels up from this script: operations/init.lua -> module root)
@@ -230,7 +245,13 @@ local function main()
     local effective_source_path_us = nil
 
     -- If SourcePath is already inside local_data_path, assume it was set to local previously
+    ---@param a string|nil
+    ---@param b string|nil
+    ---@return boolean
     local function starts_with(a, b)
+        if not a or not b then
+            return false
+        end
         return a:sub(1, #b):lower() == b:lower()
     end
 

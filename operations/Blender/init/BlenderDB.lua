@@ -92,6 +92,7 @@ function M.setup(Utils)
             Utils.log(Utils.Colours.CYAN, string.format("Using normalized_map.json from %s", preinstanced_root_abs))
             local fh = io.open(map_file_path, "r")
             if fh then
+                ---@cast fh FileHandle
                 local map_content = fh:read("*a")
                 fh:close()
                 local map_data = sdk.text.json.decode(map_content)

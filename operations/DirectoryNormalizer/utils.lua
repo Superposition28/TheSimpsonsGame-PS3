@@ -32,11 +32,18 @@ function utils.split_path(p)
     return parts
 end
 
+---@param path string
+---@param data string
+---@return boolean
 function utils.write_all_text(path, data)
     local parent = path:match("^(.*)[/\\][^/\\]+$")
     if parent and parent ~= "" then sdk.ensure_dir(parent) end
-    local f = io.open(path, "wb"); if not f then return false end
-    f:write(data); f:close(); return true
+    local f = io.open(path, "wb")
+    if not f then return false end
+    ---@cast f FileHandle
+    f:write(data)
+    f:close()
+    return true
 end
 
 function utils.dirname(p)

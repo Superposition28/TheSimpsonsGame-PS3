@@ -1,11 +1,16 @@
 -- Simple file/directory rename script using CLI arguments
 -- Usage: --old_path <path> --new_path <path>
 
-local Utils = import("./SharedUtils")
+---@type SharedUtils
+local Utils = import("./SharedUtils.lua")
 
+---@type string|nil
 local old_path = nil
+---@type string|nil
 local new_path = nil
 
+---@param message string
+---@return nil
 local function Fail(message)
     error(message)
     os.exit(1)

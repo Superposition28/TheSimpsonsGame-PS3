@@ -13,9 +13,16 @@ Lua conversion by samarixum for RemakeEngine
 --]]
 
 -- Small utilities -----------------------------------------------------------
+---@type SharedUtils
 local Utils = import("SharedUtils")
 
+---@class Lh2ToCsvOptions
+---@field input_dir string?
+---@field input_file string?
+
 -- Utility function to read big-endian uint32
+---@param file FileHandle
+---@return integer|nil
 local function read_uint32_be(file)
     local b1, b2, b3, b4 = file:read(1), file:read(1), file:read(1), file:read(1)
     if not b1 or not b2 or not b3 or not b4 then
@@ -27,7 +34,10 @@ local function read_uint32_be(file)
 end
 
 -- Utility function to read null-terminated string (Windows-1252 encoded)
+---@param file FileHandle
+---@return string
 local function read_string(file)
+    ---@type string[]
     local chars = {}
     while true do
         local byte = file:read(1)
@@ -40,6 +50,8 @@ local function read_string(file)
 end
 
 -- Utility function to escape CSV field
+---@param field any
+---@return string
 local function escape_csv_field(field)
     if not field then return "" end
     field = tostring(field)
@@ -51,6 +63,8 @@ local function escape_csv_field(field)
 end
 
 -- Main LH2 decode function
+---@param path string
+---@return boolean
 local function decode_lh2(path)
     --sdk.colour_print({ colour = 'cyan', message = 'Processing: ' .. path })
 
@@ -66,6 +80,7 @@ local function decode_lh2(path)
         Utils.colour_print({ colour = 'red', message = 'Error: Could not open file: ' .. path })
         return false
     end
+    ---@cast file FileHandle
 
     -- Check Magic Number
     local magic = file:read(4)
@@ -114,6 +129,7 @@ local function decode_lh2(path)
     file:seek("set", 0x20)
 
     -- Read String IDs (Hashes)
+    ---@type integer[]
     local ids = {}
     for i = 1, entries do
         local id = read_uint32_be(file)
@@ -127,6 +143,7 @@ local function decode_lh2(path)
 
     -- Read Offset Pointers
     -- The pointers are arranged sequentially by table (language/column)
+    ---@type table<integer, integer[]>
     local ptr = {}
     for t = 1, tables do
         ptr[t] = {}
@@ -142,6 +159,7 @@ local function decode_lh2(path)
     end
 
     -- Read Strings based on offsets
+    ---@type table<integer, string[]>
     local txt = {}
     for t = 1, tables do
         txt[t] = {}
@@ -168,8 +186,10 @@ local function decode_lh2(path)
         Utils.colour_print({ colour = 'red', message = 'Error: Could not create output file: ' .. output_path })
         return false
     end
+    ---@cast out FileHandle
 
     -- Create Header Row
+    ---@type string[]
     local header = {"String ID"}
     if tables > 1 then
         table.insert(header, "String Label")
@@ -184,6 +204,7 @@ local function decode_lh2(path)
 
     -- Write Data Rows
     for i = 1, entries do
+        ---@type string[]
         local row = {}
 
         -- Format ID as Hex string
@@ -209,7 +230,10 @@ local function decode_lh2(path)
 end
 
 -- Argument parsing
+---@param list string[]
+---@return Lh2ToCsvOptions
 local function parse_args(list)
+    ---@type Lh2ToCsvOptions
     local opts = {}
     local i = 1
     while i <= #list do
@@ -229,6 +253,7 @@ local function parse_args(list)
 end
 
 -- Main execution
+---@return nil
 local function main()
     Utils.colour_print({ colour = 'white', message = '=== LH2 to CSV Converter ===' })
 
@@ -251,6 +276,7 @@ local function main()
             error("Input directory does not exist: " .. opts.input_dir)
         end
 
+        ---@type string[]
         local lh2_files = {}
         Utils.iterate_files(opts.input_dir, function(full_path, entry)
             if entry:lower():match("%.lh2$") then

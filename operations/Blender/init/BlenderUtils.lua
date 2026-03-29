@@ -1,4 +1,27 @@
 
+---@class BlenderUtils
+---@field path_sep string
+---@field Colours table
+---@field log fun(colour: string, message: string, prefix?: string)
+---@field normalize_separators fun(path: string): string|nil
+---@field ends_with fun(str: string, suffix: string): boolean
+---@field parent_dir fun(path: string): string|nil
+---@field is_absolute fun(path: string): boolean
+---@field absolute_path fun(path: string): string
+---@field join fun(...: string): string
+---@field iterate_files fun(root_dir: string, visitor: fun(full_path: string, filename: string))
+---@field to_long_path fun(path: string): string
+---@field get_path fun(base_path: string, filename: string, extension: string): string
+---@field split_drive fun(path: string): (string?, string)
+---@field get_canonical_id fun(rel_path: string): string
+---@field is_space_byte fun(b: integer): boolean
+---@field trim_ascii fun(s: any): string|nil
+---@field strip_surrounding_quotes fun(s: string|nil): string|nil
+---@field trim_trailing_punct_ws fun(s: string|nil): string|nil
+---@field clean_value fun(v: any): string|nil
+---@field match_assignment fun(token: string): string, string|nil
+
+---@type SharedUtils
 Utils = import(join(Game_Root, "operations", "SharedUtils"))
 
 local path_sep = Utils.path_sep
@@ -130,4 +153,5 @@ function M.match_assignment(token)
 end
 
 
+---@cast M BlenderUtils
 return M
