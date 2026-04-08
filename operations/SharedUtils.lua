@@ -1,3 +1,5 @@
+---@diagnostic disable: lowercase-global
+
 ---@class SharedUtilsColourPrintOptions
 ---@field colour string?
 ---@field message string?
@@ -32,7 +34,6 @@
 ---@field log fun(colour: string, message: string, prefix?: string)
 ---@field path_sep string
 ---@field Colours SharedUtilsColours
----@field join fun(...: string): string
 ---@field basename fun(path: any): any
 ---@field dirname fun(path: any): string
 ---@field is_absolute fun(path: string): boolean
@@ -48,15 +49,12 @@
 ---@field list_subdirs fun(path: string): string[]
 ---@field iterate_files fun(root_dir: string, visitor: fun(full_path: string, filename: string): nil)
 ---@field copy_tree fun(src: string, dst: string, total: integer?, state: SharedUtilsCopyState?)
----@field move_tree fun(src: string, dst: string): boolean
 
 
-local M = {}
-
-M.path_sep = package.config:sub(1,1) or "/"
+path_sep = package.config:sub(1,1) or "/"
 
 ---@type SharedUtilsColours
-M.Colours = {
+Colours = {
     DEFAULT = "default",
     WHITE = "white",
     RED = "red",
@@ -79,7 +77,7 @@ M.Colours = {
 ---@param opts any
 function colour_print(opts)
     opts = opts or {}
-    local colour = opts.colour or M.Colours.DEFAULT
+    local colour = opts.colour or Colours.DEFAULT
     local message = opts.message or ""
     local newline = true
     if opts.newline ~= nil then newline = opts.newline end
@@ -90,10 +88,10 @@ end
 ---@param colour string
 ---@param message string
 ---@param prefix string?
-function M.log(colour, message, prefix)
+function log(colour, message, prefix)
     --prefix should be filename to identify source of log, e.g. "BlenderRun" for blender/run.lua
     local prefix_str = tostring(prefix or "LOG")
-    M.colour_print({ colour = colour or M.Colours.DEFAULT, message = string.format("[%s] %s", prefix_str, message or "") })
+    colour_print({ colour = colour or Colours.DEFAULT, message = string.format("[%s] %s", prefix_str, message or "") })
 end
 
 --- Path Manipulations -------------------------------------------------------
@@ -101,15 +99,15 @@ end
 --- Normalize path separators to host OS default
 ---@param path any
 ---@return any
-function M.Normalize(path)
-    return M.normalize(path)
+function Normalize(path)
+    return normalize(path)
 end
 ---@param path any
 ---@return any
-function M.normalize(path)
+function normalize(path)
     if not path then return path end
     if type(path) ~= "string" then path = tostring(path) end
-    local sep = M.path_sep
+    local sep = path_sep
     if sep == "\\" then
         path = path:gsub("/", "\\")
     else
@@ -120,23 +118,15 @@ function M.normalize(path)
     return path
 end
 
---- Join path parts safely
----@param ... string
----@return string
-function M.join(...)
-    local res = join(...)
-    return M.normalize(res)
-end
-
 ---@param path string|nil
 ---@return any
-function M.basename(path)
+function basename(path)
     return (path and path:match("([^/\\]+)$")) or path
 end
 
 ---@param p string|nil
 ---@return string
-function M.dirname(p)
+function dirname(p)
     if not p or p == "" then return "." end
     local d = p:match("(.+)[/\\][^/\\]+$") or p:match("(.+)[/\\]$") or ""
     if d == "" then
@@ -149,25 +139,25 @@ end
 
 ---@param path string
 ---@return boolean
-function M.is_absolute(path)
+function is_absolute(path)
     return sdk.is_absolute(path)
 end
 
 --- Get absolute path (robust version with long path support on Windows)
 ---@param path string
 ---@return string|nil
-function M.absolute_path(path)
+function absolute_path(path)
     return sdk.absolute_path(path)
 end
 
 --- Prefix with \\?\ on Windows for long path support
 ---@param path string|nil
 ---@return any
-function M.to_long_path(path)
-    if not path or path == "" or M.path_sep ~= "\\" then return path end
+function to_long_path(path)
+    if not path or path == "" or path_sep ~= "\\" then return path end
     if path:find("^\\\\%?\\") then return path end
 
-    local normalized = M.normalize(path)
+    local normalized = normalize(path)
     if normalized:match("^%a:") and #normalized > 255 then
         return "\\\\?\\" .. normalized
     end
@@ -179,9 +169,9 @@ end
 ---@param filename string
 ---@param extension string
 ---@return string
-function M.get_path(base_path, filename, extension)
+function get_path(base_path, filename, extension)
     if not base_path or base_path == "" then return "" end
-    base_path = M.normalize(base_path)
+    base_path = normalize(base_path)
     local expected_suffix = filename .. extension
 
     local lower_base = base_path:lower()
@@ -194,20 +184,20 @@ function M.get_path(base_path, filename, extension)
         result = base_path
     elseif base_path:match("%.[a-zA-Z0-9]+$") then
         -- If it's a file but doesn't match, swap it
-        local dir = M.dirname(base_path)
-        result = M.join(dir, expected_suffix)
+        local dir = dirname(base_path)
+        result = join(dir, expected_suffix)
     else
         -- Otherwise it's a directory
-        result = M.join(base_path, expected_suffix)
+        result = join(base_path, expected_suffix)
     end
 
-    return M.to_long_path(result)
+    return to_long_path(result)
 end
 
 ---@param path string|nil
 ---@return string|nil drive
 ---@return string|nil remainder
-function M.split_drive(path)
+function split_drive(path)
     if not path then return nil, path end
     local drive = path:match("^(%a:)")
     if drive then
@@ -221,11 +211,11 @@ end
 ---@param base any
 ---@param target any
 ---@return any
-function M.get_relative_path(base, target)
+function get_relative_path(base, target)
     if not base or not target then return target end
-    base = M.normalize(base)
-    target = M.normalize(target)
-    local sep = M.path_sep
+    base = normalize(base)
+    target = normalize(target)
+    local sep = path_sep
 
     if base:sub(-1) ~= sep then base = base .. sep end
     if target:sub(1, #base):lower() == base:lower() then
@@ -237,9 +227,9 @@ end
 --- Get a 6-character hash ID for a path (used for assets)
 ---@param rel_path string|nil
 ---@return string|nil
-function M.get_canonical_id(rel_path)
+function get_canonical_id(rel_path)
     if not rel_path then return nil end
-    local normalized = M.normalize(rel_path):gsub("\\", "/")
+    local normalized = normalize(rel_path):gsub("\\", "/")
 
     -- Strip last extension (stem logic)
     local stem = normalized
@@ -260,7 +250,7 @@ end
 
 ---@param s any
 ---@return any
-function M.trim(s)
+function trim(s)
     if not s or type(s) ~= "string" then return s end
     return (s:gsub("^%s+", ""):gsub("%s+$", ""))
 end
@@ -268,7 +258,7 @@ end
 ---@param str string|nil
 ---@param suffix string|nil
 ---@return boolean
-function M.ends_with(str, suffix)
+function ends_with(str, suffix)
     if not str or not suffix then return false end
     if #suffix == 0 then return true end
     if #str < #suffix then return false end
@@ -280,17 +270,17 @@ end
 --- Recursive list of file count
 ---@param path string
 ---@return integer
-function M.count_files(path)
+function count_files(path)
     local count = 0
     if not sdk.is_dir(path) then return count end
     local entries = sdk.list_dir(path)
     for _, file in ipairs(entries) do
-        local full = M.join(path, file)
+        local full = join(path, file)
         local attr = sdk.attributes(full)
         if attr and attr.mode == "file" then
             count = count + 1
         elseif attr and attr.mode == "directory" then
-            count = count + M.count_files(full)
+            count = count + count_files(full)
         end
     end
     return count
@@ -299,11 +289,11 @@ end
 --- Get a flat list of immediate subdirectories
 ---@param path string
 ---@return string[]
-function M.list_subdirs(path)
+function list_subdirs(path)
     local dirs = {}
     if not sdk.is_dir(path) then return dirs end
     for _, f in ipairs(sdk.list_dir(path)) do
-        local full = M.join(path, f)
+        local full = join(path, f)
         local attr = sdk.attributes(full)
         if attr and attr.mode == "directory" then
             table.insert(dirs, f)
@@ -315,16 +305,16 @@ end
 --- Standardized visitor-based file iteration
 ---@param root_dir string
 ---@param visitor fun(full_path: string, filename: string): nil
-function M.iterate_files(root_dir, visitor)
+function iterate_files(root_dir, visitor)
     if not sdk.is_dir(root_dir) then
         return
     end
 
     local entries = sdk.list_dir(root_dir)
     for _, entry in ipairs(entries) do
-        local full_path = M.join(root_dir, entry)
+        local full_path = join(root_dir, entry)
         if sdk.is_dir(full_path) then
-            M.iterate_files(full_path, visitor)
+            iterate_files(full_path, visitor)
         elseif sdk.is_file(full_path) then
             visitor(full_path, entry)
         end
@@ -336,25 +326,25 @@ end
 ---@param dst string
 ---@param total integer?
 ---@param state SharedUtilsCopyState?
-function M.copy_tree(src, dst, total, state)
+function copy_tree(src, dst, total, state)
     if not sdk.is_dir(src) then return end
     sdk.ensure_dir(dst)
 
     local entries = sdk.list_dir(src)
     for _, file in ipairs(entries) do
-        local src_path = M.join(src, file)
-        local dst_path = M.join(dst, file)
+        local src_path = join(src, file)
+        local dst_path = join(dst, file)
         local attr = sdk.attributes(src_path)
         if attr and attr.mode == "directory" then
-            M.copy_tree(src_path, dst_path, total, state)
+            copy_tree(src_path, dst_path, total, state)
         elseif attr and attr.mode == "file" then
-            sdk.ensure_dir(M.dirname(dst_path))
+            sdk.ensure_dir(dirname(dst_path))
             sdk.copy_file(src_path, dst_path, true)
             if state and total then
                 state.count = state.count + 1
                 local progress_val = (total > 0) and ((state.count / total) * 100) or 100
                 sdk.colour_print({
-                    colour = M.Colours.YELLOW,
+                    colour = Colours.YELLOW,
                     message = string.format("Copying... %d/%d files (%.1f%%) ", state.count, total, progress_val),
                     newline = false
                 })
@@ -363,11 +353,3 @@ function M.copy_tree(src, dst, total, state)
     end
 end
 
-
-
-
-
-
-
----@cast M SharedUtils
-return M

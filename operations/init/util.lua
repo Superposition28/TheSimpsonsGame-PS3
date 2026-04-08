@@ -13,20 +13,18 @@
 ---@field validate_source_path fun(path: string): boolean, string, string
 
 ---@type SharedUtils
-local Utils = import("../SharedUtils")
-local Colours = Utils.Colours
-local M = {}
+import("../SharedUtils")
 
 -- Local application-specific helpers
-function M.ends_with_usrdir(p)
+function ends_with_usrdir(p)
     if not p then return false end
-    local name = Utils.basename(p)
+    local name = basename(p)
     return name and name:lower() == "usrdir"
 end
 
-function M.normalize_region(value)
+function normalize_region(value)
     if type(value) ~= "string" then return nil end
-    local region = Utils.trim(value)
+    local region = trim(value)
     if not region or region == "" then return nil end
     region = region:upper()
     if region == "US" or region == "EU" or region == "BOTH" then
@@ -36,12 +34,12 @@ function M.normalize_region(value)
 end
 
 -- Input helper using engine's guaranteed prompt() global
-function M.get_input(msg, id)
+function get_input(msg, id)
     return prompt(msg, id or "tsg_init", false)
 end
 
 -- Required directory sets (either original or USRDIR layout is accepted)
-local USRDIR_DIRS = {
+USRDIR_DIRS = {
     "A1_Audio", "A1_Video", "A2_Characters",
     "A2_Frontend", "LHub-00_GameHub", "LHub-00_SprHub", "L01_LandOfChocolate",
     "L02_BartmanBegins", "L03_HungryHungryHomer", "L04_TreeHugger",
@@ -51,18 +49,14 @@ local USRDIR_DIRS = {
     "L14_BigSuperHappy", "L15_Rhymes", "L16_MeetThyPlayer",
 }
 
-local USRDIR_DIRS_ORIGINAL = {
+USRDIR_DIRS_ORIGINAL = {
     "audiostreams", "bargainbin", "bigsuperhappy", "brt", "cheater", "colossaldonut",
     "dayofthedolphins", "dayspringfieldstoodstill", "eighty_bites", "frontend", "gamehub",
     "grand_theft_scratchy", "loc", "medal_of_homer", "meetthyplayer", "mob_rules",
     "movies", "neverquest", "rhymes", "simpsons_chars", "spr_hub", "text", "tree_hugger",
 }
 
--- Expose required directory sets for callers that perform final validation.
-M.USRDIR_DIRS = USRDIR_DIRS
-M.USRDIR_DIRS_ORIGINAL = USRDIR_DIRS_ORIGINAL
-
-function M.check_dirs_exist(base_path, required_dirs)
+function check_dirs_exist(base_path, required_dirs)
     if type(required_dirs) ~= "table" then return false end
     if not sdk.is_dir(base_path) then return false end
     for _, dir_name in ipairs(required_dirs) do
@@ -73,7 +67,7 @@ function M.check_dirs_exist(base_path, required_dirs)
 end
 
 -- Verbose variant for logging which list is being checked
-function M.check_dirs_exist_verbose(base_path, required_dirs, list_name)
+function check_dirs_exist_verbose(base_path, required_dirs, list_name)
     if type(required_dirs) ~= "table" then return false end
     if not sdk.is_dir(base_path) then return false end
     local missing = {}
@@ -82,14 +76,14 @@ function M.check_dirs_exist_verbose(base_path, required_dirs, list_name)
         if not sdk.is_dir(full_path) then table.insert(missing, dir_name) end
     end
     if #missing == 0 then
-        Utils.colour_print{colour=Colours.GREEN, message=(list_name and ("All %d required '%s' subdirectories found in '"..base_path.."'."):format(#required_dirs, list_name) or ("All %d required subdirectories found in '"..base_path.."'."):format(#required_dirs))}
+        colour_print{colour=Colours.GREEN, message=(list_name and ("All %d required '%s' subdirectories found in '"..base_path.."'."):format(#required_dirs, list_name) or ("All %d required subdirectories found in '"..base_path.."'."):format(#required_dirs))}
         return true
     end
     return false
 end
 
 -- TOML helpers via engine SDK
-function M.read_placeholders(cfg_path)
+function read_placeholders(cfg_path)
     local doc = sdk.toml_read_file(cfg_path)
     if not doc then return {} end
     local ph = doc["placeholders"]
@@ -102,14 +96,14 @@ function M.read_placeholders(cfg_path)
     return {}
 end
 
-function M.write_placeholders(cfg_path, new_placeholders)
+function write_placeholders(cfg_path, new_placeholders)
     local doc = {}
     doc["placeholders"] = { new_placeholders }
     sdk.toml_write_file(cfg_path, doc)
 end
 
 -- Count files recursively (files only)
-function M.count_files(path)
+function count_files(path)
     local count = 0
     for _, file in ipairs(sdk.list_dir(path)) do
         local full = join(path, file)
@@ -117,7 +111,7 @@ function M.count_files(path)
         if attr and attr.mode == "file" then
             count = count + 1
         elseif attr and attr.mode == "directory" then
-            count = count + M.count_files(full)
+            count = count + count_files(full)
         end
     end
     return count
@@ -125,7 +119,7 @@ end
 
 
 -- Check if a folder contains USRDIR, PARAM.SFO, and at least one PNG (PS3_GAME folder structure)
-function M.is_ps3_game_folder(path)
+function is_ps3_game_folder(path)
     if not sdk.is_dir(path) then return false end
     local has_usrdir = sdk.is_dir(join(path, "USRDIR"))
     local has_sfo = sdk.path_exists(join(path, "PARAM.SFO"))
@@ -142,15 +136,15 @@ end
 
 -- Validate and resolve the source path, checking multiple possible locations for USRDIR
 -- Returns: ok (bool), usrdir_path (for validation), folder_to_copy (the PS3_GAME parent folder)
-function M.validate_source_path(path)
+function validate_source_path(path)
     if not path or path == "" or not sdk.is_dir(path) then return false, path, path end
 
     -- Check if path itself is USRDIR (has game directories)
-    local ok = M.check_dirs_exist(path, USRDIR_DIRS_ORIGINAL) or M.check_dirs_exist(path, USRDIR_DIRS)
+    local ok = check_dirs_exist(path, USRDIR_DIRS_ORIGINAL) or check_dirs_exist(path, USRDIR_DIRS)
     if ok then
         -- This is the USRDIR folder, so copy its parent (PS3_GAME)
-        local parent = Utils.dirname(path)
-        if M.is_ps3_game_folder(parent) then
+        local parent = dirname(path)
+        if is_ps3_game_folder(parent) then
             return true, path, parent
         end
         -- Fallback if parent doesn't have PS3_GAME structure
@@ -160,8 +154,8 @@ function M.validate_source_path(path)
     -- Check if path contains USRDIR subfolder (this is PS3_GAME folder)
     local usrdir = join(path, "USRDIR")
     if sdk.is_dir(usrdir) then
-        ok = M.check_dirs_exist(usrdir, USRDIR_DIRS_ORIGINAL) or M.check_dirs_exist(usrdir, USRDIR_DIRS)
-        if ok and M.is_ps3_game_folder(path) then
+        ok = check_dirs_exist(usrdir, USRDIR_DIRS_ORIGINAL) or check_dirs_exist(usrdir, USRDIR_DIRS)
+        if ok and is_ps3_game_folder(path) then
             -- This is the PS3_GAME folder itself, copy this folder
             return true, usrdir, path
         end
@@ -172,8 +166,8 @@ function M.validate_source_path(path)
     if sdk.is_dir(ps3_game) then
         local ps3_usrdir = join(path, "PS3_GAME", "USRDIR")
         if sdk.is_dir(ps3_usrdir) then
-            ok = M.check_dirs_exist(ps3_usrdir, USRDIR_DIRS_ORIGINAL) or M.check_dirs_exist(ps3_usrdir, USRDIR_DIRS)
-            if ok and M.is_ps3_game_folder(ps3_game) then
+            ok = check_dirs_exist(ps3_usrdir, USRDIR_DIRS_ORIGINAL) or check_dirs_exist(ps3_usrdir, USRDIR_DIRS)
+            if ok and is_ps3_game_folder(ps3_game) then
                 -- Found PS3_GAME subfolder, copy that folder
                 return true, ps3_usrdir, ps3_game
             end
@@ -182,5 +176,3 @@ function M.validate_source_path(path)
 
     return false, path, path
 end
-
-return M
