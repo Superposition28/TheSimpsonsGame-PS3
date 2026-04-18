@@ -1,9 +1,10 @@
 major = 0
 minor = 3
-patch = 15
+patch = 16
 isAlpha = true
 isBeta = false
 isNodeProject = false
+isDenoProject = false
 [[remotes]]
 name = "origin"
 group = "Main"

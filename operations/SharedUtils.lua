@@ -28,8 +28,6 @@
 ---@field count integer
 
 ---@class SharedUtils
----@field normalize fun(path: any): any
----@field Normalize fun(path: any): any
 ---@field colour_print fun(opts: any)
 ---@field log fun(colour: string, message: string, prefix?: string)
 ---@field path_sep string
@@ -96,27 +94,6 @@ end
 
 --- Path Manipulations -------------------------------------------------------
 
---- Normalize path separators to host OS default
----@param path any
----@return any
-function Normalize(path)
-    return normalize(path)
-end
----@param path any
----@return any
-function normalize(path)
-    if not path then return path end
-    if type(path) ~= "string" then path = tostring(path) end
-    local sep = path_sep
-    if sep == "\\" then
-        path = path:gsub("/", "\\")
-    else
-        path = path:gsub("\\", "/")
-    end
-    -- Also collapse multiple separators (optional, but robust)
-    path = path:gsub("[/\\]+", sep)
-    return path
-end
 
 ---@param path string|nil
 ---@return any

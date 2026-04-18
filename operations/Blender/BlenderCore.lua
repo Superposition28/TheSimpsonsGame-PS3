@@ -68,9 +68,9 @@ end
 local function make_temp_dir(prefix)
     prefix = prefix or "blender_addon_"
     -- Use a workspace-local temp root to avoid relying on os.tmpname (not available in sandbox)
-    local temp_root = Utils.join("TMP", "blender_temp")
+    local temp_root = join("TMP", "blender_temp")
     sdk.ensure_dir(temp_root)
-    local dir = Utils.join(temp_root, prefix .. tostring(os.time()) .. "_" .. tostring(math.random(100000, 999999)))
+    local dir = join(temp_root, prefix .. tostring(os.time()) .. "_" .. tostring(math.random(100000, 999999)))
     sdk.ensure_dir(dir)
     return dir
 end
@@ -80,10 +80,10 @@ math.randomseed(os.time())
 
 --TODO make run script pass these paths
 -- Repository-relative locations used by this pipeline
-local script_root = Utils.join("EngineApps", "Games", "TheSimpsonsGame-PS3", "operations")
-local blender_dir = Utils.join(script_root, "Blender")
-local python_script_path = Utils.join(blender_dir, "MainPreinstancedConvert.py")
-local python_extension_path = Utils.join(blender_dir, "blender_addon")
+local script_root = join("EngineApps", "Games", "TheSimpsonsGame-PS3", "operations")
+local blender_dir = join(script_root, "Blender")
+local python_script_path = join(blender_dir, "MainPreinstancedConvert.py")
+local python_extension_path = join(blender_dir, "blender_addon")
 --- Convert a list of export format hints to a set and an ordered list.
 -- Recognized tokens: "glb", "fbx" (case-insensitive). Duplicates removed.
 -- @param list table|nil
@@ -201,7 +201,7 @@ local function run_blender_for_asset(asset, export_set, ordered_formats, verbose
     -- Create a per-run temp addon directory; will be removed after execution
     local temp_addon_dir = make_temp_dir("blender_addon_")
     
-    local batch_file = Utils.join(temp_addon_dir, "batch.json")
+    local batch_file = join(temp_addon_dir, "batch.json")
     local batch_data = {
         {
             asset_id = asset.identifier,
@@ -305,7 +305,7 @@ function BlenderCore.main(opts)
         os.exit(1)
     end
 
-    local json_db_path = opts.preinstanced_dir and Utils.join(opts.preinstanced_dir, "normalized_map.json")
+    local json_db_path = opts.preinstanced_dir and join(opts.preinstanced_dir, "normalized_map.json")
     if json_db_path then
         ---@cast json_db_path string
         local normalized_json_db_path = Utils.normalize_separators(tostring(json_db_path))
@@ -420,7 +420,7 @@ function BlenderCore.main(opts)
             if #batch_assets == 0 then return end
 
             local temp_addon_dir = make_temp_dir("blender_addon_")
-            local batch_file = Utils.join(temp_addon_dir, "batch.json")
+            local batch_file = join(temp_addon_dir, "batch.json")
 
             local batch_data = {}
             for _, asset in ipairs(batch_assets) do

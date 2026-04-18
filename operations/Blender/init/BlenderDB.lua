@@ -87,7 +87,7 @@ function M.setup(Utils)
 
         db.begin()
 
-        local map_file_path = Utils.join(preinstanced_root_abs, "normalized_map.json")
+        local map_file_path = join(preinstanced_root_abs, "normalized_map.json")
         if sdk.is_file(map_file_path) then
             Utils.log(Utils.Colours.CYAN, string.format("Using normalized_map.json from %s", preinstanced_root_abs))
             local fh = io.open(map_file_path, "r")
@@ -100,7 +100,7 @@ function M.setup(Utils)
                     for _, entry in ipairs(map_data) do
                         local new_path = entry.new_path
                         if new_path and Utils.ends_with(new_path:lower(), ".preinstanced") then
-                            local full_path = Utils.join(preinstanced_root_abs, new_path)
+                            local full_path = join(preinstanced_root_abs, new_path)
 
                             -- Extract filename from new_path
                             local filename = new_path
@@ -117,12 +117,12 @@ function M.setup(Utils)
                             local canonical_rel = Utils.normalize_separators(full_path):sub(#canonical_base + 2)
 
                             local blend_rel = rel:gsub("%.preinstanced$", ".blend")
-                            local blend_full = Utils.join(blend_root_abs, blend_rel)
+                            local blend_full = join(blend_root_abs, blend_rel)
 
                             local glb_full = nil
                             if glb_root_abs then
                                 local glb_rel = rel:gsub("%.preinstanced$", ".glb")
-                                glb_full = Utils.join(glb_root_abs, glb_rel)
+                                glb_full = join(glb_root_abs, glb_rel)
                             end
 
                             if check_existence and (not sdk.is_file(blend_full)) then
@@ -141,7 +141,7 @@ function M.setup(Utils)
                                 local identifier = entry.uid or Utils.get_canonical_id(canonical_rel)
                                 local base_filename = filename:gsub("%.preinstanced$", "")
 
-                                local shared_symlink_root = Utils.join(root_drive, identifier)
+                                local shared_symlink_root = join(root_drive, identifier)
 
                                 local params = {
                                     identifier = identifier,
@@ -178,12 +178,12 @@ function M.setup(Utils)
                 local canonical_rel = Utils.normalize_separators(full_path):sub(#canonical_base + 2)
 
                 local blend_rel = rel:gsub("%.preinstanced$", ".blend")
-                local blend_full = Utils.join(blend_root_abs, blend_rel)
+                local blend_full = join(blend_root_abs, blend_rel)
 
                 local glb_full = nil
                 if glb_root_abs then
                     local glb_rel = rel:gsub("%.preinstanced$", ".glb")
-                    glb_full = Utils.join(glb_root_abs, glb_rel)
+                    glb_full = join(glb_root_abs, glb_rel)
                 end
 
                 if check_existence and (not sdk.is_file(blend_full)) then
@@ -208,7 +208,7 @@ function M.setup(Utils)
                 local base_filename = filename:gsub("%.preinstanced$", "")
 
                 -- Use a single shared symlink folder per asset ID on the root drive
-                local shared_symlink_root = Utils.join(root_drive, identifier)
+                local shared_symlink_root = join(root_drive, identifier)
 
                 local params = {
                     identifier = identifier,

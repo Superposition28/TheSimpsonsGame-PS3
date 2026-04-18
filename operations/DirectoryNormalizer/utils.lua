@@ -2,14 +2,6 @@ local utils = {}
 
 utils.path_sep = package.config:sub(1,1) or "/"
 
-function utils.join(a, b)
-    if not a or a == "" then return b end
-    if not b or b == "" then return a end
-    local last = a:sub(-1)
-    if last == "/" or last == "\\" then return a .. b end
-    return a .. utils.path_sep .. b
-end
-
 function utils.norm_slashes(p)
     if not p then return p end
     if utils.path_sep == "\\" then

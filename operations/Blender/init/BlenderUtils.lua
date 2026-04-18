@@ -34,7 +34,7 @@ local M = {
 }
 
 function M.normalize_separators(path)
-    return Utils.normalize(path)
+    return normalize(path)
 end
 
 function M.ends_with(str, suffix)
@@ -53,10 +53,6 @@ end
 
 function M.absolute_path(path)
     return Utils.absolute_path(path)
-end
-
-function M.join(...)
-    return Utils.join(...)
 end
 
 function M.iterate_files(root_dir, visitor)

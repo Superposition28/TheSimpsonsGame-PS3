@@ -2,7 +2,7 @@
 -- Usage: --old_path <path> --new_path <path>
 
 ---@type SharedUtils
-local Utils = import("./SharedUtils.lua")
+import("./SharedUtils.lua")
 
 ---@type string|nil
 local old_path = nil

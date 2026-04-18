@@ -85,7 +85,7 @@ end
 local function main()
     local args = parse_args(argv)
 
-    local path_sep = package.config:sub(1,1) or "/"
+    local path_sep = package.config:sub(1,1)
     local function join(a, b)
         if not a or a == "" then return b end
         if not b or b == "" then return a end
@@ -140,7 +140,7 @@ local function main()
                     new_rel = logic.apply_camel_case_to_path(rel)
                 end
                 
-                local new_path = utils.join(args.dst, new_rel)
+                local new_path = join(args.dst, new_rel)
                 if not args.dry_run then
                     utils.copy_with_collision_handling(full, new_path)
                 end
@@ -214,8 +214,8 @@ local function main()
             end
 
             -- This is the final, normalized, collapsed path
-            local new_rel = utils.join(new_collapsed_dir, filename)
-            local new_path = utils.join(args.dst, new_rel)
+            local new_rel = join(new_collapsed_dir, filename)
+            local new_path = join(args.dst, new_rel)
 
             local row_data = {
                 uid = target.uid,
@@ -249,7 +249,7 @@ local function main()
         for i=1, #copyonly_files do
             local full = copyonly_files[i]
             local rel = utils.rel_path(full, args.src)
-            local new_path = utils.join(args.dst, rel)
+            local new_path = join(args.dst, rel)
 
             local uid = logic.GetCopyOnlyUid(rel, utils.get_hex_uid, rename_map)
             local row_data = {
@@ -282,7 +282,7 @@ local function main()
         end)
 
         -- Write JSON outputs
-        local map_json = utils.join(args.dst, "normalized_map.json")
+        local map_json = join(args.dst, "normalized_map.json")
         utils.write_all_text(map_json, utils.json_encode(mapping_rows, true))
 
         -- NEW: Write per-folder JSON maps
@@ -298,7 +298,7 @@ local function main()
             -- Sanitize folder name for use in a filename (basic sanitization)
             local safe_name = top_folder:gsub("[^a-zA-Z0-9_%-]", "_")
             local map_filename = string.format("map_%s.json", safe_name)
-            local map_json_path = utils.join(args.dst, map_filename)
+            local map_json_path = join(args.dst, map_filename)
 
             utils.write_all_text(map_json_path, utils.json_encode(rows, true))
             table.insert(per_folder_files, map_filename)
@@ -317,12 +317,12 @@ local function main()
             table.insert(summary.files_written, f)
         end
 
-        utils.write_all_text(utils.join(args.dst, "normalized_map_summary.json"), utils.json_encode(summary, true))
+        utils.write_all_text(join(args.dst, "normalized_map_summary.json"), utils.json_encode(summary, true))
 
         sdk.color_print("green", "-------------------------------------------")
         sdk.color_print("green", string.format("Normalized %d assets.", total))
         sdk.color_print("green", string.format("JSON mapping written to: %s", map_json))
-        sdk.color_print("green", string.format("Summary: %s", utils.join(args.dst, "normalized_map_summary.json")))
+        sdk.color_print("green", string.format("Summary: %s", join(args.dst, "normalized_map_summary.json")))
         Diagnostics.Trace(string.format("[DirectoryNormalizer] Normalized %d assets.", total))
     end)
 

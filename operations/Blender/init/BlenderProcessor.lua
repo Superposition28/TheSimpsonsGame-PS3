@@ -36,7 +36,7 @@ function M.setup(Utils)
         end
 
         local files = {}
-        local map_file_path = Utils.join(self.input_dir, "normalized_map.json")
+        local map_file_path = join(self.input_dir, "normalized_map.json")
         if sdk.is_file(map_file_path) then
             Utils.log(Utils.Colours.CYAN, string.format("Using normalized_map.json from %s", self.input_dir))
             local fh = io.open(map_file_path, "r")
@@ -49,7 +49,7 @@ function M.setup(Utils)
                     for _, entry in ipairs(map_data) do
                         local new_path = entry.new_path
                         if new_path and Utils.ends_with(new_path:lower(), ".preinstanced") then
-                            local full_path = Utils.join(self.input_dir, new_path)
+                            local full_path = join(self.input_dir, new_path)
                             table.insert(files, full_path)
                         end
                     end
@@ -80,8 +80,8 @@ function M.setup(Utils)
                 if ch == '/' or ch == '\\' then last_sep = i end
             end
             local rel_dir = last_sep > 0 and rel_ns:sub(1, last_sep - 1) or nil
-            local blend_dest_dir = rel_dir and Utils.join(self.blend_dir, rel_dir) or self.blend_dir
-            local glb_dest_dir = rel_dir and Utils.join(self.glb_dir, rel_dir) or self.glb_dir
+            local blend_dest_dir = rel_dir and join(self.blend_dir, rel_dir) or self.blend_dir
+            local glb_dest_dir = rel_dir and join(self.glb_dir, rel_dir) or self.glb_dir
 
             sdk.ensure_dir(blend_dest_dir)
             sdk.ensure_dir(glb_dest_dir)
@@ -100,7 +100,7 @@ function M.setup(Utils)
                 base_name = fname:sub(1, #fname - #suffix)
             end
             local blend_dest_filename = base_name .. ".blend"
-            local blend_dest_full_path = Utils.join(blend_dest_dir, blend_dest_filename)
+            local blend_dest_full_path = join(blend_dest_dir, blend_dest_filename)
 
             if not sdk.is_file(blend_dest_full_path) then
                 local copied = sdk.copy_file and sdk.copy_file(self.blank_blend_source, blend_dest_full_path, false)

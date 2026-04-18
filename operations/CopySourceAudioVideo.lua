@@ -7,7 +7,7 @@
 ---   --target: The target directory where the folders should be copied.
 
 ---@type SharedUtils
-local Utils = import("SharedUtils")
+import("SharedUtils")
 
 ---@class CopySourceAudioVideoOptions
 ---@field SourcePath string?
@@ -59,8 +59,8 @@ sdk.ensure_dir(TargetPath)
 
 -- Process Movies Folder
 progress.step("Copying 'movies' folder...")
-local MoviesSource = Utils.join(SourcePath, "movies")
-local MoviesTarget = Utils.join(TargetPath, "movies")
+local MoviesSource = join(SourcePath, "movies")
+local MoviesTarget = join(TargetPath, "movies")
 
 if sdk.path_exists(MoviesSource) then
     sdk.colour_print({ colour = "white", message = "  Found 'movies', copying..." })
@@ -71,8 +71,8 @@ end
 
 -- Process Audiostreams Folder
 progress.step("Copying 'audiostreams' folder...")
-local AudioSource = Utils.join(SourcePath, "audiostreams")
-local AudioTarget = Utils.join(TargetPath, "audiostreams")
+local AudioSource = join(SourcePath, "audiostreams")
+local AudioTarget = join(TargetPath, "audiostreams")
 
 if sdk.path_exists(AudioSource) then
     sdk.colour_print({ colour = "white", message = "  Found 'audiostreams', copying..." })

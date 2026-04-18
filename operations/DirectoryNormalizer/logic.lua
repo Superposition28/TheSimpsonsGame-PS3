@@ -159,17 +159,17 @@ function logic.apply_camel_case_to_path(rel_path)
     local parts = utils.split_path(rel_path)
     -- Don't process paths that are just root or root/file
     if #parts <= 1 then return rel_path end
-    
+
     -- Explicit override: rename L09_Invasion primary level folder before camelCase
     if #parts >= 2 and string.lower(parts[1]) == "l09_invasion" and string.lower(parts[2]) == "dayspringfieldstoodstill" then
         parts[2] = "sss_invasion"
     end
-    
+
     -- Exclude parts[1] (root folder) and parts[#parts] (file name)
     for i = 2, #parts - 1 do
         parts[i] = logic.to_camel_case(parts[i])
     end
-    
+
     return table.concat(parts, utils.path_sep)
 end
 
@@ -282,7 +282,7 @@ function logic.NormalizeFolderSegment(segment, alias_sequences)
     if #collapsed == 0 then
         return ""
     end
-    
+
     -- Recombine the tokens using camelCase instead of underscores
     local res = string.lower(collapsed[1])
     for j = 2, #collapsed do
@@ -455,7 +455,7 @@ function logic.apply_file_rules(original_rel, process_rel, uid_generator_func, r
         new_filename = string.format("%s_%s", filename, uid)
     end
 
-    local new_rel_path = utils.join(new_dir, new_filename)
+    local new_rel_path = join(new_dir, new_filename)
     return new_rel_path, uid
 end
 
@@ -500,7 +500,7 @@ function logic.add_to_tree(tree, path_str)
         local part = parts[i]
         t.dirs[part] = true
 
-        local child_path = utils.join(current_path, part)
+        local child_path = join(current_path, part)
         if not tree[child_path] then
             tree[child_path] = { dirs={}, files={} }
         end
@@ -524,7 +524,7 @@ function logic.build_collapse_map(tree, map, current_orig_path, current_new_path
 
     if #dir_names == 1 and #file_names == 0 then
         local child_name = dir_names[1]
-        local child_orig_path = utils.join(current_orig_path, child_name)
+        local child_orig_path = join(current_orig_path, child_name)
 
         local new_basename = utils.basename(current_new_path)
         if current_orig_path == "" then
@@ -536,15 +536,15 @@ function logic.build_collapse_map(tree, map, current_orig_path, current_new_path
         -- Capitalize the first letter of the child folder to merge in camelCase
         local capitalized_child = string.upper(string.sub(child_name, 1, 1)) .. string.sub(child_name, 2)
         local new_collapsed_name = new_basename .. capitalized_child
-        
-        local new_collapsed_path = utils.join(utils.dirname(current_new_path), new_collapsed_name)
+
+        local new_collapsed_path = join(utils.dirname(current_new_path), new_collapsed_name)
 
         logic.build_collapse_map(tree, map, child_orig_path, new_collapsed_path)
     else
         map[current_orig_path] = current_new_path
         for _, name in ipairs(dir_names) do
-            local child_orig = utils.join(current_orig_path, name)
-            local child_new = utils.join(current_new_path, name)
+            local child_orig = join(current_orig_path, name)
+            local child_new = join(current_new_path, name)
             logic.build_collapse_map(tree, map, child_orig, child_new)
         end
     end
@@ -604,7 +604,7 @@ function logic.walk_files(root, ignore_list)
         local entries = sdk.list_dir(dir)
         for i = 1, #entries do
             local entry = entries[i]
-            local p = utils.join(dir, entry)
+            local p = join(dir, entry)
             local attr = sdk.attributes(p)
             if attr and attr.mode == "directory" then
                 if not utils.should_ignore_dir(entry, ignore_list) then

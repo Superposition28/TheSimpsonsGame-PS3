@@ -10,7 +10,7 @@ Runtime guarantees: sdk, argv are provided by engine
 ]]
 
 ---@type SharedUtils
-local Utils = import("SharedUtils")
+import("SharedUtils")
 
 ---@class AudioMapFilePatterns
 ---@field file_pattern string?
@@ -350,7 +350,7 @@ local function resolve_language_dirs(root_dir)
 	---@type table<string, string>
 	local resolved = {}
 	for _, name in ipairs(safe_list_dir(root_dir, "language directory discovery")) do
-		local candidate = Utils.join(root_dir, name)
+		local candidate = normalize(join(root_dir, name))
 		if sdk.is_dir(candidate) then
 			local lname = lower(name)
 			if lname == "en" or lname == "es" or lname == "fr" or lname == "it" then
@@ -453,8 +453,8 @@ local function apply_rules_in_base_dir(base_dir, rules_by_old_name, stats, optio
 	end
 
 	for _, rule in pairs(rules_by_old_name) do
-		local source_path = Utils.join(base_dir, rule.OldDirName)
-		local target_path = Utils.join(base_dir, rule.NewDirName)
+		local source_path = normalize(join(base_dir, rule.OldDirName))
+		local target_path = normalize(join(base_dir, rule.NewDirName))
 
 		if not sdk.is_dir(source_path) then
 			stats.FolderSkipped = stats.FolderSkipped + 1
@@ -466,7 +466,7 @@ local function apply_rules_in_base_dir(base_dir, rules_by_old_name, stats, optio
 			else
 				local entries = safe_list_dir(source_path, "rule source folder")
 				for _, name in ipairs(entries) do
-					local source_item_path = Utils.join(source_path, name)
+					local source_item_path = normalize(join(source_path, name))
 					if sdk.is_file(source_item_path) then
 						local character_folder_name, ambiguous = nil, false
 						if use_character_subfolders then
@@ -477,7 +477,7 @@ local function apply_rules_in_base_dir(base_dir, rules_by_old_name, stats, optio
 							stats.FileConflicts = stats.FileConflicts + 1
 							Utils.colour_print({ colour = "yellow", message = string.format("Ambiguous character mapping, moving to target root: %s", source_item_path) })
 						elseif character_folder_name and character_folder_name ~= "" then
-							destination_dir = Utils.join(target_path, character_folder_name)
+							destination_dir = normalize(join(target_path, character_folder_name))
 							if not sdk.ensure_dir(destination_dir) or not sdk.is_dir(destination_dir) then
 								stats.FileErrors = stats.FileErrors + 1
 								Utils.colour_print({ colour = "red", message = string.format("Failed to create character folder: %s", destination_dir) })
@@ -485,10 +485,10 @@ local function apply_rules_in_base_dir(base_dir, rules_by_old_name, stats, optio
 							end
 						end
 
-						local target_file_path = Utils.join(destination_dir, name)
+						local target_file_path = normalize(join(destination_dir, name))
 						move_file_with_conflict_checks(source_item_path, target_file_path, stats)
 					elseif sdk.is_dir(source_item_path) then
-						local target_item_path = Utils.join(target_path, name)
+						local target_item_path = normalize(join(target_path, name))
 						if not same_path(source_item_path, target_item_path) then
 							if sdk.path_exists(target_item_path) and not sdk.is_dir(target_item_path) then
 								stats.FolderConflicts = stats.FolderConflicts + 1
@@ -540,7 +540,7 @@ local function apply_audio_map_renames(audio_root, global_dir_path)
 		return
 	end
 
-	local audio_map_path = Utils.join(Game_Root, "reversing", "docs", "PS3_GAME", "USRDIR", "A1_Audio", "AudioMap.yaml")
+	local audio_map_path = normalize(join(Game_Root, "reversing", "docs", "PS3_GAME", "USRDIR", "A1_Audio", "AudioMap.yaml"))
 	if not sdk.path_exists(audio_map_path) then
 		Utils.colour_print({ colour = "yellow", message = string.format("AudioMap not found, skipping map rename phases: %s", audio_map_path) })
 		return
@@ -618,16 +618,16 @@ local function main()
 	end
 
 	-- check if input dir contains audiostreams/ folder or the A1_Audio/ folder
-	if sdk.path_exists(Utils.join(input, "audiostreams")) then
-		input = Utils.join(input, "audiostreams")
-	elseif sdk.path_exists(Utils.join(input, "A1_Audio")) then
-		input = Utils.join(input, "A1_Audio")
+	if sdk.path_exists(normalize(join(input, "audiostreams"))) then
+		input = normalize(join(input, "audiostreams"))
+	elseif sdk.path_exists(normalize(join(input, "A1_Audio"))) then
+		input = normalize(join(input, "A1_Audio"))
 	end
 
 	local en_dir_name = "EN"
 	local global_dir_name = "Global"
-	local en_dir_path = Utils.join(input, en_dir_name)
-	local global_dir_path = Utils.join(input, global_dir_name)
+	local en_dir_path = normalize(join(input, en_dir_name))
+	local global_dir_path = normalize(join(input, global_dir_name))
 
 	sdk.ensure_dir(en_dir_path)
 	sdk.ensure_dir(global_dir_path)
@@ -638,7 +638,7 @@ local function main()
 
 	local entries = safe_list_dir(input, "top-level audio source")
 	for _, name in ipairs(entries) do
-		local item = Utils.join(input, name)
+		local item = normalize(join(input, name))
 		if sdk.is_dir(item) then
 			local lname = lower(name)
 			if name == en_dir_name or name == global_dir_name or language_blacklist[lname] then
@@ -646,7 +646,7 @@ local function main()
 				skipped = skipped + 1
 			else
 				local parent = global_dirs[name] and global_dir_path or en_dir_path
-				local target = Utils.join(parent, name)
+				local target = normalize(join(parent, name))
 				Utils.colour_print({ colour = "gray", message = string.format("Moving '%s' to '%s'...", name, target) })
 				if sdk.path_exists(target) then
 					Utils.colour_print({ colour = "yellow", message = string.format("Warning: Target directory '%s' already exists. Skipping move for '%s'.", target, name) })

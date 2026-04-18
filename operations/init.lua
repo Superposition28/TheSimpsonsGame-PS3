@@ -104,9 +104,9 @@ local function main()
 
     -- Define local_data_path AFTER region is known
     -- For "Both" region, create separate EU and US directories, but use EU as primary
-    local local_data_path_eu = normalize(join(module_dir, "Source", "EU"))
-    local local_data_path_us = normalize(join(module_dir, "Source", "US"))
-    local local_data_path = (region == "BOTH") and local_data_path_eu or normalize(join(module_dir, "Source", region))
+    local local_data_path_eu = join(module_dir, "Source", "EU")
+    local local_data_path_us = join(module_dir, "Source", "US")
+    local local_data_path = (region == "BOTH") and local_data_path_eu or join(module_dir, "Source", region)
 
     colour_print(placeholders)
     local existing = placeholders["MainSourcePath"]
@@ -307,7 +307,7 @@ local function main()
                 if choice == '1' then
                     local src = normalize(copy_source_root or path_from_config)
                     local src_name = basename(src)
-                    local dst = normalize(join(local_data_path, src_name)) -- Nest the folder inside Source
+                    local dst = join(local_data_path, src_name) -- Nest the folder inside Source
                     colour_print{colour=Colours.BLUE, message="Copying folder '" .. src_name .. "' into '" .. local_data_path .. "'..."}
                     sdk.ensure_dir(local_data_path)
                     local copied = false
@@ -329,7 +329,7 @@ local function main()
                     --if io and type(io.flush) == "function" then io.flush() end
                     colour_print{colour=Colours.GREEN, message="Copy complete."}
                     -- Set effective_source_path to the USRDIR inside the copied folder
-                    local copied_usrdir = normalize(join(dst, "USRDIR"))
+                    local copied_usrdir = join(dst, "USRDIR")
                     if  sdk.is_dir(copied_usrdir) then
                         effective_source_path = copied_usrdir
                     else
@@ -338,7 +338,7 @@ local function main()
                     break
                 elseif choice == '2' and source_is_writable then
                     local src = normalize(copy_source_root or path_from_config)
-                    local target_dir = normalize(join(local_data_path, basename(src)))
+                    local target_dir = join(local_data_path, basename(src))
                     colour_print{colour=Colours.YELLOW, message="Moving folder '" .. basename(src) .. "' into '" .. local_data_path .. "'..."}
                     sdk.ensure_dir(local_data_path)
                     local ok_move = false
@@ -348,7 +348,7 @@ local function main()
                         local moved_dir = target_dir
                         colour_print{colour=Colours.GREEN, message="Move complete."}
                         -- Set effective_source_path to the USRDIR inside the moved folder
-                        local moved_usrdir = normalize(join(moved_dir, "USRDIR"))
+                        local moved_usrdir = join(moved_dir, "USRDIR")
                         if  sdk.is_dir(moved_usrdir) then
                             effective_source_path = moved_usrdir
                         elseif ends_with_usrdir(moved_dir) then
@@ -494,15 +494,15 @@ local function main()
                     end
                 end
             else
-                local direct_usrdir_us = normalize(join(local_data_path_us, "USRDIR"))
+                local direct_usrdir_us = join(local_data_path_us, "USRDIR")
                 if  sdk.is_dir(direct_usrdir_us) then
                     effective_source_path_us = direct_usrdir_us
                 else
                     local subs = list_subdirs(local_data_path_us)
                     if #subs == 1 then
-                        local only = normalize(join(local_data_path_us, subs[1]))
-                        if  sdk.is_dir(normalize(join(only, "USRDIR"))) then
-                            effective_source_path_us = normalize(join(only, "USRDIR"))
+                        local only = join(local_data_path_us, subs[1])
+                        if  sdk.is_dir(join(only, "USRDIR")) then
+                            effective_source_path_us = join(only, "USRDIR")
                         else
                             effective_source_path_us = only
                         end
@@ -522,7 +522,7 @@ local function main()
 
     -- Persist the effective SourcePath in config.toml as three components (EU path is primary)
     colour_print{colour=Colours.YELLOW, message="  Updating config.toml with effective Source Path..."}
-    local base_source_dir = normalize(join(module_dir, "Source"))
+    local base_source_dir = join(module_dir, "Source")
     -- Calculate PostSourcePath relative to the region folder, not the Source folder
     local post_source_relative = get_relative_path(local_data_path, effective_source_path)
 
@@ -534,7 +534,7 @@ local function main()
 
     -- Final validation (switch to USRDIR if present) and persist validated path
     colour_print{colour=Colours.BLUE, message="\nValidating final source location: '" .. effective_source_path .. "'"}
-    local potential_usrdir_path = normalize(join(effective_source_path, "USRDIR"))
+    local potential_usrdir_path = join(effective_source_path, "USRDIR")
     local path_to_validate =  sdk.is_dir(potential_usrdir_path) and potential_usrdir_path or effective_source_path
 
     local found_original = check_dirs_exist_verbose(path_to_validate, USRDIR_DIRS_ORIGINAL, "USRDIR_DIRS_ORIGINAL")
@@ -545,7 +545,7 @@ local function main()
     end
 
     if found_original or found_usrdir then
-        local base_source_dir = normalize(join(module_dir, "Source"))
+        local base_source_dir = join(module_dir, "Source")
         -- Calculate PostSourcePath relative to the region folder, not the Source folder
         local post_source_relative = get_relative_path(local_data_path, path_to_validate)
 

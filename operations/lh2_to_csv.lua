@@ -14,7 +14,7 @@ Lua conversion by samarixum for RemakeEngine
 
 -- Small utilities -----------------------------------------------------------
 ---@type SharedUtils
-local Utils = import("SharedUtils")
+import("SharedUtils")
 
 ---@class Lh2ToCsvOptions
 ---@field input_dir string?
