@@ -20,9 +20,9 @@ end
 for i = 1, argc do
     local arg = argv[i]
     if arg == "--old_path" and i < argc then
-        old_path = Utils.normalize(argv[i + 1])
+        old_path = normalize(argv[i + 1])
     elseif arg == "--new_path" and i < argc then
-        new_path = Utils.normalize(argv[i + 1])
+        new_path = normalize(argv[i + 1])
     end
 end
 

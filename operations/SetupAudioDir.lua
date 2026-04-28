@@ -368,7 +368,7 @@ local function same_path(path_a, path_b)
 	if not path_a or not path_b then
 		return false
 	end
-	return lower(Utils.normalize(path_a)) == lower(Utils.normalize(path_b))
+	return lower(normalize(path_a)) == lower(normalize(path_b))
 end
 
 ---@param file_name string
@@ -606,7 +606,7 @@ local function main()
 		input = prompt("Enter Audio Source Directory path:", "audio_dir_prompt", false) or ""
 	end
 
-	input = Utils.normalize(input)
+	input = normalize(input)
 
 	if not input or input == "" then
 		sdk.colour_print{ colour = "Red", message = "Error: AUDIO_SOURCE_DIR not provided or empty." }

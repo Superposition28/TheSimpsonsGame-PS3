@@ -268,7 +268,7 @@ local function main()
         end
     elseif opts.input_dir then
         -- Directory mode - find all .lh2 files
-        opts.input_dir = Utils.normalize(opts.input_dir)
+        opts.input_dir = normalize(opts.input_dir)
         Utils.colour_print({ colour = 'cyan', message = 'Scanning directory: ' .. opts.input_dir })
         Diagnostics.Trace('[lh2_to_csv] Scanning directory: ' .. opts.input_dir)
 
