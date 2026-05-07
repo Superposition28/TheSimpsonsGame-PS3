@@ -45,7 +45,7 @@ end
 sdk.colour_print({ colour = "Cyan", message = "Renaming: " .. old_path })
 sdk.colour_print({ colour = "Cyan", message = "      To: " .. new_path })
 
-local success = sdk.rename_file(old_path, new_path)
+local success = sdk.rename_file(old_path, new_path, true) -- true = overwrite if exists (we already check for this, but just in case)
 
 if success then
     sdk.colour_print({ colour = "Green", message = "✓ Rename successful" })

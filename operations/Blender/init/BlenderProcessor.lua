@@ -1,44 +1,72 @@
 local M = {}
 
-function M.setup(Utils)
+---@return BlenderProcessorModule
+function M.setup()
+    ---@class PreinstancedFileProcessorOptions
+    ---@field input_dir string
+    ---@field blend_dir string
+    ---@field glb_dir string
+    ---@field blank_blend_source string
+    ---@field debug_mode_enabled boolean
+    ---@field verbose boolean
+
+    ---@class PreinstancedFileProcessor
+    ---@field input_dir string
+    ---@field blend_dir string
+    ---@field glb_dir string
+    ---@field blank_blend_source string
+    ---@field debug_mode_enabled boolean
+    ---@field verbose boolean
+    ---@field process_files fun(self: PreinstancedFileProcessor): nil
+
+    ---@class PreinstancedFileProcessorClass
+    ---@field new fun(opts: PreinstancedFileProcessorOptions): PreinstancedFileProcessor
+
+    ---@class BlenderProcessorModule
+    ---@field PreinstancedFileProcessor PreinstancedFileProcessorClass
+
     local PreinstancedFileProcessor = {}
     PreinstancedFileProcessor.__index = PreinstancedFileProcessor
 
+    ---@param opts PreinstancedFileProcessorOptions
+    ---@return PreinstancedFileProcessor
     function PreinstancedFileProcessor.new(opts)
         local self = setmetatable({}, PreinstancedFileProcessor)
-        self.input_dir = Utils.absolute_path(opts.input_dir)
-        self.blend_dir = Utils.absolute_path(opts.blend_dir)
-        self.glb_dir = Utils.absolute_path(opts.glb_dir)
-        self.blank_blend_source = Utils.absolute_path(opts.blank_blend_source)
+        self.input_dir = absolute_path(opts.input_dir)
+        self.blend_dir = absolute_path(opts.blend_dir)
+        self.glb_dir = absolute_path(opts.glb_dir)
+        self.blank_blend_source = absolute_path(opts.blank_blend_source)
         self.debug_mode_enabled = not not opts.debug_mode_enabled
         self.verbose = not not opts.verbose
+        ---@cast self PreinstancedFileProcessor
         return self
     end
 
+    ---@return nil
     function PreinstancedFileProcessor:process_files()
         if not sdk.is_dir(self.input_dir) then
-            Utils.log(Utils.Colours.RED, string.format("InputDirectory '%s' is not set or does not exist.", self.input_dir))
+            log(Colours.RED, string.format("InputDirectory '%s' is not set or does not exist.", self.input_dir))
             error(string.format("InputDirectory '%s' is not set or does not exist.", self.input_dir))
         end
         if not self.blend_dir then
-            Utils.log(Utils.Colours.RED, "BlendDirectory is not set.")
+            log(Colours.RED, "BlendDirectory is not set.")
             error("BlendDirectory is not set.")
         end
         sdk.ensure_dir(self.blend_dir)
         if not self.glb_dir then
-            Utils.log(Utils.Colours.RED, "GLBOutputDirectory is not set.")
+            log(Colours.RED, "GLBOutputDirectory is not set.")
             error("GLBOutputDirectory is not set.")
         end
         sdk.ensure_dir(self.glb_dir)
         if not sdk.is_file(self.blank_blend_source) then
-            Utils.log(Utils.Colours.RED, string.format("BlankBlendSource '%s' is not set or does not exist.", self.blank_blend_source))
+            log(Colours.RED, string.format("BlankBlendSource '%s' is not set or does not exist.", self.blank_blend_source))
             error(string.format("BlankBlendSource '%s' is not set or does not exist.", self.blank_blend_source))
         end
 
         local files = {}
         local map_file_path = join(self.input_dir, "normalized_map.json")
         if sdk.is_file(map_file_path) then
-            Utils.log(Utils.Colours.CYAN, string.format("Using normalized_map.json from %s", self.input_dir))
+            log(Colours.CYAN, string.format("Using normalized_map.json from %s", self.input_dir))
             local fh = io.open(map_file_path, "r")
             if fh then
                 ---@cast fh FileHandle
@@ -47,8 +75,11 @@ function M.setup(Utils)
                 local map_data = sdk.text.json.decode(map_content)
                 if map_data then
                     for _, entry in ipairs(map_data) do
+                        ---@class BlenderProcessorNormalizedMapEntry
+                        ---@field new_path string|nil
+                        ---@cast entry BlenderProcessorNormalizedMapEntry
                         local new_path = entry.new_path
-                        if new_path and Utils.ends_with(new_path:lower(), ".preinstanced") then
+                        if new_path and ends_with(new_path:lower(), ".preinstanced") then
                             local full_path = join(self.input_dir, new_path)
                             table.insert(files, full_path)
                         end
@@ -56,24 +87,26 @@ function M.setup(Utils)
                 end
             end
         else
-            Utils.iterate_files(self.input_dir, function(full_path, filename)
-                if Utils.ends_with(filename:lower(), ".preinstanced") then
+            ---@param full_path string
+            ---@param filename string
+            iterate_files(self.input_dir, function(full_path, filename)
+                if ends_with(filename:lower(), ".preinstanced") then
                     table.insert(files, full_path)
                 end
             end)
         end
 
-        Utils.log(Utils.Colours.CYAN, string.format("Found %d .preinstanced files in %s.", #files, self.input_dir))
+        log(Colours.CYAN, string.format("Found %d .preinstanced files in %s.", #files, self.input_dir))
         local input_dir_abs = self.input_dir
 
         for _, preinst_path in ipairs(files) do
             if self.verbose then
-                Utils.log(Utils.Colours.CYAN, string.format("Processing preinstanced file: %s", preinst_path))
+                log(Colours.CYAN, string.format("Processing preinstanced file: %s", preinst_path))
             end
 
-            local rel = Utils.normalize_separators(preinst_path):sub(#input_dir_abs + 2)
+            local rel = normalize(preinst_path):sub(#input_dir_abs + 2)
             -- Replace heavy Lua pattern with simple last-separator search
-            local rel_ns = Utils.normalize_separators(rel)
+            local rel_ns = normalize(rel)
             local last_sep = 0
             for i = 1, #rel_ns do
                 local ch = rel_ns:sub(i,i)
@@ -87,7 +120,7 @@ function M.setup(Utils)
             sdk.ensure_dir(glb_dest_dir)
 
             -- Derive base name without using complex patterns
-            local fn_ns = Utils.normalize_separators(preinst_path)
+            local fn_ns = normalize(preinst_path)
             local last2 = 0
             for i = 1, #fn_ns do
                 local ch = fn_ns:sub(i,i)
@@ -106,10 +139,10 @@ function M.setup(Utils)
                 local copied = sdk.copy_file and sdk.copy_file(self.blank_blend_source, blend_dest_full_path, false)
                 if copied then
                     if self.verbose then
-                        Utils.log(Utils.Colours.CYAN, string.format("Copied %s to %s", self.blank_blend_source, blend_dest_full_path))
+                        log(Colours.CYAN, string.format("Copied %s to %s", self.blank_blend_source, blend_dest_full_path))
                     end
                 else
-                    Utils.log(Utils.Colours.RED, string.format("Error copying blank blend file to '%s'", blend_dest_full_path))
+                    log(Colours.RED, string.format("Error copying blank blend file to '%s'", blend_dest_full_path))
                     if self.debug_mode_enabled then
                         sdk.sleep(1)
                     end
@@ -121,12 +154,14 @@ function M.setup(Utils)
             end
         end
 
-        Utils.log(Utils.Colours.GREEN, string.format("Total .preinstanced files processed for blend/glb structure setup: %d", #files))
+        log(Colours.GREEN, string.format("Total .preinstanced files processed for blend/glb structure setup: %d", #files))
     end
 
-    return {
+    local module = {
         PreinstancedFileProcessor = PreinstancedFileProcessor
     }
+    ---@cast module BlenderProcessorModule
+    return module
 end
 
 return M

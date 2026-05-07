@@ -1,3 +1,34 @@
+
+---@class DirectoryNormalizerLogic
+---@field segments_to_remove string[][]
+---@field LevelAliasMap table<string, string[]>
+---@field EpisodeMap table<string, string[][]>
+---@field IgnoredExtensions table<string, boolean>
+---@field init fun(util: table)
+---@field to_camel_case fun(str: string): string
+---@field simplify_episode_names fun(rel_path: string): string
+---@field apply_camel_case_to_path fun(rel_path: string): string
+---@field SplitTokens fun(segment: string): string[]
+---@field BuildAliasTokenSequences fun(level_folder_lower: string): string[][]
+---@field MatchesSequence fun(tokens: string[], index: integer, sequence: string[]): boolean
+---@field GetZonePrefix fun(segment: string): string|nil
+---@field IsMatchingZoneAssets fun(parent_segment: string, child_segment: string): boolean
+---@field IsMatchingZoneAssets2 fun(parent_segment: string, child_segment: string): boolean
+---@field NormalizeFolderSegment fun(segment: string, alias_sequences: string[][]): string
+---@field NormalizeCollapsedDir fun(dir_path: string, level_folder_lower: string, level_name_lower: string): string
+---@field apply_file_rules fun(original_rel: string, process_rel: string, uid_generator_func: function, rename_map: table<string, string>): string, string
+---@field ExtractAudioUidFromFilename fun(filename: string): string|nil
+---@field GetCopyOnlyUid fun(rel_path: string, uid_generator_func: function, rename_map: table<string, string>): string
+---@field add_to_tree fun(tree: table, path_str: string)
+---@field build_collapse_map fun(tree: table, map: table<string, string>, current_orig_path: string, current_new_path: string)
+---@field load_rename_map fun(db_path: string): table<string, string>
+---@field normalize_to_canonical fun(rel_path: string, rename_map: table<string, string>): string
+---@field walk_files fun(root: string, ignore_list: table): string[]
+---@field BuildCopyOnlySet fun(copyonly_list: string[]): table<string, boolean>
+---@field IsCopyOnlyPath fun(rel_path: string, copyonly_set: table<string, boolean>): boolean
+
+
+
 local logic = {}
 local utils = {}
 
@@ -559,19 +590,20 @@ function logic.load_rename_map(db_path)
     if not db then
         return map
     end
-    local prog = progress.start(0, "Loading rename mappings...")
+    local prog = progress.console.new(0, "RenameMap", "Loading rename mappings...")
     local ok, rows = pcall(function()
         return db:query("SELECT old_name, new_name FROM rename_mappings")
     end)
     if ok and rows then
         prog:SetTotal(#rows)
-        for _, row in ipairs(rows) do
+        for i, row in ipairs(rows) do
             local old_name = row.old_name
             local new_name = row.new_name
             if old_name and new_name then
                 map[string.lower(new_name)] = old_name
             end
-            prog:Update(1, "Loaded " .. _ .. " mappings")
+            prog:SetLabel("Loaded " .. i .. " mappings")
+            prog:Update(1, 1, 0, 0)
         end
     end
     db:close()
@@ -598,28 +630,47 @@ end
 function logic.walk_files(root, ignore_list)
     local stack = { root }
     local files = {}
-    local prog = progress.start(0, "Scanning directory...")
+
+    -- Start with 1 total directory (the root)
+    local total_dirs = 1
+
+    -- Passing an ID and a Label to the progress bar
+    local prog = progress.console.new(total_dirs, "WalkFiles", "Scanning directory...")
+
     while #stack > 0 do
         local dir = table.remove(stack)
+
+        -- Update the progress bar label instead of spamming the console
+        prog:SetLabel("Scanning: " .. dir)
+        -- Increment the progress for each directory we process
+        prog:Update(1, 1, 0, 0)
+
         local entries = sdk.list_dir(dir)
         for i = 1, #entries do
             local entry = entries[i]
             local p = join(dir, entry)
             local attr = sdk.attributes(p)
+
             if attr and attr.mode == "directory" then
                 if not utils.should_ignore_dir(entry, ignore_list) then
                     table.insert(stack, p)
+
+                    -- We discovered a new directory: expand the progress bar's Total
+                    total_dirs = total_dirs + 1
+                    prog:SetTotal(total_dirs)
                 end
             else
                 local ext = utils.ext_lower(entry)
                 if not logic.IgnoredExtensions[ext] then
                     table.insert(files, p)
-                    prog:Update(1, "Found " .. #files .. " files")
                 end
             end
         end
     end
+
+    prog:SetLabel("Finished Scanning.")
     prog:Complete()
+
     return files
 end
 

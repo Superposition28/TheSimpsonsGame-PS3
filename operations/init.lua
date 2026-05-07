@@ -132,7 +132,7 @@ local function main()
             end
             -- Trim and normalize the input path
             input = trim(input)
-            input = normalize(is_absolute(input) and input or join(sdk.currentdir(), input))
+            input = normalize(Utils.is_absolute(input) and input or join(sdk.currentdir(), input))
             colour_print{colour=Colours.CYAN, message="Checking path: '" .. input .. "'"}
             if  sdk.is_dir(input) then
                 local ok, resolved, folder_to_copy = validate_source_path(input)
@@ -162,7 +162,7 @@ local function main()
             end
             -- Trim and normalize the input path
             input = trim(input)
-            input = normalize(is_absolute(input) and input or join(sdk.currentdir(), input))
+            input = normalize(Utils.is_absolute(input) and input or join(sdk.currentdir(), input))
             colour_print{colour=Colours.CYAN, message="Checking path: '" .. input .. "'"}
             if  sdk.is_dir(input) then
                 local ok, resolved, folder_to_copy = validate_source_path(input)
@@ -213,7 +213,7 @@ local function main()
             end
             -- Trim and normalize the input path
             input = trim(input)
-            input = normalize(is_absolute(input) and input or join(sdk.currentdir(), input))
+            input = normalize(Utils.is_absolute(input) and input or join(sdk.currentdir(), input))
             colour_print{colour=Colours.CYAN, message="Checking path: '" .. input .. "'"}
             if  sdk.is_dir(input) then
                 local ok, resolved, folder_to_copy = validate_source_path(input)
@@ -258,7 +258,6 @@ local function main()
     -- Process EU files (always)
     if not starts_with(path_from_config, local_data_path) then
         if not sdk.path_exists(local_data_path) then
-            colour_print{colour=Colours.YELLOW, message="\n" .. (region == "BOTH" and "EU Region - " or "") .. "Choose how to use the source files:"}
             local display_name = basename(copy_source_root or path_from_config)
 
             -- Check if source path is writable (not read-only like an ISO)
@@ -281,7 +280,6 @@ local function main()
             local prompt_msg = "Choose how to use the source files:\n"
             if not auto_choice then
                 for _, opt in ipairs(options) do
-                    colour_print{colour=Colours.CYAN, message="  " .. opt.id .. ") " .. opt.label}
                     prompt_msg = prompt_msg .. opt.id .. ") " .. opt.label .. "\n"
                 end
             end
@@ -404,12 +402,12 @@ local function main()
                 local source_is_writable_us = sdk.is_writable(us_source_root or us_path)
 
                 local options_us = {}
-                table.insert(options_us, {id = "1", label = "Copy folder '" .. display_name_us .. "' into local 'US' (Recommended, Safe)"})
+                table.insert(options_us, {id = "1", label = "options_us: Copy folder '" .. display_name_us .. "' into local 'US' (Recommended, Safe)"})
 
                 local auto_choice_us = nil
                 if source_is_writable_us then
-                    table.insert(options_us, {id = "2", label = "Move folder '" .. display_name_us .. "' into local 'US' (Warning: Deletes originals)"})
-                    table.insert(options_us, {id = "3", label = "Use original path '" .. display_name_us .. "' directly (Warning: Tools may modify original files)"})
+                    table.insert(options_us, {id = "2", label = "options_us: Move folder '" .. display_name_us .. "' into local 'US' (Warning: Deletes originals)"})
+                    table.insert(options_us, {id = "3", label = "options_us: Use original path '" .. display_name_us .. "' directly (Warning: Tools may modify original files)"})
                 else
                     colour_print{colour=Colours.YELLOW, message="  Note: Source is read-only (e.g., ISO/disc). Automatically selecting US Copy option."}
                     auto_choice_us = '1'

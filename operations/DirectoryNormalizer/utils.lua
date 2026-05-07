@@ -1,3 +1,21 @@
+
+---@class DirectoryNormalizerUtils
+---@field path_sep string
+---@field norm_slashes fun(p: string|nil): string|nil
+---@field to_posix fun(p: string|nil): string|nil
+---@field split_path fun(p: string): string[]
+---@field write_all_text fun(path: string, data: string): boolean
+---@field dirname fun(p: string): string
+---@field basename fun(p: string): string
+---@field json_encode fun(obj: any, indent?: boolean): string
+---@field get_hex_uid fun(s: string, length?: integer): string
+---@field multi_ext fun(name: string): string, string
+---@field should_ignore_dir fun(name: string, ignore_list: string[]): boolean
+---@field ext_lower fun(name: string): string
+---@field rel_path fun(full: string, root: string): string
+---@field copy_with_collision_handling fun(src: string, dst: string): boolean
+
+
 local utils = {}
 
 utils.path_sep = package.config:sub(1,1) or "/"

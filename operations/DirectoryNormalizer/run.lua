@@ -22,33 +22,9 @@ This script normalizes a directory by performing transformations:
 
 ]]
 
--- Load a Lua module from file expecting it to return a table API
----@param path string
----@return table
-local function load_module(path)
-    local fh, open_err = io.open(path, "r")
-    if not fh then
-        error(string.format("Failed to open module '%s': %s", path, tostring(open_err)))
-    end
-    ---@cast fh FileHandle
-    local src = fh:read("*a")
-    fh:close()
-    if not src then
-        error(string.format("Failed to read module '%s': empty content", path))
-    end
-    local chunk, err = load(src, "@" .. path, "t", _ENV)
-    if not chunk then
-        error(string.format("Failed to compile module '%s': %s", path, err))
-    end
-    local module = chunk()
-    if type(module) ~= "table" then
-        error(string.format("Module '%s' did not return a table", path))
-    end
-    return module
-end
 
 -- Arg parsing ---------------------------------------------------------------
-local function parse_args(argv)
+local function parse_args()
     local function gets(i) local v = argv[i]; return type(v) == "string" and v or nil end
     local out = { ignores = {}, copyonly = {}, dry_run = false, map_db_file = nil, camel_only = false }
     out.src = gets(1)
@@ -78,41 +54,43 @@ local function parse_args(argv)
     return out
 end
 
-
--- Standard Module Loading ---------------------------
-
--- Main function -------------------------------------------------------------
 local function main()
-    local args = parse_args(argv)
+    local args = parse_args()
 
-    local path_sep = package.config:sub(1,1)
-    local function join(a, b)
-        if not a or a == "" then return b end
-        if not b or b == "" then return a end
-        local last = a:sub(-1)
-        if last == "/" or last == "\\" then return a .. b end
-        return a .. path_sep .. b
-    end
+    sdk.colour_print("green", "Starting Directory Normalization...", true)
 
-    local utils = load_module(join(Game_Root, join("operations", join("DirectoryNormalizer", "utils.lua"))))
-    local logic = load_module(join(Game_Root, join("operations", join("DirectoryNormalizer", "logic.lua"))))
+    local utilspath = join(Game_Root, join("operations", join("DirectoryNormalizer", "utils.lua")))
+    sdk.colour_print({ colour = "cyan", message = string.format("Importing utils from: %s", utilspath), newline = true })
+    local utils = import(utilspath)
+
+    local logicpath = join(Game_Root, join("operations", join("DirectoryNormalizer", "logic.lua")))
+    sdk.colour_print({ colour = "cyan", message = string.format("Importing logic from: %s", logicpath), newline = true })
+    ---@type DirectoryNormalizerLogic
+    local logic = import(logicpath)
     logic.init(utils)
+
+    sdk.colour_print({ colour = "green", message = "Modules initialized.", newline = true })
 
     if not args.src or args.src == "" then error("source dir missing") end
     if not args.dst or args.dst == "" then error("output dir missing") end
     args.src = utils.norm_slashes(args.src)
     args.dst = utils.norm_slashes(args.dst)
 
+    sdk.colour_print({ colour = "green", message = string.format("Source directory: %s", args.src), newline = true })
+    sdk.colour_print({ colour = "green", message = string.format("Destination directory: %s", args.dst), newline = true })
+
     -- Load rename map for canonical UID generation
     local rename_map = {}
     if args.map_db_file and args.map_db_file ~= "" then
         local db_path = utils.norm_slashes(args.map_db_file)
-        sdk.color_print("cyan", string.format("Loading rename mappings from: %s", db_path))
+        sdk.colour_print({ colour = "cyan", message = string.format("Loading rename mappings from: %s", db_path), newline = true })
         Diagnostics.Trace(string.format("[DirectoryNormalizer] Loading rename mappings from: %s", db_path))
         rename_map = logic.load_rename_map(db_path)
         local count = (function() local c=0; for _ in pairs(rename_map) do c=c+1 end; return c end)()
-        sdk.color_print("green", string.format("Loaded %d rename mappings", count))
+        sdk.colour_print({ colour = "green", message = string.format("Loaded %d rename mappings", count), newline = true })
         Diagnostics.Trace(string.format("[DirectoryNormalizer] Loaded %d rename mappings", count))
+    else
+        sdk.colour_print({ colour = "yellow", message = "No rename map provided, UIDs will be based on original paths.", newline = true })
     end
 
     sdk.ensure_dir(args.dst)
@@ -121,25 +99,25 @@ local function main()
     local copyonly_set = logic.BuildCopyOnlySet(args.copyonly)
     local copyonly_files = {}
 
-    local prog = progress.new(#files, "normalize", "Normalizing directory")
-    local script_prog = progress.start(#files, "Normalizing directory")
+    local prog = progress.panel.new(#files, "normalize", "Normalizing directory")
+    local script_prog = progress.script.start(#files, "Normalizing directory")
     local ok, err = pcall(function()
         Diagnostics.Trace(string.format("Starting normalization: %d files found", #files))
 
         -- NEW: Optional exit for isolated camelCase testing
         if args.camel_only then
-            sdk.color_print("cyan", "Running in camel-only mode...")
+            sdk.colour_print({ colour = "cyan", message = "Running in camel-only mode...", newline = true })
             local total = 0
             for i=1, #files do
                 local full = files[i]
                 local rel = utils.rel_path(full, args.src)
                 local new_rel = rel
-                
+
                 -- Skip conversion for copy-only sets
                 if not logic.IsCopyOnlyPath(rel, copyonly_set) then
                     new_rel = logic.apply_camel_case_to_path(rel)
                 end
-                
+
                 local new_path = join(args.dst, new_rel)
                 if not args.dry_run then
                     utils.copy_with_collision_handling(full, new_path)
@@ -148,7 +126,7 @@ local function main()
                 if prog then prog:Update(1) end
                 if script_prog then script_prog:Update(1, "Normalizing " .. rel) end
             end
-            sdk.color_print("green", string.format("Camel-only pass complete. Copied %d files.", total))
+            sdk.colour_print({ colour = "green", message = string.format("Camel-only pass complete. Copied %d files.", total), newline = true })
             return -- Exit early, completely bypassing full normalization
         end
 
@@ -170,7 +148,7 @@ local function main()
             else
                 -- Apply CamelCase conversion strictly before hitting the rules engine
                 local camel_rel = logic.apply_camel_case_to_path(rel)
-                
+
                 -- Note: apply_file_rules now takes BOTH rel and camel_rel
                 local rel_no_build, uid = logic.apply_file_rules(rel, camel_rel, utils.get_hex_uid, rename_map)
 
@@ -285,7 +263,6 @@ local function main()
         local map_json = join(args.dst, "normalized_map.json")
         utils.write_all_text(map_json, utils.json_encode(mapping_rows, true))
 
-        -- NEW: Write per-folder JSON maps
         sdk.color_print("cyan", "Writing per-folder JSON maps...")
         Diagnostics.Trace("[DirectoryNormalizer] Writing per-folder JSON maps...")
         local per_folder_files = {}
@@ -305,7 +282,6 @@ local function main()
         end
         sdk.color_print("green", string.format("Wrote %d per-folder maps.", #per_folder_files))
         Diagnostics.Trace(string.format("[DirectoryNormalizer] Wrote %d per-folder maps.", #per_folder_files))
-        -- END NEW
 
         local summary = {
             total_assets = total,

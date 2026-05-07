@@ -3,7 +3,6 @@
 ---@field path_sep string
 ---@field Colours table
 ---@field log fun(colour: string, message: string, prefix?: string)
----@field normalize_separators fun(path: string): string|nil
 ---@field ends_with fun(str: string, suffix: string): boolean
 ---@field parent_dir fun(path: string): string|nil
 ---@field is_absolute fun(path: string): boolean
@@ -22,81 +21,47 @@
 ---@field match_assignment fun(token: string): string, string|nil
 
 ---@type SharedUtils
-Utils = import(join(Game_Root, "operations", "SharedUtils"))
+import(join("..", "..", "SharedUtils.lua"))
 
-local path_sep = Utils.path_sep
-local Colours = Utils.Colours
 
-local M = {
-    path_sep = path_sep,
-    Colours = Colours,
-    log = Utils.log
-}
-
-function M.normalize_separators(path)
-    return normalize(path)
-end
-
-function M.ends_with(str, suffix)
-    return Utils.ends_with(str, suffix)
-end
-
-function M.parent_dir(path)
-    local dir = Utils.dirname(path)
+---@param path string
+---@return string|nil
+function parent_dir(path)
+    local dir = dirname(path)
     if dir == "." or dir == path then return nil end
     return dir
 end
 
-function M.is_absolute(path)
-    return Utils.is_absolute(path)
-end
-
-function M.absolute_path(path)
-    return Utils.absolute_path(path)
-end
-
-function M.iterate_files(root_dir, visitor)
-    return Utils.iterate_files(root_dir, visitor)
-end
-
-function M.to_long_path(path)
-    return Utils.to_long_path(path)
-end
-
-function M.get_path(base_path, filename, extension)
-    return Utils.get_path(base_path, filename, extension)
-end
-
-function M.split_drive(path)
-    return Utils.split_drive(path)
-end
-
-function M.get_canonical_id(rel_path)
-    return Utils.get_canonical_id(rel_path)
-end
-
 -- Byte-wise helpers to avoid Lua pattern engine entirely
-function M.is_space_byte(b)
+---@param b integer
+---@return boolean
+function is_space_byte(b)
     return b == 9 or b == 10 or b == 11 or b == 12 or b == 13 or b == 32
 end
-function M.trim_ascii(s)
+
+---@param s any
+---@return string|nil
+function trim_ascii(s)
     if s == nil then return s end
     local str = tostring(s)
     local i, j = 1, #str
     while i <= j do
         local b = string.byte(str, i)
-        if not M.is_space_byte(b) then break end
+        if not is_space_byte(b) then break end
         i = i + 1
     end
     while j >= i do
         local b = string.byte(str, j)
-        if not M.is_space_byte(b) then break end
+        if not is_space_byte(b) then break end
         j = j - 1
     end
     if i > j then return "" end
     return string.sub(str, i, j)
 end
-function M.strip_surrounding_quotes(s)
+
+---@param s string|nil
+---@return string|nil
+function strip_surrounding_quotes(s)
     if not s or #s < 2 then return s end
     local first = string.sub(s, 1, 1)
     local last = string.sub(s, -1)
@@ -105,13 +70,16 @@ function M.strip_surrounding_quotes(s)
     end
     return s
 end
-function M.trim_trailing_punct_ws(s)
+
+---@param s string|nil
+---@return string|nil
+function trim_trailing_punct_ws(s)
     if not s or #s == 0 then return s end
     local j = #s
     while j >= 1 do
         local ch = string.sub(s, j, j)
         local b = string.byte(ch)
-        if ch == ',' or ch == ';' or M.is_space_byte(b) then
+        if ch == ',' or ch == ';' or is_space_byte(b) then
             j = j - 1
         else
             break
@@ -120,14 +88,21 @@ function M.trim_trailing_punct_ws(s)
     if j < 1 then return "" end
     return string.sub(s, 1, j)
 end
-function M.clean_value(v)
+
+---@param v any
+---@return string|nil
+function clean_value(v)
     if v == nil then return v end
-    local s =  M.trim_ascii(tostring(v))
-    s =  M.strip_surrounding_quotes(s)
-    s =  M.trim_trailing_punct_ws(s)
-    return M.trim_ascii(s)
+    local s =  trim_ascii(tostring(v))
+    s =  strip_surrounding_quotes(s)
+    s =  trim_trailing_punct_ws(s)
+    return trim_ascii(s)
 end
-function M.match_assignment(token)
+
+---@param token string
+---@return string
+---@return string|nil
+function match_assignment(token)
     local eq = string.find(token, "=", 1, true)
     local colon = string.find(token, ":", 1, true)
     local idx
@@ -147,7 +122,3 @@ function M.match_assignment(token)
     end
     return token, nil
 end
-
-
----@cast M BlenderUtils
-return M

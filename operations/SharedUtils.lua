@@ -28,14 +28,13 @@
 ---@field count integer
 
 ---@class SharedUtils
----@field colour_print fun(opts: any)
 ---@field log fun(colour: string, message: string, prefix?: string)
 ---@field path_sep string
 ---@field Colours SharedUtilsColours
 ---@field basename fun(path: any): any
 ---@field dirname fun(path: any): string
 ---@field is_absolute fun(path: string): boolean
----@field absolute_path fun(path: string): string|nil
+---@field absolute_path fun(path: string|nil): string|nil
 ---@field to_long_path fun(path: any): any
 ---@field get_path fun(base_path: string, filename: string, extension: string): string
 ---@field split_drive fun(path: string|nil): (string|nil, string|nil)
@@ -121,9 +120,12 @@ function is_absolute(path)
 end
 
 --- Get absolute path (robust version with long path support on Windows)
----@param path string
+---@param path string|nil
 ---@return string|nil
 function absolute_path(path)
+    if not path then
+        return nil
+    end
     return sdk.absolute_path(path)
 end
 

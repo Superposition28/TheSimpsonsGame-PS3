@@ -52,13 +52,13 @@ sdk.colour_print({ colour = "white", message = "  Source: " .. SourcePath })
 sdk.colour_print({ colour = "white", message = "  Target: " .. TargetPath })
 
 -- Initialize progress tracking
-progress.start(3, "Copying Audio/Video")
+progress.script.start(3, "Copying Audio/Video")
 
 -- Ensure the target base directory exists
 sdk.ensure_dir(TargetPath)
 
 -- Process Movies Folder
-progress.step("Copying 'movies' folder...")
+progress.script.step("Copying 'movies' folder...")
 local MoviesSource = join(SourcePath, "movies")
 local MoviesTarget = join(TargetPath, "movies")
 
@@ -70,7 +70,7 @@ else
 end
 
 -- Process Audiostreams Folder
-progress.step("Copying 'audiostreams' folder...")
+progress.script.step("Copying 'audiostreams' folder...")
 local AudioSource = join(SourcePath, "audiostreams")
 local AudioTarget = join(TargetPath, "audiostreams")
 
@@ -82,5 +82,5 @@ else
 end
 
 -- Finish
-progress.step("Finalizing")
+progress.script.step("Finalizing")
 sdk.colour_print({ colour = "green", message = "Successfully finished copying source files." })

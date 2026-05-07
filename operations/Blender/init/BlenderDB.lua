@@ -1,14 +1,24 @@
 local M = {}
 
-function M.setup(Utils)
+---@return BlenderDbModule
+function M.setup()
+    ---@class BlenderDbModule
+    ---@field extract_map_subdirectory fun(full_path: string|nil, marker: string|nil, verbose: boolean): string
+    ---@field init_db fun(db_file_path: string): table
+    ---@field generate_asset_mapping fun(db: table, root_drive: string, preinstanced_root: string, blend_root: string, marker: string|nil, glb_root: string|nil, check_existence: boolean, verbose: boolean, game_root: string|nil): integer
+
     local lib = {}
 
+    ---@param full_path string|nil
+    ---@param marker string|nil
+    ---@param verbose boolean
+    ---@return string
     function lib.extract_map_subdirectory(full_path, marker, verbose)
-        local normalized_path = Utils.normalize_separators(full_path or "")
-        local normalized_marker = Utils.normalize_separators(marker or "")
+        local normalized_path = normalize(full_path or "")
+        local normalized_marker = normalize(marker or "")
 
         if normalized_marker == "" then
-            Utils.log(Utils.Colours.YELLOW, string.format("Warning: Marker is not provided. Cannot extract map subdirectory from path: %s. Returning _UNKNOWN_MAP_NO_MARKER.", normalized_path))
+            log(Colours.YELLOW, string.format("Warning: Marker is not provided. Cannot extract map subdirectory from path: %s. Returning _UNKNOWN_MAP_NO_MARKER.", normalized_path))
             return "_UNKNOWN_MAP_NO_MARKER"
         end
 
@@ -17,36 +27,38 @@ function M.setup(Utils)
         local idx = lower_path:find(lower_marker, 1, true)
 
         if not idx then
-            Utils.log(Utils.Colours.YELLOW, string.format("Warning: Marker '%s' was not found in path: %s. Returning _UNKNOWN_MAP_NOT_FOUND.", normalized_marker, normalized_path))
+            log(Colours.YELLOW, string.format("Warning: Marker '%s' was not found in path: %s. Returning _UNKNOWN_MAP_NOT_FOUND.", normalized_marker, normalized_path))
             return "_UNKNOWN_MAP_NOT_FOUND"
         end
 
         local start_of_remainder = idx + #normalized_marker
         local remaining = normalized_path:sub(start_of_remainder)
-        remaining = remaining:gsub("^[" .. Utils.path_sep .. "]+", "")
+        remaining = remaining:gsub("^[" .. path_sep .. "]+", "")
 
         if remaining == "" then
-            Utils.log(Utils.Colours.CYAN, string.format("Info: Marker '%s' found in '%s', but path ends with marker or only separators follow. Returning _NO_SUBDIR_AFTER_MARKER.", normalized_marker, normalized_path))
+            log(Colours.CYAN, string.format("Info: Marker '%s' found in '%s', but path ends with marker or only separators follow. Returning _NO_SUBDIR_AFTER_MARKER.", normalized_marker, normalized_path))
             return "_NO_SUBDIR_AFTER_MARKER"
         end
 
         local parts = {}
-        for component in remaining:gmatch("[^" .. Utils.path_sep .. "]+") do
+        for component in remaining:gmatch("[^" .. path_sep .. "]+") do
             table.insert(parts, component)
         end
 
         if #parts == 0 then
-            Utils.log(Utils.Colours.YELLOW, string.format("Warning: Marker '%s' found in '%s', but could not isolate a subdirectory. Returning _NO_SUBDIR_PARTS_FOUND.", normalized_marker, normalized_path))
+            log(Colours.YELLOW, string.format("Warning: Marker '%s' found in '%s', but could not isolate a subdirectory. Returning _NO_SUBDIR_PARTS_FOUND.", normalized_marker, normalized_path))
             return "_NO_SUBDIR_PARTS_FOUND"
         end
 
         local subdir = parts[1]
         if verbose then
-            Utils.log(Utils.Colours.GREEN, string.format("Success: Marker '%s', Path '%s', Subdir Part '%s'", normalized_marker, normalized_path, subdir))
+            log(Colours.GREEN, string.format("Success: Marker '%s', Path '%s', Subdir Part '%s'", normalized_marker, normalized_path, subdir))
         end
         return subdir
     end
 
+    ---@param db_file_path string
+    ---@return table
     function lib.init_db(db_file_path)
         local db = sqlite.open(db_file_path)
         db.exec([[CREATE TABLE IF NOT EXISTS asset_map (
@@ -63,6 +75,16 @@ function M.setup(Utils)
         return db
     end
 
+    ---@param db table
+    ---@param root_drive string
+    ---@param preinstanced_root string
+    ---@param blend_root string
+    ---@param marker string|nil
+    ---@param glb_root string|nil
+    ---@param check_existence boolean
+    ---@param verbose boolean
+    ---@param game_root string|nil
+    ---@return integer
     function lib.generate_asset_mapping(db, root_drive, preinstanced_root, blend_root, marker, glb_root, check_existence, verbose, game_root)
         check_existence = not not check_existence
 
@@ -73,23 +95,23 @@ function M.setup(Utils)
             error(string.format("Blend root directory not found: %s", blend_root))
         end
         if glb_root and not sdk.is_dir(glb_root) then
-            Utils.log(Utils.Colours.CYAN, string.format("GLB root directory %s not found, creating it.", glb_root))
+            log(Colours.CYAN, string.format("GLB root directory %s not found, creating it.", glb_root))
             sdk.ensure_dir(glb_root)
         end
 
         local assets_processed = 0
-        local preinstanced_root_abs = Utils.absolute_path(preinstanced_root)
-        local blend_root_abs = Utils.absolute_path(blend_root)
-        local glb_root_abs = glb_root and Utils.absolute_path(glb_root) or nil
+        local preinstanced_root_abs = absolute_path(preinstanced_root)
+        local blend_root_abs = absolute_path(blend_root)
+        local glb_root_abs = glb_root and absolute_path(glb_root) or nil
 
         -- If game_root is provided, we use it as the base for canonical IDs to match the Normalizer's view
-        local canonical_base = game_root and Utils.absolute_path(game_root) or preinstanced_root_abs
+        local canonical_base = game_root and absolute_path(game_root) or preinstanced_root_abs
 
         db.begin()
 
         local map_file_path = join(preinstanced_root_abs, "normalized_map.json")
         if sdk.is_file(map_file_path) then
-            Utils.log(Utils.Colours.CYAN, string.format("Using normalized_map.json from %s", preinstanced_root_abs))
+            log(Colours.CYAN, string.format("Using normalized_map.json from %s", preinstanced_root_abs))
             local fh = io.open(map_file_path, "r")
             if fh then
                 ---@cast fh FileHandle
@@ -98,8 +120,12 @@ function M.setup(Utils)
                 local map_data = sdk.text.json.decode(map_content)
                 if map_data then
                     for _, entry in ipairs(map_data) do
+                        ---@class BlenderDbNormalizedMapEntry
+                        ---@field new_path string|nil
+                        ---@field uid string|nil
+                        ---@cast entry BlenderDbNormalizedMapEntry
                         local new_path = entry.new_path
-                        if new_path and Utils.ends_with(new_path:lower(), ".preinstanced") then
+                        if new_path and ends_with(new_path:lower(), ".preinstanced") then
                             local full_path = join(preinstanced_root_abs, new_path)
 
                             -- Extract filename from new_path
@@ -113,8 +139,8 @@ function M.setup(Utils)
                                 filename = new_path:sub(last_sep + 1)
                             end
 
-                            local rel = Utils.normalize_separators(full_path):sub(#preinstanced_root_abs + 2)
-                            local canonical_rel = Utils.normalize_separators(full_path):sub(#canonical_base + 2)
+                            local rel = normalize(full_path):sub(#preinstanced_root_abs + 2)
+                            local canonical_rel = normalize(full_path):sub(#canonical_base + 2)
 
                             local blend_rel = rel:gsub("%.preinstanced$", ".blend")
                             local blend_full = join(blend_root_abs, blend_rel)
@@ -126,11 +152,11 @@ function M.setup(Utils)
                             end
 
                             if check_existence and (not sdk.is_file(blend_full)) then
-                                Utils.log(Utils.Colours.YELLOW, string.format("Warning: Corresponding blend file not found: %s", blend_full))
+                                log(Colours.YELLOW, string.format("Warning: Corresponding blend file not found: %s", blend_full))
                             else
                                 local map_subdir = lib.extract_map_subdirectory(full_path, marker, verbose)
                                 if verbose then
-                                    Utils.log(Utils.Colours.CYAN, string.format("Extracted Map Subdirectory: '%s' for %s", map_subdir, full_path))
+                                    log(Colours.CYAN, string.format("Extracted Map Subdirectory: '%s' for %s", map_subdir, full_path))
                                 end
 
                                 local symlink_rel = ""
@@ -138,7 +164,7 @@ function M.setup(Utils)
                                     symlink_rel = rel:sub(#map_subdir + 2)
                                 end
 
-                                local identifier = entry.uid or Utils.get_canonical_id(canonical_rel)
+                                local identifier = entry.uid or get_canonical_id(canonical_rel)
                                 local base_filename = filename:gsub("%.preinstanced$", "")
 
                                 local shared_symlink_root = join(root_drive, identifier)
@@ -168,14 +194,16 @@ function M.setup(Utils)
                 end
             end
         else
-            Utils.iterate_files(preinstanced_root_abs, function(full_path, filename)
+            ---@param full_path string
+            ---@param filename string
+            iterate_files(preinstanced_root_abs, function(full_path, filename)
                 local lower_name = filename:lower()
-                if not Utils.ends_with(lower_name, ".preinstanced") then
+                if not ends_with(lower_name, ".preinstanced") then
                     return
                 end
 
-                local rel = Utils.normalize_separators(full_path):sub(#preinstanced_root_abs + 2)
-                local canonical_rel = Utils.normalize_separators(full_path):sub(#canonical_base + 2)
+                local rel = normalize(full_path):sub(#preinstanced_root_abs + 2)
+                local canonical_rel = normalize(full_path):sub(#canonical_base + 2)
 
                 local blend_rel = rel:gsub("%.preinstanced$", ".blend")
                 local blend_full = join(blend_root_abs, blend_rel)
@@ -187,13 +215,13 @@ function M.setup(Utils)
                 end
 
                 if check_existence and (not sdk.is_file(blend_full)) then
-                    Utils.log(Utils.Colours.YELLOW, string.format("Warning: Corresponding blend file not found: %s", blend_full))
+                    log(Colours.YELLOW, string.format("Warning: Corresponding blend file not found: %s", blend_full))
                     return
                 end
 
                 local map_subdir = lib.extract_map_subdirectory(full_path, marker, verbose)
                 if verbose then
-                    Utils.log(Utils.Colours.CYAN, string.format("Extracted Map Subdirectory: '%s' for %s", map_subdir, full_path))
+                    log(Colours.CYAN, string.format("Extracted Map Subdirectory: '%s' for %s", map_subdir, full_path))
                 end
 
                 -- The symlink relative path preserves the structure after the map_subdirectory
@@ -204,7 +232,7 @@ function M.setup(Utils)
                     symlink_rel = rel:sub(#map_subdir + 2)
                 end
 
-                local identifier = Utils.get_canonical_id(canonical_rel)
+                local identifier = get_canonical_id(canonical_rel)
                 local base_filename = filename:gsub("%.preinstanced$", "")
 
                 -- Use a single shared symlink folder per asset ID on the root drive
@@ -236,6 +264,7 @@ function M.setup(Utils)
         return assets_processed
     end
 
+    ---@cast lib BlenderDbModule
     return lib
 end
 

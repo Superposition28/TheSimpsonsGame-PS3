@@ -21,7 +21,7 @@ script = "{{Game_Root}}/operations/init.lua"
 ##
 [[operation]]
 id = -1
-Name = "Download Required Tools"
+name = "Download Required Tools"
 run-all = true
 depends-on = [0]
 script_type = "engine"
@@ -29,14 +29,14 @@ script = "download-tools"
 tools_manifest = "{{Game_Root}}/Tools.toml"
 #[[operation.prompts]]
 #type = "confirm"
-#Name = "force download"
+#name = "force download"
 #message = "Force override existing downloads?"
 #default = false
 
 
 [[operation]]
 id = 1
-Name = "Extract Archives (.STR)"
+name = "Extract Archives (.STR)"
 run-all = true
 depends-on = [-1] # depends on qbms tool
 script_type = "bms"
@@ -48,32 +48,37 @@ extension = ".str"
 
 [[operation]]
 id = 2
-Name = "Copy Source Audio/Video Files"
+name = "Copy Source Audio/Video Files"
 run-all = true
 depends-on = [1]
 script_type = "lua"
 script = "{{Game_Root}}/operations/CopySourceAudioVideo.lua"
 args = [
     "--source", "{{SourcePath}}/{{Region}}/{{PostSourcePath}}",
+    # this path should look somthing like GameFiles\EU-Full-audio_none-notRenamed
     "--target", "{{Game_Root}}/GameFiles/{{Region}}-{{Type}}-{{audio_state}}-{{isRenamed}}"
 ]
-[[operation.onsuccess]] # when successful, update {{isRenamed}} placeholder to "isRenamed"
-Name = "set audio_state placeholder"
+[[operation.onsuccess]] # when successful, update {{audio_state}} placeholder to "audio_og" since we just copied the original audio files without any reorganization
+id = 2.1
+name = "set audio_state placeholder"
 script_type = "engine"
 script = "config"
 args = ["--group", "placeholders", "--key", "audio_state", "--value", "audio_og", "--type", "string"]
 [[operation.onsuccess]]
-Name = "rename folder STROUT-{{Region}}-{{Type}}-{{audio_state}}-{{isRenamed}} to STROUT-{{Region}}-{{Type}}-{{audio_state}}-isRenamed"
+id = 2.2
+name = "rename folder STROUT-{{Region}}-{{Type}}-{{audio_state}}-{{isRenamed}} to STROUT-{{Region}}-{{Type}}-{{audio_state}}-isRenamed"
 script_type = "lua"
 script = "{{Game_Root}}/operations/rename.lua"
 args = [
+                    # should be something like GameFiles\EU-Full-audio_none-notRenamed
     "--old_path", "{{Game_Root}}/GameFiles/{{Region}}-{{Type}}-audio_none-{{isRenamed}}",
+                    # should be something like GameFiles\EU-Full-audio_og-notRenamed
     "--new_path", "{{Game_Root}}/GameFiles/{{Region}}-{{Type}}-{{audio_state}}-{{isRenamed}}"
 ]
 
 [[operation]]
 id = 3
-Name = "Extract Textures (.txd -> .png)"
+name = "Extract Textures (.txd -> .png)"
 run-all = true
 depends-on = [2] # depends on STR extraction
 script_type = "engine"
@@ -86,19 +91,24 @@ args = [
 
 [[operation]]
 id = 4
-Name = "Rename base folders"
+name = "Rename base folders"
 run-all = true
 depends-on = [3]
 script_type = "engine"
 script = "rename-folders"
-args = ["{{Game_Root}}/GameFiles/{{Region}}-{{Type}}-{{audio_state}}-{{isRenamed}}", "--map-db-file", "{{Game_Root}}/config/RenameMap.db"]
+args = [
+    "{{Game_Root}}/GameFiles/{{Region}}-{{Type}}-{{audio_state}}-{{isRenamed}}",
+    "--map-db-file", "{{Game_Root}}/config/RenameMap.db"
+]
 [[operation.onsuccess]] # when successful, update {{isRenamed}} placeholder to "isRenamed"
-Name = "set isRenamed placeholder"
+id = 4.1
+name = "set isRenamed placeholder"
 script_type = "engine"
 script = "config"
 args = ["--group", "placeholders", "--key", "isRenamed", "--value", "isRenamed", "--type", "string"]
 [[operation.onsuccess]]
-Name = "rename folder STROUT-{{Region}}-{{Type}}-{{audio_state}}-{{isRenamed}} to STROUT-{{Region}}-{{Type}}-{{audio_state}}-isRenamed"
+id = 4.2
+name = "rename folder STROUT-{{Region}}-{{Type}}-{{audio_state}}-{{isRenamed}} to STROUT-{{Region}}-{{Type}}-{{audio_state}}-isRenamed"
 script_type = "lua"
 script = "{{Game_Root}}/operations/rename.lua"
 args = [
@@ -108,19 +118,19 @@ args = [
 
 [[operation]]
 id = 5
-Name = "Reorganize Audio Files"
+name = "Reorganize Audio Files"
 run-all = true
 depends-on = [4]
 script_type = "lua"
 script = "{{Game_Root}}/operations/SetupAudioDir.lua"
 args = ["{{Game_Root}}/GameFiles/{{Region}}-{{Type}}-{{audio_state}}-{{isRenamed}}"]
 [[operation.onsuccess]] # when successful, update isRenamed placeholder to "isRenamed"
-Name = "set audio_state placeholder"
+name = "set audio_state placeholder"
 script_type = "engine"
 script = "config"
 args = ["--group", "placeholders", "--key", "audio_state", "--value", "audio_reorg", "--type", "string"]
 [[operation.onsuccess]]
-Name = "rename folder STROUT-{{Region}}-{{Type}}-{{audio_state}}-{{isRenamed}} to STROUT-{{Region}}-{{Type}}-audio_reorg-{{isRenamed}}"
+name = "rename folder STROUT-{{Region}}-{{Type}}-{{audio_state}}-{{isRenamed}} to STROUT-{{Region}}-{{Type}}-audio_reorg-{{isRenamed}}"
 script_type = "lua"
 script = "{{Game_Root}}/operations/rename.lua"
 args = [
@@ -130,7 +140,7 @@ args = [
 
 [[operation]]
 id = 6
-Name = "Normalize folder structure"
+name = "Normalize folder structure"
 run-all = true
 depends-on = [5]
 script_type = "lua"
@@ -144,7 +154,7 @@ args = [
     #"--copyonly", "movies",
 ]
 [[operation.onsuccess]]
-Name = "update normalized placeholders"
+name = "update normalized placeholders"
 script_type = "engine"
 script = "config"
 args = [
@@ -156,7 +166,7 @@ args = [
 ## auto apply textures within blender as well, however materials will need to be manually adjusted within godot
 [[operation]]
 id = 8
-Name = "Convert Models (.preinstanced -> .blend)"
+name = "Convert Models (.preinstanced -> .blend)"
 run-all = true
 depends-on = [6] # depends on blender, str extraction for assets, and texture extraction and conversion for materials
 script_type = "lua"
@@ -172,27 +182,27 @@ args = [
 # for debugging
 #[[operation.prompts]]
 #type = "confirm"
-#Name = "verbose"
+#name = "verbose"
 #message = "Model Conversion: Enable verbose output?"
 #default = false
 #cli_arg = "--verbose"
 # for debugging
 #[[operation.prompts]]
 #type = "confirm"
-#Name = "debug mode"
+#name = "debug mode"
 #message = "Model Conversion: Enable debug mode?"
 #default = false
 #cli_arg = "--debug-sleep"
 ## for direct export to glb or fbx instead of just creating .blend files
 [[operation.prompts]]
 type = "confirm"
-Name = "enable_export"
+name = "enable_export"
 message = "Model Conversion: Export additional formats (FBX/GLTF)?"
 default = true
 ## for direct export to glb or fbx instead of just creating .blend files
 [[operation.prompts]]
 type = "checkbox"
-Name = "export_formats"
+name = "export_formats"
 message = "Select export formats:"
 default = ["glb"]
 choices = ["fbx", "glb"]
@@ -204,7 +214,7 @@ validation = { required = true, message = "You must select at least one format."
 # convert all lh2 dialogue/subtitles to csv
 [[operation]]
 id = 9
-Name = "Extract Dialogue/Subtitles (.lh2 -> .csv)"
+name = "Extract Dialogue/Subtitles (.lh2 -> .csv)"
 run-all = true
 depends-on = [6]
 script_type = "lua"
@@ -217,7 +227,7 @@ args = [
 ## convert Audio into a usable format for godot
 [[operation]]
 id = 10
-Name = "Convert Audio (.snu -> .wav)"
+name = "Convert Audio (.snu -> .wav)"
 run-all = true
 depends-on = [6] # depends on vgmstream being downloaded, could depend on audio reorg but that is technically optional
 script_type = "engine"
@@ -238,7 +248,7 @@ args = [
 
 [[operation]]
 id = 11
-Name = "Convert Videos (.vp6 -> .ogv)"
+name = "Convert Videos (.vp6 -> .ogv)"
 run-all = true
 depends-on = [6] # depends on ffmpeg being downloaded
 script_type = "engine"
@@ -257,7 +267,7 @@ args = [
 
 [[operation]]
 id = 12
-Name = "generate Godot Game (EXPERIMENTAL)"
+name = "generate Godot Game (EXPERIMENTAL)"
 run-all = false
 depends-on = [8,9,10,11]
 script_type = "lua"
