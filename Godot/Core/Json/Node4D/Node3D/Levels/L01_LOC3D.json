@@ -20,10 +20,20 @@
                     "containerName": "LOC_Zone01_Terrain_Mesh_Collisions"
                 },
                 "config": {
-                    "mesh_overrides": [ {
-                        "path": "Mesh_0_0",
-                        "visible": false
-                    }]
+                    "mesh_overrides": [
+                        {
+                            "path": "Mesh_0_0",
+                            "visible": false
+                        },
+                        {
+                            "path": "Mesh_0_0_001",
+                            "visible": false
+                        },
+                        {
+                            "path": "Mesh_0_0_002",
+                            "visible": false
+                        }
+                    ]
                 }
             },
             {

@@ -13,7 +13,7 @@ Dependencies provided by engine (no fallbacks used):
     - Diagnostics (Logging bridge)
     - tool(name) resolver
     - argv args
-    - progress.new(total, id?, label?) -> Panel progress handle (Update/Complete)
+    - progress.panel.new(total, id?, label?) -> Panel progress handle (Update/Complete)
     - script_progress(total, id?, label?) -> Stage progress indicator
 
 Expected folder structure (relative to this module root):
@@ -45,20 +45,47 @@ local Colours = {
     DARKRED = "darkred"
 }
 
+---@class GodotRunCommandOptions
+---@field cwd string|nil
+---@field env table<string, string>|nil
+---@field new_terminal boolean|nil
+---@field keep_open boolean|nil
+---@field wait boolean|nil
+
+---@class GodotCopyTreeOptions
+---@field use_hardlinks boolean|nil
+---@field verify_hash_for_large boolean|nil
+---@field large_bytes_threshold integer|nil
+---@field exts table<integer, string>|nil
+---@field progress_handle PanelProgress|nil
+---@field case_insensitive boolean|nil
+---@field log_sample_actions integer|nil
+
+---@class GodotCopyItem
+---@field src string
+---@field rel string
+---@field size integer
+
+---@class GodotCopyStats
+---@field total_seen integer
+---@field total_bytes integer
+---@field copied integer
+---@field hardlinked integer
+---@field skipped_identical integer
+---@field bytes_copied integer
+---@field bytes_skipped integer
+---@field errors integer
+---@field actions table<integer, string>
+
+---@class GodotProgressModule
+---@field new fun(total: integer, id: string|nil, label: string|nil): PanelProgress
+---@field start fun(total: integer, label: string|nil): PanelProgress
+
 -- # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
 -- # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
 
-local function normalize(p)
-    if not p then return p end
-    if path_sep == "\\" then
-        p = p:gsub("/", "\\")
-    else
-        p = p:gsub("\\", "/")
-    end
-    p = p:gsub("[/\\]+", path_sep)
-    return p
-end
-
+---@param p string|nil
+---@return string
 local function dirname(p)
     if not p or p == "" then return "." end
     local d = p:match("(.+)[/\\][^/\\]+$") or p:match("(.+)[/\\]$") or ""
@@ -67,17 +94,23 @@ local function dirname(p)
 end
 
 -- Inline logging to console (SDK) and engine diagnostics
+---@param msg string
+---@return nil
 local function log_info(msg)
     sdk.colour_print{ colour = Colours.CYAN, message = msg }
     Diagnostics.Log("[godot-init] INFO: " .. msg)
 end
 
+---@param msg string
+---@return nil
 local function log_warn(msg)
     sdk.colour_print{ colour = Colours.YELLOW, message = msg }
     Diagnostics.Log("[godot-init] WARN: " .. msg)
     warn(msg)
 end
 
+---@param msg string
+---@return nil
 local function log_error(msg)
     -- Engine error event (UI/log panels)
     sdk.colour_print{ colour = Colours.RED, message = msg }
@@ -86,15 +119,21 @@ local function log_error(msg)
 end
 
 -- Fatal helper: also raises a Lua error via assert to stop execution
+---@param msg string
+---@return nil
 local function fatal(msg)
     log_error(msg)
     assert(false, msg)
 end
 
+---@param p string|nil
+---@return string|nil
 local function basename(p)
     return (p and p:match("([^/\\]+)$")) or p
 end
 
+---@param p string
+---@return integer|nil
 local function get_file_size(p)
     local a = sdk.attributes(p)
     if a and a.mode == "file" then return a.size end
@@ -102,6 +141,9 @@ local function get_file_size(p)
 end
 
 -- May return false on missing; true if size equal and (if available) mtime comparable
+---@param src string
+---@param dst string
+---@return boolean
 local function nearly_same_file(src, dst)
     local sa = sdk.attributes(src)
     local da = sdk.attributes(dst)
@@ -116,6 +158,9 @@ end
 
 -- Compare two files for exact equality.
 -- Strategy: quick size check -> SHA1 if available -> buffered byte-by-byte compare.
+---@param src string
+---@param dst string
+---@return boolean
 local function files_equal(src, dst)
     local ss = get_file_size(src)
     local ds = get_file_size(dst)
@@ -127,6 +172,8 @@ local function files_equal(src, dst)
     return true
 end
 
+---@param sec integer|number|string|nil
+---@return nil
 local function countdown(sec)
     sec = tonumber(sec) or 0
     while sec > 0 do
@@ -137,6 +184,8 @@ local function countdown(sec)
 end
 
 -- Build a safely quoted command line for the current platform
+---@param args table<integer, string>
+---@return string
 local function build_cmdline(args)
     local parts = {}
     for i = 1, #args do
@@ -163,6 +212,9 @@ end
 --   opts.keep_open: keep new terminal open after completion
 --   opts.cwd: working directory
 --   opts.env: table of env vars
+---@param args table<integer, string>
+---@param opts GodotRunCommandOptions|nil
+---@return boolean
 local function run_cmd(args, opts)
     opts = opts or {}
     local cmdline = build_cmdline(args)
@@ -178,6 +230,9 @@ local function run_cmd(args, opts)
 end
 
 -- Godot helper
+---@param command table<integer, string>
+---@param label string
+---@return nil
 local function run_godot(command, label)
     log_info(string.format("\n--- %s ---", label))
     log_info("Command: " .. build_cmdline(command))
@@ -189,6 +244,9 @@ local function run_godot(command, label)
 end
 
 -- File ops
+---@param src string
+---@param dst string
+---@return nil
 local function copy_file(src, dst)
     src = normalize(src)
     dst = normalize(dst)
@@ -202,6 +260,9 @@ local function copy_file(src, dst)
     end
 end
 
+---@param src string
+---@param dst string
+---@return boolean
 local function try_hardlink(src, dst)
     -- returns true on success, false otherwise
     sdk.remove_file(dst)
@@ -210,6 +271,9 @@ local function try_hardlink(src, dst)
 end
 
 -- Walk a directory tree (breadth-first) and call cb(absPath, relPath, filename) for each file
+---@param root string
+---@param cb fun(absPath: string, relPath: string, filename: string): nil
+---@return nil
 local function walk_files(root, cb)
     root = normalize(root)
     local function walk_dir(dir, rel)
@@ -244,6 +308,10 @@ end
 --   progress_handle (userdata from progress()) -> updated per processed file
 --   case_insensitive (bool) -> treat destination as case-insensitive and detect collisions
 --   log_sample_actions (integer) -> print first N planned actions to console; full list goes to log
+---@param src_root string
+---@param dst_root string
+---@param opts GodotCopyTreeOptions|nil
+---@return GodotCopyStats
 local function copy_tree_incremental(src_root, dst_root, opts)
     opts = opts or {}
     local use_hardlinks = (opts.use_hardlinks ~= false)
@@ -260,6 +328,7 @@ local function copy_tree_incremental(src_root, dst_root, opts)
     end
 
     -- Scan first to build a list and compute total bytes for ETA
+    ---@type table<integer, GodotCopyItem>
     local files = {}
     local lower_map = {}
     local total_bytes = 0
@@ -298,6 +367,7 @@ local function copy_tree_incremental(src_root, dst_root, opts)
         errors = 0,
         actions = {},
     }
+    ---@cast stats GodotCopyStats
 
     if progress_handle then progress_handle:Update(0) end
 
@@ -309,6 +379,8 @@ local function copy_tree_incremental(src_root, dst_root, opts)
     local last_eta_print = start_clock
     local processed_bytes = 0
 
+    ---@param processed_count integer
+    ---@return nil
     local function maybe_print_eta(processed_count)
         local now = os.clock()
         if now - last_eta_print < 1.0 then return end
@@ -327,6 +399,8 @@ local function copy_tree_incremental(src_root, dst_root, opts)
     -- Evaluate and copy/link
     local sample_emitted = 0
     for idx, item in ipairs(files) do
+        ---@cast item GodotCopyItem
+        ---@cast item GodotCopyItem
         local src = item.src
         local rel = item.rel
         local sz  = item.size or 0
@@ -387,6 +461,8 @@ local function copy_tree_incremental(src_root, dst_root, opts)
     return stats
 end
 
+---@param t table
+---@return string
 local function tableToString(t)
     if next(t) == nil then
         return "none"
@@ -407,14 +483,18 @@ end
 -- # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
 
 
+---@return string
 local function resolve_godot()
     local tool_fn = rawget(_G, "tool")
     local p = tool_fn("Godot")
     if p and p ~= "" then return p end
     fatal("Godot executable not found via tool('Godot'); ensure Godot is installed and configured in the engine.")
+    return ""
 end
 
 -- Helper to extract parent directory using string patterns
+---@param path string|nil
+---@return string|nil
 local function get_parent_directory(path)
     if not path then return nil end
     -- Normalize to forward slashes for easier matching
@@ -428,6 +508,8 @@ local function get_parent_directory(path)
     return parent
 end
 
+---@param dir string|nil
+---@return table<integer, string>
 local function discover_pngs_in_dir(dir)
     local list = {}
     if not dir or dir == "" then return list end
@@ -454,6 +536,8 @@ local function discover_pngs_in_dir(dir)
     return list
 end
 
+---@param iconPath string|nil
+---@return table<integer, string>
 local function get_logos(iconPath)
     local logos = {}
     local ok, err = pcall(function()
@@ -500,7 +584,16 @@ local AUDIO_TOP2 = "A1_Audio" -- renamed
 local AUDIO_LANG_FOLDERS = { EN=true, ES=true, FR=true, IT=true, Global=true }
 
 -- Create and import Godot project
-local function create_godot_project(project_name, project_path, assetSourcePath, addons_folder, rootfiles, godot_exe, no_exit, logo_images, asset_exts)
+---@param project_name string
+---@param project_path string
+---@param assetSourcePath string
+---@param godot_Core_Files string|nil
+---@param godot_exe string
+---@param no_exit boolean
+---@param logo_images table<integer, string>
+---@param asset_exts table<integer, string>
+---@return nil
+local function create_godot_project(project_name, project_path, assetSourcePath, godot_Core_Files, godot_exe, no_exit, logo_images, asset_exts)
     local project_dir = normalize(join(project_path, project_name))
     sdk.ensure_dir(project_dir)
     log_info("Godot Project Directory: " .. project_dir)
@@ -526,9 +619,12 @@ local function create_godot_project(project_name, project_path, assetSourcePath,
     -- Copy addons, scene_config.json and tool scripts early so they are available
     -- during per-batch headless imports. This was previously done after
     -- importing assets; move it here to ensure tools/scripts are present.
-    if addons_folder and sdk.is_dir(addons_folder) then
-        -- copy tree into project_dir/addons (dirs_exist_ok)
-        local dst = normalize(join(project_dir, "addons"))
+    if godot_Core_Files and sdk.is_dir(godot_Core_Files) then
+        -- copy all contents of Core/ into project_dir/ preserving structure.
+        local dst = join(project_dir)
+        ---@param src string
+        ---@param dstroot string
+        ---@return nil
         local function copytree(src, dstroot)
             walk_files(src, function(ap, rp, _)
                 local outp = normalize(join(dstroot, rp))
@@ -539,24 +635,8 @@ local function create_godot_project(project_name, project_path, assetSourcePath,
                 end
             end)
         end
-        copytree(addons_folder, dst)
-        log_info("Copied addons into project before asset import.")
-    end
-
-    if rootfiles and sdk.is_dir(rootfiles) then
-        local dst = project_dir -- copy rootfiles contents into project root
-        local function copytree(src, dstroot)
-            walk_files(src, function(ap, rp, _)
-                local outp = normalize(join(dstroot, rp))
-                sdk.ensure_dir(dirname(outp))
-                local ok, err = pcall(copy_file, ap, outp)
-                if not ok then
-                    log_warn(string.format("Warn: conf copy failed '%s' -> '%s': %s", ap, outp, tostring(err)))
-                end
-            end)
-        end
-        copytree(rootfiles, dst)
-        log_info("Copied rootfiles contents into project root before asset import.")
+        copytree(godot_Core_Files, dst)
+        log_info("Copied core files into project before asset import.")
     end
 
     -- Discover top-level folders under ExtractedOut
@@ -642,7 +722,7 @@ local function create_godot_project(project_name, project_path, assetSourcePath,
                         end
                         list_counter.count = list_counter.count + 1
                     end)
-                    local p = progress.new(list_counter.count, "copy_"..top.."_"..lang, string.format("Copy %s/%s", top, lang))
+                    local p = progress.panel.new(list_counter.count, "copy_"..top.."_"..lang, string.format("Copy %s/%s", top, lang))
                     local stats = copy_tree_incremental(src_lang, dst_lang, {
                         use_hardlinks = true,
                         verify_hash_for_large = true,
@@ -673,7 +753,7 @@ local function create_godot_project(project_name, project_path, assetSourcePath,
                     if asset_exts then local low = fn:lower(); local match=false; for _,e in ipairs(asset_exts) do if low:sub(-#e) == e then match=true; break end end; if not match then return end end
                     list_counter.count = list_counter.count + 1
                 end)
-                local p = progress.new(list_counter.count, "copy_"..top, string.format("Copy %s", top))
+                local p = progress.panel.new(list_counter.count, "copy_"..top, string.format("Copy %s", top))
                 local stats = copy_tree_incremental(src_top, dst_top, {
                     use_hardlinks = true,
                     verify_hash_for_large = true,
@@ -734,10 +814,15 @@ end
 -- # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
 
 
+---@param project_name string
+---@param repo_root string
+---@param no_exit boolean
+---@param assetSourcePath string
+---@param iconPath string|nil
+---@return nil
 local function main(project_name, repo_root, no_exit, assetSourcePath, iconPath)
     -- Locate this module directory
     local godot_module_root = normalize(script_dir)
-    local module_root = normalize(dirname(godot_module_root))
 
     -- Engine diagnostics replaces local bootstrapping
     Diagnostics.Log("[godot-init] info: bootstrap logging started")
@@ -752,14 +837,13 @@ local function main(project_name, repo_root, no_exit, assetSourcePath, iconPath)
 
     --local sourcePath = assetSourcePath -- EngineApps\Games\TheSimpsonsGame-PS3\GameFiles\STROUT-EU_FullFlattened-audio_reorg-isRenamed
     log_info("Using assetSourcePath: " .. assetSourcePath)
-    local addons_folder = normalize(join(godot_module_root, "addons"))
-    local rootfiles = normalize(join(godot_module_root, "rootfiles"))
+    local godot_Core_Files = normalize(join(godot_module_root, "Core"))
     local project_path = normalize(join(godot_module_root, "GodotGame"))
 
     local godot_exe = resolve_godot()
 
     -- Pre-flight validations
-    local stage = progress.start(4, "Pre-flight checks")
+    local stage = progress.script.start(4, "Pre-flight checks")
     -- 1. Validate Godot tool
     if not godot_exe or godot_exe == "" or not sdk.is_file(godot_exe) then
         fatal("Godot executable not found. Ensure 'Godot' tool is configured.")
@@ -773,10 +857,9 @@ local function main(project_name, repo_root, no_exit, assetSourcePath, iconPath)
 
     stage:Update(1)
     -- 4. Optional folders logged
-    if not sdk.is_dir(addons_folder) then log_warn("Addons folder not found: " .. addons_folder) end
+    if not sdk.is_dir(godot_Core_Files) then log_warn("Core files folder not found: " .. godot_Core_Files) end
     stage:Update(1)
-    if not sdk.is_dir(rootfiles) then log_warn("Rootfiles folder not found: " .. rootfiles) end
-    stage:Update(1)
+
     -- Close preflight stage
     stage:Complete()
 
@@ -785,7 +868,7 @@ local function main(project_name, repo_root, no_exit, assetSourcePath, iconPath)
     local asset_exts = { ".png", ".glb", ".ogv", ".graph" }
     local logo_images = get_logos(iconPath)
 
-    create_godot_project(project_name, project_path, assetSourcePath, addons_folder, rootfiles, godot_exe, no_exit, logo_images, asset_exts)
+    create_godot_project(project_name, project_path, assetSourcePath, godot_Core_Files, godot_exe, no_exit, logo_images, asset_exts)
 end
 
 
@@ -794,8 +877,11 @@ end
 
 
 -- CLI
+---@param argv table<integer, string>
+---@return table<string, any>
 local function parse_args(argv)
     local opts = { ["project-name"] = "Game", ["no-exit"] = false }
+    ---@cast opts table<string, any>
     local i = 1
     while i <= #argv do
         local a = argv[i]
@@ -817,26 +903,21 @@ local function parse_args(argv)
     return opts
 end
 
--- Main
-local function run()
-    local opts = parse_args(argv)
 
-    if not opts["repo-root"] then
-        fatal("Missing required arg --repo-root")
-        return
-    end
-    if not opts["sourcePath"] then
-        fatal("Missing required arg --sourcePath")
-        return
-    end
+local opts = parse_args(argv)
 
-    if not opts["iconPath"] then
-        fatal("Missing required arg --iconPath")
-        return
-    end
-
-    main(opts["project-name"], normalize(opts["repo-root"]), opts["no-exit"], normalize(opts["sourcePath"]), opts["iconPath"] and normalize(opts["iconPath"]))
+if not opts["repo-root"] then
+    fatal("Missing required arg --repo-root")
+    return
+end
+if not opts["sourcePath"] then
+    fatal("Missing required arg --sourcePath")
+    return
 end
 
+if not opts["iconPath"] then
+    fatal("Missing required arg --iconPath")
+    return
+end
 
-run()
+main(opts["project-name"], normalize(opts["repo-root"]), opts["no-exit"], normalize(opts["sourcePath"]), opts["iconPath"] and normalize(opts["iconPath"]))
