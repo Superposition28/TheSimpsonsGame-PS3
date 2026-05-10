@@ -17,7 +17,7 @@
 
 # temporary experiment directories
 dev/
-test/
+operations/Blender/test/blend/
 
 
 # operations, generated files
@@ -42,7 +42,6 @@ __pycache__/
 GameFiles*/
 config/old/
 indexer/old/
-test/
 .1gitignore
 
 reversing/Format-Analysis/ps3/hko/char_collision_spheres.hko.PS3

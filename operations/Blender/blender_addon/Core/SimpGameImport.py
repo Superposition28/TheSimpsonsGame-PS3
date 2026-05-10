@@ -9,10 +9,10 @@ import math
 from pathlib import Path
 
 # blender imports
-import bpy
-from bpy.props import StringProperty, CollectionProperty
-from bpy_extras.io_utils import ImportHelper
-import bmesh
+import bpy # type: ignore
+from bpy.props import StringProperty, CollectionProperty # type: ignore
+from bpy_extras.io_utils import ImportHelper # type: ignore
+import bmesh # type: ignore
 
 from ..utils.logger import bPrinter
 from ..utils.mesh_helpers import strip2face, sanitize_uvs
@@ -43,9 +43,9 @@ class SimpGameImport(bpy.types.Operator, ImportHelper):
     filter_glob: StringProperty(
         default="*.preinstanced",
         options={'HIDDEN'},
-    )
-    filepath: StringProperty(subtype='FILE_PATH',)
-    files: CollectionProperty(type=bpy.types.PropertyGroup)
+    ) # type: ignore
+    filepath: StringProperty(subtype='FILE_PATH',) # type: ignore
+    files: CollectionProperty(type=bpy.types.PropertyGroup) # type: ignore
 
     def draw(self, _context: bpy.types.Context) -> None:
         """
@@ -112,7 +112,7 @@ class SimpGameImport(bpy.types.Operator, ImportHelper):
             for name in sorted_names:
                 key = _normalize_tex_name(name)
                 final_path = texture_paths_by_name.get(key, "NOT_FOUND")
-                bPrinter(f"{name} -- {final_path}", to_blender_editor=True)
+                bPrinter(f"{name} -- {final_path}", to_blender_editor=True, print_to_console=False) # too many to print to console, so only log to Blender text block
         else:
             bPrinter("No texture strings were found in the file.", to_blender_editor=True)
 
@@ -131,12 +131,12 @@ class SimpGameImport(bpy.types.Operator, ImportHelper):
         for item in string_results:
             if item['type'] == 'fixed_signature_string' and item['string_found']:
                 found_string_count += 1
-                bPrinter(f"{item['string_offset']:08X}: {item['string']}", to_blender_editor=True)
+                bPrinter(f"{item['string_offset']:08X}: {item['string']}", to_blender_editor=True, print_to_console=False)
 
         if found_string_count == 0:
-            bPrinter("[String Found] No valid strings found for configured signatures.", to_blender_editor=True)
+            bPrinter("[String Found] No valid strings found for configured signatures.", to_blender_editor=True, print_to_console=False)
         else:
-            bPrinter(f"[String Found] Total {found_string_count} valid strings found.", to_blender_editor=True)
+            bPrinter(f"[String Found] Total {found_string_count} valid strings found.", to_blender_editor=True, print_to_console=False)
 
         # --- Mesh Import Process ---
         mesh_chunks = list(MESH_REGEX.finditer(tmpRead))
@@ -195,6 +195,14 @@ class SimpGameImport(bpy.types.Operator, ImportHelper):
                 mDataTableCount = int.from_bytes(data_io.read(4), byteorder='big')
                 mDataSubCount = int.from_bytes(data_io.read(4), byteorder='big')
 
+                current_pos = data_io.tell()
+                data_table_bytes = data_io.read(mDataTableCount * 8)
+                bPrinter(
+                    f"  [DataTable] Count: {mDataTableCount} | Bytes: {data_table_bytes.hex(' ').upper()}",
+                    to_blender_editor=True
+                )
+                data_io.seek(current_pos)
+
                 bPrinter(f"[Mesh {mesh_iter}] Chunk Offset: {x.start():08X} | Submeshes: {mDataSubCount}", to_blender_editor=True)
 
                 # --- Log linked textures with their full paths ---
@@ -225,8 +233,19 @@ class SimpGameImport(bpy.types.Operator, ImportHelper):
                 try:
                     data_io.seek(mDataSubStart + i * 0xC + 8)
                     offset = int.from_bytes(data_io.read(4), byteorder='big')
+
+                    data_io.seek(offset + MeshChunkStart)
+                    submesh_header = data_io.read(12)
+                    material_id = int.from_bytes(submesh_header[8:12], byteorder='big')
+                    bPrinter(
+                        f"    [Submesh {i}] Header 12 Bytes: {submesh_header.hex(' ').upper()} | Material ID: {material_id}",
+                        to_blender_editor=True
+                    )
+
                     data_io.seek(offset + MeshChunkStart + 0xC)
                     VertCountDataOff = int.from_bytes(data_io.read(4), byteorder='big') + MeshChunkStart
+
+
                     data_io.seek(VertCountDataOff)
                     VertChunkTotalSize = int.from_bytes(data_io.read(4), byteorder='big')
                     VertChunkSize = int.from_bytes(data_io.read(4), byteorder='big')
@@ -537,8 +556,28 @@ class SimpGameImport(bpy.types.Operator, ImportHelper):
                             if mat:
                                 obj.data.materials.append(mat)
 
-                        # Determine target texture for this submesh (loop if more submeshes than textures)
-                        target_tex_name = linked_tex_for_mat[i % len(linked_tex_for_mat)]
+                        # The submesh field points at a material ordinal, while the string list is laid out as 2 strings per material.
+                        base_string_index = material_id * 2
+
+                        if base_string_index < len(linked_tex_for_mat):
+                            target_tex_name = linked_tex_for_mat[base_string_index]
+
+                            # If the primary slot is the generic palette entry, prefer the paired texture when present.
+                            if "simpsons_palette" in target_tex_name.lower() and (base_string_index + 1) < len(linked_tex_for_mat):
+                                secondary_tex = linked_tex_for_mat[base_string_index + 1]
+                                if "simpsons_palette" not in secondary_tex.lower():
+                                    target_tex_name = secondary_tex
+                        else:
+                            bPrinter(
+                                f"    [Warning] Material ID {material_id} (String {base_string_index}) is out of bounds (Max: {len(linked_tex_for_mat) - 1}). Falling back to 0.",
+                                console_colour="yellow",
+                                to_blender_editor=True
+                            )
+                            target_tex_name = linked_tex_for_mat[0] if linked_tex_for_mat else None
+
+                        if target_tex_name is None:
+                            bPrinter(f"    [Warning] No linked texture available for submesh {i}; skipping material assignment.", console_colour="yellow", to_blender_editor=True)
+                            continue
 
                         # Find the index of the target material
                         target_mat_index = unique_tex_names.index(target_tex_name) if target_tex_name in unique_tex_names else 0

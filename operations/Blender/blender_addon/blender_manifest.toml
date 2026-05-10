@@ -1,7 +1,7 @@
 schema_version = "1.0.0"
 
 id = "the_simpsons_game_3d_asset_importer"
-version = "1.5.8"
+version = "1.5.9"
 name = "The Simpsons Game 3d Asset Importer"
 tagline = "Import .rws.preinstanced, .dff.preinstanced mesh files from The Simpsons Game (PS3), detect embedded strings, and link textures to meshes."
 maintainer = "Turk & Mister_Nebula & Samarixum"

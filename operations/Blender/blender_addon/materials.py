@@ -7,7 +7,7 @@ import json
 import os
 import sys
 from pathlib import Path
-import bpy
+import bpy # type: ignore
 from .utils.logger import bPrinter
 
 # --- JSON texture index -----------------------------------------
@@ -32,6 +32,7 @@ def _load_json_db_if_configured() -> list | None:
     try:
         # Check if we are in a context where bpy.context is available
         if bpy.context and bpy.context.scene:
+            bPrinter("[JSON DB] Attempting to load JSON DB from scene property 'tsg_db_path'...", console_colour="cyan", to_blender_editor=True)
             main_db_path = bpy.context.scene.get("tsg_db_path")
         else:
             bPrinter("[JSON DB] bpy.context.scene is not available. DB lookup unavailable.", console_colour="red", to_blender_editor=True)
@@ -243,7 +244,7 @@ def _maybe_cache_texture_path(tex_name: str, cache: dict[str, str], preinstanced
     """
     key = _normalize_tex_name(tex_name)
     if key in cache:
-        bPrinter(f"[Path Resolver] Cache hit for '{tex_name}': {cache[key]}", console_colour="green", to_blender_editor=True)
+        bPrinter(f"[Path Resolver] Cache hit for '{tex_name}': {cache[key]}", to_blender_editor=True, print_to_console=False)
         return
 
     final_path = None
@@ -269,7 +270,7 @@ def _maybe_cache_texture_path(tex_name: str, cache: dict[str, str], preinstanced
 
     if final_path:
         cache[key] = final_path
-        bPrinter(f"[Path Resolver] Resolved '{tex_name}' -> {final_path}", console_colour="green", to_blender_editor=True)
+        bPrinter(f"[Path Resolver] Resolved '{tex_name}' -> {final_path}", to_blender_editor=True, print_to_console=False)
     else:
         bPrinter(f"[Path Resolver] Could not find texture for '{tex_name}'", console_colour="yellow", to_blender_editor=True)
 
