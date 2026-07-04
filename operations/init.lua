@@ -30,6 +30,10 @@ import("init/util")
 ---@field _temp_us_source_root string?
 ---@field _temp_us_path string?
 
+---@class InitSourceOption
+---@field id string
+---@field label string
+
 local function main()
     -- Determine module directory (two levels up from this script: operations/init.lua -> module root)
     local module_dir = dirname(script_dir)
@@ -44,8 +48,10 @@ local function main()
     end
 
     colour_print{colour=Colours.BLUE, message="Reading module config: " .. cfg_path}
+    ---@type InitPlaceholders
     local placeholders = read_placeholders(cfg_path)
     -- Auto-add with defaults if missing
+    ---@type table<string, string>
     local defaults = {
         isRenamed = "notRenamed",
         num = "1",
@@ -132,7 +138,7 @@ local function main()
             end
             -- Trim and normalize the input path
             input = trim(input)
-            input = normalize(Utils.is_absolute(input) and input or join(sdk.currentdir(), input))
+            input = normalize(is_absolute(input) and input or join(sdk.currentdir(), input))
             colour_print{colour=Colours.CYAN, message="Checking path: '" .. input .. "'"}
             if  sdk.is_dir(input) then
                 local ok, resolved, folder_to_copy = validate_source_path(input)
@@ -162,7 +168,7 @@ local function main()
             end
             -- Trim and normalize the input path
             input = trim(input)
-            input = normalize(Utils.is_absolute(input) and input or join(sdk.currentdir(), input))
+            input = normalize(is_absolute(input) and input or join(sdk.currentdir(), input))
             colour_print{colour=Colours.CYAN, message="Checking path: '" .. input .. "'"}
             if  sdk.is_dir(input) then
                 local ok, resolved, folder_to_copy = validate_source_path(input)
@@ -213,7 +219,7 @@ local function main()
             end
             -- Trim and normalize the input path
             input = trim(input)
-            input = normalize(Utils.is_absolute(input) and input or join(sdk.currentdir(), input))
+            input = normalize(is_absolute(input) and input or join(sdk.currentdir(), input))
             colour_print{colour=Colours.CYAN, message="Checking path: '" .. input .. "'"}
             if  sdk.is_dir(input) then
                 local ok, resolved, folder_to_copy = validate_source_path(input)
@@ -264,6 +270,7 @@ local function main()
             local source_is_writable = sdk.is_writable(copy_source_root or path_from_config)
 
             -- Build options based on writability
+            ---@type InitSourceOption[]
             local options = {}
             table.insert(options, {id = "1", label = "Copy folder '" .. display_name .. "' into local '" .. basename(local_data_path) .. "' (Recommended, Safe)"})
 
@@ -285,6 +292,7 @@ local function main()
             end
 
             -- Build valid choices string
+            ---@type string[]
             local valid_choices = {}
             for _, opt in ipairs(options) do
                 table.insert(valid_choices, opt.id)
@@ -392,7 +400,8 @@ local function main()
     -- Process US files if region is "Both"
     if region == "BOTH" and path_from_config_us then
         local us_source_root = placeholders["_temp_us_source_root"]
-        local us_path = placeholders["_temp_us_path"]
+        ---@type string
+        local us_path = placeholders["_temp_us_path"] or path_from_config_us
 
         if not starts_with(us_path, local_data_path_us) then
             if not sdk.path_exists(local_data_path_us) then
@@ -401,6 +410,7 @@ local function main()
 
                 local source_is_writable_us = sdk.is_writable(us_source_root or us_path)
 
+                ---@type InitSourceOption[]
                 local options_us = {}
                 table.insert(options_us, {id = "1", label = "options_us: Copy folder '" .. display_name_us .. "' into local 'US' (Recommended, Safe)"})
 
@@ -421,6 +431,7 @@ local function main()
                     end
                 end
 
+                ---@type string[]
                 local valid_choices_us = {}
                 for _, opt in ipairs(options_us) do
                     table.insert(valid_choices_us, opt.id)

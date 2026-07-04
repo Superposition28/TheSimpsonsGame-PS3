@@ -1,28 +1,40 @@
 # Remake Engine Game Module: The Simpsons Game (2007, PS3 Edition)
 
-![](.github\assets\cpy\4_medal_of_homer_1baaa2.png)
-![](.github\assets\cpy\32_simpsons_start_371d9a.png)
+![](.github/assets/cpy/4_medal_of_homer_1baaa2.png)
+![](.github/assets/cpy/32_simpsons_start_371d9a.png)
 
 
 This module re-implements *The Simpsons Game* (2007, PS3 edition) using the [RemakeEngine](https://github.com/yggdrasil-au/RemakeEngine). It converts user-provided assets into formats compatible with the [Godot Engine](https://godotengine.org/) and generates a playable project. **You must own an original copy of the game to use this module.**
 
 
 ## What is This?
-well an over engineered remake of the original game
-i wanted to remake it but i had to reuse the original assets, because i dont have the time to remake all the assets (or skill)
-so i had to reverse engineer the original game files, using the few existing scripts online and alot of AI guesses
-then i relised its a waste of time to remake the game if i cant share it
-so i make the remake engine, basically a autmation tool, that lets me share the instructions to remake the game, but not the assets themselves, so people can remake the game if they own it, but not share it, because that would be illegal
-but now that means i not only need to reverse engineer the game, but also make the remake engine, and the instructions on building the game and actually building the Entire Game
-luckily godot takes care of the engine aspect, and it doesnt need to be a perfect remake, just a playable one, so i can focus on the game world and eventually logic
+This project is a highly automated reverse-engineering toolset and engine remake for *The Simpsons Game (PS3)*.
 
-current remake progress, it creates like some of the maps, terrain only with super broken textures
-current reverse engineering progress, i dont even remember, theres so many formats, and so little skill (me),
-ive made some docs on the formats, [here](https://github.com/Superposition28/TheSimpsonsGame-PS3-Docs), by me i do mostly mean the AI
-mostly just all textures are being extracted correctly now, the models are i think almost all extracted correctly however assigning textures to the models is a nightmare, because idk how to read the format at the texture mapping point, for now it just reads texture string names listed above each submesh and uses the first one, surprisingly it works for some simple models, but for more complex models it just randomly assigns textures to submeshes, and the textures are all over the place, so it looks like a mess, but its repeatable, so the same model will always have the same random texture applied to it
-all video and most audio files are converted fine
-but the .MUS music files are currently unknown format, we only have the 128ish ambient audo, and the 14,698 dialogue audio files (for each language if using EU version), still missing the 17 music .mus
-i have been mapping the dialogue audio files to the characters in docs repo \PS3_GAME\USRDIR\A1_Audio\AudioMap.yaml
+Rather than distributing copyrighted assets, the `RemakeEngine` automates the process of taking a user's legally dumped PS3 game, extracting the original assets, converting them into standard formats, and assembling them into a playable Godot project. The engine focuses on format conversion, data normalization, and rebuild scripts so contributors can reproduce the game from their own legally obtained files.
+
+Godot provides the runtime (rendering, physics and scripting). This module concentrates on the hard work: parsing proprietary formats, converting game assets (models, textures, audio, video), and rebuilding scene data and mappings so a playable project can be generated automatically.
+
+## Current Status & Known Issues
+The module is in active development (Beta). Highlights and known problems:
+
+- **Textures & Models:** Texture extraction completes reliably, and most models extract correctly. Texture-to-submesh mapping is currently unreliable on complex, high-LOD meshes — the importer falls back to texture name heuristics and may assign textures unpredictably (but repeatably). Low-LOD models are more likely to receive correct texture assignments.
+- **Audio:** Localized dialogue (~14,698 files) and ~128 ambient clips convert and map successfully using `reversing/docs/PS3_GAME/USRDIR/A1_Audio/AudioMap.yaml`.
+- **Music (.MUS):** 17 music `.mus` files remain in an unknown format and are not yet decoded.
+- **Video:** VP6 and other video formats convert successfully with the toolchain.
+
+Screenshots showing current extraction results (high-LOD texture issues vs. low-LOD working textures) appear further below in this document.
+
+If you want to reproduce the current extraction pipeline or help debug mapping, see the `operations/` scripts and the format docs in `reversing/docs`.
+
+## Help Wanted!
+This is a large reverse-engineering effort and contributions are welcome. Areas where help would be most valuable:
+
+1. **Texture Mapping:** Investigate how the original formats assign textures to submeshes and implement a reliable mapping strategy for high-LOD models.
+2. **Music Format (`.MUS`) Reverse-Engineering:** Decode or document the music container/codec used for the 17 `.mus` files.
+3. **Format Documentation:** Expand and improve the format analyses in the docs repo (`reversing/docs/FormatAnalysis`).
+4. **Blender / Import Pipelines:** Improve Blender automation scripts for robust material assignment and layer handling.
+
+To contribute, open issues or PRs, or jump into the format docs and submit patches. If you want to discuss complex reverse-engineering tasks first, open an issue describing your approach and refer to the relevant `operations/` or `reversing/` files.
 
 ## Features
 
@@ -37,11 +49,162 @@ i have been mapping the dialogue audio files to the characters in docs repo \PS3
 ## Module Platform Support
 
 - **Current Support:** Windows only
-- **Planned Support:** Linux support is expected as toolchain and script compatibility improves
+- **Planned Support:** it should theoretically work on Linux and MacOS, but only ever tested on Windows. The engine is cross-platform, but some tools (Blender, QuickBMS, FFmpeg, vgmstream) may be platform-specific.
 
-## depends on
-remake engine (and naturally its dependencies), docs repo (must be in 'reversing/docs' folder under repo root, for scripts to work)
-tools like blender, quickbms, godot, are handled by remake engine, so you dont need to install them yourself, remake engine will download and install them for you
+## Depends On
+This module depends on the RemakeEngine, its managed toolchain, and the documentation repo checked out at `reversing/docs` inside this module root.
+Tools such as Blender, QuickBMS, Godot, FFmpeg, and vgmstream are declared in `Tools.toml` and are downloaded and managed by RemakeEngine as needed.
+
+## How To Use
+
+This module is intended to be downloaded and executed through the RemakeEngine TUI, CLI or GUI.
+
+### 1. Clone and launch the engine
+
+```pwsh
+git clone https://github.com/yggdrasil-au/RemakeEngine.git
+cd RemakeEngine
+dotnet build RemakeEngine.slnx -c Debug
+dotnet run -c Release --framework net10.0 --project EngineNet
+```
+
+### 2. Download the game module from the registry
+
+In the TUI, select `gitDownload` from the main game list:
+
+```text
+Select a game:
+  demo  [registered, installed, unbuilt]
+  ---------------
+> gitDownload
+  Exit
+```
+
+Then choose `Download from Registry`:
+
+```text
+--- Operations for: gitDownload
+? Select an operation: (Use arrow keys)
+> Download from Registry
+  Download from Git URL
+  ---------------
+  Change Game
+  Exit
+```
+
+Select module `2`, `TheSimpsonsGame-PS3`:
+
+```text
+Select module from registry:
+1. demo (Disabled)
+2. TheSimpsonsGame-PS3
+3. TheSimpsonsGame-PS2
+4. SimpsonsHitAndRun
+5. TheSimpsonsRoadRage-PS2
+```
+
+Expected output:
+
+```text
+Select module from registry:
+1. demo (Disabled)
+2. TheSimpsonsGame-PS3
+3. TheSimpsonsGame-PS2
+4. SimpsonsHitAndRun
+5. TheSimpsonsRoadRage-PS2
+Selection # > 2
+Running: Download from Registry
+
+>>> Engine operation: Download from Registry
+Downloading 'TheSimpsonsGame-PS3' from 'https://github.com/Superposition28/TheSimpsonsGame-PS3.git'...
+Target directory: 'A:\TSG-test\RemakeEngine\EngineApps\Games\TheSimpsonsGame-PS3'
+Cloning into 'A:\TSG-test\RemakeEngine\EngineApps\Games\TheSimpsonsGame-PS3'...
+Submodule 'TheSimpsonsGame-PS3-Docs' (https://github.com/Superposition28/TheSimpsonsGame-PS3-Docs.git) registered for path 'reversing/docs'
+Submodule 'TheSimpsonsGame-PS3-FileViewer' (https://github.com/Superposition28/TheSimpsonsGame-PS3-FileViewer.git) registered for path 'reversing/fileviewer'
+Cloning into 'A:/TSG-test/RemakeEngine/EngineApps/Games/TheSimpsonsGame-PS3/reversing/docs'...
+Cloning into 'A:/TSG-test/RemakeEngine/EngineApps/Games/TheSimpsonsGame-PS3/reversing/fileviewer'...
+Submodule path 'reversing/docs': checked out '8fa61d72af3db0a89883b848e34d50c723c8f131'
+Submodule path 'reversing/fileviewer': checked out 'bf256e8dc25924aca21af731639e94c403ae78cd'
+
+Successfully downloaded 'TheSimpsonsGame-PS3'.
+Completed successfully. Time: 14.7s.
+Press any key to continue...
+```
+
+After the download completes, choose `Change Game` to return to the main menu. You should then see `TheSimpsonsGame-PS3` in the list:
+
+```text
+Select a game:
+  demo  [registered, installed, unbuilt]
+> TheSimpsonsGame-PS3  [registered, installed, unbuilt]
+  ---------------
+  gitDownload
+  Exit
+```
+
+### 3. Select the module and answer the initialization prompts
+
+When you select `TheSimpsonsGame-PS3`, the engine runs the module initialization step and asks for your game region and the path to your dumped game files.
+
+The source path you enter should point at the game root folder that contains `USRDIR`. For example:
+
+```text
+Running 1 initialization operation(s) for TheSimpsonsGame-PS3
+
+▶ Starting script: init.lua
+Config not found. Creating: A:\TSG-test\RemakeEngine\EngineApps\Games\TheSimpsonsGame-PS3\config.toml
+Created config.toml with default placeholders.
+Reading module config: A:\TSG-test\RemakeEngine\EngineApps\Games\TheSimpsonsGame-PS3\config.toml
+Initialized placeholders.num = "1"
+Initialized placeholders.audio_state = "audio_none"
+Initialized placeholders.Type = "Full"
+No valid Region set in config.toml. You'll be prompted to set one (US, EU, or Both).
+? Enter the game region (US, EU, or Both) and press Enter (leave blank to cancel):
+EU
+Set Region to 'EU'.
+
+No MainSourcePath set in config.toml. You'll be prompted to set one.
+? Enter the path to your game root (this folder should contain a folder named USRDIR) and press Enter (leave blank to cancel):
+A:\RemakeEngine\Main\EngineApps\Games\TheSimpsonsGame-PS3\Source\EU\PS3_GAME
+```
+
+Once initialization completes, the module operations menu becomes available.
+
+### 4. Run the pipeline
+
+After initialization, the operations menu looks like this:
+
+```text
+--- Operations for: TheSimpsonsGame-PS3
+? Select an operation: (Use arrow keys)
+> Run All
+  ---------------
+  Download Required Tools
+  Extract Archives (.STR)
+  Copy Source Audio/Video Files
+  Extract Textures (.txd -> .png)
+  Rename base folders
+  Reorganize Audio Files
+  Normalize folder structure
+  Convert Models (.preinstanced -> .blend)
+  Extract Dialogue/Subtitles (.lh2 -> .csv)
+  Convert Audio (.snu -> .wav)
+  Convert Videos (.vp6 -> .ogv)
+  generate Godot Game (EXPERIMENTAL)
+  ---------------
+  Change Game
+  Exit
+```
+
+For a full pipeline run, select `Run All`. If you are debugging a specific step, you can execute the operations individually from this menu, most will require all previous steps to have been completed first.
+
+### 5. What the pipeline produces
+
+- Extracted and normalized game data under `GameFiles/`
+- Converted textures, audio, video, and model outputs
+- Blender `.blend` files for `.preinstanced` assets
+- CSV exports for `.lh2` dialogue/subtitle files
+- An experimental generated Godot project via `generate Godot Game (EXPERIMENTAL)`
 
 
 ## File Breakdown
@@ -49,39 +212,45 @@ tools like blender, quickbms, godot, are handled by remake engine, so you dont n
 - `config/`
   - `config/RenameMap.db` - Maps original folder names to human-readable names used by the module.
 
+- `GameFiles/` - Generated extraction, normalization, and conversion outputs created by the pipeline.
+
 - `Godot/`
-  - `Game/` - Godot project files and scripts for remake logic.
+  - `Core/` - Reusable Godot project template kept in source control.
     - `addons/` - Third-party and custom Godot addons.
-    - `rootfiles/Scripts/` - Scene Builder GDScript for generating game nodes and worlds.
+    - `Scripts/` - Scene builder and shared Godot scripts.
       - `import-V*.gd` - Main scene builder script.
-    - `godot-init-V*.lua` - Godot project initializer.
-    - `rootfiles/json/**.json` - Asset locations and node/script mapping.
+    - `Json/**/*.json` - Asset locations and node/script mapping.
+    - `project.godot` - Persistent Godot project settings template.
+  - `GodotGame/` - Generated Godot project outputs, such as `Godot/GodotGame/SimpsonsGamePS3/`.
+  - `godot-init-V*.lua` - Godot project bootstrap script.
 
 - `operations/` - Core operation scripts (Lua, BMS, Blender, etc.).
   - `Blender/` - Blender conversion scripts and handlers.
-- `reversing/` - Reverse engineering notes and format analyses.
-  - `Source/` - Main format documentation and notes.
-  - `Source/Format-Analysis/` - Detailed format-specific analyses.
+  - `DirectoryNormalizer/` - Folder normalization logic and helpers.
+  - `init/` - Initialization helpers used during config/bootstrap.
+- `reversing/` - Reverse engineering utilities and the docs submodule.
+  - `docs/` - Reverse engineering documentation repo submodule and generated docs site files.
+  - `data/`, `fileviewer/`, `TSGFileViewer/` - Supporting reverse-engineering utilities and data.
 
 - `Source/` - Local copy of user-provided game files (if copied/moved).
 - `.gitignore` - Ignore rules for assets and outputs.
 - `blank.blend` - Blank Blender file for model conversion.
 - `config.toml` - Module-local configuration (stores `SourcePath`).
-- `operations_cli.md` - CLI documentation for operations.
-- `operations.toml` / `operations.json` - Defines the sequence of asset-processing operations.
+- `operations.toml` - Defines the sequence of asset-processing operations.
 - `Readme.md` - This file.
-- `Tools.toml` / `Tools.json` - Configuration for external tools managed by RemakeEngine.
+- `Tools.toml` - Configuration for external tools managed by RemakeEngine.
 
 ### Path Placeholders
 
-RemakeEngine operations use built-in placeholders for paths and configuration. These are provided by the engine and some are set by the module's `init.lua` or changed after successful operations using `config.lua` and resolved automatically in `operations.toml` for scripts.
+RemakeEngine operations use built-in placeholders for paths and configuration. These are provided by the engine, initialized by `operations/init.lua`, and updated by follow-up config steps defined in `operations.toml`.
 
 **Built-in placeholders for `operations.toml`:**
 - `{{Game_Root}}` — Path to this module's root directory.
 - `{{Project_Root}}` — Path to the RemakeEngine root project directory.
 
-**Custom placeholders defined in `config.toml`:**
-- `{{SourcePath}}` — Path to your validated original game files (set by `init.lua` and stored in `config.toml`).
+**Key custom placeholders defined in `config.toml`:**
+- `{{SourcePath}}` — Path to your original game dump root (set by `operations/init.lua` and stored in `config.toml`).
+- `{{PostSourcePath}}` — Subpath appended under `{{SourcePath}}` when the pipeline targets the game data root (currently `PS3_GAME/USRDIR`).
 - `{{Region}}` — Game region, e.g. `US` or `EU`.
 - `{{Type}}` — Extraction/structure type for validation. Set to `FullFlattened` after normalization.
 - `{{audio_state}}` — Audio layout state; set to `audio_reorg` after running the audio setup step.
@@ -92,22 +261,25 @@ RemakeEngine operations use built-in placeholders for paths and configuration. T
 - Placeholders are referenced in TOML and scripts as `{{PlaceholderName}}`.
 - They are resolved by the engine before running each operation.
 - Example: `args = ["{{SourcePath}}", "--map-db-file", "{{Game_Root}}/config/RenameMap.db"]`
-- The validation operations select the correct index DB based on `Region`, `Type`, `audio_state`, and `isRenamed`.
+- The current pipeline uses these placeholders to build the active `GameFiles/`, tool, and generated Godot project paths.
 
 **Note:** The placeholder format is always double curly braces, e.g. `{{SourcePath}}`.
 
-This module is fully automated and designed to be executed by [The Remake Engine](https://github.com/yggdrasil-au/RemakeEngine). All direct dependencies (Godot, Blender, QuickBMS, etc.) are defined by `Tools.toml`/`Tools.json` and handled by RemakeEngine. **This module is in beta.**
+This module is fully automated and designed to be executed by [The Remake Engine](https://github.com/yggdrasil-au/RemakeEngine). All direct dependencies (Godot, Blender, QuickBMS, FFmpeg, vgmstream, etc.) are defined by `Tools.toml` and handled by RemakeEngine. **This module is in beta.**
 
 ### Operations Overview
-- Init and config: creates/updates `config.toml`, ensures placeholders exist.
-- Validate source: engine `validate-files` using `config/GameFilesIndex_{...}.db`.
-- Download required tools: engine `download-tools` reading `Tools.toml`.
-- Rename base folders: engine `rename-folders` using `config/RenameMap.db` (sets `isRenamed`).
-- Reorganize audio: `operations/SetupAudioDir.lua` (sets `audio_state`, applies `Dialogue` and `EN-CUTSCENE` folder rename rules from `reversing/docs/PS3_GAME/USRDIR/A1_Audio/AudioMap.yaml` across `EN/ES/FR/IT`, applies `Global-Sound` folder rename rules inside `A1_Audio/Global`, supports nested destination folders like `Enemies/Bosses`, and places mapped dialogue voice-line files inside `NEW_DIR_NAME/<CharacterName>/` while moving unmatched files to `NEW_DIR_NAME` root).
-- Normalize folder structure: `operations/DirectoryNormalizer.lua` using `config/DirectoryNormalizer.rules.json` (sets `Type=FullFlattened` and updates `STROUT` to `STROUT_Normalized`).
-- Extract/convert: STR extract, TXD -> DDS, DDS -> PNG, with optional video/audio conversions.
-- Blender conversion: converts `.preinstanced` → `.blend` (and optionally `glb`/`fbx`), using the main index DB.
-- Final validation and Godot project generation (experimental).
+- Init and config: `operations/init.lua` creates or updates `config.toml` and ensures the required placeholders exist.
+- Download required tools: engine `download-tools` reads `Tools.toml`.
+- Extract archives: `operations/simpsons_str.bms` extracts `.str` archives into `GameFiles/`.
+- Copy source audio/video: `operations/CopySourceAudioVideo.lua` copies source media into the working `GameFiles/` tree.
+- Extract textures: engine `format-extract` converts `.txd` textures into `.png` outputs.
+- Rename base folders: engine `rename-folders` uses `config/RenameMap.db` and sets `isRenamed`.
+- Reorganize audio: `operations/SetupAudioDir.lua` sets `audio_state`, applies `Dialogue` and `EN-CUTSCENE` folder rename rules from `reversing/docs/PS3_GAME/USRDIR/A1_Audio/AudioMap.yaml` across `EN/ES/FR/IT`, applies `Global-Sound` folder rename rules inside `A1_Audio/Global`, supports nested destination folders like `Enemies/Bosses`, and places mapped dialogue voice-line files inside `NEW_DIR_NAME/<CharacterName>/` while moving unmatched files to the `NEW_DIR_NAME` root.
+- Normalize folder structure: `operations/DirectoryNormalizer/run.lua` normalizes the extracted tree and sets `Type=FullFlattened`.
+- Convert models: `operations/Blender/run.lua` converts `.preinstanced` assets into `.blend` files, with optional `glb` and `fbx` export.
+- Extract dialogue/subtitles: `operations/lh2_to_csv.lua` converts `.lh2` files to `.csv`.
+- Convert audio/video: engine `format-convert` converts `.snu` to `.wav` and `.vp6` to `.ogv`.
+- Generate Godot project: `Godot/godot-init-V0.5.2.lua` builds the generated Godot project (experimental).
 
 ---
 
@@ -115,13 +287,15 @@ This module is fully automated and designed to be executed by [The Remake Engine
 
 For technical details and reverse-engineering notes on the file formats used in The Simpsons Game (PS3), see:
 
-- [reversing/Source/README.md](./reversing/Source/README.md) -- Overview of main formats in USRDIR and STR output.
-- [reversing/Source/Format-Analysis/README.md](./reversing/Source/Format-Analysis/README.md) -- Index of all format-specific analyses, including audio, RenderWare assets, and miscellaneous formats.
+- [reversing/docs/readme.md](./reversing/docs/readme.md) -- Overview of the in-module documentation repo layout.
+- [reversing/docs/FormatAnalysis/index.html](./reversing/docs/FormatAnalysis/index.html) -- Landing page for format-specific analyses, including audio, RenderWare assets, and miscellaneous formats.
+- [reversing/docs/PS3_GAME/index.html](./reversing/docs/PS3_GAME/index.html) -- Disc layout documentation and links into `USRDIR` content.
 
 These resources provide:
 
 - Format breakdowns for `.snu`, `.mus`, `.str`, `.vp6`, and more.
 - Links to detailed reverse-engineering notes for each format.
+- Game-specific file layout documentation for `PS3_GAME/USRDIR`.
 - Guidance for contributing new format analyses or deduplicating documentation.
 
 ---
@@ -141,7 +315,7 @@ This project automates extraction of assets (3D models, sounds, videos) from *Th
 ---
 ---
 
-A:\RemakeEngine\Main\EngineApps\Games\TheSimpsonsGame-PS3\GameFiles\EU-FullFlattened-audio_reorg-isRenamed\LHub-00_SprHub\sprHub\zone08str\assets\environs\sprIndustrialBldgDuffBreweryGeo\exportBldgDuffBrewery\
+GameFiles\EU-FullFlattened-audio_reorg-isRenamed\LHub-00_SprHub\sprHub\zone08str\assets\environs\sprIndustrialBldgDuffBreweryGeo\exportBldgDuffBrewery\
 High LOD model with broken textures
 ![](.github/assets/blendersnip/lodmodel1_3f18fc.rws.PS3.blend.png)
 low LOD model with working textures
