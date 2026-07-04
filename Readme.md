@@ -19,7 +19,7 @@ The module is in active development (Beta). Highlights and known problems:
 
 - **Textures & Models:** Texture extraction completes reliably, and most models extract correctly. Texture-to-submesh mapping is currently unreliable on complex, high-LOD meshes — the importer falls back to texture name heuristics and may assign textures unpredictably (but repeatably). Low-LOD models are more likely to receive correct texture assignments.
 - **Audio:** Localized dialogue (~14,698 files) and ~128 ambient clips convert and map successfully using `reversing/docs/PS3_GAME/USRDIR/A1_Audio/AudioMap.yaml`.
-- **Music (.MUS):** 17 music `.mus` files remain in an unknown format and are not yet decoded.
+- **Music (.MUS):** The 17 music `.mus` archives can now be unpacked into paired `.snr` and `.sns` files with `operations/mus.bms`, and the resulting `.snr` files decode correctly in vgmstream as EA-XAS music streams.
 - **Video:** VP6 and other video formats convert successfully with the toolchain.
 
 Screenshots showing current extraction results (high-LOD texture issues vs. low-LOD working textures) appear further below in this document.
@@ -30,9 +30,8 @@ If you want to reproduce the current extraction pipeline or help debug mapping, 
 This is a large reverse-engineering effort and contributions are welcome. Areas where help would be most valuable:
 
 1. **Texture Mapping:** Investigate how the original formats assign textures to submeshes and implement a reliable mapping strategy for high-LOD models.
-2. **Music Format (`.MUS`) Reverse-Engineering:** Decode or document the music container/codec used for the 17 `.mus` files.
-3. **Format Documentation:** Expand and improve the format analyses in the docs repo (`reversing/docs/FormatAnalysis`).
-4. **Blender / Import Pipelines:** Improve Blender automation scripts for robust material assignment and layer handling.
+2. **Format Documentation:** Expand and improve the format analyses in the docs repo (`reversing/docs/FormatAnalysis`).
+3. **Blender / Import Pipelines:** Improve Blender automation scripts for robust material assignment and layer handling.
 
 To contribute, open issues or PRs, or jump into the format docs and submit patches. If you want to discuss complex reverse-engineering tasks first, open an issue describing your approach and refer to the relevant `operations/` or `reversing/` files.
 

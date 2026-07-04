@@ -1,0 +1,38 @@
+# EA .MUS (SNR+SNS) extract from The Simpsons Game (PS3)
+
+endian big
+
+#idstring "\x63\xA9\x3A\x22"
+# Replaced the strict idstring check with a generic 4-byte skip
+getdstring DUMMY 4
+
+get FILES byte
+
+get FILENAME basename
+
+goto 0x28
+
+for I = 0 < FILES
+
+    get DUMMY long #hash?
+    get NUMBER short
+    get DUMMY short #always 0
+
+    get SNR_OFFSET long
+    math SNR_OFFSET *= 0x10
+    get SNS_OFFSET long
+    math SNS_OFFSET *= 0x80
+
+    get SNR_SIZE long
+    get SNS_SIZE long
+
+    get DUMMY long #always 0
+
+    # dump
+    string SNR_NAME p= "%s__%03i.snr" FILENAME I
+    string SNS_NAME p= "%s__%03i.sns" FILENAME I
+
+    log SNR_NAME SNR_OFFSET SNR_SIZE
+    log SNS_NAME SNS_OFFSET SNS_SIZE
+
+next I
