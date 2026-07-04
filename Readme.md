@@ -1,6 +1,28 @@
 # Remake Engine Game Module: The Simpsons Game (2007, PS3 Edition)
 
+![](.github\assets\cpy\4_medal_of_homer_1baaa2.png)
+![](.github\assets\cpy\32_simpsons_start_371d9a.png)
+
+
 This module re-implements *The Simpsons Game* (2007, PS3 edition) using the [RemakeEngine](https://github.com/yggdrasil-au/RemakeEngine). It converts user-provided assets into formats compatible with the [Godot Engine](https://godotengine.org/) and generates a playable project. **You must own an original copy of the game to use this module.**
+
+
+## What is This?
+well an over engineered remake of the original game
+i wanted to remake it but i had to reuse the original assets, because i dont have the time to remake all the assets (or skill)
+so i had to reverse engineer the original game files, using the few existing scripts online and alot of AI guesses
+then i relised its a waste of time to remake the game if i cant share it
+so i make the remake engine, basically a autmation tool, that lets me share the instructions to remake the game, but not the assets themselves, so people can remake the game if they own it, but not share it, because that would be illegal
+but now that means i not only need to reverse engineer the game, but also make the remake engine, and the instructions on building the game and actually building the Entire Game
+luckily godot takes care of the engine aspect, and it doesnt need to be a perfect remake, just a playable one, so i can focus on the game world and eventually logic
+
+current remake progress, it creates like some of the maps, terrain only with super broken textures
+current reverse engineering progress, i dont even remember, theres so many formats, and so little skill (me),
+ive made some docs on the formats, [here](https://github.com/Superposition28/TheSimpsonsGame-PS3-Docs), by me i do mostly mean the AI
+mostly just all textures are being extracted correctly now, the models are i think almost all extracted correctly however assigning textures to the models is a nightmare, because idk how to read the format at the texture mapping point, for now it just reads texture string names listed above each submesh and uses the first one, surprisingly it works for some simple models, but for more complex models it just randomly assigns textures to submeshes, and the textures are all over the place, so it looks like a mess, but its repeatable, so the same model will always have the same random texture applied to it
+all video and most audio files are converted fine
+but the .MUS music files are currently unknown format, we only have the 128ish ambient audo, and the 14,698 dialogue audio files (for each language if using EU version), still missing the 17 music .mus
+i have been mapping the dialogue audio files to the characters in docs repo \PS3_GAME\USRDIR\A1_Audio\AudioMap.yaml
 
 ## Features
 
@@ -16,6 +38,10 @@ This module re-implements *The Simpsons Game* (2007, PS3 edition) using the [Rem
 
 - **Current Support:** Windows only
 - **Planned Support:** Linux support is expected as toolchain and script compatibility improves
+
+## depends on
+remake engine (and naturally its dependencies), docs repo (must be in 'reversing/docs' folder under repo root, for scripts to work)
+tools like blender, quickbms, godot, are handled by remake engine, so you dont need to install them yourself, remake engine will download and install them for you
 
 
 ## File Breakdown
@@ -115,6 +141,18 @@ This project automates extraction of assets (3D models, sounds, videos) from *Th
 ---
 ---
 
+A:\RemakeEngine\Main\EngineApps\Games\TheSimpsonsGame-PS3\GameFiles\EU-FullFlattened-audio_reorg-isRenamed\LHub-00_SprHub\sprHub\zone08str\assets\environs\sprIndustrialBldgDuffBreweryGeo\exportBldgDuffBrewery\
+High LOD model with broken textures
+![](.github/assets/blendersnip/lodmodel1_3f18fc.rws.PS3.blend.png)
+low LOD model with working textures
+![](.github/assets/blendersnip/lodmodel2_4f599b.rws.PS3.blend.png)
+
+gotta love that, especially since the textures are applied mostly randomly, but repeatably it will always be the same random texture applied to the same model.
+i assume low lod models have less layers and less overall textures so my script is more likely to apply the correct textures to the low lod models?
+
+---
+---
+
 ![](.github/assets/OperationsMenu2.png)
 ---
 Extract Archives (.STR)
@@ -124,5 +162,5 @@ Extract Archives (.STR)
 ![](.github/assets/ExtractingSTR.png)
 ![](.github/assets/ExtractedSTR.png)
 ---
-
+---
 

@@ -1,6 +1,16 @@
-# TheSimpsonsGame-PS3 Game Module AGENTS.md
+# TheSimpsonsGame-PS3 Game Module `1` AGENTS.md
 
 This file contains game module-specific guidelines that override general engine instructions.
+
+# to execute an operation:
+```pwsh
+cd A:\RemakeEngine\Main; dotnet run -c Debug --project .\EngineNet\ -- --game_module TheSimpsonsGame-PS3 --run_op 12
+```
+or
+```pwsh
+cd A:\RemakeEngine\Main; dotnet run -c Debug --project .\EngineNet\ -- --game_module 1 --run_op 12
+```
+this will execute the operation with ID 12 in this modules [operations.toml](operations.toml) for the list of operations and their IDs.
 
 ## Lua Type System Requirements
 

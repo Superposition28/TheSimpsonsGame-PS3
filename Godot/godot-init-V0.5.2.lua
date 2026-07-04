@@ -23,6 +23,8 @@ Expected folder structure (relative to this module root):
     - Game/addons, Game/Scripts, Game/rootfiles copied into project before import
 ]]
 
+import("utils")
+
 local path_sep = package.config:sub(1,1)
 
 -- Console colour names
@@ -45,538 +47,6 @@ local Colours = {
     DARKRED = "darkred"
 }
 
----@class GodotRunCommandOptions
----@field cwd string|nil
----@field env table<string, string>|nil
----@field new_terminal boolean|nil
----@field keep_open boolean|nil
----@field wait boolean|nil
-
----@class GodotCopyTreeOptions
----@field use_hardlinks boolean|nil
----@field verify_hash_for_large boolean|nil
----@field large_bytes_threshold integer|nil
----@field exts table<integer, string>|nil
----@field progress_handle PanelProgress|nil
----@field case_insensitive boolean|nil
----@field log_sample_actions integer|nil
-
----@class GodotCopyItem
----@field src string
----@field rel string
----@field size integer
-
----@class GodotCopyStats
----@field total_seen integer
----@field total_bytes integer
----@field copied integer
----@field hardlinked integer
----@field skipped_identical integer
----@field bytes_copied integer
----@field bytes_skipped integer
----@field errors integer
----@field actions table<integer, string>
-
----@class GodotProgressModule
----@field new fun(total: integer, id: string|nil, label: string|nil): PanelProgress
----@field start fun(total: integer, label: string|nil): PanelProgress
-
--- # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
--- # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
-
----@param p string|nil
----@return string
-local function dirname(p)
-    if not p or p == "" then return "." end
-    local d = p:match("(.+)[/\\][^/\\]+$") or p:match("(.+)[/\\]$") or ""
-    if d == "" then return "." end
-    return d
-end
-
--- Inline logging to console (SDK) and engine diagnostics
----@param msg string
----@return nil
-local function log_info(msg)
-    sdk.colour_print{ colour = Colours.CYAN, message = msg }
-    Diagnostics.Log("[godot-init] INFO: " .. msg)
-end
-
----@param msg string
----@return nil
-local function log_warn(msg)
-    sdk.colour_print{ colour = Colours.YELLOW, message = msg }
-    Diagnostics.Log("[godot-init] WARN: " .. msg)
-    warn(msg)
-end
-
----@param msg string
----@return nil
-local function log_error(msg)
-    -- Engine error event (UI/log panels)
-    sdk.colour_print{ colour = Colours.RED, message = msg }
-    Diagnostics.Log("[godot-init] ERROR: " .. msg)
-    error(msg) -- mapped by engine to EngineSdk.Error
-end
-
--- Fatal helper: also raises a Lua error via assert to stop execution
----@param msg string
----@return nil
-local function fatal(msg)
-    log_error(msg)
-    assert(false, msg)
-end
-
----@param p string|nil
----@return string|nil
-local function basename(p)
-    return (p and p:match("([^/\\]+)$")) or p
-end
-
----@param p string
----@return integer|nil
-local function get_file_size(p)
-    local a = sdk.attributes(p)
-    if a and a.mode == "file" then return a.size end
-    return nil
-end
-
--- May return false on missing; true if size equal and (if available) mtime comparable
----@param src string
----@param dst string
----@return boolean
-local function nearly_same_file(src, dst)
-    local sa = sdk.attributes(src)
-    local da = sdk.attributes(dst)
-    if not sa or not da then return false end
-    if (sa.size or -1) ~= (da.size or -2) then return false end
-    -- sdk.attributes exposes numeric 'modification' (Unix timestamp)
-    if sa.modification and da.modification then
-        return sa.modification == da.modification
-    end
-    return true
-end
-
--- Compare two files for exact equality.
--- Strategy: quick size check -> SHA1 if available -> buffered byte-by-byte compare.
----@param src string
----@param dst string
----@return boolean
-local function files_equal(src, dst)
-    local ss = get_file_size(src)
-    local ds = get_file_size(dst)
-    if not ss or not ds or ss ~= ds then return false end
-    -- Prefer hash comparison using SDK
-    local h1, h2 = sdk.sha1_file(normalize(src)), sdk.sha1_file(normalize(dst))
-    if h1 and h2 then return h1 == h2 end
-    -- If hashing unavailable, assume equal when sizes match (SDK guarantees stable copy)
-    return true
-end
-
----@param sec integer|number|string|nil
----@return nil
-local function countdown(sec)
-    sec = tonumber(sec) or 0
-    while sec > 0 do
-        sdk.colour_print{ colour = Colours.CYAN, message = string.format("Waiting... %d seconds remaining.", sec) }
-        sdk.sleep(1)
-        sec = sec - 1
-    end
-end
-
--- Build a safely quoted command line for the current platform
----@param args table<integer, string>
----@return string
-local function build_cmdline(args)
-    local parts = {}
-    for i = 1, #args do
-        local a = tostring(args[i])
-        if path_sep == "\\" then
-            -- Windows CMD quoting: wrap in double quotes and double any embedded quotes
-            if a:find('%s') or a:find('["&|<>^]') then
-                a = '"' .. a:gsub('"', '""') .. '"'
-            end
-        else
-            -- POSIX: single-quote, escape single quotes by closing/opening
-            if a:find('%s') or a:find('["\'$]') then
-                a = "'" .. a:gsub("'", "'\\''") .. "'"
-            end
-        end
-        parts[#parts + 1] = a
-    end
-    return table.concat(parts, " ")
-end
-
--- Command runner backed by engine SDK (C#). Streams output and returns true on exit code 0.
--- Options:
---   opts.new_terminal: open in a new terminal window (best-effort per OS)
---   opts.keep_open: keep new terminal open after completion
---   opts.cwd: working directory
---   opts.env: table of env vars
----@param args table<integer, string>
----@param opts GodotRunCommandOptions|nil
----@return boolean
-local function run_cmd(args, opts)
-    opts = opts or {}
-    local cmdline = build_cmdline(args)
-    sdk.colour_print{ colour = Colours.CYAN, message = "Exec: " .. cmdline }
-    local res = sdk.exec(args, {
-        cwd = opts.cwd,
-        env = opts.env,
-        new_terminal = opts.new_terminal == true,
-        keep_open = opts.keep_open == true,
-        wait = opts.wait ~= false,
-    })
-    return res and res.success == true
-end
-
--- Godot helper
----@param command table<integer, string>
----@param label string
----@return nil
-local function run_godot(command, label)
-    log_info(string.format("\n--- %s ---", label))
-    log_info("Command: " .. build_cmdline(command))
-    local ok = run_cmd(command)
-    if not ok then
-        log_error(string.format("Godot command failed during '%s'", label))
-    end
-    log_info(string.format("--- %s finished ---", label))
-end
-
--- File ops
----@param src string
----@param dst string
----@return nil
-local function copy_file(src, dst)
-    src = normalize(src)
-    dst = normalize(dst)
-    sdk.ensure_dir(dirname(dst))
-    local ok = sdk.copy_file(src, dst, true)
-    if not ok then
-        fatal(string.format("SDK copy failed: '%s' -> '%s'", src, dst))
-    end
-    if not files_equal(src, dst) then
-        fatal(string.format("Copy validation failed: '%s' -> '%s'", src, dst))
-    end
-end
-
----@param src string
----@param dst string
----@return boolean
-local function try_hardlink(src, dst)
-    -- returns true on success, false otherwise
-    sdk.remove_file(dst)
-    sdk.ensure_dir(normalize(dirname(dst)))
-    return sdk.create_hardlink(src, dst) == true
-end
-
--- Walk a directory tree (breadth-first) and call cb(absPath, relPath, filename) for each file
----@param root string
----@param cb fun(absPath: string, relPath: string, filename: string): nil
----@return nil
-local function walk_files(root, cb)
-    root = normalize(root)
-    local function walk_dir(dir, rel)
-        local entries = sdk.list_dir(dir)
-        if not entries then return end
-        for i = 1, #entries do
-            local name = entries[i]
-            if name ~= "." and name ~= ".." then
-                local ap = join(dir, name)
-                local rp = rel and join(rel, name) or name
-                local a = sdk.attributes(ap)
-                if a and a.mode == "directory" then
-                    walk_dir(ap, rp)
-                elseif a and a.mode == "file" then
-                    cb(ap, rp, name)
-                end
-            end
-        end
-    end
-    walk_dir(root, nil)
-end
-
--- Copy/hardlink files from src_root -> dst_root, preserving structure.
--- Only copy when changed. Returns a stats table.
--- Cross-platform and case-aware: optionally detects case-collisions on case-insensitive filesystems.
---
--- Parameters (opts table):
---   use_hardlinks (bool, default true)
---   verify_hash_for_large (bool, default true)
---   large_bytes_threshold (number, default 50 MiB)
---   exts (array of extensions like {".png", ".glb"})
---   progress_handle (userdata from progress()) -> updated per processed file
---   case_insensitive (bool) -> treat destination as case-insensitive and detect collisions
---   log_sample_actions (integer) -> print first N planned actions to console; full list goes to log
----@param src_root string
----@param dst_root string
----@param opts GodotCopyTreeOptions|nil
----@return GodotCopyStats
-local function copy_tree_incremental(src_root, dst_root, opts)
-    opts = opts or {}
-    local use_hardlinks = (opts.use_hardlinks ~= false)
-    local verify_hash_for_large = (opts.verify_hash_for_large ~= false)
-    local large_bytes_threshold = opts.large_bytes_threshold or (50 * 1024 * 1024)
-    local progress_handle = opts.progress_handle
-    local case_insensitive = (opts.case_insensitive == true)
-    local log_sample_actions = tonumber(opts.log_sample_actions or 50) or 50
-
-    local extset = nil
-    if opts.exts and #opts.exts > 0 then
-        extset = {}
-        for _,e in ipairs(opts.exts) do extset[e:lower()] = true end
-    end
-
-    -- Scan first to build a list and compute total bytes for ETA
-    ---@type table<integer, GodotCopyItem>
-    local files = {}
-    local lower_map = {}
-    local total_bytes = 0
-    walk_files(src_root, function(src, rel, fn)
-        if extset then
-            local low = fn:lower()
-            local match = false
-            for e,_ in pairs(extset) do
-                if low:sub(-#e) == e then match = true break end
-            end
-            if not match then return end
-        end
-        local a = sdk.attributes(src)
-        local sz = (a and a.size) or 0
-        table.insert(files, { src = src, rel = rel, size = sz })
-        total_bytes = total_bytes + sz
-        if case_insensitive then
-            local low = rel:lower()
-            if lower_map[low] then
-                log_error(string.format("Case collision detected on destination: '%s' vs '%s'", lower_map[low], rel))
-            else
-                lower_map[low] = rel
-            end
-        end
-    end)
-
-    -- Stats
-    local stats = {
-        total_seen = #files,
-        total_bytes = total_bytes,
-        copied = 0,
-        hardlinked = 0,
-        skipped_identical = 0,
-        bytes_copied = 0,
-        bytes_skipped = 0,
-        errors = 0,
-        actions = {},
-    }
-    ---@cast stats GodotCopyStats
-
-    if progress_handle then progress_handle:Update(0) end
-
-    -- Ensure destination root
-    sdk.ensure_dir(normalize(dst_root))
-
-    -- Throttled ETA display
-    local start_clock = os.clock()
-    local last_eta_print = start_clock
-    local processed_bytes = 0
-
-    ---@param processed_count integer
-    ---@return nil
-    local function maybe_print_eta(processed_count)
-        local now = os.clock()
-        if now - last_eta_print < 1.0 then return end
-        last_eta_print = now
-        local elapsed = now - start_clock
-        if elapsed <= 0.0 then return end
-        local rate = processed_bytes / elapsed -- bytes/sec
-        if rate <= 1 then return end
-        local remain = math.max(0, total_bytes - processed_bytes)
-        local eta = remain / rate
-        local mm = math.floor(eta / 60)
-        local ss = math.floor(eta % 60)
-        sdk.colour_print{ colour = Colours.GRAY, message = string.format("Progress: %d/%d, ETA ~ %02d:%02d", processed_count, stats.total_seen, mm, ss) }
-    end
-
-    -- Evaluate and copy/link
-    local sample_emitted = 0
-    for idx, item in ipairs(files) do
-        ---@cast item GodotCopyItem
-        ---@cast item GodotCopyItem
-        local src = item.src
-        local rel = item.rel
-        local sz  = item.size or 0
-        local dst = join(dst_root, rel)
-
-        -- Skip identical quickly
-        if sdk.path_exists(dst) and nearly_same_file(src, dst) then
-            stats.skipped_identical = stats.skipped_identical + 1
-            stats.bytes_skipped = stats.bytes_skipped + sz
-        else
-            -- For large equal-sized files, verify by hash if enabled
-            local do_copy = true
-            if sdk.path_exists(dst) and verify_hash_for_large then
-                local ds = get_file_size(dst)
-                if ds and ds == sz and sz >= large_bytes_threshold then
-                    local h1 = sdk.sha1_file(normalize(src))
-                    local h2 = sdk.sha1_file(normalize(dst))
-                    if h1 and h2 and h1 == h2 then
-                        do_copy = false
-                        stats.skipped_identical = stats.skipped_identical + 1
-                        stats.bytes_skipped = stats.bytes_skipped + sz
-                    end
-                end
-            end
-
-            if do_copy then
-                local action = use_hardlinks and "link" or "copy"
-                local at = string.format("%s: %s -> %s", action, src, dst)
-                table.insert(stats.actions, at)
-
-                local ok = false
-                if use_hardlinks then
-                    ok = try_hardlink(src, dst)
-                    if ok then stats.hardlinked = stats.hardlinked + 1 end
-                end
-                if not ok then
-                    local ok2, err = pcall(copy_file, src, dst)
-                    if not ok2 then
-                        stats.errors = stats.errors + 1
-                        log_warn(string.format("Copy failed '%s' -> '%s': %s", src, dst, tostring(err)))
-                    else
-                        stats.copied = stats.copied + 1
-                        stats.bytes_copied = stats.bytes_copied + sz
-                    end
-                else
-                    stats.bytes_copied = stats.bytes_copied + sz
-                end
-
-            end
-        end
-
-        processed_bytes = processed_bytes + sz
-        if progress_handle then progress_handle:Update(1) end
-        maybe_print_eta(idx)
-    end
-
-    if progress_handle and stats.total_seen > 0 then progress_handle:Update(0) end
-    return stats
-end
-
----@param t table
----@return string
-local function tableToString(t)
-    if next(t) == nil then
-        return "none"
-    end
-    local result = {}
-    for k, v in pairs(t) do
-        if type(v) == "table" then
-            table.insert(result, tostring(k) .. "=" .. tableToString(v))
-        else
-            table.insert(result, tostring(k) .. "=" .. tostring(v))
-        end
-    end
-    return "{" .. table.concat(result, ", ") .. "}"
-end
-
-
--- # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
--- # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
-
-
----@return string
-local function resolve_godot()
-    local tool_fn = rawget(_G, "tool")
-    local p = tool_fn("Godot")
-    if p and p ~= "" then return p end
-    fatal("Godot executable not found via tool('Godot'); ensure Godot is installed and configured in the engine.")
-    return ""
-end
-
--- Helper to extract parent directory using string patterns
----@param path string|nil
----@return string|nil
-local function get_parent_directory(path)
-    if not path then return nil end
-    -- Normalize to forward slashes for easier matching
-    path = path:gsub("\\", "/")
-    -- Remove trailing slash if present (e.g. "path/to/dir/" -> "path/to/dir")
-    if path:sub(-1) == "/" then
-        path = path:sub(1, -2)
-    end
-    -- Capture everything up to the last slash
-    local parent = path:match("^(.*)/[^/]+$")
-    return parent
-end
-
----@param dir string|nil
----@return table<integer, string>
-local function discover_pngs_in_dir(dir)
-    local list = {}
-    if not dir or dir == "" then return list end
-    dir = normalize(dir)
-    log_info("Scanning for logo images in: " .. dir)
-
-    -- Using sdk.list_dir from LuaSdkModule.cs
-    local entries = sdk.list_dir(dir)
-    if not entries then return list end
-
-    for i = 1, #entries do
-        local name = entries[i]
-        if name ~= "." and name ~= ".." then
-            local p = join(dir, name)
-            -- Using sdk.attributes from LuaSdkModule.cs
-            local a = sdk.attributes(p)
-            if a and a.mode == "file" then
-                if name:lower():sub(-4) == ".png" then
-                    table.insert(list, p)
-                end
-            end
-        end
-    end
-    return list
-end
-
----@param iconPath string|nil
----@return table<integer, string>
-local function get_logos(iconPath)
-    local logos = {}
-    local ok, err = pcall(function()
-        local logo_dir = iconPath
-
-        -- 1. First Attempt: Check the specific iconPath
-        if logo_dir and sdk.is_dir(logo_dir) then
-            logos = discover_pngs_in_dir(logo_dir)
-        elseif logo_dir then
-            log_warn("Logo directory not found: " .. logo_dir)
-        end
-
-        -- 2. Fallback Attempt: If no logos found, check the parent directory
-        if #logos == 0 and logo_dir then
-            local parent_dir = get_parent_directory(logo_dir)
-
-            -- Ensure parent exists and is actually different from the original dir
-            if parent_dir and parent_dir ~= logo_dir and sdk.is_dir(parent_dir) then
-                log_info("No PNGs found in icon path. Checking parent directory: " .. parent_dir)
-                logos = discover_pngs_in_dir(parent_dir)
-            end
-        end
-
-        if #logos > 0 then
-            log_info("Found game logo images: " .. table.concat(logos, ", "))
-        end
-    end)
-
-    if not ok then
-        log_warn("Logo scan warning: " .. tostring(err))
-    end
-    return logos
-end
-
-
--- # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
--- # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
-
-
 -- Constants
 local AUDIO_TOP1 = "audiostreams" -- source name
 local AUDIO_TOP2 = "A1_Audio" -- renamed
@@ -594,18 +64,25 @@ local AUDIO_LANG_FOLDERS = { EN=true, ES=true, FR=true, IT=true, Global=true }
 ---@param asset_exts table<integer, string>
 ---@return nil
 local function create_godot_project(project_name, project_path, assetSourcePath, godot_Core_Files, godot_exe, no_exit, logo_images, asset_exts)
-    local project_dir = normalize(join(project_path, project_name))
+    local project_dir = join(project_path, project_name)
+    -- if project_dir already exists, we append a number to project name, and recheck in loop until we find a name that doesn't exist, to avoid overwriting existing projects.
+    local count = 1
+    while sdk.is_dir(project_dir) do
+        project_dir = join(project_path, project_name .. "_" .. count)
+        count = count + 1
+    end
+
     sdk.ensure_dir(project_dir)
     log_info("Godot Project Directory: " .. project_dir)
 
     -- Engine diagnostics replaces local project log
     Diagnostics.Log(string.format("[godot-init] info: init.lua started for project '%s'", project_name))
 
-    local assets_dst_root = normalize(join(project_dir, "assets"))
+    local assets_dst_root = join(project_dir, "assets")
 
     -- Logos
     if logo_images and #logo_images > 0 then
-        local logos_dst = normalize(join(project_dir, "logos"))
+        local logos_dst = join(project_dir, "logos")
         sdk.ensure_dir(logos_dst)
         for _,f in ipairs(logo_images) do
             local ok, err = pcall(copy_file, f, join(logos_dst, basename(f)))
@@ -627,7 +104,7 @@ local function create_godot_project(project_name, project_path, assetSourcePath,
         ---@return nil
         local function copytree(src, dstroot)
             walk_files(src, function(ap, rp, _)
-                local outp = normalize(join(dstroot, rp))
+                local outp = join(dstroot, rp)
                 sdk.ensure_dir(dirname(outp))
                 local ok, err = pcall(copy_file, ap, outp)
                 if not ok then
@@ -646,7 +123,7 @@ local function create_godot_project(project_name, project_path, assetSourcePath,
         for i = 1, #entries do
             local d = entries[i]
             if d ~= "." and d ~= ".." then
-                local p = normalize(join(assetSourcePath, d))
+                local p = join(assetSourcePath, d)
                 if sdk.is_dir(p) then table.insert(top_folders, d) end
             end
         end
@@ -682,7 +159,7 @@ local function create_godot_project(project_name, project_path, assetSourcePath,
         log_info("Skipping asset copy and import.")
     else
         for batch_idx, top in ipairs(top_folders) do
-            local src_top = normalize(join(assetSourcePath, top))
+            local src_top = join(assetSourcePath, top)
             if top == AUDIO_TOP1 or top == AUDIO_TOP2 then
                 -- sub-batch by language folders
                 local langs = {}
@@ -691,7 +168,7 @@ local function create_godot_project(project_name, project_path, assetSourcePath,
                     for i = 1, #entries2 do
                         local name = entries2[i]
                         if name ~= "." and name ~= ".." then
-                            local p = normalize(join(src_top, name))
+                            local p = join(src_top, name)
                             if sdk.is_dir(p) then table.insert(langs, name) end
                         end
                     end
@@ -704,12 +181,12 @@ local function create_godot_project(project_name, project_path, assetSourcePath,
                 end)
 
                 for _,lang in ipairs(langs) do
-                    local src_lang = normalize(join(src_top, lang))
+                    local src_lang = join(src_top, lang)
                     local dst_lang = normalize(join(join(assets_dst_root, top), lang))
                     sdk.ensure_dir(dst_lang)
 
                     -- gate with .gdignore during placement
-                    local gdignore_path = normalize(join(dst_lang, ".gdignore"))
+                    local gdignore_path = join(dst_lang, ".gdignore")
                     sdk.write_file(gdignore_path, "")
 
                     log_info(string.format("\n=== Batch %d: %s/%s ===", batch_idx, top, lang))
@@ -741,9 +218,9 @@ local function create_godot_project(project_name, project_path, assetSourcePath,
                     run_godot({ godot_exe, "--headless", "--path", project_dir, "--import", "-v", "--quit" }, string.format("Headless Import: %s/%s", top, lang))
                 end
             else
-                local dst_top = normalize(join(assets_dst_root, top))
+                local dst_top = join(assets_dst_root, top)
                 sdk.ensure_dir(dst_top)
-                local gdignore_path = normalize(join(dst_top, ".gdignore"))
+                local gdignore_path = join(dst_top, ".gdignore")
                 sdk.write_file(gdignore_path, "")
 
                 log_info(string.format("\n=== Batch %d: %s ===", batch_idx, top))
@@ -783,9 +260,9 @@ local function create_godot_project(project_name, project_path, assetSourcePath,
         for i = 1, #entries do
             local name = entries[i]
             if name ~= "." and name ~= ".." then
-                local p = normalize(join(assetSourcePath, name))
+                local p = join(assetSourcePath, name)
                 if sdk.is_file(p) and name:lower():sub(-5) == ".json" then
-                    local dst = normalize(join(assets_dst_root, name))
+                    local dst = join(assets_dst_root, name)
                     local ok, err = pcall(copy_file, p, dst)
                     if not ok then
                         log_warn(string.format("Warn: JSON copy failed '%s' -> '%s': %s", p, dst, tostring(err)))
@@ -805,7 +282,7 @@ local function create_godot_project(project_name, project_path, assetSourcePath,
     if no_exit then table.insert(cmd, "--no-exit"); sdk.colour_print{ colour = Colours.CYAN, message = "\n'--no-exit' flag detected. Godot will remain open after script execution." } end
     run_godot(cmd, "Scene Building")
 
-    log_info("\n✅✅✅ Godot project setup and scene generation complete! ✅✅✅")
+    log_info("\n??? Godot project setup and scene generation complete! ???")
     countdown(1)
 end
 
@@ -830,6 +307,9 @@ local function main(project_name, repo_root, no_exit, assetSourcePath, iconPath)
     log_info("Godot Module Root: " .. godot_module_root)
     log_info("Repository Root: " .. repo_root)
 
+    -- temp dev use test folder from Game_Root instead of assetsourcepath
+    assetSourcePath = join(Game_Root, "GameFiles", "test")
+
     -- 3. Source root exists
     if not sdk.is_dir(assetSourcePath) then
         fatal("Asset source root not found: " .. assetSourcePath)
@@ -837,8 +317,8 @@ local function main(project_name, repo_root, no_exit, assetSourcePath, iconPath)
 
     --local sourcePath = assetSourcePath -- EngineApps\Games\TheSimpsonsGame-PS3\GameFiles\STROUT-EU_FullFlattened-audio_reorg-isRenamed
     log_info("Using assetSourcePath: " .. assetSourcePath)
-    local godot_Core_Files = normalize(join(godot_module_root, "Core"))
-    local project_path = normalize(join(godot_module_root, "GodotGame"))
+    local godot_Core_Files = join(godot_module_root, "Core")
+    local project_path = join(godot_module_root, "GodotGame")
 
     local godot_exe = resolve_godot()
 

@@ -15,9 +15,9 @@ compatibility/default_parent_skeleton_in_mesh_instance_3d=true
 [application]
 
 config/name="Game"
-run/main_scene="uid://bxy1qa0s46nff"
+run/main_scene="res://Node4D.tscn"
 config/use_custom_user_dir=true
-config/features=PackedStringArray("4.6", "GL Compatibility")
+config/features=PackedStringArray("4.5", "GL Compatibility")
 boot_splash/bg_color=Color(0.17072648, 0.055087596, 0.33185843, 1)
 boot_splash/image="res://logos/PIC1.PNG"
 
@@ -34,6 +34,10 @@ project/assembly_name="Game"
 [editor]
 
 naming/scene_name_casing=0
+
+[editor_plugins]
+
+enabled=PackedStringArray("res://addons/remake_pipeline/plugin.cfg", "res://addons/tsg_graph_importer/plugin.cfg")
 
 [input]
 
