@@ -59,6 +59,8 @@ Tools such as Blender, QuickBMS, Godot, FFmpeg, and vgmstream are declared in `T
 
 This module is intended to be downloaded and executed through the RemakeEngine TUI, CLI or GUI.
 
+> **TUI terminal note:** While an operation is running, do not resize or move the terminal window. RemakeEngine is still in development, and changing the terminal during active output can corrupt or break the TUI display.
+
 ### 1. Clone and launch the engine
 
 ```pwsh
@@ -166,6 +168,35 @@ Set Region to 'EU'.
 No MainSourcePath set in config.toml. You'll be prompted to set one.
 ? Enter the path to your game root (this folder should contain a folder named USRDIR) and press Enter (leave blank to cancel):
 A:\RemakeEngine\Main\EngineApps\Games\TheSimpsonsGame-PS3\Source\EU\PS3_GAME
+Checking path: 'A:\RemakeEngine\Main\EngineApps\Games\TheSimpsonsGame-PS3\Source\EU\PS3_GAME'
+? Permission requested: Allow this script to access external path '"A:\RemakeEngine\Main\EngineApps\Games\TheSimpsonsGame-PS3\Source\EU\PS3_GAME"'? [Y/n]
+y
+Detected USRDIR under provided path; using 'A:\RemakeEngine\Main\EngineApps\Games\TheSimpsonsGame-PS3\Source\EU\PS3_GAME\USRDIR' as source root.
+Will copy folder: 'PS3_GAME'
+
+--- Source Path Handling ---
+Validated source path (EU): 'A:\RemakeEngine\Main\EngineApps\Games\TheSimpsonsGame-PS3\Source\EU\PS3_GAME\USRDIR'
+Local project data path: 'A:\TSG-test\RemakeEngine\EngineApps\Games\TheSimpsonsGame-PS3\Source\EU'
+? Choose how to use the source files:
+1) Copy folder 'PS3_GAME' into local 'EU' (Recommended, Safe)
+2) Move folder 'PS3_GAME' into local 'EU' (Warning: Deletes originals)
+3) Use original path 'PS3_GAME' directly (Warning: Tools may modify original files)
+
+Enter your choice (1, 2, or 3):
+1
+...
+══════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════Copying 30190 files... [====================>                                       ] 35% 10549/30190 (ok=10549, skip=0, err=0)
+Active: none
+
+Copy complete.
+  Updating config.toml with effective Source Path...
+  Config updated.
+
+Validating final source location: 'A:\TSG-test\RemakeEngine\EngineApps\Games\TheSimpsonsGame-PS3\Source\EU\PS3_GAME\USRDIR'
+All 23 required 'USRDIR_DIRS_ORIGINAL' subdirectories found in 'A:\TSG-test\RemakeEngine\EngineApps\Games\TheSimpsonsGame-PS3\Source\EU\PS3_GAME\USRDIR'.
+Success: Source validated and saved: A:\TSG-test\RemakeEngine\EngineApps\Games\TheSimpsonsGame-PS3\Source\EU\PS3_GAME\USRDIR
+◀ Finished script: Unnamed
+Initialization completed successfully. Time: 40.5s. Press any key to continue...
 ```
 
 Once initialization completes, the module operations menu becomes available.
