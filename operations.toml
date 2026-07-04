@@ -245,9 +245,22 @@ args = [
     "--replace"
 ]
 
-
+## convert Mus to Music files .wav
 [[operation]]
 id = 11
+name = "Convert Music (.mus -> .snr/.sns -> .wav)"
+run-all = true
+depends-on = [10] # depends on vgmstream, quickbms, and audio files existing
+script_type = "lua"
+script = "{{Game_Root}}/operations/SetupMusicFiles.lua"
+args = [
+    "--bmsscript", "{{Game_Root}}/operations/mus.bms",
+    "--GameDir", "{{Game_Root}}/GameFiles/{{Region}}-{{Type}}-{{audio_state}}-{{isRenamed}}",
+]
+
+
+[[operation]]
+id = 12
 name = "Convert Videos (.vp6 -> .ogv)"
 run-all = true
 depends-on = [6] # depends on ffmpeg being downloaded
@@ -266,7 +279,7 @@ args = [
 
 
 [[operation]]
-id = 12
+id = 13
 name = "generate Godot Game (EXPERIMENTAL)"
 run-all = false
 depends-on = [8,9,10,11]

@@ -1,5 +1,7 @@
 # EA .MUS (SNR+SNS) extract from The Simpsons Game (PS3)
 
+# This script is based on the file uploaded by bnnm on https://pastebin.com/g0NeVMVa
+
 endian big
 
 #idstring "\x63\xA9\x3A\x22"
