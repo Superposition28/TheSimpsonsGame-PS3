@@ -11,7 +11,7 @@ This folder contains the Godot-side part of the TheSimpsonsGame-PS3 pipeline. Th
 - `Core/Scripts/` for the build-time importer and any shared runtime/editor scripts
 - `Core/Json/` for the JSON scene descriptions that define the game layout
 
-The generated Godot project is written under `Godot/GodotGame/<ProjectName>/`. For this module, the current project folder is `Godot/GodotGame/SimpsonsGamePS3/`.
+The generated Godot project is written under `Godot/GodotGame/<ProjectName>/`. If that folder already exists, the bootstrap appends `_1`, `_2`, and so on to avoid overwriting a previous generated project.
 
 ## Build Workflow
 
@@ -20,9 +20,9 @@ The Lua bootstrap script `Godot/godot-init-V0.5.2.lua` is responsible for creati
 1. Resolve the Godot executable.
 2. Create the target project folder inside `Godot/GodotGame/<ProjectName>/`.
 3. Copy the persistent Core files into the target project so the editor has the expected addons, scripts, and project configuration.
-4. Scan the source asset folders and copy or link imported game content into `res://assets/`.
+4. Scan the resolved source asset root and copy or link imported game content into `res://assets/`.
 5. Run Godot headless to import the generated content.
-6. Run the scene-building script `Godot/Core/Scripts/import-V0.5.2.gd` to turn the JSON layout into actual `.tscn` scene files.
+6. Run the scene-building entrypoint `Godot/Core/Scripts/import-V0.5.2.gd`, which loads `res://addons/remake_pipeline/core/importer_core.gd` and turns the JSON layout into `.tscn` scene files.
 
 That separation is deliberate: the bootstrap script handles orchestration and file staging, while the GDScript importer handles scene construction inside Godot.
 
@@ -56,6 +56,8 @@ The importer does the following:
 - saves the finished scene back to disk as `.tscn`
 
 This means the scene files are generated at build time, not edited as the primary source of truth. If a scene needs to change, update the JSON definition and rebuild.
+
+Note: the current `godot-init-V0.5.2.lua` has a temporary local-test override that replaces the provided `--sourcePath` with `Game_Root/GameFiles/test`. The documented init flow still reflects the intended interface, but that debug path is what the current script actually uses.
 
 ## Static Files vs Generated Files
 

@@ -307,9 +307,6 @@ local function main(project_name, repo_root, no_exit, assetSourcePath, iconPath)
     log_info("Godot Module Root: " .. godot_module_root)
     log_info("Repository Root: " .. repo_root)
 
-    -- temp dev use test folder from Game_Root instead of assetsourcepath
-    assetSourcePath = join(Game_Root, "GameFiles", "test")
-
     -- 3. Source root exists
     if not sdk.is_dir(assetSourcePath) then
         fatal("Asset source root not found: " .. assetSourcePath)
@@ -344,7 +341,7 @@ local function main(project_name, repo_root, no_exit, assetSourcePath, iconPath)
     stage:Complete()
 
     -- Asset extensions to consider for import (filter out unnecessary files)
-    --local asset_exts = { ".png", ".glb", ".wav", ".ogv", ".graph" }
+    --local asset_exts = { ".png", ".glb", ".wav", ".ogv", ".graph" } -- temporarily exclude .wav to avoid importing 30,000 audio files for now
     local asset_exts = { ".png", ".glb", ".ogv", ".graph" }
     local logo_images = get_logos(iconPath)
 
