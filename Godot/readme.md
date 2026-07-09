@@ -57,8 +57,6 @@ The importer does the following:
 
 This means the scene files are generated at build time, not edited as the primary source of truth. If a scene needs to change, update the JSON definition and rebuild.
 
-Note: the current `godot-init-V0.5.2.lua` has a temporary local-test override that replaces the provided `--sourcePath` with `Game_Root/GameFiles/test`. The documented init flow still reflects the intended interface, but that debug path is what the current script actually uses.
-
 ## Static Files vs Generated Files
 
 Not everything in the Godot project needs to be regenerated.
