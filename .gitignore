@@ -6,10 +6,10 @@
 .VSCodeCounter/
 
 # godot project artifacts, in Game.*/**
-*.uid
-.godot/
+#*.uid
+#.godot/
 *.md5
-**/GodotGame/
+#**/GodotGame/
 
 # chache files
 *.db-shm

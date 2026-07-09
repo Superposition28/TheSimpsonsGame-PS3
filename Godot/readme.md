@@ -64,10 +64,3 @@ Not everything in the Godot project needs to be regenerated.
 Static or persistent files, such as `Core/project.godot`, can live in the repository and be copied into the output project without being rebuilt from JSON every time. This is useful for editor settings, autoloads, rendering configuration, input maps, and other project-wide behavior that should remain stable across builds.
 
 Generated files, especially scene files, should be produced during the build. That keeps the source layout editable in JSON while allowing the resulting Godot project to be recreated consistently.
-
-## Practical Rule
-
-- Change `Core/project.godot` when you want persistent project configuration.
-- Change files under `Core/Json/` when you want to alter the game layout.
-- Change `Core/Scripts/import-V0.5.2.gd` when you need to adjust how JSON is converted into scenes.
-- Rebuild the Godot project after changing JSON or importer logic so the generated `.tscn` files are refreshed.

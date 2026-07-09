@@ -1,0 +1,17 @@
+[gd_scene load_steps=5 format=3]
+
+[ext_resource type="PackedScene" path="res://addons/srcoder_thirdperson_controller/mouse_lock.tscn" id="1_u5f1p"]
+[ext_resource type="PackedScene" path="res://Node4D/Node3D/Characters/player.tscn" id="2_jp8a8"]
+[ext_resource type="Script" path="res://addons/srcoder_thirdperson_controller/assets/player.gd" id="3_0bf8w"]
+[ext_resource type="PackedScene" path="res://Node4D/Node3D/Characters/all.tscn" id="4_pm0uf"]
+
+[node name="Characters" type="Node3D"]
+
+[node name="MouseLock" type="Node" parent="." instance=ExtResource("1_u5f1p")]
+
+[node name="Player" type="CharacterBody3D" parent="." instance=ExtResource("2_jp8a8")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 1000, 10, 0)
+collision_layer = 2
+script = ExtResource("3_0bf8w")
+
+[node name="All" type="Node3D" parent="." instance=ExtResource("4_pm0uf")]

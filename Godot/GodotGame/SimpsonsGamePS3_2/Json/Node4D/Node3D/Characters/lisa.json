@@ -1,0 +1,8 @@
+[
+    {
+        "name": "Lisa",
+        "path": "Node4D/Node3D/Characters/all/lisa.tscn",
+        "class": "Node3D",
+        "type": "scene"
+    }
+]

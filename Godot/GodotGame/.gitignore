@@ -1,0 +1,5 @@
+**/assets/**
+**/.godot/**
+**/logos/**
+*.uid
+**/addons/**

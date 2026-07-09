@@ -1,0 +1,140 @@
+[
+    {
+        "name": "LOC3D",
+        "class": "Node3D",
+        "Type": "node",
+        "editable_children": true,
+        "path": "Node4D/Node3D/Levels/L01_LandOfChocolate/L01_LOC3D.tscn",
+        "children": [
+            {
+                "name": "Zone01_Terrain",
+                "asset": {
+                    "asset_id": "c8c552",
+                    "asset_type": "glb",
+                    "paths": []
+                },
+                "collision": {
+                    "enabled": true,
+                    "shapePlacement": "StaticBodyChild",
+                    "ShapeType": "Trimesh",
+                    "containerName": "LOC_Zone01_Terrain_Mesh_Collisions"
+                },
+                "config": {
+                    "mesh_overrides": [
+                        {
+                            "path": "Mesh_0_0",
+                            "visible": false
+                        },
+                        {
+                            "path": "Mesh_0_0_001",
+                            "visible": false
+                        },
+                        {
+                            "path": "Mesh_0_0_002",
+                            "visible": false
+                        }
+                    ]
+                }
+            },
+            {
+                "name": "Zone02_Terrain",
+                "asset": {
+                    "asset_id": "41ea3c",
+                    "asset_type": "glb",
+                    "paths": []
+                },
+                "collision": {
+                    "enabled": true,
+                    "shapePlacement": "StaticBodyChild",
+                    "ShapeType": "Trimesh",
+                    "containerName": "LOC_Zone02_Terrain_Mesh_Collisions"
+                }
+            },
+            {
+                "name": "Zone02_opt",
+                "asset": {
+                    "asset_id": "427e88",
+                    "asset_type": "glb",
+                    "paths": []
+                },
+                "collision": {
+                    "enabled": true,
+                    "shapePlacement": "StaticBodyChild",
+                    "ShapeType": "Trimesh",
+                    "containerName": "LOC_Zone02_opt_Mesh_Collisions"
+                }
+            },
+            {
+                "name": "Zone03_Terrain",
+                "asset": {
+                    "asset_id": "5d2e2e",
+                    "asset_type": "glb",
+                    "paths": []
+                },
+                "collision": {
+                    "enabled": true,
+                    "shapePlacement": "StaticBodyChild",
+                    "ShapeType": "Trimesh",
+                    "containerName": "LOC_Zone03_Terrain_Mesh_Collisions"
+                }
+            },
+            {
+                "name": "Zone04_opt",
+                "asset": {
+                    "asset_id": "964017",
+                    "asset_type": "glb",
+                    "paths": []
+                },
+                "collision": {
+                    "enabled": true,
+                    "shapePlacement": "StaticBodyChild",
+                    "ShapeType": "Trimesh",
+                    "containerName": "LOC_Zone04_opt_Mesh_Collisions"
+                }
+            },
+            {
+                "name": "Zone04_Terrain",
+                "asset": {
+                    "asset_id": "805e5a",
+                    "asset_type": "glb",
+                    "paths": []
+                },
+                "collision": {
+                    "enabled": true,
+                    "shapePlacement": "StaticBodyChild",
+                    "ShapeType": "Trimesh",
+                    "containerName": "LOC_Zone04_Terrain_Mesh_Collisions"
+                }
+            },
+            {
+                "name": "Zone05_Terrain",
+                "asset": {
+                    "asset_id": "98db0d",
+                    "asset_type": "glb",
+                    "paths": []
+                },
+                "collision": {
+                    "enabled": true,
+                    "shapePlacement": "StaticBodyChild",
+                    "ShapeType": "Trimesh",
+                    "containerName": "LOC_Zone05_Terrain_Mesh_Collisions"
+                }
+            },
+            {
+                "name": "Zone06_Terrain",
+                "path": "assets/L01_LandOfChocolate/loc/zone06str/assets_environs/export/terrain/lodmodel1_5be553.rws.PS3.glb",
+                "asset": {
+                    "asset_id": "5be553",
+                    "asset_type": "glb",
+                    "paths": []
+                },
+                "collision": {
+                    "enabled": true,
+                    "shapePlacement": "StaticBodyChild",
+                    "ShapeType": "Trimesh",
+                    "containerName": "LOC_Zone06_Terrain_Mesh_Collisions"
+                }
+            }
+        ]
+    }
+]

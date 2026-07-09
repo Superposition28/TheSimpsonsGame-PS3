@@ -1,0 +1,17 @@
+[
+    {
+        "name": "L01_LandOfChocolate",
+        "path": "Node4D/Node3D/Levels/L01_LandOfChocolate.tscn",
+        "class": "Node3D",
+        "type": "scene",
+        "editable_children": true,
+        "children": [{
+            "name": "LOC3D",
+            "class": "Node3D",
+            "Type": "scene",
+            "editable_children": true,
+            "path": "Node4D/Node3D/Levels/L01_LandOfChocolate/L01_LOC3D.tscn",
+            "config_file": "Node4D/Node3D/Levels/L01_LOC3D.json"
+        }]
+    }
+]

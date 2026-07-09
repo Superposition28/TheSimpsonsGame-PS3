@@ -1,0 +1,17 @@
+[
+    {
+        "name": "Pause_Panel",
+        "path": "Node4D/Node2D/Pause_Panel.tscn",
+        "class": "Panel",
+        "type": "scene",
+        "children": [
+            {
+                "name": "Panel",
+                "class": "Panel",
+                "path": "Node4D/Node2D/Pause_Control/Pause_Panel.tscn",
+                "config_file": "Node4D/Node2D/Pause_Control/Pause_Panel.json",
+                "type": "scene"
+            }
+        ]
+    }
+]

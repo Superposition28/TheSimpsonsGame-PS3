@@ -1,0 +1,492 @@
+[
+    {
+        "children": [
+            {
+                "children": [
+                    {
+                        "class": "Sprite2D",
+                        "asset": {
+                            "asset_id": "f5dc4b",
+                            "asset_type": "png",
+                            "paths": []
+                        },
+                        "config": {
+                            "position": {
+                                "x": 4520.0,
+                                "y": 1224.0
+                            }
+                        },
+                        "name": "9ClicheSummary"
+                    },
+                    {
+                        "class": "Sprite2D",
+                        "asset": {
+                            "asset_id": "a284d5",
+                            "asset_type": "png",
+                            "paths": []
+                        },
+                        "config": {
+                            "position": {
+                                "x": 1568.0,
+                                "y": 824.0
+                            }
+                        },
+                        "name": "88ClicheSummary"
+                    },
+                    {
+                        "class": "Sprite2D",
+                        "asset": {
+                            "asset_id": "44f26d",
+                            "asset_type": "png",
+                            "paths": []
+                        },
+                        "config": {
+                            "position": {
+                                "x": 3632.0,
+                                "y": 1200.0
+                            }
+                        },
+                        "name": "91ClicheSummary"
+                    },
+                    {
+                        "class": "Sprite2D",
+                        "asset": {
+                            "asset_id": "b6ebf5",
+                            "asset_type": "png",
+                            "paths": []
+                        },
+                        "config": {
+                            "position": {
+                                "x": 3336.0,
+                                "y": 1408.0
+                            }
+                        },
+                        "name": "94ClicheSummary"
+                    },
+                    {
+                        "class": "Sprite2D",
+                        "asset": {
+                            "asset_id": "9b7373",
+                            "asset_type": "png",
+                            "paths": []
+                        },
+                        "config": {
+                            "position": {
+                                "x": 2992.0,
+                                "y": 872.0
+                            }
+                        },
+                        "name": "97ClicheSummary"
+                    },
+                    {
+                        "class": "Sprite2D",
+                        "asset": {
+                            "asset_id": "b0dc20",
+                            "asset_type": "png",
+                            "paths": []
+                        },
+                        "config": {
+                            "position": {
+                                "x": 2976.0,
+                                "y": 1504.0
+                            }
+                        },
+                        "name": "37ClicheSummary"
+                    },
+                    {
+                        "class": "Sprite2D",
+                        "asset": {
+                            "asset_id": "800bc4",
+                            "asset_type": "png",
+                            "paths": []
+                        },
+                        "config": {
+                            "position": {
+                                "x": 3336.0,
+                                "y": 1032.0
+                            }
+                        },
+                        "name": "67ClicheSummary"
+                    },
+                    {
+                        "class": "Sprite2D",
+                        "asset": {
+                            "asset_id": "4846c1",
+                            "asset_type": "png",
+                            "paths": []
+                        },
+                        "config": {
+                            "position": {
+                                "x": 2280.0,
+                                "y": 872.0
+                            }
+                        },
+                        "name": "70ClicheSummary"
+                    },
+                    {
+                        "class": "Sprite2D",
+                        "asset": {
+                            "asset_id": "047b1a",
+                            "asset_type": "png",
+                            "paths": []
+                        },
+                        "config": {
+                            "position": {
+                                "x": 192.0,
+                                "y": 832.0
+                            }
+                        },
+                        "name": "73ClicheSummary"
+                    },
+                    {
+                        "class": "Sprite2D",
+                        "asset": {
+                            "asset_id": "29fd1b",
+                            "asset_type": "png",
+                            "paths": []
+                        },
+                        "config": {
+                            "position": {
+                                "x": 2632.0,
+                                "y": 896.0
+                            }
+                        },
+                        "name": "76ClicheSummary"
+                    },
+                    {
+                        "class": "Sprite2D",
+                        "asset": {
+                            "asset_id": "169c7b",
+                            "asset_type": "png",
+                            "paths": []
+                        },
+                        "config": {
+                            "position": {
+                                "x": 192.0,
+                                "y": 1152.0
+                            }
+                        },
+                        "name": "79ClicheSummary"
+                    },
+                    {
+                        "class": "Sprite2D",
+                        "asset": {
+                            "asset_id": "afc3a9",
+                            "asset_type": "png",
+                            "paths": []
+                        },
+                        "config": {
+                            "position": {
+                                "x": 512.0,
+                                "y": 1472.0
+                            }
+                        },
+                        "name": "82ClicheSummary"
+                    },
+                    {
+                        "class": "Sprite2D",
+                        "asset": {
+                            "asset_id": "1e582e",
+                            "asset_type": "png",
+                            "paths": []
+                        },
+                        "config": {
+                            "position": {
+                                "x": 192.0,
+                                "y": 1480.0
+                            }
+                        },
+                        "name": "85ClicheSummary"
+                    },
+                    {
+                        "class": "Sprite2D",
+                        "asset": {
+                            "asset_id": "4da782",
+                            "asset_type": "png",
+                            "paths": []
+                        },
+                        "config": {
+                            "position": {
+                                "x": 512.0,
+                                "y": 1152.0
+                            }
+                        },
+                        "name": "46ClicheSummary"
+                    },
+                    {
+                        "class": "Sprite2D",
+                        "asset": {
+                            "asset_id": "882fb7",
+                            "asset_type": "png",
+                            "paths": []
+                        },
+                        "config": {
+                            "position": {
+                                "x": 1256.0,
+                                "y": 840.0
+                            }
+                        },
+                        "name": "49ClicheSummary"
+                    },
+                    {
+                        "class": "Sprite2D",
+                        "asset": {
+                            "asset_id": "41feec",
+                            "asset_type": "png",
+                            "paths": []
+                        },
+                        "config": {
+                            "position": {
+                                "x": 2296.0,
+                                "y": 1200.0
+                            }
+                        },
+                        "name": "52ClicheSummary"
+                    },
+                    {
+                        "class": "Sprite2D",
+                        "asset": {
+                            "asset_id": "d6dcff",
+                            "asset_type": "png",
+                            "paths": []
+                        },
+                        "config": {
+                            "position": {
+                                "x": 1544.0,
+                                "y": 1520.0
+                            }
+                        },
+                        "name": "55ClicheSummary"
+                    },
+                    {
+                        "class": "Sprite2D",
+                        "asset": {
+                            "asset_id": "08739a",
+                            "asset_type": "png",
+                            "paths": []
+                        },
+                        "config": {
+                            "position": {
+                                "x": 2664.0,
+                                "y": 1520.0
+                            }
+                        },
+                        "name": "58ClicheSummary"
+                    },
+                    {
+                        "class": "Sprite2D",
+                        "asset": {
+                            "asset_id": "27ab64",
+                            "asset_type": "png",
+                            "paths": []
+                        },
+                        "config": {
+                            "position": {
+                                "x": 2632.0,
+                                "y": 1160.0
+                            }
+                        },
+                        "name": "61ClicheSummary"
+                    },
+                    {
+                        "class": "Sprite2D",
+                        "asset": {
+                            "asset_id": "06e603",
+                            "asset_type": "png",
+                            "paths": []
+                        },
+                        "config": {
+                            "position": {
+                                "x": 1208.0,
+                                "y": 1168.0
+                            }
+                        },
+                        "name": "30ClicheSummary"
+                    },
+                    {
+                        "class": "Sprite2D",
+                        "asset": {
+                            "asset_id": "241d8b",
+                            "asset_type": "png",
+                            "paths": []
+                        },
+                        "config": {
+                            "position": {
+                                "x": 872.0,
+                                "y": 1144.0
+                            }
+                        },
+                        "name": "34ClicheSummary"
+                    },
+                    {
+                        "class": "Sprite2D",
+                        "asset": {
+                            "asset_id": "9cf20c",
+                            "asset_type": "png",
+                            "paths": []
+                        },
+                        "config": {
+                            "position": {
+                                "x": 1952.0,
+                                "y": 1544.0
+                            }
+                        },
+                        "name": "43ClicheSummary"
+                    },
+                    {
+                        "class": "Sprite2D",
+                        "asset": {
+                            "asset_id": "d07fb4",
+                            "asset_type": "png",
+                            "paths": []
+                        },
+                        "config": {
+                            "position": {
+                                "x": 1936.0,
+                                "y": 1200.0
+                            }
+                        },
+                        "name": "100ClicheSummary"
+                    },
+                    {
+                        "class": "Sprite2D",
+                        "asset": {
+                            "asset_id": "24b5cf",
+                            "asset_type": "png",
+                            "paths": []
+                        },
+                        "config": {
+                            "position": {
+                                "x": 880.0,
+                                "y": 1512.0
+                            }
+                        },
+                        "name": "103ClicheSummary"
+                    },
+                    {
+                        "class": "Sprite2D",
+                        "asset": {
+                            "asset_id": "621c82",
+                            "asset_type": "png",
+                            "paths": []
+                        },
+                        "config": {
+                            "position": {
+                                "x": 512.0,
+                                "y": 832.0
+                            }
+                        },
+                        "name": "106ClicheSummary"
+                    },
+                    {
+                        "class": "Sprite2D",
+                        "asset": {
+                            "asset_id": "39cfb2",
+                            "asset_type": "png",
+                            "paths": []
+                        },
+                        "config": {
+                            "position": {
+                                "x": 2960.0,
+                                "y": 1144.0
+                            }
+                        },
+                        "name": "109ClicheSummary"
+                    },
+                    {
+                        "class": "Sprite2D",
+                        "asset": {
+                            "asset_id": "ff9096",
+                            "asset_type": "png",
+                            "paths": []
+                        },
+                        "config": {
+                            "position": {
+                                "x": 2280.0,
+                                "y": 1520.0
+                            }
+                        },
+                        "name": "112ClicheSummary"
+                    },
+                    {
+                        "class": "Sprite2D",
+                        "asset": {
+                            "asset_id": "35f3fe",
+                            "asset_type": "png",
+                            "paths": []
+                        },
+                        "config": {
+                            "position": {
+                                "x": 1176.0,
+                                "y": 1528.0
+                            }
+                        },
+                        "name": "115ClicheSummary"
+                    },
+                    {
+                        "class": "Sprite2D",
+                        "asset": {
+                            "asset_id": "b482fb",
+                            "asset_type": "png",
+                            "paths": []
+                        },
+                        "config": {
+                            "position": {
+                                "x": 1576.0,
+                                "y": 1176.0
+                            }
+                        },
+                        "name": "118ClicheSummary"
+                    },
+                    {
+                        "class": "Sprite2D",
+                        "asset": {
+                            "asset_id": "de45d5",
+                            "asset_type": "png",
+                            "paths": []
+                        },
+                        "config": {
+                            "position": {
+                                "x": 880.0,
+                                "y": 848.0
+                            }
+                        },
+                        "name": "121ClicheSummary"
+                    },
+                    {
+                        "class": "Sprite2D",
+                        "asset": {
+                            "asset_id": "298db3",
+                            "asset_type": "png",
+                            "paths": []
+                        },
+                        "config": {
+                            "position": {
+                                "x": 1936.0,
+                                "y": 880.0
+                            }
+                        },
+                        "name": "40ClicheSummary"
+                    }
+                ],
+                "class": "Panel",
+                "config": {
+                    "layout_mode": 0,
+                    "offsets": {
+                        "offset_bottom": 0.0,
+                        "offset_left": 0.0,
+                        "offset_right": 0.0,
+                        "offset_top": 0.0
+                    }
+                },
+                "name": "Panel"
+            }
+        ],
+        "class": "Control",
+        "editable_children": true,
+        "name": "Cliche_ControlNode",
+        "overwrite": true,
+        "path": "Node4D/Node2D/Cliche_ControlNode/cliche_control_node.tscn",
+        "type": "scene"
+    }
+]

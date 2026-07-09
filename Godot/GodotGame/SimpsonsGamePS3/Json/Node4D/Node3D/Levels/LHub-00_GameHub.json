@@ -1,0 +1,49 @@
+[
+    {
+        "name": "LHub-00_GameHub",
+        "path": "Node4D/Node3D/Levels/LHub-00_GameHub.tscn",
+        "class": "Node3D",
+        "type": "scene",
+        "children": [{
+            "name": "GameHub3D",
+            "Type": "Node",
+            "class": "Node3D",
+            "path": "Node4D/Node3D/Levels/LHub-00_GameHub/GameHub3D.tscn",
+            "config": {
+                "transform": {
+                    "position": {
+                        "x": -400,
+                        "y": 100.111,
+                        "z": 0
+                    },
+                    "rotation_degrees": {
+                        "x": 0,
+                        "y": 0,
+                        "z": 0
+                    },
+                    "scale": {
+                        "x": 1,
+                        "y": 1,
+                        "z": 1
+                    }
+                }
+            },
+            "children": [
+                {
+                    "name": "Zone01_Terrain",
+                    "asset": {
+                        "asset_id": "a70bb3",
+                        "asset_type": "glb",
+                        "paths": []
+                    },
+                    "collision": {
+                        "enabled": true,
+                        "shapePlacement": "StaticBodyChild",
+                        "ShapeType": "Trimesh",
+                        "containerName": "Zone01_Terrain_Mesh_Collisions"
+                    }
+                }
+            ]
+        }]
+    }
+]

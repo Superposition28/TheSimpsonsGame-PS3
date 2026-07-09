@@ -1,0 +1,79 @@
+[
+    {
+        "children": [
+            {
+                "config": {
+                    "layout_mode": 3,
+                    "offsets": {
+                        "offset_bottom": 646.0,
+                        "offset_left": 0.0,
+                        "offset_right": 1154.0,
+                        "offset_top": 0.0
+                    }
+                },
+                "config_file": "Node4D/Node2D/Menus/MainMenu_ControlNode2.json",
+                "editable_children": true,
+                "name": "MainMenu_ControlNode2",
+                "path": "Node4D/Node2D/Menus/MainMenu_ControlNode2/main_menu_control_node_2.tscn"
+            },
+            {
+                "config": {
+                    "layout_mode": 3,
+                    "offsets": {
+                        "offset_bottom": 646.0,
+                        "offset_left": 0.0,
+                        "offset_right": 1154.0,
+                        "offset_top": 0.0
+                    }
+                },
+                "config_file": "Node4D/Node2D/Menus/MainMenu_ControlNode.json",
+                "editable_children": true,
+                "name": "MainMenu_ControlNode",
+                "path": "Node4D/Node2D/Menus/MainMenu_ControlNode/main_menu_control_node.tscn"
+            },
+            {
+                "config": {
+                    "layout_mode": 3,
+                    "offsets": {
+                        "offset_bottom": 646.0,
+                        "offset_left": 0.0,
+                        "offset_right": 1154.0,
+                        "offset_top": 0.0
+                    }
+                },
+                "config_file": "Node4D/Node2D/Menus/StartMenu_ControlNode.json",
+                "editable_children": true,
+                "name": "StartMenu_ControlNode",
+                "path": "Node4D/Node2D/Menus/StartMenu_ControlNode/start_menu_control_node.tscn"
+            },
+            {
+                "class": "Sprite2D",
+                "asset": {
+                    "asset_id": "742af3",
+                    "asset_type": "png",
+                    "paths": [
+                        "A2_Frontend/frontend_str/assets_rws/txd/frontend_split23_txd/64_popup_742af3.png"
+                    ]
+                },
+                "config": {
+                    "position": {
+                        "x": -632.0,
+                        "y": -624.0
+                    }
+                },
+                "name": "64Popup"
+            }
+        ],
+        "class": "Node2D",
+        "editable_children": true,
+        "name": "Menus",
+        "overwrite": true,
+        "path": "Node4D/Node2D/Menus/menus.tscn",
+        "type": "scene",
+        "config": {
+            "properties": {
+                "visible": false
+            }
+        }
+    }
+]

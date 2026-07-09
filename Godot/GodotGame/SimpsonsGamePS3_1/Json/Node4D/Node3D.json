@@ -1,0 +1,27 @@
+[
+    {
+        "name": "Node3D",
+        "path": "Node4D/Node3D.tscn",
+        "class": "Node3D",
+        "type": "scene",
+        "editable_children": true,
+        "children": [
+            {
+                "name": "Environment",
+                "path": "Node4D/Node3D/Environment.tscn",
+                "class": "Node3D",
+                "config_file": "Node4D/Node3D/Environment.json"
+            },
+            {
+                "name": "Levels",
+                "path": "Node4D/Node3D/Levels.tscn",
+                "config_file": "Node4D/Node3D/Levels.json"
+            },
+            {
+                "name": "Characters",
+                "path": "Node4D/Node3D/Characters.tscn",
+                "config_file": "Node4D/Node3D/Characters.json"
+            }
+        ]
+    }
+]

@@ -1,0 +1,79 @@
+[
+    {
+        "name": "Bart",
+        "path": "Node4D/Node3D/Characters/all/bart.tscn",
+        "class": "Node3D",
+        "type": "scene",
+        "children": [
+            {
+                "name": "bart",
+                "asset": {
+                    "asset_id": "1a1244",
+                    "asset_type": "glb",
+                    "paths": [
+                        "A2_Characters/globalFolder/costumes/costumeBartDefaultStr/assetsChars/bart/boundExport/lod2_model_1a1244.dff.PS3.glb"
+                    ]
+                },
+                "config": {
+                    "transform": {
+                        "position": {"x": -2000, "y": -2000, "z": 0},
+                        "rotation_degrees": {"x": 0, "y": 0, "z": 0},
+                        "scale": {"x": 1, "y": 1, "z": 1}
+                    }
+                },
+                "collision": {
+                    "enabled": true,
+                    "shapePlacement": "StaticBodyChild",
+                    "ShapeType": "Trimesh",
+                    "containerName": "bart_collision"
+                }
+            },
+            {
+                "name": "bartman",
+                "asset": {
+                    "asset_id": "30b841",
+                    "asset_type": "glb",
+                    "paths": [
+                        "A2_Characters/globalFolder/costumes/costumeBartDefaultStr/assetsChars/bartman/boundExport/lod1_model_30b841.dff.PS3.glb"
+                    ]
+                },
+                "config": {
+                    "transform": {
+                        "position": {"x": -2000, "y": -2000, "z": 10},
+                        "rotation_degrees": {"x": 0, "y": 0, "z": 0},
+                        "scale": {"x": 1, "y": 1, "z": 1}
+                    }
+                },
+                "collision": {
+                    "enabled": true,
+                    "shapePlacement": "StaticBodyChild",
+                    "ShapeType": "Trimesh",
+                    "containerName": "bartman_collision"
+                }
+            },
+            {
+                "name": "bart_robo",
+                "asset": {
+                    "asset_id": "00eda9",
+                    "asset_type": "glb",
+                    "paths": [
+                        "A2_Characters/globalFolder/costumes/costumeBartDefaultStr/assetsChars/bart_robo/boundExport/lod2_model_00eda9.dff.PS3.glb"
+                    ]
+                },
+                "config": {
+                    "transform": {
+                        "position": {"x": -2000, "y": -2000, "z": 20},
+                        "rotation_degrees": {"x": 0, "y": 0, "z": 0},
+                        "scale": {"x": 1, "y": 1, "z": 1}
+                    }
+                },
+                "collision": {
+                    "enabled": true,
+                    "shapePlacement": "StaticBodyChild",
+                    "ShapeType": "Trimesh",
+                    "containerName": "bart_robo_collision"
+                }
+            }
+        ]
+    }
+]

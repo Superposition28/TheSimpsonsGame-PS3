@@ -1,0 +1,8 @@
+[gd_scene load_steps=2 format=3]
+
+[ext_resource type="PackedScene" path="res://Node4D/Node3D/Levels/L13_MedalOfHomer/medal_of_homer3D.tscn" id="1_8syf8"]
+
+[node name="L13_MedalOfHomer" type="Node3D"]
+
+[node name="medal_of_homer3D" type="Node3D" parent="." instance=ExtResource("1_8syf8")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -1400.111, 0)

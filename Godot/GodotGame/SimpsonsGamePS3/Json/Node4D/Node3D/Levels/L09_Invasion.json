@@ -1,0 +1,21 @@
+[
+    {
+        "name": "L09_Invasion",
+        "path": "Node4D/Node3D/Levels/L09_Invasion.tscn",
+        "class": "Node3D",
+        "type": "scene",
+        "children": [{
+            "name": "dayspringfieldstoodstill3D",
+            "Type": "Node",
+            "class": "Node3D",
+            "path": "Node4D/Node3D/Levels/L09_Invasion/dayspringfieldstoodstill3D.tscn",
+            "config": {
+                "transform": {
+                    "position": {"x": 1000, "y": -1000.111, "z": 0},
+                    "rotation_degrees": {"x": 0, "y": 0, "z": 0},
+                    "scale": {"x": 1, "y": 1, "z": 1}
+                }
+            }
+        }]
+    }
+]

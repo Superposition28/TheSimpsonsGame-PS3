@@ -1,0 +1,21 @@
+[
+    {
+        "name": "L12_GrandTheftScratchy",
+        "path": "Node4D/Node3D/Levels/L12_GrandTheftScratchy.tscn",
+        "class": "Node3D",
+        "type": "scene",
+        "children": [{
+            "name": "grand_theft_scratchy3D",
+            "Type": "Node",
+            "class": "Node3D",
+            "path": "Node4D/Node3D/Levels/L12_GrandTheftScratchy/grand_theft_scratchy3D.tscn",
+            "config": {
+                "transform": {
+                    "position": {"x": 0, "y": -1300.111, "z": 0},
+                    "rotation_degrees": {"x": 0, "y": 0, "z": 0},
+                    "scale": {"x": 1, "y": 1, "z": 1}
+                }
+            }
+        }]
+    }
+]

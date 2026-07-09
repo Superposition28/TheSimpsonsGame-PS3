@@ -1,0 +1,21 @@
+[
+    {
+        "name": "L07_DayOfTheDolphin",
+        "path": "Node4D/Node3D/Levels/L07_DayOfTheDolphin.tscn",
+        "class": "Node3D",
+        "type": "scene",
+        "children": [{
+            "name": "dayofthedolphins3D",
+            "Type": "Node",
+            "class": "Node3D",
+            "path": "Node4D/Node3D/Levels/L07_DayOfTheDolphin/dayofthedolphins3D.tscn",
+            "config": {
+                "transform": {
+                    "position": {"x": 1000, "y": -800.111, "z": 0},
+                    "rotation_degrees": {"x": 0, "y": 0, "z": 0},
+                    "scale": {"x": 1, "y": 1, "z": 1}
+                }
+            }
+        }]
+    }
+]
