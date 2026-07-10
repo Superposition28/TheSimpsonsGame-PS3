@@ -1,49 +1,55 @@
-[gd_scene load_steps=8 format=3]
+[gd_scene format=3 uid="uid://d3xs8pvro5jn6"]
 
-[ext_resource type="Texture2D" path="res://assets/A2_Frontend/frontendStr/assetsRws/txd/split16txd/15_popup_2ea038.png" id="1_e2o5f"]
-[ext_resource type="Texture2D" path="res://assets/A2_Frontend/frontendStr/assetsRws/txd/split17txd/18_popup_b3d383.png" id="2_xc2x5"]
-[ext_resource type="Texture2D" path="res://assets/A2_Frontend/frontendStr/assetsRws/txd/split18txd/21_popup_a5e9e4.png" id="3_hsop0"]
-[ext_resource type="Texture2D" path="res://assets/A2_Frontend/frontendStr/assetsRws/txd/split16txd/buttons_005d67.png" id="4_qnwdl"]
-[ext_resource type="Texture2D" path="res://assets/A2_Frontend/frontendStr/assetsRws/txd/split3txd/9_SharedLibrary_704032.png" id="5_inoei"]
-[ext_resource type="Texture2D" path="res://assets/A2_Frontend/frontendStr/assetsRws/txd/split24txd/8_SharedLibrary_7e0f3c.png" id="6_71bwf"]
-[ext_resource type="Texture2D" path="res://assets/A2_Frontend/frontendStr/assetsRws/txd/split11txd/7_SharedLibrary_44e6ea.png" id="7_kp120"]
+[ext_resource type="Texture2D" uid="uid://dxj3k3tn5i45" path="res://assets/A2_Frontend/frontendStr/assetsRws/txd/split16txd/15_popup_2ea038.png" id="1_e2o5f"]
+[ext_resource type="Texture2D" uid="uid://x5mvd42b3hg2" path="res://assets/A2_Frontend/frontendStr/assetsRws/txd/split17txd/18_popup_b3d383.png" id="2_xc2x5"]
+[ext_resource type="Texture2D" uid="uid://037e0a4sllk4" path="res://assets/A2_Frontend/frontendStr/assetsRws/txd/split18txd/21_popup_a5e9e4.png" id="3_hsop0"]
+[ext_resource type="Texture2D" uid="uid://dwwsq1qssokqu" path="res://assets/A2_Frontend/frontendStr/assetsRws/txd/split16txd/buttons_005d67.png" id="4_qnwdl"]
+[ext_resource type="Texture2D" uid="uid://b4bnbb00mycxc" path="res://assets/A2_Frontend/frontendStr/assetsRws/txd/split3txd/9_SharedLibrary_704032.png" id="5_inoei"]
+[ext_resource type="Texture2D" uid="uid://1ppbq7uuftwg" path="res://assets/A2_Frontend/frontendStr/assetsRws/txd/split24txd/8_SharedLibrary_7e0f3c.png" id="6_71bwf"]
+[ext_resource type="Texture2D" uid="uid://8dpwg85wo1w2" path="res://assets/A2_Frontend/frontendStr/assetsRws/txd/split11txd/7_SharedLibrary_44e6ea.png" id="7_kp120"]
 
-[node name="MainMenu_ControlNode" type="Control"]
+[node name="MainMenu_ControlNode" type="Control" unique_id=82238477]
 layout_mode = 3
 anchors_preset = 0
 
-[node name="TV_Content_Panel" type="Panel" parent="."]
+[node name="TV_Content_Panel" type="Panel" parent="." unique_id=941575604]
 layout_mode = 0
 offset_right = 40.0
 offset_bottom = 40.0
 
-[node name="30Popup" type="Sprite2D" parent="TV_Content_Panel"]
-position = Vector2(423, 346)
+[node name="30Popup" type="Sprite2D" parent="TV_Content_Panel" unique_id=1781950558]
+visible = false
+position = Vector2(539, 361)
 texture = ExtResource("1_e2o5f")
 
-[node name="18Popup" type="Sprite2D" parent="TV_Content_Panel"]
+[node name="18Popup" type="Sprite2D" parent="TV_Content_Panel" unique_id=1234880791]
+visible = false
 position = Vector2(249, 135)
 texture = ExtResource("2_xc2x5")
 
-[node name="21Popup" type="Sprite2D" parent="TV_Content_Panel"]
+[node name="21Popup" type="Sprite2D" parent="TV_Content_Panel" unique_id=359157351]
+visible = false
 position = Vector2(335, 137)
 texture = ExtResource("3_hsop0")
 
-[node name="RichTextLabel" type="RichTextLabel" parent="TV_Content_Panel"]
+[node name="RichTextLabel" type="RichTextLabel" parent="TV_Content_Panel" unique_id=1577140178]
+visible = false
 layout_mode = 0
 offset_left = 377.0
 offset_top = 106.0
 offset_right = 824.0
 offset_bottom = 296.0
 
-[node name="RichTextLabel2" type="RichTextLabel" parent="TV_Content_Panel"]
+[node name="RichTextLabel2" type="RichTextLabel" parent="TV_Content_Panel" unique_id=1594248559]
+visible = false
 layout_mode = 0
 offset_left = 373.0
 offset_top = 281.0
 offset_right = 820.0
 offset_bottom = 411.0
 
-[node name="Label" type="Label" parent="TV_Content_Panel"]
+[node name="Label" type="Label" parent="TV_Content_Panel" unique_id=645737555]
+visible = false
 layout_mode = 0
 offset_left = 818.0
 offset_top = 529.0
@@ -51,24 +57,74 @@ offset_right = 879.0
 offset_bottom = 563.0
 text = "Done"
 
-[node name="X_Button" type="Sprite2D" parent="TV_Content_Panel"]
+[node name="X_Button" type="Sprite2D" parent="TV_Content_Panel" unique_id=1579724368]
+visible = false
 position = Vector2(897, 547)
 scale = Vector2(0.567, 0.5)
 texture = ExtResource("4_qnwdl")
 region_enabled = true
 region_rect = Rect2(196, 136.5, 54, 53)
 
-[node name="TV" type="Sprite2D" parent="."]
+[node name="Polygon2D2" type="Polygon2D" parent="TV_Content_Panel" unique_id=965238267]
+position = Vector2(554, 30.999992)
+scale = Vector2(1.0268829, 1.03471)
+texture = ExtResource("1_e2o5f")
+polygon = PackedVector2Array(239.45486, 13.475507, 238.3146, 222.15254, 297.61075, 216.45097, 337.52164, 214.17035, 523.39246, 216.45097, 522.2522, -8.190417, 238.3146, -10.471042)
+uv = PackedVector2Array(238.89551, 12.543257, 237.75525, 221.2203, 297.0514, 215.51874, 336.96228, 213.23811, 522.8331, 215.51874, 521.6929, -9.122667, 237.75525, -11.403292)
+
+[node name="Polygon2D" type="Polygon2D" parent="TV_Content_Panel" unique_id=180050069]
+position = Vector2(421, -8)
+texture = ExtResource("1_e2o5f")
+polygon = PackedVector2Array(49.132446, 154.12189, 127.78247, 126.291885, 204.01245, 137.18188, 210.0625, 237.61191, 211.27246, 292.06195, 200.38245, 315.05194, 265.72247, 357.40198, 275.40253, 400.96198, 245.15247, 512.282, 14.042419, 518.33203, -14.99762, 353.77197, 66.07245, 313.84195, 58.81244, 283.59195, 33.402405, 260.60193, 51.55243, 236.40192, 37.03241, 169.8519)
+uv = PackedVector2Array(49.132446, 154.12189, 127.78247, 126.291885, 204.01245, 137.18188, 210.0625, 237.61191, 211.27246, 292.06195, 200.38245, 315.05194, 265.72247, 357.40198, 275.40253, 400.96198, 245.15247, 512.282, 14.042419, 518.33203, -14.99762, 353.77197, 66.07245, 313.84195, 58.81244, 283.59195, 33.402405, 260.60193, 51.55243, 236.40192, 37.03241, 169.8519)
+
+[node name="Polygon2D3" type="Polygon2D" parent="TV_Content_Panel" unique_id=1075101751]
+position = Vector2(670.00006, 374.00003)
+rotation = -3.9840755
+scale = Vector2(1, 0.997463)
+offset = Vector2(-275.82324, -323.92627)
+texture = ExtResource("1_e2o5f")
+polygon = PackedVector2Array(311.7952, 213.6363, 299.9041, 219.25153, 286.0312, 233.78506, 273.1492, 252.9429, 256.30353, 285.31305, 249.03674, 311.73767, 248.37613, 332.54706, 253.33075, 347.4109, 269.18552, 356.9898, 296.60104, 356.3292, 311.46487, 344.4381, 331.94397, 310.08612, 340.86227, 280.02814, 345.81686, 257.5672, 343.1744, 238.07907, 336.23795, 221.56369, 324.6772, 214.95753)
+uv = PackedVector2Array(311.7952, 213.6363, 299.9041, 219.25153, 286.0312, 233.78506, 273.1492, 252.9429, 256.30353, 285.31305, 249.03674, 311.73767, 248.37613, 332.54706, 253.33075, 347.4109, 269.18552, 356.9898, 296.60104, 356.3292, 311.46487, 344.4381, 331.94397, 310.08612, 340.86227, 280.02814, 345.81686, 257.5672, 343.1744, 238.07907, 336.23795, 221.56369, 324.6772, 214.95753)
+
+[node name="Polygon2D6" type="Polygon2D" parent="TV_Content_Panel" unique_id=905808791]
+position = Vector2(436, 380.00003)
+rotation = -3.0439785
+scale = Vector2(0.9983431, 0.9965866)
+skew = 0.0024176836
+offset = Vector2(-275.82324, -323.92627)
+texture = ExtResource("1_e2o5f")
+polygon = PackedVector2Array(311.7952, 213.6363, 299.9041, 219.25153, 286.0312, 233.78506, 273.1492, 252.9429, 256.30353, 285.31305, 249.03674, 311.73767, 248.37613, 332.54706, 253.33075, 347.4109, 269.18552, 356.9898, 296.60104, 356.3292, 311.46487, 344.4381, 331.94397, 310.08612, 340.86227, 280.02814, 345.81686, 257.5672, 343.1744, 238.07907, 336.23795, 221.56369, 324.6772, 214.95753)
+uv = PackedVector2Array(311.7952, 213.6363, 299.9041, 219.25153, 286.0312, 233.78506, 273.1492, 252.9429, 256.30353, 285.31305, 249.03674, 311.73767, 248.37613, 332.54706, 253.33075, 347.4109, 269.18552, 356.9898, 296.60104, 356.3292, 311.46487, 344.4381, 331.94397, 310.08612, 340.86227, 280.02814, 345.81686, 257.5672, 343.1744, 238.07907, 336.23795, 221.56369, 324.6772, 214.95753)
+
+[node name="eye" type="Polygon2D" parent="TV_Content_Panel" unique_id=766190182]
+position = Vector2(457, 184)
+texture = ExtResource("1_e2o5f")
+polygon = PackedVector2Array(59.037704, 53.056, 61.630085, 54.13616, 62.87227, 56.080444, 62.87227, 58.942863, 61.576077, 60.941154, 59.19973, 61.697266, 56.067272, 60.88715, 54.28501, 59.212906, 54.068977, 55.972427, 56.283302, 53.218025)
+uv = PackedVector2Array(59.037704, 53.056, 61.630085, 54.13616, 62.87227, 56.080444, 62.87227, 58.942863, 61.576077, 60.941154, 59.19973, 61.697266, 56.067272, 60.88715, 54.28501, 59.212906, 54.068977, 55.972427, 56.283302, 53.218025)
+
+[node name="eye2" type="Polygon2D" parent="TV_Content_Panel" unique_id=1170808064]
+position = Vector2(521, 183)
+texture = ExtResource("1_e2o5f")
+polygon = PackedVector2Array(59.037704, 53.056, 61.630085, 54.13616, 62.87227, 56.080444, 62.87227, 58.942863, 61.576077, 60.941154, 59.19973, 61.697266, 56.067272, 60.88715, 54.28501, 59.212906, 54.068977, 55.972427, 56.283302, 53.218025)
+uv = PackedVector2Array(59.037704, 53.056, 61.630085, 54.13616, 62.87227, 56.080444, 62.87227, 58.942863, 61.576077, 60.941154, 59.19973, 61.697266, 56.067272, 60.88715, 54.28501, 59.212906, 54.068977, 55.972427, 56.283302, 53.218025)
+
+[node name="Polygon2D5" type="Polygon2D" parent="TV_Content_Panel" unique_id=1129976066]
+position = Vector2(421, -8)
+texture = ExtResource("1_e2o5f")
+
+[node name="TV" type="Sprite2D" parent="." unique_id=1682378927]
+visible = false
 position = Vector2(549.00006, 319.5)
 scale = Vector2(0.8964844, 0.8134766)
 texture = ExtResource("5_inoei")
 
-[node name="8SharedLibrary" type="Sprite2D" parent="TV"]
+[node name="8SharedLibrary" type="Sprite2D" parent="TV" unique_id=821294050]
 position = Vector2(7.2504883, 9.219696)
 scale = Vector2(2.799564, 3.2364945)
 texture = ExtResource("6_71bwf")
 
-[node name="7SharedLibrary" type="Sprite2D" parent="TV"]
+[node name="7SharedLibrary" type="Sprite2D" parent="TV" unique_id=100715837]
 position = Vector2(1.1153564, 0.61465454)
 scale = Vector2(0.9978214, 0.9987995)
 texture = ExtResource("7_kp120")

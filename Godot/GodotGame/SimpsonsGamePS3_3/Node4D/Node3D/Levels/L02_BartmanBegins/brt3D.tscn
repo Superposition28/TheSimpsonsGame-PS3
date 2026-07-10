@@ -1,0 +1,17 @@
+[gd_scene load_steps=5 format=3]
+
+[ext_resource type="PackedScene" path="res://assets/L02_BartmanBegins/brt/zone01str/assets/environsZone01/export/terrain/lodmodel1_459e37.rws.PS3.glb" id="1_fffdo"]
+[ext_resource type="PackedScene" path="res://assets/L02_BartmanBegins/brt/zone02str/assets/environsZone02/export/terrain/lodmodel1_999873.rws.PS3.glb" id="2_pt0yn"]
+[ext_resource type="PackedScene" path="res://assets/L02_BartmanBegins/brt/zone03str/assets/environsZone03/export/terrain/lodmodel1_3b9e19.rws.PS3.glb" id="3_fxwxx"]
+[ext_resource type="PackedScene" path="res://assets/L02_BartmanBegins/brt/zone04str/assets/environsZone04/export/terrain/lodmodel1_2de7bd.rws.PS3.glb" id="4_31gxa"]
+
+[node name="brt3D" type="Node3D"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -1000, -300.111, 0)
+
+[node name="Zone01_Terrain" type="Node3D" parent="." instance=ExtResource("1_fffdo")]
+
+[node name="Zone02_Terrain" type="Node3D" parent="." instance=ExtResource("2_pt0yn")]
+
+[node name="Zone03_Terrain" type="Node3D" parent="." instance=ExtResource("3_fxwxx")]
+
+[node name="Zone04_Terrain" type="Node3D" parent="." instance=ExtResource("4_31gxa")]

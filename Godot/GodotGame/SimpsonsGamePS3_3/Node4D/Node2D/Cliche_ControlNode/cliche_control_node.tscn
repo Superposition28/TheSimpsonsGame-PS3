@@ -1,0 +1,164 @@
+[gd_scene load_steps=32 format=3]
+
+[ext_resource type="Texture2D" path="res://assets/A2_Frontend/frontendStr/assetsRws/txd/split20txd/9_cliche_summary_f5dc4b.png" id="1_3j8at"]
+[ext_resource type="Texture2D" path="res://assets/A2_Frontend/frontendStr/assetsRws/txd/split24txd/88_cliche_summary_a284d5.png" id="2_iyxlb"]
+[ext_resource type="Texture2D" path="res://assets/A2_Frontend/frontendStr/assetsRws/txd/split24txd/91_cliche_summary_44f26d.png" id="3_our4x"]
+[ext_resource type="Texture2D" path="res://assets/A2_Frontend/frontendStr/assetsRws/txd/split24txd/94_cliche_summary_b6ebf5.png" id="4_xejdx"]
+[ext_resource type="Texture2D" path="res://assets/A2_Frontend/frontendStr/assetsRws/txd/split24txd/97_cliche_summary_9b7373.png" id="5_oqsj8"]
+[ext_resource type="Texture2D" path="res://assets/A2_Frontend/frontendStr/assetsRws/txd/split25txd/37_cliche_summary_b0dc20.png" id="6_jphde"]
+[ext_resource type="Texture2D" path="res://assets/A2_Frontend/frontendStr/assetsRws/txd/split25txd/67_cliche_summary_800bc4.png" id="7_svhqa"]
+[ext_resource type="Texture2D" path="res://assets/A2_Frontend/frontendStr/assetsRws/txd/split25txd/70_cliche_summary_4846c1.png" id="8_ogda4"]
+[ext_resource type="Texture2D" path="res://assets/A2_Frontend/frontendStr/assetsRws/txd/split25txd/73_cliche_summary_047b1a.png" id="9_1a1pn"]
+[ext_resource type="Texture2D" path="res://assets/A2_Frontend/frontendStr/assetsRws/txd/split25txd/76_cliche_summary_29fd1b.png" id="10_nd1vd"]
+[ext_resource type="Texture2D" path="res://assets/A2_Frontend/frontendStr/assetsRws/txd/split25txd/79_cliche_summary_169c7b.png" id="11_lrb2h"]
+[ext_resource type="Texture2D" path="res://assets/A2_Frontend/frontendStr/assetsRws/txd/split25txd/82_cliche_summary_afc3a9.png" id="12_vr010"]
+[ext_resource type="Texture2D" path="res://assets/A2_Frontend/frontendStr/assetsRws/txd/split25txd/85_cliche_summary_1e582e.png" id="13_36qld"]
+[ext_resource type="Texture2D" path="res://assets/A2_Frontend/frontendStr/assetsRws/txd/split26txd/46_cliche_summary_4da782.png" id="14_b5sqm"]
+[ext_resource type="Texture2D" path="res://assets/A2_Frontend/frontendStr/assetsRws/txd/split26txd/49_cliche_summary_882fb7.png" id="15_ljqpo"]
+[ext_resource type="Texture2D" path="res://assets/A2_Frontend/frontendStr/assetsRws/txd/split26txd/52_cliche_summary_41feec.png" id="16_0gbnl"]
+[ext_resource type="Texture2D" path="res://assets/A2_Frontend/frontendStr/assetsRws/txd/split26txd/55_cliche_summary_d6dcff.png" id="17_38hma"]
+[ext_resource type="Texture2D" path="res://assets/A2_Frontend/frontendStr/assetsRws/txd/split26txd/58_cliche_summary_08739a.png" id="18_lmve7"]
+[ext_resource type="Texture2D" path="res://assets/A2_Frontend/frontendStr/assetsRws/txd/split26txd/61_cliche_summary_27ab64.png" id="19_yx6j3"]
+[ext_resource type="Texture2D" path="res://assets/A2_Frontend/frontendStr/assetsRws/txd/split27txd/30_cliche_summary_06e603.png" id="20_hesm4"]
+[ext_resource type="Texture2D" path="res://assets/A2_Frontend/frontendStr/assetsRws/txd/split27txd/34_cliche_summary_241d8b.png" id="21_ww704"]
+[ext_resource type="Texture2D" path="res://assets/A2_Frontend/frontendStr/assetsRws/txd/split27txd/43_cliche_summary_9cf20c.png" id="22_g13yp"]
+[ext_resource type="Texture2D" path="res://assets/A2_Frontend/frontendStr/assetsRws/txd/split27txd/100_cliche_summary_d07fb4.png" id="23_ctdeg"]
+[ext_resource type="Texture2D" path="res://assets/A2_Frontend/frontendStr/assetsRws/txd/split27txd/103_cliche_summary_24b5cf.png" id="24_uab08"]
+[ext_resource type="Texture2D" path="res://assets/A2_Frontend/frontendStr/assetsRws/txd/split27txd/106_cliche_summary_621c82.png" id="25_vfp1v"]
+[ext_resource type="Texture2D" path="res://assets/A2_Frontend/frontendStr/assetsRws/txd/split27txd/109_cliche_summary_39cfb2.png" id="26_wdvkm"]
+[ext_resource type="Texture2D" path="res://assets/A2_Frontend/frontendStr/assetsRws/txd/split27txd/112_cliche_summary_ff9096.png" id="27_fptql"]
+[ext_resource type="Texture2D" path="res://assets/A2_Frontend/frontendStr/assetsRws/txd/split27txd/115_cliche_summary_35f3fe.png" id="28_kl3vi"]
+[ext_resource type="Texture2D" path="res://assets/A2_Frontend/frontendStr/assetsRws/txd/split27txd/118_cliche_summary_b482fb.png" id="29_v0vln"]
+[ext_resource type="Texture2D" path="res://assets/A2_Frontend/frontendStr/assetsRws/txd/split27txd/121_cliche_summary_de45d5.png" id="30_0ty85"]
+[ext_resource type="Texture2D" path="res://assets/A2_Frontend/frontendStr/assetsRws/txd/split28txd/40_cliche_summary_298db3.png" id="31_k1yng"]
+
+[node name="Cliche_ControlNode" type="Control"]
+layout_mode = 3
+anchors_preset = 0
+
+[node name="Panel" type="Panel" parent="."]
+layout_mode = 0
+
+[node name="9ClicheSummary" type="Sprite2D" parent="Panel"]
+position = Vector2(4520, 1224)
+texture = ExtResource("1_3j8at")
+
+[node name="88ClicheSummary" type="Sprite2D" parent="Panel"]
+position = Vector2(1568, 824)
+texture = ExtResource("2_iyxlb")
+
+[node name="91ClicheSummary" type="Sprite2D" parent="Panel"]
+position = Vector2(3632, 1200)
+texture = ExtResource("3_our4x")
+
+[node name="94ClicheSummary" type="Sprite2D" parent="Panel"]
+position = Vector2(3336, 1408)
+texture = ExtResource("4_xejdx")
+
+[node name="97ClicheSummary" type="Sprite2D" parent="Panel"]
+position = Vector2(2992, 872)
+texture = ExtResource("5_oqsj8")
+
+[node name="37ClicheSummary" type="Sprite2D" parent="Panel"]
+position = Vector2(2976, 1504)
+texture = ExtResource("6_jphde")
+
+[node name="67ClicheSummary" type="Sprite2D" parent="Panel"]
+position = Vector2(3336, 1032)
+texture = ExtResource("7_svhqa")
+
+[node name="70ClicheSummary" type="Sprite2D" parent="Panel"]
+position = Vector2(2280, 872)
+texture = ExtResource("8_ogda4")
+
+[node name="73ClicheSummary" type="Sprite2D" parent="Panel"]
+position = Vector2(192, 832)
+texture = ExtResource("9_1a1pn")
+
+[node name="76ClicheSummary" type="Sprite2D" parent="Panel"]
+position = Vector2(2632, 896)
+texture = ExtResource("10_nd1vd")
+
+[node name="79ClicheSummary" type="Sprite2D" parent="Panel"]
+position = Vector2(192, 1152)
+texture = ExtResource("11_lrb2h")
+
+[node name="82ClicheSummary" type="Sprite2D" parent="Panel"]
+position = Vector2(512, 1472)
+texture = ExtResource("12_vr010")
+
+[node name="85ClicheSummary" type="Sprite2D" parent="Panel"]
+position = Vector2(192, 1480)
+texture = ExtResource("13_36qld")
+
+[node name="46ClicheSummary" type="Sprite2D" parent="Panel"]
+position = Vector2(512, 1152)
+texture = ExtResource("14_b5sqm")
+
+[node name="49ClicheSummary" type="Sprite2D" parent="Panel"]
+position = Vector2(1256, 840)
+texture = ExtResource("15_ljqpo")
+
+[node name="52ClicheSummary" type="Sprite2D" parent="Panel"]
+position = Vector2(2296, 1200)
+texture = ExtResource("16_0gbnl")
+
+[node name="55ClicheSummary" type="Sprite2D" parent="Panel"]
+position = Vector2(1544, 1520)
+texture = ExtResource("17_38hma")
+
+[node name="58ClicheSummary" type="Sprite2D" parent="Panel"]
+position = Vector2(2664, 1520)
+texture = ExtResource("18_lmve7")
+
+[node name="61ClicheSummary" type="Sprite2D" parent="Panel"]
+position = Vector2(2632, 1160)
+texture = ExtResource("19_yx6j3")
+
+[node name="30ClicheSummary" type="Sprite2D" parent="Panel"]
+position = Vector2(1208, 1168)
+texture = ExtResource("20_hesm4")
+
+[node name="34ClicheSummary" type="Sprite2D" parent="Panel"]
+position = Vector2(872, 1144)
+texture = ExtResource("21_ww704")
+
+[node name="43ClicheSummary" type="Sprite2D" parent="Panel"]
+position = Vector2(1952, 1544)
+texture = ExtResource("22_g13yp")
+
+[node name="100ClicheSummary" type="Sprite2D" parent="Panel"]
+position = Vector2(1936, 1200)
+texture = ExtResource("23_ctdeg")
+
+[node name="103ClicheSummary" type="Sprite2D" parent="Panel"]
+position = Vector2(880, 1512)
+texture = ExtResource("24_uab08")
+
+[node name="106ClicheSummary" type="Sprite2D" parent="Panel"]
+position = Vector2(512, 832)
+texture = ExtResource("25_vfp1v")
+
+[node name="109ClicheSummary" type="Sprite2D" parent="Panel"]
+position = Vector2(2960, 1144)
+texture = ExtResource("26_wdvkm")
+
+[node name="112ClicheSummary" type="Sprite2D" parent="Panel"]
+position = Vector2(2280, 1520)
+texture = ExtResource("27_fptql")
+
+[node name="115ClicheSummary" type="Sprite2D" parent="Panel"]
+position = Vector2(1176, 1528)
+texture = ExtResource("28_kl3vi")
+
+[node name="118ClicheSummary" type="Sprite2D" parent="Panel"]
+position = Vector2(1576, 1176)
+texture = ExtResource("29_v0vln")
+
+[node name="121ClicheSummary" type="Sprite2D" parent="Panel"]
+position = Vector2(880, 848)
+texture = ExtResource("30_0ty85")
+
+[node name="40ClicheSummary" type="Sprite2D" parent="Panel"]
+position = Vector2(1936, 880)
+texture = ExtResource("31_k1yng")

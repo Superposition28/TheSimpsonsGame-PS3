@@ -1,0 +1,8 @@
+[gd_scene load_steps=2 format=3]
+
+[ext_resource type="PackedScene" path="res://Node4D/Node3D/Levels/L10_BargainBin/bargainbin3D.tscn" id="1_h2ptw"]
+
+[node name="L10_BargainBin" type="Node3D"]
+
+[node name="bargainbin3D" type="Node3D" parent="." instance=ExtResource("1_h2ptw")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -1000, -1100.111, 0)

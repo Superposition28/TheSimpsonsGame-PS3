@@ -1,0 +1,8 @@
+[
+    {
+        "name": "Marge",
+        "path": "Node4D/Node3D/Characters/all/marge.tscn",
+        "class": "Node3D",
+        "type": "scene"
+    }
+]

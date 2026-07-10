@@ -1,0 +1,16 @@
+[
+    {
+        "name": "Pause_Control",
+        "path": "Node4D/Node2D/Pause_Control.tscn",
+        "script": "Node4D/Node2D/Pause_Control.gd",
+        "class": "Control",
+        "type": "scene",
+        "children": [
+            {
+                "name": "Button",
+                "class": "Button",
+                "type": "Node"
+            }
+        ]
+    }
+]

@@ -1,0 +1,8 @@
+[gd_scene load_steps=2 format=3]
+
+[ext_resource type="PackedScene" path="res://Node4D/Node3D/Levels/L04_TreeHugger/tree_hugger3D.tscn" id="1_dnkvv"]
+
+[node name="L04_TreeHugger" type="Node3D"]
+
+[node name="tree_hugger3D" type="Node3D" parent="." instance=ExtResource("1_dnkvv")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -1000, -500.111, 0)

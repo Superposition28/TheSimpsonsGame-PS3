@@ -1,0 +1,8 @@
+[gd_scene load_steps=2 format=3]
+
+[ext_resource type="PackedScene" path="res://Node4D/Node3D/Levels/L14_BigSuperHappy/bigsuperhappy3D.tscn" id="1_o51ba"]
+
+[node name="L14_BigSuperHappy" type="Node3D"]
+
+[node name="bigsuperhappy3D" type="Node3D" parent="." instance=ExtResource("1_o51ba")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -1500.111, 0)

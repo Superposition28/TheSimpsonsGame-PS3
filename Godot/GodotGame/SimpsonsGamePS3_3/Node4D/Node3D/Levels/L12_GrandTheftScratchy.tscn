@@ -1,0 +1,8 @@
+[gd_scene load_steps=2 format=3]
+
+[ext_resource type="PackedScene" path="res://Node4D/Node3D/Levels/L12_GrandTheftScratchy/grand_theft_scratchy3D.tscn" id="1_s3yhs"]
+
+[node name="L12_GrandTheftScratchy" type="Node3D"]
+
+[node name="grand_theft_scratchy3D" type="Node3D" parent="." instance=ExtResource("1_s3yhs")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -1300.111, 0)

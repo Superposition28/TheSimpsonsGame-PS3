@@ -1,0 +1,320 @@
+[gd_scene load_steps=26 format=3]
+
+[ext_resource type="PackedScene" path="res://Node4D/Node2D/Menus/MainMenu_ControlNode2/main_menu_control_node_2.tscn" id="1_wu35i"]
+[ext_resource type="Texture2D" path="res://assets/A2_Frontend/frontendStr/assetsRws/txd/txd/1_frontend_assets_ee93fa.png" id="2_pw42w"]
+[ext_resource type="Texture2D" path="res://assets/A2_Frontend/frontendStr/assetsRws/txd/split16txd/buttons_005d67.png" id="3_ij4bp"]
+[ext_resource type="Texture2D" path="res://assets/A2_Frontend/frontendStr/assetsRws/txd/split19txd/4_SharedLibrary_6a3576.png" id="4_3rbxx"]
+[ext_resource type="Texture2D" path="res://assets/A2_Frontend/frontendStr/assetsRws/txd/split24txd/2_SharedLibrary_e36432.png" id="5_aqito"]
+[ext_resource type="Texture2D" path="res://assets/A2_Frontend/frontendStr/assetsRws/txd/split20txd/3_SharedLibrary_0b4178.png" id="6_1uyfj"]
+[ext_resource type="Texture2D" path="res://assets/A2_Frontend/frontendStr/assetsRws/txd/split3txd/9_SharedLibrary_704032.png" id="7_sxo2r"]
+[ext_resource type="Texture2D" path="res://assets/A2_Frontend/frontendStr/assetsRws/txd/split24txd/8_SharedLibrary_7e0f3c.png" id="8_pw0s2"]
+[ext_resource type="Texture2D" path="res://assets/A2_Frontend/frontendStr/assetsRws/txd/split11txd/7_SharedLibrary_44e6ea.png" id="9_1x7w0"]
+[ext_resource type="PackedScene" path="res://Node4D/Node2D/Menus/MainMenu_ControlNode/main_menu_control_node.tscn" id="10_iggo7"]
+[ext_resource type="Texture2D" path="res://assets/A2_Frontend/frontendStr/assetsRws/txd/split16txd/15_popup_2ea038.png" id="11_d7i2g"]
+[ext_resource type="Texture2D" path="res://assets/A2_Frontend/frontendStr/assetsRws/txd/split17txd/18_popup_b3d383.png" id="12_gijqk"]
+[ext_resource type="Texture2D" path="res://assets/A2_Frontend/frontendStr/assetsRws/txd/split18txd/21_popup_a5e9e4.png" id="13_e0s1v"]
+[ext_resource type="PackedScene" path="res://Node4D/Node2D/Menus/StartMenu_ControlNode/start_menu_control_node.tscn" id="14_a1bc8"]
+[ext_resource type="Texture2D" path="res://logos/PIC0_01.PNG" id="15_immeo"]
+[ext_resource type="Texture2D" path="res://assets/A2_Frontend/frontendStr/assetsRws/txd/split2txd/7_frontend_assets_969d91.png" id="16_7rb2e"]
+[ext_resource type="Texture2D" path="res://assets/A2_Frontend/frontendStr/assetsRws/txd/split7txd/11_frontend_assets_b5f6f9.png" id="17_jxgfp"]
+[ext_resource type="Texture2D" path="res://assets/A2_Frontend/frontendStr/assetsRws/txd/split8txd/6_frontend_assets_f64f25.png" id="18_0wm81"]
+[ext_resource type="Texture2D" path="res://assets/A2_Frontend/frontendStr/assetsRws/txd/split9txd/12_frontend_assets_37174c.png" id="19_piu5k"]
+[ext_resource type="Texture2D" path="res://assets/A2_Frontend/frontendStr/assetsRws/txd/split10txd/14_frontend_assets_e1086b.png" id="20_47w7p"]
+[ext_resource type="Texture2D" path="res://assets/A2_Frontend/frontendStr/assetsRws/txd/split12txd/5_frontend_assets_895058.png" id="21_qfyxd"]
+[ext_resource type="Texture2D" path="res://assets/A2_Frontend/frontendStr/assetsRws/txd/split14txd/9_frontend_assets_fb8108.png" id="22_mlt7x"]
+[ext_resource type="Texture2D" path="res://assets/A2_Frontend/frontendStr/assetsRws/txd/split18txd/10_frontend_assets_a24484.png" id="23_6ca62"]
+[ext_resource type="Texture2D" path="res://assets/A2_Frontend/frontendStr/assetsRws/txd/split19txd/4_frontend_assets_28e210.png" id="24_k544m"]
+[ext_resource type="Texture2D" path="res://assets/A2_Frontend/frontendStr/assetsRws/txd/split23txd/64_popup_742af3.png" id="25_d74dm"]
+
+[node name="Menus" type="Node2D"]
+visible = false
+
+[node name="MainMenu_ControlNode2" parent="." instance=ExtResource("1_wu35i")]
+layout_mode = 3
+anchors_preset = 0
+offset_right = 1154.0
+offset_bottom = 646.0
+
+[node name="1FrontendAssets" parent="MainMenu_ControlNode2" index="0"]
+position = Vector2(2600, 488)
+texture = ExtResource("2_pw42w")
+
+[node name="TV_Content_ColorRect" parent="MainMenu_ControlNode2" index="1"]
+layout_mode = 0
+offset_right = 1184.0
+offset_bottom = 656.0
+color = Color(0, 0.17600004, 0.88, 1)
+
+[node name="S_Button" parent="MainMenu_ControlNode2/TV_Content_ColorRect" index="0"]
+position = Vector2(208.00002, 528)
+scale = Vector2(0.6153849, 0.615385)
+texture = ExtResource("3_ij4bp")
+region_enabled = true
+region_rect = Rect2(69, 136.5, 52, 52)
+
+[node name="Label8" parent="MainMenu_ControlNode2/TV_Content_ColorRect" index="1"]
+layout_mode = 0
+offset_left = 232.0
+offset_top = 512.0
+offset_right = 307.0
+offset_bottom = 546.0
+text = "Delete"
+
+[node name="X_Button" parent="MainMenu_ControlNode2/TV_Content_ColorRect" index="2"]
+position = Vector2(880, 528)
+scale = Vector2(0.64636374, 0.5707547)
+texture = ExtResource("3_ij4bp")
+region_enabled = true
+region_rect = Rect2(196, 136.5, 54, 53)
+
+[node name="Label9" parent="MainMenu_ControlNode2/TV_Content_ColorRect" index="3"]
+layout_mode = 0
+offset_left = 784.0
+offset_top = 512.0
+offset_right = 853.0
+offset_bottom = 546.0
+text = "Select"
+
+[node name="4SharedLibrary" parent="MainMenu_ControlNode2/TV_Content_ColorRect" index="4"]
+position = Vector2(526, 127)
+texture = ExtResource("4_3rbxx")
+
+[node name="Label" parent="MainMenu_ControlNode2/TV_Content_ColorRect" index="5"]
+layout_mode = 0
+offset_left = 409.0
+offset_top = 69.0
+offset_right = 640.0
+offset_bottom = 116.0
+text = "Saved Games"
+
+[node name="CURRENT LEVEL OF SELECTED SAVE FILE BackGround" parent="MainMenu_ControlNode2/TV_Content_ColorRect/Node2D" index="0"]
+position = Vector2(528, 459.5)
+scale = Vector2(1.1562501, 0.15234375)
+texture = ExtResource("5_aqito")
+
+[node name="3SharedLibrary2" parent="MainMenu_ControlNode2/TV_Content_ColorRect/Node2D" index="1"]
+position = Vector2(528, 440)
+scale = Vector2(1.1796876, 1)
+texture = ExtResource("6_1uyfj")
+
+[node name="3SharedLibrary" parent="MainMenu_ControlNode2/TV_Content_ColorRect/Node2D" index="2"]
+position = Vector2(528, 480.0001)
+scale = Vector2(1.1816406, 0.81249815)
+texture = ExtResource("6_1uyfj")
+
+[node name="CURRENT LEVEL OF SELECTED SAVE FILE" parent="MainMenu_ControlNode2/TV_Content_ColorRect/Node2D" index="3"]
+offset_left = 384.0
+offset_top = 448.0
+offset_right = 689.69
+offset_bottom = 472.0
+
+[node name="ABCD" parent="MainMenu_ControlNode2/TV_Content_ColorRect/SaveList" index="0"]
+offset_left = 351.0
+offset_top = 212.0
+offset_right = 372.0
+offset_bottom = 381.0
+text = "A
+B
+C
+D"
+
+[node name="New GameA" parent="MainMenu_ControlNode2/TV_Content_ColorRect/SaveList" index="1"]
+offset_left = 371.0
+offset_top = 219.0
+offset_right = 640.0
+offset_bottom = 242.0
+text = "New Game"
+
+[node name="New GameB" parent="MainMenu_ControlNode2/TV_Content_ColorRect/SaveList" index="2"]
+offset_left = 371.0
+offset_top = 263.0
+offset_right = 640.0
+offset_bottom = 286.0
+text = "New Game"
+
+[node name="New GameC" parent="MainMenu_ControlNode2/TV_Content_ColorRect/SaveList" index="3"]
+offset_left = 371.0
+offset_top = 306.0
+offset_right = 640.0
+offset_bottom = 329.0
+text = "New Game"
+
+[node name="New GameD" parent="MainMenu_ControlNode2/TV_Content_ColorRect/SaveList" index="4"]
+offset_left = 372.0
+offset_top = 350.0
+offset_right = 641.0
+offset_bottom = 373.0
+text = "New Game"
+
+[node name="3SharedLibrary4" parent="MainMenu_ControlNode2/TV_Content_ColorRect/SaveList" index="5"]
+position = Vector2(507.192, 342)
+scale = Vector2(0.55393755, 1)
+texture = ExtResource("6_1uyfj")
+
+[node name="3SharedLibrary5" parent="MainMenu_ControlNode2/TV_Content_ColorRect/SaveList" index="6"]
+position = Vector2(506.19467, 296)
+scale = Vector2(0.5577781, 1)
+texture = ExtResource("6_1uyfj")
+
+[node name="3SharedLibrary3" parent="MainMenu_ControlNode2/TV_Content_ColorRect/SaveList" index="7"]
+position = Vector2(506.68356, 254)
+scale = Vector2(0.5676422, 1)
+texture = ExtResource("6_1uyfj")
+
+[node name="TV" parent="MainMenu_ControlNode2" index="2"]
+position = Vector2(549.00006, 319.5)
+scale = Vector2(0.8964844, 0.8134766)
+texture = ExtResource("7_sxo2r")
+
+[node name="8SharedLibrary" parent="MainMenu_ControlNode2/TV" index="0"]
+position = Vector2(7.2504883, 9.219696)
+scale = Vector2(2.799564, 3.2364945)
+texture = ExtResource("8_pw0s2")
+
+[node name="7SharedLibrary" parent="MainMenu_ControlNode2/TV" index="1"]
+position = Vector2(1.1153564, 0.61465454)
+scale = Vector2(0.9978214, 0.9987995)
+texture = ExtResource("9_1x7w0")
+
+[node name="MainMenu_ControlNode" parent="." instance=ExtResource("10_iggo7")]
+layout_mode = 3
+anchors_preset = 0
+offset_right = 1154.0
+offset_bottom = 646.0
+
+[node name="TV_Content_Panel" parent="MainMenu_ControlNode" index="0"]
+layout_mode = 0
+offset_right = 40.0
+offset_bottom = 40.0
+
+[node name="30Popup" parent="MainMenu_ControlNode/TV_Content_Panel" index="0"]
+position = Vector2(423, 346)
+texture = ExtResource("11_d7i2g")
+
+[node name="18Popup" parent="MainMenu_ControlNode/TV_Content_Panel" index="1"]
+position = Vector2(249, 135)
+texture = ExtResource("12_gijqk")
+
+[node name="21Popup" parent="MainMenu_ControlNode/TV_Content_Panel" index="2"]
+position = Vector2(335, 137)
+texture = ExtResource("13_e0s1v")
+
+[node name="RichTextLabel" parent="MainMenu_ControlNode/TV_Content_Panel" index="3"]
+layout_mode = 0
+offset_left = 377.0
+offset_top = 106.0
+offset_right = 824.0
+offset_bottom = 296.0
+
+[node name="RichTextLabel2" parent="MainMenu_ControlNode/TV_Content_Panel" index="4"]
+layout_mode = 0
+offset_left = 373.0
+offset_top = 281.0
+offset_right = 820.0
+offset_bottom = 411.0
+
+[node name="Label" parent="MainMenu_ControlNode/TV_Content_Panel" index="5"]
+layout_mode = 0
+offset_left = 818.0
+offset_top = 529.0
+offset_right = 879.0
+offset_bottom = 563.0
+text = "Done"
+
+[node name="X_Button" parent="MainMenu_ControlNode/TV_Content_Panel" index="6"]
+position = Vector2(897, 547)
+scale = Vector2(0.567, 0.5)
+texture = ExtResource("3_ij4bp")
+region_enabled = true
+region_rect = Rect2(196, 136.5, 54, 53)
+
+[node name="TV" parent="MainMenu_ControlNode" index="1"]
+position = Vector2(549.00006, 319.5)
+scale = Vector2(0.8964844, 0.8134766)
+texture = ExtResource("7_sxo2r")
+
+[node name="8SharedLibrary" parent="MainMenu_ControlNode/TV" index="0"]
+position = Vector2(7.2504883, 9.219696)
+scale = Vector2(2.799564, 3.2364945)
+texture = ExtResource("8_pw0s2")
+
+[node name="7SharedLibrary" parent="MainMenu_ControlNode/TV" index="1"]
+position = Vector2(1.1153564, 0.61465454)
+scale = Vector2(0.9978214, 0.9987995)
+texture = ExtResource("9_1x7w0")
+
+[node name="StartMenu_ControlNode" parent="." instance=ExtResource("14_a1bc8")]
+layout_mode = 3
+anchors_preset = 0
+offset_right = 1154.0
+offset_bottom = 646.0
+
+[node name="Panel" parent="StartMenu_ControlNode" index="0"]
+layout_mode = 0
+
+[node name="Button" parent="StartMenu_ControlNode/Panel" index="0"]
+layout_mode = 0
+offset_left = 347.0
+offset_top = 507.0
+offset_right = 776.0
+offset_bottom = 566.0
+
+[node name="Label" parent="StartMenu_ControlNode/Panel" index="1"]
+layout_mode = 0
+offset_left = 321.0
+offset_top = 588.0
+offset_right = 811.0
+offset_bottom = 611.0
+text = "Game software © 2007 Electronic Arts Inc. All Rights Reserved."
+
+[node name="Back" parent="StartMenu_ControlNode/Panel" index="2"]
+layout_mode = 0
+
+[node name="Logo" parent="StartMenu_ControlNode/Panel/Back" index="0"]
+position = Vector2(557, 131)
+texture = ExtResource("15_immeo")
+
+[node name="7FrontendAssets" parent="StartMenu_ControlNode/Panel/Back" index="1"]
+position = Vector2(1648.0001, 376.00003)
+scale = Vector2(0.40527344, 0.36132813)
+texture = ExtResource("16_7rb2e")
+
+[node name="11FrontendAssets" parent="StartMenu_ControlNode/Panel/Back" index="2"]
+position = Vector2(1696, -240)
+texture = ExtResource("17_jxgfp")
+
+[node name="6FrontendAssets" parent="StartMenu_ControlNode/Panel/Back" index="3"]
+position = Vector2(1528, 880)
+texture = ExtResource("18_0wm81")
+
+[node name="12FrontendAssets" parent="StartMenu_ControlNode/Panel/Back" index="4"]
+position = Vector2(-520, 608)
+texture = ExtResource("19_piu5k")
+
+[node name="14FrontendAssets" parent="StartMenu_ControlNode/Panel/Back" index="5"]
+position = Vector2(112, 1048)
+texture = ExtResource("20_47w7p")
+
+[node name="5FrontendAssets" parent="StartMenu_ControlNode/Panel/Back" index="6"]
+position = Vector2(920, -584)
+texture = ExtResource("21_qfyxd")
+
+[node name="9FrontendAssets" parent="StartMenu_ControlNode/Panel/Back" index="7"]
+position = Vector2(920, 1224)
+texture = ExtResource("22_mlt7x")
+
+[node name="10FrontendAssets" parent="StartMenu_ControlNode/Panel/Back" index="8"]
+position = Vector2(504, 776)
+texture = ExtResource("23_6ca62")
+
+[node name="4FrontendAssets" parent="StartMenu_ControlNode/Panel/Back" index="9"]
+position = Vector2(280, -224)
+texture = ExtResource("24_k544m")
+
+[node name="64Popup" type="Sprite2D" parent="."]
+position = Vector2(-632, -624)
+texture = ExtResource("25_d74dm")
+
+[editable path="MainMenu_ControlNode2"]
+[editable path="MainMenu_ControlNode"]
+[editable path="StartMenu_ControlNode"]
