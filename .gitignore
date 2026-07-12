@@ -24,6 +24,9 @@ operations/Blender/test/blend/
 operations/Blender/asset_map.sqlite
 operations/Blender/blend.log
 config.toml
+
+game.toml
+
 # entire Simpsons Game iso image dump
 Source/
 # .str archive extraction output

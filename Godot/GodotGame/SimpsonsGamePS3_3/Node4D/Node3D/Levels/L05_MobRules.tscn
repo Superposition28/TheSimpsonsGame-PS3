@@ -1,8 +1,0 @@
-[gd_scene load_steps=2 format=3]
-
-[ext_resource type="PackedScene" path="res://Node4D/Node3D/Levels/L05_MobRules/mob_rules3D.tscn" id="1_g0men"]
-
-[node name="L05_MobRules" type="Node3D"]
-
-[node name="mob_rules3D" type="Node3D" parent="." instance=ExtResource("1_g0men")]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 1000, -600.111, 0)

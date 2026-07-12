@@ -1,4 +1,0 @@
-[gd_scene format=3]
-
-[node name="cheater3D" type="Node3D"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -1000, -700.111, 0)

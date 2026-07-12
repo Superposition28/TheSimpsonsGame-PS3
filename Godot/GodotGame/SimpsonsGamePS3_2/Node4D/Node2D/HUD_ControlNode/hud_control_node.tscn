@@ -1,8 +1,0 @@
-[gd_scene format=3]
-
-[node name="HUD_ControlNode" type="Control"]
-layout_mode = 3
-anchors_preset = 0
-
-[node name="Panel" type="Panel" parent="."]
-layout_mode = 0

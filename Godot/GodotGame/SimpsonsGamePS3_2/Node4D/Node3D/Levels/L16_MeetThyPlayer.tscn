@@ -1,8 +1,0 @@
-[gd_scene load_steps=2 format=3]
-
-[ext_resource type="PackedScene" path="res://Node4D/Node3D/Levels/L16_MeetThyPlayer/meetthyplayer3D.tscn" id="1_sx3rf"]
-
-[node name="L16_MeetThyPlayer" type="Node3D"]
-
-[node name="meetthyplayer3D" type="Node3D" parent="." instance=ExtResource("1_sx3rf")]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -1700.111, 0)

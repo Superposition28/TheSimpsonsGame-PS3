@@ -1,8 +1,0 @@
-[
-    {
-        "name": "Homer",
-        "path": "Node4D/Node3D/Characters/all/homer.tscn",
-        "class": "Node3D",
-        "type": "scene"
-    }
-]

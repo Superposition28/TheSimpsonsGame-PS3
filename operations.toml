@@ -125,11 +125,13 @@ script_type = "lua"
 script = "{{Game_Root}}/operations/SetupAudioDir.lua"
 args = ["{{Game_Root}}/GameFiles/{{Region}}-{{Type}}-{{audio_state}}-{{isRenamed}}"]
 [[operation.onsuccess]] # when successful, update isRenamed placeholder to "isRenamed"
+id = 5.1
 name = "set audio_state placeholder"
 script_type = "engine"
 script = "config"
 args = ["--group", "placeholders", "--key", "audio_state", "--value", "audio_reorg", "--type", "string"]
 [[operation.onsuccess]]
+id = 5.2
 name = "rename folder STROUT-{{Region}}-{{Type}}-{{audio_state}}-{{isRenamed}} to STROUT-{{Region}}-{{Type}}-audio_reorg-{{isRenamed}}"
 script_type = "lua"
 script = "{{Game_Root}}/operations/rename.lua"
@@ -154,6 +156,7 @@ args = [
     #"--copyonly", "movies",
 ]
 [[operation.onsuccess]]
+id = 6.1
 name = "update normalized placeholders"
 script_type = "engine"
 script = "config"
@@ -280,6 +283,16 @@ args = [
 
 [[operation]]
 id = 13
+name = "generate game.toml"
+run-all = false
+depends-on = [8,9,10,11]
+script_type = "lua"
+script = "{{Game_Root}}/operations/generate-game-toml.lua"
+
+
+
+[[operation]]
+id = 69
 name = "generate Godot Game (EXPERIMENTAL)"
 run-all = false
 depends-on = [8,9,10,11]
