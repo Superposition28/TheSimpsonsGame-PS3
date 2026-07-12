@@ -1,0 +1,8 @@
+[gd_scene load_steps=2 format=3]
+
+[ext_resource type="PackedScene" path="res://assets/LHub-00_GameHub/gamehub/zone01str/assets/environsZone01/export/terrain/lodmodel1_a70bb3.rws.PS3.glb" id="1_1nbaf"]
+
+[node name="GameHub3D" type="Node3D"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -400, 100.111, 0)
+
+[node name="Zone01_Terrain" type="Node3D" parent="." instance=ExtResource("1_1nbaf")]

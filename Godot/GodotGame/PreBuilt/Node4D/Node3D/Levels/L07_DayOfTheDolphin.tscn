@@ -1,0 +1,8 @@
+[gd_scene load_steps=2 format=3]
+
+[ext_resource type="PackedScene" path="res://Node4D/Node3D/Levels/L07_DayOfTheDolphin/dayofthedolphins3D.tscn" id="1_qdgf8"]
+
+[node name="L07_DayOfTheDolphin" type="Node3D"]
+
+[node name="dayofthedolphins3D" type="Node3D" parent="." instance=ExtResource("1_qdgf8")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 1000, -800.111, 0)
