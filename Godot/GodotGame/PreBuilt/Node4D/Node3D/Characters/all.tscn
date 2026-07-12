@@ -1,0 +1,19 @@
+[gd_scene load_steps=6 format=3]
+
+[ext_resource type="PackedScene" path="res://Node4D/Node3D/Characters/all/bart.tscn" id="1_ydsto"]
+[ext_resource type="PackedScene" path="res://Node4D/Node3D/Characters/all/homer.tscn" id="2_8qwtb"]
+[ext_resource type="PackedScene" path="res://Node4D/Node3D/Characters/all/lisa.tscn" id="3_uovkd"]
+[ext_resource type="PackedScene" path="res://Node4D/Node3D/Characters/all/maggie.tscn" id="4_rih8d"]
+[ext_resource type="PackedScene" path="res://Node4D/Node3D/Characters/all/marge.tscn" id="5_6odqh"]
+
+[node name="All" type="Node3D"]
+
+[node name="Bart" type="Node3D" parent="." instance=ExtResource("1_ydsto")]
+
+[node name="Homer" type="Node3D" parent="." instance=ExtResource("2_8qwtb")]
+
+[node name="Lisa" type="Node3D" parent="." instance=ExtResource("3_uovkd")]
+
+[node name="Maggie" type="Node3D" parent="." instance=ExtResource("4_rih8d")]
+
+[node name="Marge" type="Node3D" parent="." instance=ExtResource("5_6odqh")]
