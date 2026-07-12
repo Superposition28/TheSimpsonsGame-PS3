@@ -3,6 +3,8 @@
 ############################
 **/logos/*.png
 
+**/PreBuilt/
+**/.godot/
 **/assets/
 
 LightTOC

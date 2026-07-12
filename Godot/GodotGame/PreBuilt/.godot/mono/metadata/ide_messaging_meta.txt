@@ -1,2 +1,0 @@
-﻿60316
-A:/RemakeEngine/Main/EngineApps/Tools/Godot-4.5-stable-mono-win-x64/Godot_v4.5-stable_mono_win64.exe
