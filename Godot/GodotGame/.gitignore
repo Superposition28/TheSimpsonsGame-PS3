@@ -1,8 +1,11 @@
 ############################
 # Original Game Files (do not commit for licensing/copyright)
 ############################
-/Source/
-/SourceData/
+**/logos/*.png
+
+**/*.godot/
+**/assets/
+
 LightTOC
 StreamSetConfig
 localereftableD4815ED6.txt
@@ -34,5 +37,3 @@ localereftableD4815ED6.txt
 *.uix
 *.vfb
 *.vp6
-
-**/PreBuilt/**
