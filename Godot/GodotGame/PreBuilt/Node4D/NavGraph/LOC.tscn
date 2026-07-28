@@ -1,0 +1,76 @@
+[gd_scene format=3 uid="uid://b32puxwimiu18"]
+
+[ext_resource type="Script" uid="uid://7cu6lsib5ff" path="res://Scripts/nav_graph_visualizer.gd" id="1_gx03v"]
+[ext_resource type="Resource" uid="uid://i0ov3iday25b" path="res://assets/L01_LandOfChocolate/loc/challengeModeDesignStr/assetsRws/graph/{C62CB55D-3C27-4216-B651-57EB3DEB71EC}_deb7b1.graph" id="2_mtwsw"]
+[ext_resource type="Resource" uid="uid://d1c0c24k2kbc5" path="res://assets/L01_LandOfChocolate/loc/storyModeDesignStr/assetsRws/graph/{015DA6D2-352E-40F6-A78E-81713291CEC1}_dc9446.graph" id="3_dcc4c"]
+[ext_resource type="Resource" uid="uid://bc7n03ew2qdxu" path="res://assets/L01_LandOfChocolate/loc/storyModeDesignStr/assetsRws/graph/{053FCFAE-55F0-462B-A8B4-724690F8B732}_7f3b03.graph" id="4_lvqam"]
+[ext_resource type="Resource" uid="uid://ciwau424rgwkf" path="res://assets/L01_LandOfChocolate/loc/storyModeDesignStr/assetsRws/graph/{543D213A-F06E-42C3-8A24-97B9DEFFDA77}_717a85.graph" id="5_x23vx"]
+[ext_resource type="Resource" uid="uid://dcx8ict3qs6bk" path="res://assets/L01_LandOfChocolate/loc/storyModeDesignStr/assetsRws/graph/{ABD43E7E-E5F1-429C-A44D-DFD167B1EE2A}_9cf47a.graph" id="6_x0bbc"]
+[ext_resource type="Resource" uid="uid://b0flqrnyoac6d" path="res://assets/L01_LandOfChocolate/loc/storyModeDesignStr/assetsRws/graph/{B3468CEE-D3C4-4EAB-9670-30539131480B}_c7fa33.graph" id="7_l2lxb"]
+[ext_resource type="Resource" uid="uid://csl47wlbbo6rr" path="res://assets/L01_LandOfChocolate/loc/storyModeDesignStr/assetsRws/graph/{ECBAD9E8-BAFB-4A8D-AE0F-02831501F3EB}_d2d47e.graph" id="8_bd8vc"]
+[ext_resource type="Resource" uid="uid://d1bbfep2j64ej" path="res://assets/L01_LandOfChocolate/locStr/assetsRws/graph/{74C88925-83BF-46F9-8C83-ED252A44A1DC}_f1be08.graph" id="9_ctwep"]
+[ext_resource type="Resource" uid="uid://cdv6xytif3q0g" path="res://assets/L01_LandOfChocolate/locStr/assetsRws/graph/{996AF219-E201-48EB-863B-4FE4FBC9213C}_fe9490.graph" id="10_00wg1"]
+[ext_resource type="Resource" uid="uid://7oppjpimvbs3" path="res://assets/L01_LandOfChocolate/locStr/assetsRws/graph/{77945598-5F84-4DFF-A91B-B248BC99F6A9}_baa4e6.graph" id="11_h2oxy"]
+[ext_resource type="Resource" uid="uid://0v45ir2a3b10" path="res://assets/L01_LandOfChocolate/locStr/assetsRws/graph/{BF20E8AA-39D9-4E51-9828-BDF2AE6202E4}_2c0c47.graph" id="12_leg6i"]
+[ext_resource type="Resource" uid="uid://b8hmlxbuqh4q7" path="res://assets/L01_LandOfChocolate/locStr/assetsRws/graph/{C19C5CAD-3247-43C7-819C-0B9D849C941A}_f93811.graph" id="13_ke6dt"]
+[ext_resource type="Resource" uid="uid://dg86uad8vjhx8" path="res://assets/L01_LandOfChocolate/locStr/assetsRws/graph/{F1DEDAF0-A2A2-41DC-BDDF-918427072291}_7a04d5.graph" id="14_euo31"]
+
+[node name="LOC" type="Node3D" unique_id=1440381790]
+
+[node name="challengeModeDesignStr" type="Node3D" parent="." unique_id=4137469]
+
+[node name="{C62CB55D-3C27-4216-B651-57EB3DEB71EC}_deb7b1" type="Node3D" parent="challengeModeDesignStr" unique_id=568810205]
+script = ExtResource("1_gx03v")
+nav_data = ExtResource("2_mtwsw")
+
+[node name="storyModeDesignStr" type="Node3D" parent="." unique_id=806031576]
+
+[node name="{015DA6D2-352E-40F6-A78E-81713291CEC1}_dc9446" type="Node3D" parent="storyModeDesignStr" unique_id=492033995]
+script = ExtResource("1_gx03v")
+nav_data = ExtResource("3_dcc4c")
+
+[node name="{053FCFAE-55F0-462B-A8B4-724690F8B732}_7f3b03" type="Node3D" parent="storyModeDesignStr" unique_id=1210890845]
+script = ExtResource("1_gx03v")
+nav_data = ExtResource("4_lvqam")
+
+[node name="{543D213A-F06E-42C3-8A24-97B9DEFFDA77}_717a85" type="Node3D" parent="storyModeDesignStr" unique_id=262560391]
+script = ExtResource("1_gx03v")
+nav_data = ExtResource("5_x23vx")
+
+[node name="{ABD43E7E-E5F1-429C-A44D-DFD167B1EE2A}_9cf47a" type="Node3D" parent="storyModeDesignStr" unique_id=999504060]
+script = ExtResource("1_gx03v")
+nav_data = ExtResource("6_x0bbc")
+
+[node name="{B3468CEE-D3C4-4EAB-9670-30539131480B}_c7fa33" type="Node3D" parent="storyModeDesignStr" unique_id=121724887]
+script = ExtResource("1_gx03v")
+nav_data = ExtResource("7_l2lxb")
+
+[node name="{ECBAD9E8-BAFB-4A8D-AE0F-02831501F3EB}_d2d47e" type="Node3D" parent="storyModeDesignStr" unique_id=1463585576]
+script = ExtResource("1_gx03v")
+nav_data = ExtResource("8_bd8vc")
+
+[node name="locStr" type="Node3D" parent="." unique_id=1498017639]
+
+[node name="{74C88925-83BF-46F9-8C83-ED252A44A1DC}_f1be08" type="Node3D" parent="locStr" unique_id=398170028]
+script = ExtResource("1_gx03v")
+nav_data = ExtResource("9_ctwep")
+
+[node name="{996AF219-E201-48EB-863B-4FE4FBC9213C}_fe9490" type="Node3D" parent="locStr" unique_id=1323482789]
+script = ExtResource("1_gx03v")
+nav_data = ExtResource("10_00wg1")
+
+[node name="{77945598-5F84-4DFF-A91B-B248BC99F6A9}_baa4e6" type="Node3D" parent="locStr" unique_id=1209940701]
+script = ExtResource("1_gx03v")
+nav_data = ExtResource("11_h2oxy")
+
+[node name="{BF20E8AA-39D9-4E51-9828-BDF2AE6202E4}_2c0c47" type="Node3D" parent="locStr" unique_id=954862929]
+script = ExtResource("1_gx03v")
+nav_data = ExtResource("12_leg6i")
+
+[node name="{C19C5CAD-3247-43C7-819C-0B9D849C941A}_f93811" type="Node3D" parent="locStr" unique_id=672332481]
+script = ExtResource("1_gx03v")
+nav_data = ExtResource("13_ke6dt")
+
+[node name="{F1DEDAF0-A2A2-41DC-BDDF-918427072291}_7a04d5" type="Node3D" parent="locStr" unique_id=949418927]
+script = ExtResource("1_gx03v")
+nav_data = ExtResource("14_euo31")

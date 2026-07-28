@@ -1,8 +1,52 @@
-[gd_scene load_steps=2 format=3]
+[gd_scene format=3 uid="uid://bbkry8k2bhoxr"]
 
-[ext_resource type="PackedScene" path="res://Node4D/Node3D/Levels/L04_TreeHugger/tree_hugger3D.tscn" id="1_dnkvv"]
+[ext_resource type="PackedScene" uid="uid://dthudbtte2tp2" path="res://assets/L04_TreeHugger/treeHugger/zone00str/assets/environsZone00/export/terrain/lodmodel1_7fec86.rws.PS3.glb" id="2_twec3"]
+[ext_resource type="PackedScene" uid="uid://bfiqi7ta4nxkk" path="res://assets/L04_TreeHugger/treeHugger/zone01str/assets/environsZone01/export/terrain/lodmodel1_493edb.rws.PS3.glb" id="3_hfq11"]
+[ext_resource type="PackedScene" uid="uid://cjxba7r0qdb5w" path="res://assets/L04_TreeHugger/treeHugger/zone02str/assets/environsZone02/export/terrain/lodmodel1_4280a0.rws.PS3.glb" id="4_yuudt"]
+[ext_resource type="PackedScene" uid="uid://diisup8tx7apj" path="res://assets/L04_TreeHugger/treeHugger/zone03str/assets/environsZone03/export/terrain/lodmodel1_b0bfb4.rws.PS3.glb" id="5_bbi72"]
+[ext_resource type="PackedScene" uid="uid://0bg3nuoejgln" path="res://assets/L04_TreeHugger/treeHugger/zone04str/assets/environsZone04/export/terrain/lodmodel1_fa496a.rws.PS3.glb" id="6_2uug0"]
+[ext_resource type="PackedScene" uid="uid://cjo4awvbm8022" path="res://assets/L04_TreeHugger/treeHugger/zone05str/assets/environsZone05/export/terrain/lodmodel1_5f4c5f.rws.PS3.glb" id="7_0irhj"]
+[ext_resource type="PackedScene" uid="uid://bitigi5rlisd0" path="res://assets/L04_TreeHugger/treeHugger/zone06str/assetsEnvirons/export/terrain/lodmodel1_c47c86.rws.PS3.glb" id="8_8u80a"]
+[ext_resource type="PackedScene" uid="uid://dyc4ub20gkbtu" path="res://assets/L04_TreeHugger/treeHugger/zone09str/assetsEnvirons/export/terrain/lodmodel1_12dcba.rws.PS3.glb" id="9_wlb5j"]
+[ext_resource type="PackedScene" uid="uid://d0k05sq14pxag" path="res://assets/L04_TreeHugger/treeHugger/zone09str/assetsEnvirons/opt/exportZone09/opt_model1_e3af78.rws.PS3.glb" id="10_qeupn"]
+[ext_resource type="PackedScene" uid="uid://d03fit3i58mn8" path="res://assets/L04_TreeHugger/treeHuggerStr/assets/props/epsTreehuggerHugBackgroundGeo/exportHugBackground/model1_46445a.rws.PS3.glb" id="11_x1vl4"]
 
-[node name="L04_TreeHugger" type="Node3D"]
+[node name="L04_TreeHugger" type="Node3D" unique_id=1855185213]
 
-[node name="tree_hugger3D" type="Node3D" parent="." instance=ExtResource("1_dnkvv")]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -1000, -500.111, 0)
+[node name="Node3D" type="Node3D" parent="." unique_id=389987891]
+
+[node name="lodmodel1_7fec86_rws_PS3" parent="Node3D" unique_id=2039439601 instance=ExtResource("2_twec3")]
+
+[node name="Node3D2" type="Node3D" parent="." unique_id=1228458847]
+
+[node name="lodmodel1_493edb_rws_PS3" parent="Node3D2" unique_id=1505007272 instance=ExtResource("3_hfq11")]
+
+[node name="Node3D3" type="Node3D" parent="." unique_id=1617089567]
+
+[node name="lodmodel1_4280a0_rws_PS3" parent="Node3D3" unique_id=1063136994 instance=ExtResource("4_yuudt")]
+
+[node name="Node3D4" type="Node3D" parent="." unique_id=547574097]
+
+[node name="lodmodel1_b0bfb4_rws_PS3" parent="Node3D4" unique_id=1986960903 instance=ExtResource("5_bbi72")]
+
+[node name="Node3D5" type="Node3D" parent="." unique_id=1383874493]
+
+[node name="lodmodel1_fa496a_rws_PS3" parent="Node3D5" unique_id=357965549 instance=ExtResource("6_2uug0")]
+
+[node name="Node3D6" type="Node3D" parent="." unique_id=1842029261]
+
+[node name="lodmodel1_5f4c5f_rws_PS3" parent="Node3D6" unique_id=800090674 instance=ExtResource("7_0irhj")]
+
+[node name="Node3D7" type="Node3D" parent="." unique_id=2145761615]
+
+[node name="lodmodel1_c47c86_rws_PS3" parent="Node3D7" unique_id=779321830 instance=ExtResource("8_8u80a")]
+
+[node name="Node3D8" type="Node3D" parent="." unique_id=2109493862]
+
+[node name="lodmodel1_12dcba_rws_PS3" parent="Node3D8" unique_id=1033031332 instance=ExtResource("9_wlb5j")]
+
+[node name="opt_model1_e3af78_rws_PS3" parent="Node3D8" unique_id=877516893 instance=ExtResource("10_qeupn")]
+
+[node name="Node3D9" type="Node3D" parent="." unique_id=732370498]
+
+[node name="model1_46445a_rws_PS3" parent="Node3D9" unique_id=2075963407 instance=ExtResource("11_x1vl4")]

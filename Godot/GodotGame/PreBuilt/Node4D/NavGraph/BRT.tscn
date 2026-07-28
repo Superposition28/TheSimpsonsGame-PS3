@@ -1,0 +1,57 @@
+[gd_scene format=3 uid="uid://bileyslndbcm4"]
+
+[ext_resource type="Script" uid="uid://7cu6lsib5ff" path="res://Scripts/nav_graph_visualizer.gd" id="1_x66uy"]
+[ext_resource type="Resource" uid="uid://qlh87aap711x" path="res://assets/L02_BartmanBegins/brt/storyModeDesignStr/assetsRws/graph/{0BB05DDA-1B52-4B70-9466-60A46FC9B988}_7f1b00.graph" id="2_h0vnh"]
+[ext_resource type="Resource" uid="uid://iji31wad40tg" path="res://assets/L02_BartmanBegins/brt/storyModeDesignStr/assetsRws/graph/{7DB22B86-52D1-453F-8B3B-EB1BF66FBF9E}_5b6750.graph" id="3_jwho3"]
+[ext_resource type="Resource" uid="uid://d4anayoqosqoy" path="res://assets/L02_BartmanBegins/brt/storyModeDesignStr/assetsRws/graph/{8F8E20B1-2B0B-4B49-9FBB-50AD98F6D320}_e3c832.graph" id="4_lcshu"]
+[ext_resource type="Resource" uid="uid://by542wkv72l3c" path="res://assets/L02_BartmanBegins/brt/storyModeDesignStr/assetsRws/graph/{56D67643-1816-4302-B5F0-D7E4CD5597CB}_11c7ca.graph" id="5_wl2ps"]
+[ext_resource type="Resource" uid="uid://6xru6eys3ds6" path="res://assets/L02_BartmanBegins/brt/storyModeDesignStr/assetsRws/graph/{124C0E2D-B403-43A0-8F76-92CB34045D57}_77eb14.graph" id="6_234c6"]
+[ext_resource type="Resource" uid="uid://cc33l4kpl2y8q" path="res://assets/L02_BartmanBegins/brt/storyModeDesignStr/assetsRws/graph/{801EFED7-D67B-4EE9-9C88-317D163757EF}_ba77e0.graph" id="7_adwvi"]
+[ext_resource type="Resource" uid="uid://ya7qiv0ui12y" path="res://assets/L02_BartmanBegins/brt/storyModeDesignStr/assetsRws/graph/{930CC5FC-8A0C-446D-A097-9B84B7E5A0FC}_6f61b3.graph" id="8_1fjia"]
+[ext_resource type="Resource" uid="uid://dbqa18loc7mtb" path="res://assets/L02_BartmanBegins/brt/storyModeDesignStr/assetsRws/graph/{C82F378A-9D42-4672-8893-03B38E9706D5}_697b49.graph" id="9_0mwb8"]
+[ext_resource type="Resource" uid="uid://cdo5e5d1wu7p4" path="res://assets/L02_BartmanBegins/brt/storyModeDesignStr/assetsRws/graph/{E7506A2D-1E36-47A7-BB21-8B921B39136D}_e0abbd.graph" id="10_1grhp"]
+[ext_resource type="Resource" uid="uid://du3fol25kh0y1" path="res://assets/L02_BartmanBegins/brt/storyModeDesignStr/assetsRws/graph/{ED45B768-2971-4F86-8CC8-FD97C6709522}_3ff0dd.graph" id="11_npkrh"]
+
+[node name="BRT" type="Node3D" unique_id=787532859]
+
+[node name="storyModeDesignStr" type="Node3D" parent="." unique_id=1426406488]
+
+[node name="{0BB05DDA-1B52-4B70-9466-60A46FC9B988}_7f1b00" type="Node3D" parent="storyModeDesignStr" unique_id=888176985]
+script = ExtResource("1_x66uy")
+nav_data = ExtResource("2_h0vnh")
+
+[node name="{7DB22B86-52D1-453F-8B3B-EB1BF66FBF9E}_5b6750" type="Node3D" parent="storyModeDesignStr" unique_id=141612802]
+script = ExtResource("1_x66uy")
+nav_data = ExtResource("3_jwho3")
+
+[node name="{8F8E20B1-2B0B-4B49-9FBB-50AD98F6D320}_e3c832" type="Node3D" parent="storyModeDesignStr" unique_id=1771480456]
+script = ExtResource("1_x66uy")
+nav_data = ExtResource("4_lcshu")
+
+[node name="{56D67643-1816-4302-B5F0-D7E4CD5597CB}_11c7ca" type="Node3D" parent="storyModeDesignStr" unique_id=79603368]
+script = ExtResource("1_x66uy")
+nav_data = ExtResource("5_wl2ps")
+
+[node name="{124C0E2D-B403-43A0-8F76-92CB34045D57}_77eb14" type="Node3D" parent="storyModeDesignStr" unique_id=1005094580]
+script = ExtResource("1_x66uy")
+nav_data = ExtResource("6_234c6")
+
+[node name="{801EFED7-D67B-4EE9-9C88-317D163757EF}_ba77e0" type="Node3D" parent="storyModeDesignStr" unique_id=2084162543]
+script = ExtResource("1_x66uy")
+nav_data = ExtResource("7_adwvi")
+
+[node name="{930CC5FC-8A0C-446D-A097-9B84B7E5A0FC}_6f61b3" type="Node3D" parent="storyModeDesignStr" unique_id=645997934]
+script = ExtResource("1_x66uy")
+nav_data = ExtResource("8_1fjia")
+
+[node name="{C82F378A-9D42-4672-8893-03B38E9706D5}_697b49" type="Node3D" parent="storyModeDesignStr" unique_id=317530009]
+script = ExtResource("1_x66uy")
+nav_data = ExtResource("9_0mwb8")
+
+[node name="{E7506A2D-1E36-47A7-BB21-8B921B39136D}_e0abbd" type="Node3D" parent="storyModeDesignStr" unique_id=151901303]
+script = ExtResource("1_x66uy")
+nav_data = ExtResource("10_1grhp")
+
+[node name="{ED45B768-2971-4F86-8CC8-FD97C6709522}_3ff0dd" type="Node3D" parent="storyModeDesignStr" unique_id=1820526220]
+script = ExtResource("1_x66uy")
+nav_data = ExtResource("11_npkrh")

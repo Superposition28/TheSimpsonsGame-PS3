@@ -1,19 +1,22 @@
-[gd_scene load_steps=6 format=3]
+[gd_scene format=3 uid="uid://c6yqg8r3ex5ft"]
 
-[ext_resource type="PackedScene" path="res://Node4D/Node3D/Characters/all/bart.tscn" id="1_ydsto"]
+[ext_resource type="PackedScene" uid="uid://bv2uyxrfxv6rx" path="res://Node4D/Node3D/Characters/all/bart.tscn" id="1_ydsto"]
 [ext_resource type="PackedScene" path="res://Node4D/Node3D/Characters/all/homer.tscn" id="2_8qwtb"]
 [ext_resource type="PackedScene" path="res://Node4D/Node3D/Characters/all/lisa.tscn" id="3_uovkd"]
 [ext_resource type="PackedScene" path="res://Node4D/Node3D/Characters/all/maggie.tscn" id="4_rih8d"]
 [ext_resource type="PackedScene" path="res://Node4D/Node3D/Characters/all/marge.tscn" id="5_6odqh"]
 
-[node name="All" type="Node3D"]
+[node name="All" type="Node3D" unique_id=416590871]
 
-[node name="Bart" type="Node3D" parent="." instance=ExtResource("1_ydsto")]
+[node name="Bart" parent="." unique_id=946165175 instance=ExtResource("1_ydsto")]
 
-[node name="Homer" type="Node3D" parent="." instance=ExtResource("2_8qwtb")]
+[node name="Homer" parent="." unique_id=2016528063 instance=ExtResource("2_8qwtb")]
 
-[node name="Lisa" type="Node3D" parent="." instance=ExtResource("3_uovkd")]
+[node name="Lisa" parent="." unique_id=1780968981 instance=ExtResource("3_uovkd")]
 
-[node name="Maggie" type="Node3D" parent="." instance=ExtResource("4_rih8d")]
+[node name="Maggie" parent="." unique_id=1071507863 instance=ExtResource("4_rih8d")]
 
-[node name="Marge" type="Node3D" parent="." instance=ExtResource("5_6odqh")]
+[node name="Marge" parent="." unique_id=1211052990 instance=ExtResource("5_6odqh")]
+
+[editable path="Bart"]
+[editable path="Bart/bart"]

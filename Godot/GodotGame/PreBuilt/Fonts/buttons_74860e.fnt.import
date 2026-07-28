@@ -1,0 +1,17 @@
+[remap]
+
+importer="font_data_bmfont"
+type="FontFile"
+uid="uid://bq2xk8h3803rb"
+path="res://.godot/imported/buttons_74860e.fnt-eca38abab705efd0ad1109e89889444a.fontdata"
+
+[deps]
+
+source_file="res://Fonts/buttons_74860e.fnt"
+dest_files=["res://.godot/imported/buttons_74860e.fnt-eca38abab705efd0ad1109e89889444a.fontdata"]
+
+[params]
+
+fallbacks=[]
+compress=true
+scaling_mode=2

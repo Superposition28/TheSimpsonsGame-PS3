@@ -1,31 +1,33 @@
-[gd_scene load_steps=11 format=3]
+[gd_scene format=3 uid="uid://b6rdpoa0ruk7n"]
 
-[ext_resource type="Texture2D" path="res://logos/PIC0_01.PNG" id="1_ct2xt"]
-[ext_resource type="Texture2D" path="res://assets/A2_Frontend/frontendStr/assetsRws/txd/split2txd/7_frontend_assets_969d91.png" id="2_ax0lr"]
-[ext_resource type="Texture2D" path="res://assets/A2_Frontend/frontendStr/assetsRws/txd/split7txd/11_frontend_assets_b5f6f9.png" id="3_enlwt"]
-[ext_resource type="Texture2D" path="res://assets/A2_Frontend/frontendStr/assetsRws/txd/split8txd/6_frontend_assets_f64f25.png" id="4_wx2e8"]
-[ext_resource type="Texture2D" path="res://assets/A2_Frontend/frontendStr/assetsRws/txd/split9txd/12_frontend_assets_37174c.png" id="5_s7ny3"]
-[ext_resource type="Texture2D" path="res://assets/A2_Frontend/frontendStr/assetsRws/txd/split10txd/14_frontend_assets_e1086b.png" id="6_5blaf"]
-[ext_resource type="Texture2D" path="res://assets/A2_Frontend/frontendStr/assetsRws/txd/split12txd/5_frontend_assets_895058.png" id="7_swq3o"]
-[ext_resource type="Texture2D" path="res://assets/A2_Frontend/frontendStr/assetsRws/txd/split14txd/9_frontend_assets_fb8108.png" id="8_rk18y"]
-[ext_resource type="Texture2D" path="res://assets/A2_Frontend/frontendStr/assetsRws/txd/split18txd/10_frontend_assets_a24484.png" id="9_x10is"]
-[ext_resource type="Texture2D" path="res://assets/A2_Frontend/frontendStr/assetsRws/txd/split19txd/4_frontend_assets_28e210.png" id="10_6y0xk"]
+[ext_resource type="Texture2D" uid="uid://e3jju4rd4p2l" path="res://logos/PIC0_01.PNG" id="1_ct2xt"]
+[ext_resource type="Texture2D" uid="uid://um4sfltu4lqb" path="res://assets/A2_Frontend/frontendStr/assetsRws/txd/split2txd/7_frontend_assets_969d91.png" id="2_ax0lr"]
+[ext_resource type="Texture2D" uid="uid://dflvmk4ekbeyr" path="res://assets/A2_Frontend/frontendStr/assetsRws/txd/split7txd/11_frontend_assets_b5f6f9.png" id="3_enlwt"]
+[ext_resource type="Texture2D" uid="uid://d3qnnjhg4hxim" path="res://assets/A2_Frontend/frontendStr/assetsRws/txd/split8txd/6_frontend_assets_f64f25.png" id="4_wx2e8"]
+[ext_resource type="Texture2D" uid="uid://df2le78g1ld6n" path="res://assets/A2_Frontend/frontendStr/assetsRws/txd/split9txd/12_frontend_assets_37174c.png" id="5_s7ny3"]
+[ext_resource type="Texture2D" uid="uid://ckoj7rd1gxm7w" path="res://assets/A2_Frontend/frontendStr/assetsRws/txd/split10txd/14_frontend_assets_e1086b.png" id="6_5blaf"]
+[ext_resource type="Texture2D" uid="uid://hwjkog345r8k" path="res://assets/A2_Frontend/frontendStr/assetsRws/txd/split15txd/8_frontend_assets_0656ca.png" id="6_enlwt"]
+[ext_resource type="Texture2D" uid="uid://lxj0b53njvo6" path="res://assets/A2_Frontend/frontendStr/assetsRws/txd/split12txd/5_frontend_assets_895058.png" id="7_swq3o"]
+[ext_resource type="Texture2D" uid="uid://c6dd81s7ye87m" path="res://assets/A2_Frontend/frontendStr/assetsRws/txd/split14txd/9_frontend_assets_fb8108.png" id="8_rk18y"]
+[ext_resource type="Texture2D" uid="uid://7ouxen84ycrc" path="res://assets/A2_Frontend/frontendStr/assetsRws/txd/split18txd/10_frontend_assets_a24484.png" id="9_x10is"]
+[ext_resource type="Texture2D" uid="uid://80tnbmk8xa2" path="res://assets/A2_Frontend/frontendStr/assetsRws/txd/split19txd/4_frontend_assets_28e210.png" id="10_6y0xk"]
+[ext_resource type="Texture2D" uid="uid://cfkrr78dqmmti" path="res://assets/A2_Frontend/frontendStr/assetsRws/txd/split17txd/13_frontend_assets_b46104.png" id="11_wx2e8"]
 
-[node name="StartMenu_ControlNode" type="Control"]
+[node name="StartMenu" type="Control" unique_id=87376439]
 layout_mode = 3
 anchors_preset = 0
 
-[node name="Panel" type="Panel" parent="."]
+[node name="Panel" type="Panel" parent="." unique_id=327360434]
 layout_mode = 0
 
-[node name="Button" type="Button" parent="Panel"]
+[node name="Button" type="Button" parent="Panel" unique_id=57222298]
 layout_mode = 0
 offset_left = 347.0
 offset_top = 507.0
 offset_right = 776.0
 offset_bottom = 566.0
 
-[node name="Label" type="Label" parent="Panel"]
+[node name="Label" type="Label" parent="Panel" unique_id=488683466]
 layout_mode = 0
 offset_left = 321.0
 offset_top = 588.0
@@ -33,46 +35,55 @@ offset_right = 811.0
 offset_bottom = 611.0
 text = "Game software © 2007 Electronic Arts Inc. All Rights Reserved."
 
-[node name="Back" type="Panel" parent="Panel"]
+[node name="Back" type="Panel" parent="Panel" unique_id=445507482]
 layout_mode = 0
 
-[node name="Logo" type="Sprite2D" parent="Panel/Back"]
+[node name="Logo" type="Sprite2D" parent="Panel/Back" unique_id=1853711470]
 position = Vector2(557, 131)
 texture = ExtResource("1_ct2xt")
 
-[node name="7FrontendAssets" type="Sprite2D" parent="Panel/Back"]
-position = Vector2(1648.0001, 376.00003)
-scale = Vector2(0.40527344, 0.36132813)
-texture = ExtResource("2_ax0lr")
+[node name="Clouds" type="Node" parent="Panel/Back" unique_id=1991449162]
 
-[node name="11FrontendAssets" type="Sprite2D" parent="Panel/Back"]
-position = Vector2(1696, -240)
-texture = ExtResource("3_enlwt")
+[node name="4_frontend_assets_28e210" type="Sprite2D" parent="Panel/Back/Clouds" unique_id=58665143]
+position = Vector2(736, 1338)
+texture = ExtResource("10_6y0xk")
 
-[node name="6FrontendAssets" type="Sprite2D" parent="Panel/Back"]
-position = Vector2(1528, 880)
-texture = ExtResource("4_wx2e8")
-
-[node name="12FrontendAssets" type="Sprite2D" parent="Panel/Back"]
-position = Vector2(-520, 608)
-texture = ExtResource("5_s7ny3")
-
-[node name="14FrontendAssets" type="Sprite2D" parent="Panel/Back"]
-position = Vector2(112, 1048)
-texture = ExtResource("6_5blaf")
-
-[node name="5FrontendAssets" type="Sprite2D" parent="Panel/Back"]
-position = Vector2(920, -584)
+[node name="5_frontend_assets_895058" type="Sprite2D" parent="Panel/Back/Clouds" unique_id=1092589689]
+position = Vector2(3319, 484)
 texture = ExtResource("7_swq3o")
 
-[node name="9FrontendAssets" type="Sprite2D" parent="Panel/Back"]
-position = Vector2(920, 1224)
+[node name="6_frontend_assets_f64f25" type="Sprite2D" parent="Panel/Back/Clouds" unique_id=81352438]
+position = Vector2(3220, 1032)
+texture = ExtResource("4_wx2e8")
+
+[node name="7_frontend_assets_969d91" type="Sprite2D" parent="Panel/Back/Clouds" unique_id=1541291851]
+position = Vector2(3408, -781)
+texture = ExtResource("2_ax0lr")
+
+[node name="8_frontend_assets_0656ca" type="Sprite2D" parent="Panel/Back/Clouds" unique_id=1443777535]
+position = Vector2(664, 908)
+texture = ExtResource("6_enlwt")
+
+[node name="9_frontend_assets_fb8108" type="Sprite2D" parent="Panel/Back/Clouds" unique_id=1220534374]
+position = Vector2(567, 1789)
 texture = ExtResource("8_rk18y")
 
-[node name="10FrontendAssets" type="Sprite2D" parent="Panel/Back"]
-position = Vector2(504, 776)
+[node name="10_frontend_assets_a24484" type="Sprite2D" parent="Panel/Back/Clouds" unique_id=1624488372]
+position = Vector2(856, 2700)
 texture = ExtResource("9_x10is")
 
-[node name="4FrontendAssets" type="Sprite2D" parent="Panel/Back"]
-position = Vector2(280, -224)
-texture = ExtResource("10_6y0xk")
+[node name="11_frontend_assets_b5f6f9" type="Sprite2D" parent="Panel/Back/Clouds" unique_id=1152305739]
+position = Vector2(3244, -121)
+texture = ExtResource("3_enlwt")
+
+[node name="12_frontend_assets_37174c" type="Sprite2D" parent="Panel/Back/Clouds" unique_id=1142680948]
+position = Vector2(-876, 426)
+texture = ExtResource("5_s7ny3")
+
+[node name="13_frontend_assets_b46104" type="Sprite2D" parent="Panel/Back/Clouds" unique_id=1313903449]
+position = Vector2(698, 2385)
+texture = ExtResource("11_wx2e8")
+
+[node name="14_frontend_assets_e1086b" type="Sprite2D" parent="Panel/Back/Clouds" unique_id=456461571]
+position = Vector2(652, 3037)
+texture = ExtResource("6_5blaf")

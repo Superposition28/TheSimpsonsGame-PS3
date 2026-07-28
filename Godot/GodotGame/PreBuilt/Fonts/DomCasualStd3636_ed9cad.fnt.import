@@ -1,0 +1,17 @@
+[remap]
+
+importer="font_data_bmfont"
+type="FontFile"
+uid="uid://7la2ebpsldnl"
+path="res://.godot/imported/DomCasualStd3636_ed9cad.fnt-f5153989caef41392c0936a229c571de.fontdata"
+
+[deps]
+
+source_file="res://Fonts/DomCasualStd3636_ed9cad.fnt"
+dest_files=["res://.godot/imported/DomCasualStd3636_ed9cad.fnt-f5153989caef41392c0936a229c571de.fontdata"]
+
+[params]
+
+fallbacks=[]
+compress=true
+scaling_mode=2

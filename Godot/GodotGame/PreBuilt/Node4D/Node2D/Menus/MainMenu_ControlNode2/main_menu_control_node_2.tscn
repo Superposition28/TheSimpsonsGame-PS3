@@ -1,36 +1,32 @@
-[gd_scene load_steps=9 format=3]
+[gd_scene format=3 uid="uid://b8uyul7qkynam"]
 
-[ext_resource type="Texture2D" path="res://assets/A2_Frontend/frontendStr/assetsRws/txd/txd/1_frontend_assets_ee93fa.png" id="1_pjpqm"]
-[ext_resource type="Texture2D" path="res://assets/A2_Frontend/frontendStr/assetsRws/txd/split16txd/buttons_005d67.png" id="2_tbeom"]
-[ext_resource type="Texture2D" path="res://assets/A2_Frontend/frontendStr/assetsRws/txd/split19txd/4_SharedLibrary_6a3576.png" id="3_snivv"]
-[ext_resource type="Texture2D" path="res://assets/A2_Frontend/frontendStr/assetsRws/txd/split24txd/2_SharedLibrary_e36432.png" id="4_qvios"]
-[ext_resource type="Texture2D" path="res://assets/A2_Frontend/frontendStr/assetsRws/txd/split20txd/3_SharedLibrary_0b4178.png" id="5_2pn7y"]
-[ext_resource type="Texture2D" path="res://assets/A2_Frontend/frontendStr/assetsRws/txd/split3txd/9_SharedLibrary_704032.png" id="6_wp5mb"]
-[ext_resource type="Texture2D" path="res://assets/A2_Frontend/frontendStr/assetsRws/txd/split24txd/8_SharedLibrary_7e0f3c.png" id="7_kswnw"]
-[ext_resource type="Texture2D" path="res://assets/A2_Frontend/frontendStr/assetsRws/txd/split11txd/7_SharedLibrary_44e6ea.png" id="8_unox3"]
+[ext_resource type="Texture2D" uid="uid://dqm0btp77bcg3" path="res://assets/A2_Frontend/frontendStr/assetsRws/txd/txd/1_frontend_assets_ee93fa.png" id="1_pjpqm"]
+[ext_resource type="Texture2D" uid="uid://dwwsq1qssokqu" path="res://assets/A2_Frontend/frontendStr/assetsRws/txd/split16txd/buttons_005d67.png" id="2_tbeom"]
+[ext_resource type="Texture2D" uid="uid://ctrc2hlktob61" path="res://assets/A2_Frontend/frontendStr/assetsRws/txd/split19txd/4_SharedLibrary_6a3576.png" id="3_snivv"]
+[ext_resource type="Texture2D" uid="uid://dbpluv5awx6ln" path="res://assets/A2_Frontend/frontendStr/assetsRws/txd/split24txd/2_SharedLibrary_e36432.png" id="4_qvios"]
+[ext_resource type="Texture2D" uid="uid://bsiaarjivcwn4" path="res://assets/A2_Frontend/frontendStr/assetsRws/txd/split20txd/3_SharedLibrary_0b4178.png" id="5_2pn7y"]
+[ext_resource type="Texture2D" uid="uid://b4bnbb00mycxc" path="res://assets/A2_Frontend/frontendStr/assetsRws/txd/split3txd/9_SharedLibrary_704032.png" id="6_wp5mb"]
+[ext_resource type="Texture2D" uid="uid://1ppbq7uuftwg" path="res://assets/A2_Frontend/frontendStr/assetsRws/txd/split24txd/8_SharedLibrary_7e0f3c.png" id="7_kswnw"]
+[ext_resource type="Texture2D" uid="uid://8dpwg85wo1w2" path="res://assets/A2_Frontend/frontendStr/assetsRws/txd/split11txd/7_SharedLibrary_44e6ea.png" id="8_unox3"]
 
-[node name="MainMenu_ControlNode2" type="Control"]
+[node name="SaveMenu" type="Control" unique_id=2045311312]
 layout_mode = 3
 anchors_preset = 0
 
-[node name="1FrontendAssets" type="Sprite2D" parent="."]
-position = Vector2(2600, 488)
-texture = ExtResource("1_pjpqm")
-
-[node name="TV_Content_ColorRect" type="ColorRect" parent="."]
+[node name="TV_Content_ColorRect" type="ColorRect" parent="." unique_id=1686586334]
 layout_mode = 0
 offset_right = 1184.0
 offset_bottom = 656.0
 color = Color(0, 0.17600004, 0.88, 1)
 
-[node name="S_Button" type="Sprite2D" parent="TV_Content_ColorRect"]
+[node name="S_Button" type="Sprite2D" parent="TV_Content_ColorRect" unique_id=49507375]
 position = Vector2(208.00002, 528)
 scale = Vector2(0.6153849, 0.615385)
 texture = ExtResource("2_tbeom")
 region_enabled = true
 region_rect = Rect2(69, 136.5, 52, 52)
 
-[node name="Label8" type="Label" parent="TV_Content_ColorRect"]
+[node name="Label8" type="Label" parent="TV_Content_ColorRect" unique_id=1007505276]
 layout_mode = 0
 offset_left = 232.0
 offset_top = 512.0
@@ -38,14 +34,14 @@ offset_right = 307.0
 offset_bottom = 546.0
 text = "Delete"
 
-[node name="X_Button" type="Sprite2D" parent="TV_Content_ColorRect"]
+[node name="X_Button" type="Sprite2D" parent="TV_Content_ColorRect" unique_id=1131399720]
 position = Vector2(880, 528)
 scale = Vector2(0.64636374, 0.5707547)
 texture = ExtResource("2_tbeom")
 region_enabled = true
 region_rect = Rect2(196, 136.5, 54, 53)
 
-[node name="Label9" type="Label" parent="TV_Content_ColorRect"]
+[node name="Label9" type="Label" parent="TV_Content_ColorRect" unique_id=1267790606]
 layout_mode = 0
 offset_left = 784.0
 offset_top = 512.0
@@ -53,11 +49,11 @@ offset_right = 853.0
 offset_bottom = 546.0
 text = "Select"
 
-[node name="4SharedLibrary" type="Sprite2D" parent="TV_Content_ColorRect"]
+[node name="4SharedLibrary" type="Sprite2D" parent="TV_Content_ColorRect" unique_id=182940417]
 position = Vector2(526, 127)
 texture = ExtResource("3_snivv")
 
-[node name="Label" type="Label" parent="TV_Content_ColorRect"]
+[node name="Label" type="Label" parent="TV_Content_ColorRect" unique_id=2060806330]
 layout_mode = 0
 offset_left = 409.0
 offset_top = 69.0
@@ -65,32 +61,32 @@ offset_right = 640.0
 offset_bottom = 116.0
 text = "Saved Games"
 
-[node name="Node2D" type="Node2D" parent="TV_Content_ColorRect"]
+[node name="Node2D" type="Node2D" parent="TV_Content_ColorRect" unique_id=1840109897]
 
-[node name="CURRENT LEVEL OF SELECTED SAVE FILE BackGround" type="Sprite2D" parent="TV_Content_ColorRect/Node2D"]
+[node name="CURRENT LEVEL OF SELECTED SAVE FILE BackGround" type="Sprite2D" parent="TV_Content_ColorRect/Node2D" unique_id=1695413383]
 position = Vector2(528, 459.5)
 scale = Vector2(1.1562501, 0.15234375)
 texture = ExtResource("4_qvios")
 
-[node name="3SharedLibrary2" type="Sprite2D" parent="TV_Content_ColorRect/Node2D"]
+[node name="3SharedLibrary2" type="Sprite2D" parent="TV_Content_ColorRect/Node2D" unique_id=2129941862]
 position = Vector2(528, 440)
 scale = Vector2(1.1796876, 1)
 texture = ExtResource("5_2pn7y")
 
-[node name="3SharedLibrary" type="Sprite2D" parent="TV_Content_ColorRect/Node2D"]
+[node name="3SharedLibrary" type="Sprite2D" parent="TV_Content_ColorRect/Node2D" unique_id=1148026951]
 position = Vector2(528, 480.0001)
 scale = Vector2(1.1816406, 0.81249815)
 texture = ExtResource("5_2pn7y")
 
-[node name="CURRENT LEVEL OF SELECTED SAVE FILE" type="RichTextLabel" parent="TV_Content_ColorRect/Node2D"]
+[node name="CURRENT LEVEL OF SELECTED SAVE FILE" type="RichTextLabel" parent="TV_Content_ColorRect/Node2D" unique_id=64622501]
 offset_left = 384.0
 offset_top = 448.0
 offset_right = 689.69
 offset_bottom = 472.0
 
-[node name="SaveList" type="Node2D" parent="TV_Content_ColorRect"]
+[node name="SaveList" type="Node2D" parent="TV_Content_ColorRect" unique_id=1398143322]
 
-[node name="ABCD" type="Label" parent="TV_Content_ColorRect/SaveList"]
+[node name="ABCD" type="Label" parent="TV_Content_ColorRect/SaveList" unique_id=828838223]
 offset_left = 351.0
 offset_top = 212.0
 offset_right = 372.0
@@ -100,60 +96,65 @@ B
 C
 D"
 
-[node name="New GameA" type="Label" parent="TV_Content_ColorRect/SaveList"]
+[node name="New GameA" type="Label" parent="TV_Content_ColorRect/SaveList" unique_id=582304051]
 offset_left = 371.0
 offset_top = 219.0
 offset_right = 640.0
 offset_bottom = 242.0
 text = "New Game"
 
-[node name="New GameB" type="Label" parent="TV_Content_ColorRect/SaveList"]
+[node name="New GameB" type="Label" parent="TV_Content_ColorRect/SaveList" unique_id=61553201]
 offset_left = 371.0
 offset_top = 263.0
 offset_right = 640.0
 offset_bottom = 286.0
 text = "New Game"
 
-[node name="New GameC" type="Label" parent="TV_Content_ColorRect/SaveList"]
+[node name="New GameC" type="Label" parent="TV_Content_ColorRect/SaveList" unique_id=1498119795]
 offset_left = 371.0
 offset_top = 306.0
 offset_right = 640.0
 offset_bottom = 329.0
 text = "New Game"
 
-[node name="New GameD" type="Label" parent="TV_Content_ColorRect/SaveList"]
+[node name="New GameD" type="Label" parent="TV_Content_ColorRect/SaveList" unique_id=309824454]
 offset_left = 372.0
 offset_top = 350.0
 offset_right = 641.0
 offset_bottom = 373.0
 text = "New Game"
 
-[node name="3SharedLibrary4" type="Sprite2D" parent="TV_Content_ColorRect/SaveList"]
+[node name="3SharedLibrary4" type="Sprite2D" parent="TV_Content_ColorRect/SaveList" unique_id=221493715]
 position = Vector2(507.192, 342)
 scale = Vector2(0.55393755, 1)
 texture = ExtResource("5_2pn7y")
 
-[node name="3SharedLibrary5" type="Sprite2D" parent="TV_Content_ColorRect/SaveList"]
+[node name="3SharedLibrary5" type="Sprite2D" parent="TV_Content_ColorRect/SaveList" unique_id=1535266536]
 position = Vector2(506.19467, 296)
 scale = Vector2(0.5577781, 1)
 texture = ExtResource("5_2pn7y")
 
-[node name="3SharedLibrary3" type="Sprite2D" parent="TV_Content_ColorRect/SaveList"]
+[node name="3SharedLibrary3" type="Sprite2D" parent="TV_Content_ColorRect/SaveList" unique_id=1045384719]
 position = Vector2(506.68356, 254)
 scale = Vector2(0.5676422, 1)
 texture = ExtResource("5_2pn7y")
 
-[node name="TV" type="Sprite2D" parent="."]
+[node name="TV" type="Sprite2D" parent="." unique_id=1545567085]
+visible = false
 position = Vector2(549.00006, 319.5)
 scale = Vector2(0.8964844, 0.8134766)
 texture = ExtResource("6_wp5mb")
 
-[node name="8SharedLibrary" type="Sprite2D" parent="TV"]
+[node name="8SharedLibrary" type="Sprite2D" parent="TV" unique_id=1764601774]
 position = Vector2(7.2504883, 9.219696)
 scale = Vector2(2.799564, 3.2364945)
 texture = ExtResource("7_kswnw")
 
-[node name="7SharedLibrary" type="Sprite2D" parent="TV"]
+[node name="7SharedLibrary" type="Sprite2D" parent="TV" unique_id=1359272680]
 position = Vector2(1.1153564, 0.61465454)
 scale = Vector2(0.9978214, 0.9987995)
 texture = ExtResource("8_unox3")
+
+[node name="1_frontend_assets_ee93fa" type="Sprite2D" parent="." unique_id=444228297]
+position = Vector2(2899, 1024)
+texture = ExtResource("1_pjpqm")

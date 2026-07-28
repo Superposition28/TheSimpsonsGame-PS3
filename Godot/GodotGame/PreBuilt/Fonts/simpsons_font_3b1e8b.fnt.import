@@ -1,0 +1,17 @@
+[remap]
+
+importer="font_data_bmfont"
+type="FontFile"
+uid="uid://cq0umsa3rblfs"
+path="res://.godot/imported/simpsons_font_3b1e8b.fnt-fd3ce255860ddfd6397b0dfc83190ac5.fontdata"
+
+[deps]
+
+source_file="res://Fonts/simpsons_font_3b1e8b.fnt"
+dest_files=["res://.godot/imported/simpsons_font_3b1e8b.fnt-fd3ce255860ddfd6397b0dfc83190ac5.fontdata"]
+
+[params]
+
+fallbacks=[]
+compress=true
+scaling_mode=2

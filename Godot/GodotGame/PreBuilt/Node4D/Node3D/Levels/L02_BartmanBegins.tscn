@@ -1,8 +1,27 @@
-[gd_scene load_steps=2 format=3]
+[gd_scene format=3 uid="uid://b2xbp70yqhqx3"]
 
-[ext_resource type="PackedScene" path="res://Node4D/Node3D/Levels/L02_BartmanBegins/brt3D.tscn" id="1_f0dc8"]
+[ext_resource type="PackedScene" uid="uid://bileyslndbcm4" path="res://Node4D/NavGraph/BRT.tscn" id="1_rdywc"]
+[ext_resource type="PackedScene" uid="uid://vn7nipgdtmir" path="res://assets/L02_BartmanBegins/brt/zone02str/assets/environsZone02/export/terrain/lodmodel1_999873.rws.PS3.glb" id="2_vucau"]
+[ext_resource type="PackedScene" uid="uid://6w85iuevf6p" path="res://assets/L02_BartmanBegins/brt/zone01str/assets/environsZone01/export/terrain/lodmodel1_459e37.rws.PS3.glb" id="3_6r5is"]
+[ext_resource type="PackedScene" uid="uid://dhxriqw5mntlr" path="res://assets/L02_BartmanBegins/brt/zone03str/assets/environsZone03/export/terrain/lodmodel1_3b9e19.rws.PS3.glb" id="4_qmuyf"]
+[ext_resource type="PackedScene" uid="uid://c363ito73owk4" path="res://assets/L02_BartmanBegins/brt/zone04str/assets/environsZone04/export/terrain/lodmodel1_2de7bd.rws.PS3.glb" id="5_e5we3"]
 
-[node name="L02_BartmanBegins" type="Node3D"]
+[node name="L02_BartmanBegins" type="Node3D" unique_id=803259023]
 
-[node name="brt3D" type="Node3D" parent="." instance=ExtResource("1_f0dc8")]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -1000, -300.111, 0)
+[node name="BRT" parent="." unique_id=787532859 instance=ExtResource("1_rdywc")]
+
+[node name="Zone01_Terrain_999873" type="Node3D" parent="." unique_id=252604001]
+
+[node name="Zone01_Terrain_999873" parent="Zone01_Terrain_999873" unique_id=132888370 instance=ExtResource("2_vucau")]
+
+[node name="Node3D2" type="Node3D" parent="." unique_id=1378919883]
+
+[node name="Zone02_Terrain_459e37" parent="Node3D2" unique_id=1670671272 instance=ExtResource("3_6r5is")]
+
+[node name="Node3D3" type="Node3D" parent="." unique_id=197598404]
+
+[node name="Zone03_Terrain_3b9e19" parent="Node3D3" unique_id=362407260 instance=ExtResource("4_qmuyf")]
+
+[node name="Node3D4" type="Node3D" parent="." unique_id=1272641492]
+
+[node name="Zone04_Terrain_2de7bd" parent="Node3D4" unique_id=620615201 instance=ExtResource("5_e5we3")]

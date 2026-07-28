@@ -1,16 +1,18 @@
-[gd_scene load_steps=4 format=3]
+[gd_scene format=3 uid="uid://bv2uyxrfxv6rx"]
 
-[ext_resource type="PackedScene" path="res://assets/A2_Characters/globalFolder/costumes/costumeBartDefaultStr/assetsChars/bart/boundExport/lod2_model_1a1244.dff.PS3.glb" id="1_y2ssp"]
-[ext_resource type="PackedScene" path="res://assets/A2_Characters/globalFolder/costumes/costumeBartDefaultStr/assetsChars/bartman/boundExport/lod1_model_30b841.dff.PS3.glb" id="2_i7sg4"]
-[ext_resource type="PackedScene" path="res://assets/A2_Characters/globalFolder/costumes/costumeBartDefaultStr/assetsChars/bartRobo/boundExport/lod2_model_00eda9.dff.PS3.glb" id="3_wlc4c"]
+[ext_resource type="PackedScene" uid="uid://hfj30x8184xl" path="res://assets/A2_Characters/globalFolder/costumes/costumeBartDefaultStr/assetsChars/bart/boundExport/lod2_model_1a1244.dff.PS3.glb" id="1_y2ssp"]
+[ext_resource type="PackedScene" uid="uid://c3ceyh5npj2mx" path="res://assets/A2_Characters/globalFolder/costumes/costumeBartDefaultStr/assetsChars/bartman/boundExport/lod1_model_30b841.dff.PS3.glb" id="2_i7sg4"]
+[ext_resource type="PackedScene" uid="uid://udd8kc7tpdx3" path="res://assets/A2_Characters/globalFolder/costumes/costumeBartDefaultStr/assetsChars/bartRobo/boundExport/lod2_model_00eda9.dff.PS3.glb" id="3_wlc4c"]
 
-[node name="Bart" type="Node3D"]
+[node name="Bart" type="Node3D" unique_id=584564899]
 
-[node name="bart" type="Node3D" parent="." instance=ExtResource("1_y2ssp")]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -2000, -2000, 0)
+[node name="bart" parent="." unique_id=1880184212 instance=ExtResource("1_y2ssp")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 20.604218, 617.12897, 394.83356)
 
-[node name="bartman" type="Node3D" parent="." instance=ExtResource("2_i7sg4")]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -2000, -2000, 10)
+[node name="bartman" parent="." unique_id=1449645422 instance=ExtResource("2_i7sg4")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 20.604218, 617.12897, 404.83356)
 
-[node name="bart_robo" type="Node3D" parent="." instance=ExtResource("3_wlc4c")]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -2000, -2000, 20)
+[node name="bart_robo" parent="." unique_id=1404650630 instance=ExtResource("3_wlc4c")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 20.604218, 617.12897, 414.83356)
+
+[editable path="bart"]

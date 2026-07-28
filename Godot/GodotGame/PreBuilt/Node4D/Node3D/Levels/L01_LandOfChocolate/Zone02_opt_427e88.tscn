@@ -1,0 +1,9 @@
+[gd_scene format=3 uid="uid://cjwxkj8ux1w6k"]
+
+[ext_resource type="PackedScene" uid="uid://vnigsxxmn4a5" path="res://assets/L01_LandOfChocolate/loc/zone02str/assets/environsZone02/opt/exportZone02/opt_model1_427e88.rws.PS3.glb" id="1_kfsne"]
+
+[node name="Zone02_opt_427e88" type="Node3D" unique_id=1327567664]
+
+[node name="opt_model1_427e88_rws_PS4" parent="." unique_id=905685014 instance=ExtResource("1_kfsne")]
+
+[editable path="opt_model1_427e88_rws_PS4"]

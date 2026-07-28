@@ -1,0 +1,32 @@
+[gd_scene format=3 uid="uid://b75ymgtmclck0"]
+
+[ext_resource type="Script" uid="uid://7cu6lsib5ff" path="res://Scripts/nav_graph_visualizer.gd" id="1_wxtfj"]
+[ext_resource type="PackedScene" uid="uid://b32puxwimiu18" path="res://Node4D/NavGraph/LOC.tscn" id="2_tteyv"]
+[ext_resource type="PackedScene" uid="uid://bileyslndbcm4" path="res://Node4D/NavGraph/BRT.tscn" id="3_tteyv"]
+
+[node name="Node3D" type="Node3D" unique_id=770378131]
+
+[node name="khgjgj3" type="Node3D" parent="." unique_id=727151250]
+visible = false
+script = ExtResource("1_wxtfj")
+
+[node name="khgjgj2" type="Node3D" parent="." unique_id=80047552]
+visible = false
+
+[node name="khgjgj4" type="Node3D" parent="khgjgj2" unique_id=1243605503]
+visible = false
+script = ExtResource("1_wxtfj")
+
+[node name="khgjgj5" type="Node3D" parent="khgjgj2" unique_id=944679320]
+visible = false
+script = ExtResource("1_wxtfj")
+
+[node name="khgjgj2" type="Node3D" parent="khgjgj2" unique_id=1669611958]
+visible = false
+script = ExtResource("1_wxtfj")
+
+[node name="LOC" parent="." unique_id=1440381790 instance=ExtResource("2_tteyv")]
+visible = false
+
+[node name="BRT" parent="." unique_id=787532859 instance=ExtResource("3_tteyv")]
+visible = false

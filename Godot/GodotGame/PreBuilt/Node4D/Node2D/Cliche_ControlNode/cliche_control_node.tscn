@@ -1,164 +1,307 @@
-[gd_scene load_steps=32 format=3]
+[gd_scene format=3 uid="uid://bj8huaox5ugjx"]
 
-[ext_resource type="Texture2D" path="res://assets/A2_Frontend/frontendStr/assetsRws/txd/split20txd/9_cliche_summary_f5dc4b.png" id="1_3j8at"]
-[ext_resource type="Texture2D" path="res://assets/A2_Frontend/frontendStr/assetsRws/txd/split24txd/88_cliche_summary_a284d5.png" id="2_iyxlb"]
-[ext_resource type="Texture2D" path="res://assets/A2_Frontend/frontendStr/assetsRws/txd/split24txd/91_cliche_summary_44f26d.png" id="3_our4x"]
-[ext_resource type="Texture2D" path="res://assets/A2_Frontend/frontendStr/assetsRws/txd/split24txd/94_cliche_summary_b6ebf5.png" id="4_xejdx"]
-[ext_resource type="Texture2D" path="res://assets/A2_Frontend/frontendStr/assetsRws/txd/split24txd/97_cliche_summary_9b7373.png" id="5_oqsj8"]
-[ext_resource type="Texture2D" path="res://assets/A2_Frontend/frontendStr/assetsRws/txd/split25txd/37_cliche_summary_b0dc20.png" id="6_jphde"]
-[ext_resource type="Texture2D" path="res://assets/A2_Frontend/frontendStr/assetsRws/txd/split25txd/67_cliche_summary_800bc4.png" id="7_svhqa"]
-[ext_resource type="Texture2D" path="res://assets/A2_Frontend/frontendStr/assetsRws/txd/split25txd/70_cliche_summary_4846c1.png" id="8_ogda4"]
-[ext_resource type="Texture2D" path="res://assets/A2_Frontend/frontendStr/assetsRws/txd/split25txd/73_cliche_summary_047b1a.png" id="9_1a1pn"]
-[ext_resource type="Texture2D" path="res://assets/A2_Frontend/frontendStr/assetsRws/txd/split25txd/76_cliche_summary_29fd1b.png" id="10_nd1vd"]
-[ext_resource type="Texture2D" path="res://assets/A2_Frontend/frontendStr/assetsRws/txd/split25txd/79_cliche_summary_169c7b.png" id="11_lrb2h"]
-[ext_resource type="Texture2D" path="res://assets/A2_Frontend/frontendStr/assetsRws/txd/split25txd/82_cliche_summary_afc3a9.png" id="12_vr010"]
-[ext_resource type="Texture2D" path="res://assets/A2_Frontend/frontendStr/assetsRws/txd/split25txd/85_cliche_summary_1e582e.png" id="13_36qld"]
-[ext_resource type="Texture2D" path="res://assets/A2_Frontend/frontendStr/assetsRws/txd/split26txd/46_cliche_summary_4da782.png" id="14_b5sqm"]
-[ext_resource type="Texture2D" path="res://assets/A2_Frontend/frontendStr/assetsRws/txd/split26txd/49_cliche_summary_882fb7.png" id="15_ljqpo"]
-[ext_resource type="Texture2D" path="res://assets/A2_Frontend/frontendStr/assetsRws/txd/split26txd/52_cliche_summary_41feec.png" id="16_0gbnl"]
-[ext_resource type="Texture2D" path="res://assets/A2_Frontend/frontendStr/assetsRws/txd/split26txd/55_cliche_summary_d6dcff.png" id="17_38hma"]
-[ext_resource type="Texture2D" path="res://assets/A2_Frontend/frontendStr/assetsRws/txd/split26txd/58_cliche_summary_08739a.png" id="18_lmve7"]
-[ext_resource type="Texture2D" path="res://assets/A2_Frontend/frontendStr/assetsRws/txd/split26txd/61_cliche_summary_27ab64.png" id="19_yx6j3"]
-[ext_resource type="Texture2D" path="res://assets/A2_Frontend/frontendStr/assetsRws/txd/split27txd/30_cliche_summary_06e603.png" id="20_hesm4"]
-[ext_resource type="Texture2D" path="res://assets/A2_Frontend/frontendStr/assetsRws/txd/split27txd/34_cliche_summary_241d8b.png" id="21_ww704"]
-[ext_resource type="Texture2D" path="res://assets/A2_Frontend/frontendStr/assetsRws/txd/split27txd/43_cliche_summary_9cf20c.png" id="22_g13yp"]
-[ext_resource type="Texture2D" path="res://assets/A2_Frontend/frontendStr/assetsRws/txd/split27txd/100_cliche_summary_d07fb4.png" id="23_ctdeg"]
-[ext_resource type="Texture2D" path="res://assets/A2_Frontend/frontendStr/assetsRws/txd/split27txd/103_cliche_summary_24b5cf.png" id="24_uab08"]
-[ext_resource type="Texture2D" path="res://assets/A2_Frontend/frontendStr/assetsRws/txd/split27txd/106_cliche_summary_621c82.png" id="25_vfp1v"]
-[ext_resource type="Texture2D" path="res://assets/A2_Frontend/frontendStr/assetsRws/txd/split27txd/109_cliche_summary_39cfb2.png" id="26_wdvkm"]
-[ext_resource type="Texture2D" path="res://assets/A2_Frontend/frontendStr/assetsRws/txd/split27txd/112_cliche_summary_ff9096.png" id="27_fptql"]
-[ext_resource type="Texture2D" path="res://assets/A2_Frontend/frontendStr/assetsRws/txd/split27txd/115_cliche_summary_35f3fe.png" id="28_kl3vi"]
-[ext_resource type="Texture2D" path="res://assets/A2_Frontend/frontendStr/assetsRws/txd/split27txd/118_cliche_summary_b482fb.png" id="29_v0vln"]
-[ext_resource type="Texture2D" path="res://assets/A2_Frontend/frontendStr/assetsRws/txd/split27txd/121_cliche_summary_de45d5.png" id="30_0ty85"]
-[ext_resource type="Texture2D" path="res://assets/A2_Frontend/frontendStr/assetsRws/txd/split28txd/40_cliche_summary_298db3.png" id="31_k1yng"]
+[ext_resource type="Texture2D" uid="uid://bfj6knpabfq7p" path="res://assets/A2_Frontend/frontendStr/assetsRws/txd/split20txd/9_cliche_summary_f5dc4b.png" id="1_3j8at"]
+[ext_resource type="Texture2D" uid="uid://b7vr04808q80y" path="res://assets/A2_Frontend/frontendStr/assetsRws/txd/split24txd/88_cliche_summary_a284d5.png" id="2_iyxlb"]
+[ext_resource type="Texture2D" uid="uid://be8q8ybajhh1g" path="res://assets/A2_Frontend/frontendStr/assetsRws/txd/split24txd/91_cliche_summary_44f26d.png" id="3_our4x"]
+[ext_resource type="Texture2D" uid="uid://dpl368d3rotp6" path="res://assets/A2_Frontend/frontendStr/assetsRws/txd/split24txd/94_cliche_summary_b6ebf5.png" id="4_xejdx"]
+[ext_resource type="Texture2D" uid="uid://xcm6ofthlxp2" path="res://assets/A2_Frontend/frontendStr/assetsRws/txd/split24txd/97_cliche_summary_9b7373.png" id="5_oqsj8"]
+[ext_resource type="Texture2D" uid="uid://bo0eteu6jepyd" path="res://assets/A2_Frontend/frontendStr/assetsRws/txd/split25txd/37_cliche_summary_b0dc20.png" id="6_jphde"]
+[ext_resource type="Texture2D" uid="uid://civrhmcormfxw" path="res://assets/A2_Frontend/frontendStr/assetsRws/txd/split25txd/67_cliche_summary_800bc4.png" id="7_svhqa"]
+[ext_resource type="Texture2D" uid="uid://ccd5tf5ntgqsj" path="res://assets/A2_Frontend/frontendStr/assetsRws/txd/split25txd/70_cliche_summary_4846c1.png" id="8_ogda4"]
+[ext_resource type="Texture2D" uid="uid://wqtemwiyc8yf" path="res://assets/A2_Frontend/frontendStr/assetsRws/txd/split25txd/73_cliche_summary_047b1a.png" id="9_1a1pn"]
+[ext_resource type="Texture2D" uid="uid://jkxc1dfqqm26" path="res://assets/A2_Frontend/frontendStr/assetsRws/txd/split25txd/76_cliche_summary_29fd1b.png" id="10_nd1vd"]
+[ext_resource type="Texture2D" uid="uid://ceqt485p1fw0h" path="res://assets/A2_Frontend/frontendStr/assetsRws/txd/split25txd/79_cliche_summary_169c7b.png" id="11_lrb2h"]
+[ext_resource type="Texture2D" uid="uid://bqr6ut7j52wr8" path="res://assets/A2_Frontend/frontendStr/assetsRws/txd/split25txd/82_cliche_summary_afc3a9.png" id="12_vr010"]
+[ext_resource type="Texture2D" uid="uid://dalyhsw4yn4mx" path="res://assets/A2_Frontend/frontendStr/assetsRws/txd/split25txd/85_cliche_summary_1e582e.png" id="13_36qld"]
+[ext_resource type="Texture2D" uid="uid://b2uw1wkc15a2x" path="res://assets/A2_Frontend/frontendStr/assetsRws/txd/split15txd/64_cliche_summary_566ae8.png" id="13_iyxlb"]
+[ext_resource type="Texture2D" uid="uid://j7m33yqhmomd" path="res://assets/A2_Frontend/frontendStr/assetsRws/txd/split26txd/46_cliche_summary_4da782.png" id="14_b5sqm"]
+[ext_resource type="Texture2D" uid="uid://ctruv7d0m7fau" path="res://assets/A2_Frontend/frontendStr/assetsRws/txd/split26txd/49_cliche_summary_882fb7.png" id="15_ljqpo"]
+[ext_resource type="Texture2D" uid="uid://sqqpnfmcyt34" path="res://assets/A2_Frontend/frontendStr/assetsRws/txd/split26txd/52_cliche_summary_41feec.png" id="16_0gbnl"]
+[ext_resource type="Texture2D" uid="uid://eqsdl0dss27m" path="res://assets/A2_Frontend/frontendStr/assetsRws/txd/split26txd/55_cliche_summary_d6dcff.png" id="17_38hma"]
+[ext_resource type="Texture2D" uid="uid://c8it5mdrbu7kj" path="res://assets/A2_Frontend/frontendStr/assetsRws/txd/split26txd/58_cliche_summary_08739a.png" id="18_lmve7"]
+[ext_resource type="Texture2D" uid="uid://ijy3q6ho4w5w" path="res://assets/A2_Frontend/frontendStr/assetsRws/txd/split26txd/61_cliche_summary_27ab64.png" id="19_yx6j3"]
+[ext_resource type="Texture2D" uid="uid://tvm4gkn64owc" path="res://assets/A2_Frontend/frontendStr/assetsRws/txd/split27txd/30_cliche_summary_06e603.png" id="20_hesm4"]
+[ext_resource type="Texture2D" uid="uid://cxmmhf546scdm" path="res://assets/A2_Frontend/frontendStr/assetsRws/txd/split27txd/34_cliche_summary_241d8b.png" id="21_ww704"]
+[ext_resource type="Texture2D" uid="uid://c8bme01quu54c" path="res://assets/A2_Frontend/frontendStr/assetsRws/txd/split27txd/43_cliche_summary_9cf20c.png" id="22_g13yp"]
+[ext_resource type="Texture2D" uid="uid://cjeoq5nsktxd0" path="res://assets/A2_Frontend/frontendStr/assetsRws/txd/split27txd/100_cliche_summary_d07fb4.png" id="23_ctdeg"]
+[ext_resource type="Texture2D" uid="uid://dgxpr3ri0pnqh" path="res://assets/A2_Frontend/frontendStr/assetsRws/txd/split27txd/103_cliche_summary_24b5cf.png" id="24_uab08"]
+[ext_resource type="Texture2D" uid="uid://bvmhma0iodjhs" path="res://assets/A2_Frontend/frontendStr/assetsRws/txd/split27txd/106_cliche_summary_621c82.png" id="25_vfp1v"]
+[ext_resource type="Texture2D" uid="uid://bw6j4h26osnlk" path="res://assets/A2_Frontend/frontendStr/assetsRws/txd/split27txd/109_cliche_summary_39cfb2.png" id="26_wdvkm"]
+[ext_resource type="Texture2D" uid="uid://cdudw7gg4ynmw" path="res://assets/A2_Frontend/frontendStr/assetsRws/txd/split27txd/112_cliche_summary_ff9096.png" id="27_fptql"]
+[ext_resource type="Texture2D" uid="uid://chuurk3gegoxi" path="res://assets/A2_Frontend/frontendStr/assetsRws/txd/split27txd/115_cliche_summary_35f3fe.png" id="28_kl3vi"]
+[ext_resource type="Texture2D" uid="uid://frnampt8cuvk" path="res://assets/A2_Frontend/frontendStr/assetsRws/txd/split27txd/118_cliche_summary_b482fb.png" id="29_v0vln"]
+[ext_resource type="Texture2D" uid="uid://bghxcbwhyyytl" path="res://assets/A2_Frontend/frontendStr/assetsRws/txd/split27txd/121_cliche_summary_de45d5.png" id="30_0ty85"]
+[ext_resource type="Texture2D" uid="uid://bwmalh3s0o76r" path="res://assets/A2_Frontend/frontendStr/assetsRws/txd/split28txd/40_cliche_summary_298db3.png" id="31_k1yng"]
 
-[node name="Cliche_ControlNode" type="Control"]
+[node name="Cliche" type="Control" unique_id=1947079729]
 layout_mode = 3
 anchors_preset = 0
 
-[node name="Panel" type="Panel" parent="."]
+[node name="Panel" type="Panel" parent="." unique_id=505893291]
 layout_mode = 0
 
-[node name="9ClicheSummary" type="Sprite2D" parent="Panel"]
-position = Vector2(4520, 1224)
-texture = ExtResource("1_3j8at")
+[node name="icon" type="Panel" parent="Panel" unique_id=1461871082]
+layout_mode = 0
+offset_left = 869.0
+offset_top = 243.0
+offset_right = 920.0
+offset_bottom = 290.0
 
-[node name="88ClicheSummary" type="Sprite2D" parent="Panel"]
-position = Vector2(1568, 824)
+[node name="30_cliche_summary_06e603" type="Polygon2D" parent="Panel/icon" unique_id=6273992]
+position = Vector2(439, -61)
+texture = ExtResource("20_hesm4")
+polygon = PackedVector2Array(0, 0, 256, 0, 256, 256, 0, 256)
+uv = PackedVector2Array(0, 0, 256, 0, 256, 256, 0, 256)
+
+[node name="34_cliche_summary_241d8b" type="Polygon2D" parent="Panel/icon" unique_id=1339227251]
+position = Vector2(578, 76)
+texture = ExtResource("21_ww704")
+polygon = PackedVector2Array(0, 0, 256, 0, 256, 256, 0, 256)
+uv = PackedVector2Array(0, 0, 256, 0, 256, 256, 0, 256)
+
+[node name="37_cliche_summary_b0dc20" type="Polygon2D" parent="Panel/icon" unique_id=1543250966]
+position = Vector2(582, -196)
+texture = ExtResource("6_jphde")
+polygon = PackedVector2Array(0, 0, 256, 0, 256, 256, 0, 256)
+uv = PackedVector2Array(0, 0, 256, 0, 256, 256, 0, 256)
+
+[node name="40_cliche_summary_298db3" type="Polygon2D" parent="Panel/icon" unique_id=756100256]
+position = Vector2(718, -60)
+texture = ExtResource("31_k1yng")
+polygon = PackedVector2Array(0, 0, 256, 0, 256, 256, 0, 256)
+uv = PackedVector2Array(0, 0, 256, 0, 256, 256, 0, 256)
+
+[node name="43_cliche_summary_9cf20c" type="Polygon2D" parent="Panel/icon" unique_id=1305381414]
+position = Vector2(440, 216)
+texture = ExtResource("22_g13yp")
+polygon = PackedVector2Array(0, 0, 256, 0, 256, 256, 0, 256)
+uv = PackedVector2Array(0, 0, 256, 0, 256, 256, 0, 256)
+
+[node name="46_cliche_summary_4da782" type="Polygon2D" parent="Panel/icon" unique_id=1423750469]
+position = Vector2(710, 220)
+texture = ExtResource("14_b5sqm")
+polygon = PackedVector2Array(0, 0, 256, 0, 256, 256, 0, 256)
+uv = PackedVector2Array(0, 0, 256, 0, 256, 256, 0, 256)
+
+[node name="49_cliche_summary_882fb7" type="Polygon2D" parent="Panel/icon" unique_id=1178859512]
+position = Vector2(854, 84)
+texture = ExtResource("15_ljqpo")
+polygon = PackedVector2Array(0, 0, 256, 0, 256, 256, 0, 256)
+uv = PackedVector2Array(0, 0, 256, 0, 256, 256, 0, 256)
+
+[node name="52_cliche_summary_41feec" type="Polygon2D" parent="Panel/icon" unique_id=338607701]
+position = Vector2(862, -196)
+texture = ExtResource("16_0gbnl")
+polygon = PackedVector2Array(0, 0, 256, 0, 256, 256, 0, 256)
+uv = PackedVector2Array(0, 0, 256, 0, 256, 256, 0, 256)
+
+[node name="55_cliche_summary_d6dcff" type="Polygon2D" parent="Panel/icon" unique_id=1532705698]
+position = Vector2(998, -60)
+texture = ExtResource("17_38hma")
+polygon = PackedVector2Array(0, 0, 256, 0, 256, 256, 0, 256)
+uv = PackedVector2Array(0, 0, 256, 0, 256, 256, 0, 256)
+
+[node name="58_cliche_summary_08739a" type="Polygon2D" parent="Panel/icon" unique_id=773346051]
+position = Vector2(574, 364)
+texture = ExtResource("18_lmve7")
+polygon = PackedVector2Array(0, 0, 256, 0, 256, 256, 0, 256)
+uv = PackedVector2Array(0, 0, 256, 0, 256, 256, 0, 256)
+
+[node name="61_cliche_summary_27ab64" type="Polygon2D" parent="Panel/icon" unique_id=1696374842]
+position = Vector2(854, 364)
+texture = ExtResource("19_yx6j3")
+polygon = PackedVector2Array(0, 0, 256, 0, 256, 256, 0, 256)
+uv = PackedVector2Array(0, 0, 256, 0, 256, 256, 0, 256)
+
+[node name="64_cliche_summary_566ae8" type="Polygon2D" parent="Panel/icon" unique_id=994095287]
+position = Vector2(990, 228)
+texture = ExtResource("13_iyxlb")
+polygon = PackedVector2Array(0, 0, 256, 0, 256, 256, 0, 256)
+uv = PackedVector2Array(0, 0, 256, 0, 256, 256, 0, 256)
+
+[node name="67_cliche_summary_800bc4" type="Polygon2D" parent="Panel/icon" unique_id=863259890]
+position = Vector2(718, 500)
+texture = ExtResource("7_svhqa")
+polygon = PackedVector2Array(0, 0, 256, 0, 256, 256, 0, 256)
+uv = PackedVector2Array(0, 0, 256, 0, 256, 256, 0, 256)
+
+[node name="70_cliche_summary_4846c1" type="Polygon2D" parent="Panel/icon" unique_id=1265197883]
+position = Vector2(1126, 84)
+texture = ExtResource("8_ogda4")
+polygon = PackedVector2Array(0, 0, 256, 0, 256, 256, 0, 256)
+uv = PackedVector2Array(0, 0, 256, 0, 256, 256, 0, 256)
+
+[node name="73_cliche_summary_047b1a" type="Polygon2D" parent="Panel/icon" unique_id=787349910]
+position = Vector2(358, 428)
+texture = ExtResource("9_1a1pn")
+polygon = PackedVector2Array(0, 0, 256, 0, 256, 256, 0, 256)
+uv = PackedVector2Array(0, 0, 256, 0, 256, 256, 0, 256)
+
+[node name="76_cliche_summary_29fd1b" type="Polygon2D" parent="Panel/icon" unique_id=203367334]
+position = Vector2(502, 572)
+texture = ExtResource("10_nd1vd")
+polygon = PackedVector2Array(0, 0, 256, 0, 256, 256, 0, 256)
+uv = PackedVector2Array(0, 0, 256, 0, 256, 256, 0, 256)
+
+[node name="79_cliche_summary_169c7b" type="Polygon2D" parent="Panel/icon" unique_id=898939263]
+position = Vector2(646, 716)
+texture = ExtResource("11_lrb2h")
+polygon = PackedVector2Array(0, 0, 256, 0, 256, 256, 0, 256)
+uv = PackedVector2Array(0, 0, 256, 0, 256, 256, 0, 256)
+
+[node name="82_cliche_summary_afc3a9" type="Polygon2D" parent="Panel/icon" unique_id=901044725]
+position = Vector2(862, 644)
+texture = ExtResource("12_vr010")
+polygon = PackedVector2Array(0, 0, 256, 0, 256, 256, 0, 256)
+uv = PackedVector2Array(0, 0, 256, 0, 256, 256, 0, 256)
+
+[node name="85_cliche_summary_1e582e" type="Polygon2D" parent="Panel/icon" unique_id=661046843]
+position = Vector2(302, 76)
+texture = ExtResource("13_36qld")
+polygon = PackedVector2Array(0, 0, 256, 0, 256, 256, 0, 256)
+uv = PackedVector2Array(0, 0, 256, 0, 256, 256, 0, 256)
+
+[node name="88_cliche_summary_a284d5" type="Polygon2D" parent="Panel/icon" unique_id=146871764]
+position = Vector2(1150, 356)
 texture = ExtResource("2_iyxlb")
+polygon = PackedVector2Array(0, 0, 256, 0, 256, 256, 0, 256)
+uv = PackedVector2Array(0, 0, 256, 0, 256, 256, 0, 256)
 
-[node name="91ClicheSummary" type="Sprite2D" parent="Panel"]
-position = Vector2(3632, 1200)
+[node name="91_cliche_summary_44f26d" type="Polygon2D" parent="Panel/icon" unique_id=1149281513]
+position = Vector2(1070, -268)
 texture = ExtResource("3_our4x")
+polygon = PackedVector2Array(0, 0, 256, 0, 256, 256, 0, 256)
+uv = PackedVector2Array(0, 0, 256, 0, 256, 256, 0, 256)
 
-[node name="94ClicheSummary" type="Sprite2D" parent="Panel"]
-position = Vector2(3336, 1408)
+[node name="94_cliche_summary_b6ebf5" type="Sprite2D" parent="Panel/icon" unique_id=606875015]
+position = Vector2(1062, -284)
 texture = ExtResource("4_xejdx")
 
-[node name="97ClicheSummary" type="Sprite2D" parent="Panel"]
-position = Vector2(2992, 872)
+[node name="97_cliche_summary_9b7373" type="Sprite2D" parent="Panel/icon" unique_id=871247102]
+position = Vector2(846, -196)
 texture = ExtResource("5_oqsj8")
 
-[node name="37ClicheSummary" type="Sprite2D" parent="Panel"]
-position = Vector2(2976, 1504)
-texture = ExtResource("6_jphde")
-
-[node name="67ClicheSummary" type="Sprite2D" parent="Panel"]
-position = Vector2(3336, 1032)
-texture = ExtResource("7_svhqa")
-
-[node name="70ClicheSummary" type="Sprite2D" parent="Panel"]
-position = Vector2(2280, 872)
-texture = ExtResource("8_ogda4")
-
-[node name="73ClicheSummary" type="Sprite2D" parent="Panel"]
-position = Vector2(192, 832)
-texture = ExtResource("9_1a1pn")
-
-[node name="76ClicheSummary" type="Sprite2D" parent="Panel"]
-position = Vector2(2632, 896)
-texture = ExtResource("10_nd1vd")
-
-[node name="79ClicheSummary" type="Sprite2D" parent="Panel"]
-position = Vector2(192, 1152)
-texture = ExtResource("11_lrb2h")
-
-[node name="82ClicheSummary" type="Sprite2D" parent="Panel"]
-position = Vector2(512, 1472)
-texture = ExtResource("12_vr010")
-
-[node name="85ClicheSummary" type="Sprite2D" parent="Panel"]
-position = Vector2(192, 1480)
-texture = ExtResource("13_36qld")
-
-[node name="46ClicheSummary" type="Sprite2D" parent="Panel"]
-position = Vector2(512, 1152)
-texture = ExtResource("14_b5sqm")
-
-[node name="49ClicheSummary" type="Sprite2D" parent="Panel"]
-position = Vector2(1256, 840)
-texture = ExtResource("15_ljqpo")
-
-[node name="52ClicheSummary" type="Sprite2D" parent="Panel"]
-position = Vector2(2296, 1200)
-texture = ExtResource("16_0gbnl")
-
-[node name="55ClicheSummary" type="Sprite2D" parent="Panel"]
-position = Vector2(1544, 1520)
-texture = ExtResource("17_38hma")
-
-[node name="58ClicheSummary" type="Sprite2D" parent="Panel"]
-position = Vector2(2664, 1520)
-texture = ExtResource("18_lmve7")
-
-[node name="61ClicheSummary" type="Sprite2D" parent="Panel"]
-position = Vector2(2632, 1160)
-texture = ExtResource("19_yx6j3")
-
-[node name="30ClicheSummary" type="Sprite2D" parent="Panel"]
-position = Vector2(1208, 1168)
-texture = ExtResource("20_hesm4")
-
-[node name="34ClicheSummary" type="Sprite2D" parent="Panel"]
-position = Vector2(872, 1144)
-texture = ExtResource("21_ww704")
-
-[node name="43ClicheSummary" type="Sprite2D" parent="Panel"]
-position = Vector2(1952, 1544)
-texture = ExtResource("22_g13yp")
-
-[node name="100ClicheSummary" type="Sprite2D" parent="Panel"]
-position = Vector2(1936, 1200)
+[node name="100_cliche_summary_d07fb4" type="Sprite2D" parent="Panel/icon" unique_id=1129890412]
+position = Vector2(1142, 628)
 texture = ExtResource("23_ctdeg")
 
-[node name="103ClicheSummary" type="Sprite2D" parent="Panel"]
-position = Vector2(880, 1512)
+[node name="103_cliche_summary_24b5cf" type="Sprite2D" parent="Panel/icon" unique_id=1979831362]
+position = Vector2(574, -212)
 texture = ExtResource("24_uab08")
 
-[node name="106ClicheSummary" type="Sprite2D" parent="Panel"]
-position = Vector2(512, 832)
+[node name="106_cliche_summary_621c82" type="Sprite2D" parent="Panel/icon" unique_id=446024781]
+position = Vector2(431, -72)
 texture = ExtResource("25_vfp1v")
 
-[node name="109ClicheSummary" type="Sprite2D" parent="Panel"]
-position = Vector2(2960, 1144)
+[node name="109_cliche_summary_39cfb2" type="Sprite2D" parent="Panel/icon" unique_id=627554526]
+position = Vector2(918, -428)
 texture = ExtResource("26_wdvkm")
 
-[node name="112ClicheSummary" type="Sprite2D" parent="Panel"]
-position = Vector2(2280, 1520)
+[node name="112_cliche_summary_ff9096" type="Sprite2D" parent="Panel/icon" unique_id=202801541]
+position = Vector2(710, -340)
 texture = ExtResource("27_fptql")
 
-[node name="115ClicheSummary" type="Sprite2D" parent="Panel"]
-position = Vector2(1176, 1528)
+[node name="115_cliche_summary_35f3fe" type="Sprite2D" parent="Panel/icon" unique_id=1488637932]
+position = Vector2(1358, 28)
 texture = ExtResource("28_kl3vi")
 
-[node name="118ClicheSummary" type="Sprite2D" parent="Panel"]
-position = Vector2(1576, 1176)
+[node name="118_cliche_summary_b482fb" type="Sprite2D" parent="Panel/icon" unique_id=841265613]
+position = Vector2(1502, 164)
 texture = ExtResource("29_v0vln")
 
-[node name="121ClicheSummary" type="Sprite2D" parent="Panel"]
-position = Vector2(880, 848)
+[node name="121_cliche_summary_de45d5" type="Sprite2D" parent="Panel/icon" unique_id=412120534]
+position = Vector2(1406, 340)
 texture = ExtResource("30_0ty85")
 
-[node name="40ClicheSummary" type="Sprite2D" parent="Panel"]
-position = Vector2(1936, 880)
-texture = ExtResource("31_k1yng")
+[node name="Face_9_cliche_summary_f5dc4b" type="Node2D" parent="Panel" unique_id=1635138203]
+
+[node name="Body" type="Polygon2D" parent="Panel/Face_9_cliche_summary_f5dc4b" unique_id=1333852076]
+position = Vector2(18, 76)
+texture = ExtResource("1_3j8at")
+polygon = PackedVector2Array(688.0001, 512, 608, 360, 544, 296, 560, 208, 488, -8, 208, -8, 16.00003, 272, 8, 512, 680, 511.99997)
+uv = PackedVector2Array(688.0001, 512, 608, 360, 544, 296, 560, 208, 488, -8, 208, -8, 16.00003, 272, 8, 512, 680, 511.99997)
+
+[node name="eye-left" type="Polygon2D" parent="Panel/Face_9_cliche_summary_f5dc4b/Body" unique_id=163088623]
+position = Vector2(379.80914, 125.8862)
+offset = Vector2(-772, -36)
+texture = ExtResource("1_3j8at")
+polygon = PackedVector2Array(766.1118, 32.356888, 766.1118, 40.165047, 769.1286, 42.472004, 774.68896, 42.53116, 779.0071, 39.33691, 779.0662, 33.835705, 775.28046, 29.39925, 769.01025, 29.517555)
+uv = PackedVector2Array(766.1118, 32.356888, 766.1118, 40.165047, 769.1286, 42.472004, 774.68896, 42.53116, 779.0071, 39.33691, 779.0662, 33.835705, 775.28046, 29.39925, 769.01025, 29.517555)
+
+[node name="eye-right" type="Polygon2D" parent="Panel/Face_9_cliche_summary_f5dc4b/Body" unique_id=1326071284]
+position = Vector2(477, 112)
+offset = Vector2(-772, -36)
+texture = ExtResource("1_3j8at")
+polygon = PackedVector2Array(766.1118, 32.356888, 766.1118, 40.165047, 769.1286, 42.472004, 774.68896, 42.53116, 779.0071, 39.33691, 779.0662, 33.835705, 775.28046, 29.39925, 769.01025, 29.517555)
+uv = PackedVector2Array(766.1118, 32.356888, 766.1118, 40.165047, 769.1286, 42.472004, 774.68896, 42.53116, 779.0071, 39.33691, 779.0662, 33.835705, 775.28046, 29.39925, 769.01025, 29.517555)
+
+[node name="Face2" type="Polygon2D" parent="Panel/Face_9_cliche_summary_f5dc4b" unique_id=1410051959]
+visible = false
+position = Vector2(-467, -64)
+texture = ExtResource("1_3j8at")
+polygon = PackedVector2Array(802.5234, 174.55736, 802.5386, 336.43076, 1012.25977, 336.37476, 1012.47125, 331.51663, 1000.0095, 175.6626, 927.6138, 174.5478)
+uv = PackedVector2Array(802.5234, 174.55736, 802.5386, 336.43076, 1012.25977, 336.37476, 1012.47125, 331.51663, 1000.0095, 175.6626, 927.6138, 174.5478)
+
+[node name="eye-left" type="Polygon2D" parent="Panel/Face_9_cliche_summary_f5dc4b/Face2" unique_id=2053313680]
+position = Vector2(850.13074, 260.1409)
+offset = Vector2(-772, -36)
+texture = ExtResource("1_3j8at")
+polygon = PackedVector2Array(766.1118, 32.356888, 766.1118, 40.165047, 769.1286, 42.472004, 774.68896, 42.53116, 779.0071, 39.33691, 779.0662, 33.835705, 775.28046, 29.39925, 769.01025, 29.517555)
+uv = PackedVector2Array(766.1118, 32.356888, 766.1118, 40.165047, 769.1286, 42.472004, 774.68896, 42.53116, 779.0071, 39.33691, 779.0662, 33.835705, 775.28046, 29.39925, 769.01025, 29.517555)
+
+[node name="eye-right" type="Polygon2D" parent="Panel/Face_9_cliche_summary_f5dc4b/Face2" unique_id=1120674398]
+position = Vector2(966.7496, 244.20935)
+offset = Vector2(-772, -36)
+texture = ExtResource("1_3j8at")
+polygon = PackedVector2Array(766.1118, 32.356888, 766.1118, 40.165047, 769.1286, 42.472004, 774.68896, 42.53116, 779.0071, 39.33691, 779.0662, 33.835705, 775.28046, 29.39925, 769.01025, 29.517555)
+uv = PackedVector2Array(766.1118, 32.356888, 766.1118, 40.165047, 769.1286, 42.472004, 774.68896, 42.53116, 779.0071, 39.33691, 779.0662, 33.835705, 775.28046, 29.39925, 769.01025, 29.517555)
+
+[node name="Face1" type="Polygon2D" parent="Panel/Face_9_cliche_summary_f5dc4b" unique_id=1604672491]
+visible = false
+position = Vector2(445, 185)
+offset = Vector2(-912, -82)
+texture = ExtResource("1_3j8at")
+polygon = PackedVector2Array(802.6645, 169.31357, 1012.61957, 169.12021, 1012.5604, 164.15138, 999.1737, 140.33641, 988.63763, 112.52925, 992.52875, 106.829315, 994.1749, 101.31805, 993.53076, 97.381424, 992.0202, 93.66631, 990.0843, 90.6549, 988.0946, 89.36429, 990.4932, 84.59737, 991.03094, 79.70381, 991.2948, 74.38391, 991.117, 69.27304, 989.8726, 64.07327, 987.5616, 59.05128, 984.6284, 54.384827, 982.1841, 49.98503, 975.2066, 42.740913, 976.0313, 41.169132, 976.0062, 37.05493, 974.9275, 34.144886, 969.7848, 28.726185, 962.7605, 24.71233, 951.52545, 20.494995, 945.55444, 19.333965, 940.57855, 18.857113, 938.8785, 18.090002, 926.58435, 7.7928, 802.5556, 7.5247517)
+uv = PackedVector2Array(802.6645, 169.31357, 1012.61957, 169.12021, 1012.5604, 164.15138, 999.1737, 140.33641, 988.63763, 112.52925, 992.52875, 106.829315, 994.1749, 101.31805, 993.53076, 97.381424, 992.0202, 93.66631, 990.0843, 90.6549, 988.0946, 89.36429, 990.4932, 84.59737, 991.03094, 79.70381, 991.2948, 74.38391, 991.117, 69.27304, 989.8726, 64.07327, 987.5616, 59.05128, 984.6284, 54.384827, 982.1841, 49.98503, 975.2066, 42.740913, 976.0313, 41.169132, 976.0062, 37.05493, 974.9275, 34.144886, 969.7848, 28.726185, 962.7605, 24.71233, 951.52545, 20.494995, 945.55444, 19.333965, 940.57855, 18.857113, 938.8785, 18.090002, 926.58435, 7.7928, 802.5556, 7.5247517)
+
+[node name="eye-left" type="Polygon2D" parent="Panel/Face_9_cliche_summary_f5dc4b/Face1" unique_id=150446178]
+position = Vector2(-59, 9)
+offset = Vector2(-772, -36)
+texture = ExtResource("1_3j8at")
+polygon = PackedVector2Array(766.1118, 32.356888, 766.1118, 40.165047, 769.1286, 42.472004, 774.68896, 42.53116, 779.0071, 39.33691, 779.0662, 33.835705, 775.28046, 29.39925, 769.01025, 29.517555)
+uv = PackedVector2Array(766.1118, 32.356888, 766.1118, 40.165047, 769.1286, 42.472004, 774.68896, 42.53116, 779.0071, 39.33691, 779.0662, 33.835705, 775.28046, 29.39925, 769.01025, 29.517555)
+
+[node name="eye-right" type="Polygon2D" parent="Panel/Face_9_cliche_summary_f5dc4b/Face1" unique_id=1330257011]
+position = Vector2(48, -5)
+offset = Vector2(-772, -36)
+texture = ExtResource("1_3j8at")
+polygon = PackedVector2Array(766.1118, 32.356888, 766.1118, 40.165047, 769.1286, 42.472004, 774.68896, 42.53116, 779.0071, 39.33691, 779.0662, 33.835705, 775.28046, 29.39925, 769.01025, 29.517555)
+uv = PackedVector2Array(766.1118, 32.356888, 766.1118, 40.165047, 769.1286, 42.472004, 774.68896, 42.53116, 779.0071, 39.33691, 779.0662, 33.835705, 775.28046, 29.39925, 769.01025, 29.517555)
+
+[node name="Face3" type="Polygon2D" parent="Panel/Face_9_cliche_summary_f5dc4b" unique_id=881671010]
+visible = false
+position = Vector2(-467, -231)
+texture = ExtResource("1_3j8at")
+polygon = PackedVector2Array(802.54065, 341.57513, 802.6062, 503.42853, 1012.38306, 503.4474, 1012.2593, 498.18945, 1005.0059, 484.60965, 1004.3496, 343.95856, 924.2827, 341.7201)
+uv = PackedVector2Array(802.54065, 341.57513, 802.6062, 503.42853, 1012.38306, 503.4474, 1012.2593, 498.18945, 1005.0059, 484.60965, 1004.3496, 343.95856, 924.2827, 341.7201)
+
+[node name="eye-left" type="Polygon2D" parent="Panel/Face_9_cliche_summary_f5dc4b/Face3" unique_id=107052017]
+position = Vector2(854, 420)
+offset = Vector2(-772, -36)
+texture = ExtResource("1_3j8at")
+polygon = PackedVector2Array(766.1118, 32.356888, 766.1118, 40.165047, 769.1286, 42.472004, 774.68896, 42.53116, 779.0071, 39.33691, 779.0662, 33.835705, 775.28046, 29.39925, 769.01025, 29.517555)
+uv = PackedVector2Array(766.1118, 32.356888, 766.1118, 40.165047, 769.1286, 42.472004, 774.68896, 42.53116, 779.0071, 39.33691, 779.0662, 33.835705, 775.28046, 29.39925, 769.01025, 29.517555)
+
+[node name="eye-right" type="Polygon2D" parent="Panel/Face_9_cliche_summary_f5dc4b/Face3" unique_id=1475285181]
+position = Vector2(954.6554, 402.06238)
+offset = Vector2(-772, -36)
+texture = ExtResource("1_3j8at")
+polygon = PackedVector2Array(766.1118, 32.356888, 766.1118, 40.165047, 769.1286, 42.472004, 774.68896, 42.53116, 779.0071, 39.33691, 779.0662, 33.835705, 775.28046, 29.39925, 769.01025, 29.517555)
+uv = PackedVector2Array(766.1118, 32.356888, 766.1118, 40.165047, 769.1286, 42.472004, 774.68896, 42.53116, 779.0071, 39.33691, 779.0662, 33.835705, 775.28046, 29.39925, 769.01025, 29.517555)
+
+[node name="nose" type="Polygon2D" parent="Panel/Face_9_cliche_summary_f5dc4b" unique_id=229915164]
+position = Vector2(403, 199)
+offset = Vector2(-675, -439)
+texture = ExtResource("1_3j8at")
+polygon = PackedVector2Array(709.30084, 479.98727, 709.3779, 484.92126, 714.5432, 491.55136, 721.71295, 495.79153, 729.962, 499.02948, 734.9731, 499.72333, 745.61206, 499.6462, 753.93823, 498.10434, 760.87665, 495.63733, 765.5023, 491.93683, 769.2799, 487.157, 772.36365, 482.83975, 773.7119, 477.1189, 773.55365, 468.89014, 772.6357, 464.58826, 770.5295, 458.9014, 766.6329, 453.00388, 762.046, 446.47275, 758.3662, 441.86853, 748.19006, 432.1533, 738.2048, 422.79492, 732.3547, 416.82898, 730.456, 414.3008, 730.35345, 409.49417, 730.77045, 407.83124, 739.1607, 395.73178, 736.55255, 394.3869, 733.76117, 394.31992, 726.1367, 407.65457, 725.9261, 412.5516, 726.30994, 416.93524, 727.7346, 418.2863)
+uv = PackedVector2Array(709.30084, 479.98727, 709.3779, 484.92126, 714.5432, 491.55136, 721.71295, 495.79153, 729.962, 499.02948, 734.9731, 499.72333, 745.61206, 499.6462, 753.93823, 498.10434, 760.87665, 495.63733, 765.5023, 491.93683, 769.2799, 487.157, 772.36365, 482.83975, 773.7119, 477.1189, 773.55365, 468.89014, 772.6357, 464.58826, 770.5295, 458.9014, 766.6329, 453.00388, 762.046, 446.47275, 758.3662, 441.86853, 748.19006, 432.1533, 738.2048, 422.79492, 732.3547, 416.82898, 730.456, 414.3008, 730.35345, 409.49417, 730.77045, 407.83124, 739.1607, 395.73178, 736.55255, 394.3869, 733.76117, 394.31992, 726.1367, 407.65457, 725.9261, 412.5516, 726.30994, 416.93524, 727.7346, 418.2863)

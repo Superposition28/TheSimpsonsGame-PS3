@@ -1,74 +1,73 @@
-[gd_scene load_steps=8 format=3]
+[gd_scene format=3 uid="uid://d3xs8pvro5jn6"]
 
-[ext_resource type="Texture2D" path="res://assets/A2_Frontend/frontendStr/assetsRws/txd/split16txd/15_popup_2ea038.png" id="1_e2o5f"]
-[ext_resource type="Texture2D" path="res://assets/A2_Frontend/frontendStr/assetsRws/txd/split17txd/18_popup_b3d383.png" id="2_xc2x5"]
-[ext_resource type="Texture2D" path="res://assets/A2_Frontend/frontendStr/assetsRws/txd/split18txd/21_popup_a5e9e4.png" id="3_hsop0"]
-[ext_resource type="Texture2D" path="res://assets/A2_Frontend/frontendStr/assetsRws/txd/split16txd/buttons_005d67.png" id="4_qnwdl"]
-[ext_resource type="Texture2D" path="res://assets/A2_Frontend/frontendStr/assetsRws/txd/split3txd/9_SharedLibrary_704032.png" id="5_inoei"]
-[ext_resource type="Texture2D" path="res://assets/A2_Frontend/frontendStr/assetsRws/txd/split24txd/8_SharedLibrary_7e0f3c.png" id="6_71bwf"]
-[ext_resource type="Texture2D" path="res://assets/A2_Frontend/frontendStr/assetsRws/txd/split11txd/7_SharedLibrary_44e6ea.png" id="7_kp120"]
+[ext_resource type="Texture2D" uid="uid://dxj3k3tn5i45" path="res://assets/A2_Frontend/frontendStr/assetsRws/txd/split16txd/15_popup_2ea038.png" id="1_e2o5f"]
+[ext_resource type="Texture2D" uid="uid://x5mvd42b3hg2" path="res://assets/A2_Frontend/frontendStr/assetsRws/txd/split17txd/18_popup_b3d383.png" id="2_xc2x5"]
+[ext_resource type="Texture2D" uid="uid://037e0a4sllk4" path="res://assets/A2_Frontend/frontendStr/assetsRws/txd/split18txd/21_popup_a5e9e4.png" id="3_hsop0"]
+[ext_resource type="Texture2D" uid="uid://dwwsq1qssokqu" path="res://assets/A2_Frontend/frontendStr/assetsRws/txd/split16txd/buttons_005d67.png" id="4_qnwdl"]
+[ext_resource type="Texture2D" uid="uid://b4bnbb00mycxc" path="res://assets/A2_Frontend/frontendStr/assetsRws/txd/split3txd/9_SharedLibrary_704032.png" id="5_inoei"]
+[ext_resource type="Texture2D" uid="uid://1ppbq7uuftwg" path="res://assets/A2_Frontend/frontendStr/assetsRws/txd/split24txd/8_SharedLibrary_7e0f3c.png" id="6_71bwf"]
+[ext_resource type="Texture2D" uid="uid://8dpwg85wo1w2" path="res://assets/A2_Frontend/frontendStr/assetsRws/txd/split11txd/7_SharedLibrary_44e6ea.png" id="7_kp120"]
 
-[node name="MainMenu_ControlNode" type="Control"]
+[node name="NewsMenu" type="Control" unique_id=992877009]
 layout_mode = 3
 anchors_preset = 0
 
-[node name="TV_Content_Panel" type="Panel" parent="."]
+[node name="TV_Content_Panel" type="Panel" parent="." unique_id=2093050231]
 layout_mode = 0
 offset_right = 40.0
 offset_bottom = 40.0
 
-[node name="30Popup" type="Sprite2D" parent="TV_Content_Panel"]
+[node name="6-NEWS" type="Node2D" parent="TV_Content_Panel" unique_id=294935720]
+
+[node name="30Popup" type="Sprite2D" parent="TV_Content_Panel/6-NEWS" unique_id=249091145]
 position = Vector2(423, 346)
 texture = ExtResource("1_e2o5f")
 
-[node name="18Popup" type="Sprite2D" parent="TV_Content_Panel"]
+[node name="18Popup" type="Sprite2D" parent="TV_Content_Panel/6-NEWS" unique_id=1542346656]
 position = Vector2(249, 135)
 texture = ExtResource("2_xc2x5")
 
-[node name="21Popup" type="Sprite2D" parent="TV_Content_Panel"]
+[node name="21Popup" type="Sprite2D" parent="TV_Content_Panel/6-NEWS" unique_id=372292087]
 position = Vector2(335, 137)
 texture = ExtResource("3_hsop0")
 
-[node name="RichTextLabel" type="RichTextLabel" parent="TV_Content_Panel"]
-layout_mode = 0
+[node name="RichTextLabel" type="RichTextLabel" parent="TV_Content_Panel/6-NEWS" unique_id=1671259924]
 offset_left = 377.0
 offset_top = 106.0
 offset_right = 824.0
 offset_bottom = 296.0
 
-[node name="RichTextLabel2" type="RichTextLabel" parent="TV_Content_Panel"]
-layout_mode = 0
+[node name="RichTextLabel2" type="RichTextLabel" parent="TV_Content_Panel/6-NEWS" unique_id=692385046]
 offset_left = 373.0
 offset_top = 281.0
 offset_right = 820.0
 offset_bottom = 411.0
 
-[node name="Label" type="Label" parent="TV_Content_Panel"]
-layout_mode = 0
+[node name="Label" type="Label" parent="TV_Content_Panel/6-NEWS" unique_id=1233262051]
 offset_left = 818.0
 offset_top = 529.0
 offset_right = 879.0
 offset_bottom = 563.0
 text = "Done"
 
-[node name="X_Button" type="Sprite2D" parent="TV_Content_Panel"]
+[node name="X_Button" type="Sprite2D" parent="TV_Content_Panel/6-NEWS" unique_id=1017469435]
 position = Vector2(897, 547)
 scale = Vector2(0.567, 0.5)
 texture = ExtResource("4_qnwdl")
 region_enabled = true
 region_rect = Rect2(196, 136.5, 54, 53)
 
-[node name="TV" type="Sprite2D" parent="."]
+[node name="TV" type="Sprite2D" parent="." unique_id=1813818040]
 position = Vector2(549.00006, 319.5)
 scale = Vector2(0.8964844, 0.8134766)
 texture = ExtResource("5_inoei")
 
-[node name="8SharedLibrary" type="Sprite2D" parent="TV"]
+[node name="8SharedLibrary" type="Sprite2D" parent="TV" unique_id=284730142]
 position = Vector2(7.2504883, 9.219696)
 scale = Vector2(2.799564, 3.2364945)
 texture = ExtResource("6_71bwf")
 
-[node name="7SharedLibrary" type="Sprite2D" parent="TV"]
+[node name="7SharedLibrary" type="Sprite2D" parent="TV" unique_id=1007344790]
 position = Vector2(1.1153564, 0.61465454)
 scale = Vector2(0.9978214, 0.9987995)
 texture = ExtResource("7_kp120")
