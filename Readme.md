@@ -30,7 +30,7 @@ If you want to reproduce the current extraction pipeline or help debug mapping, 
 This is a large reverse-engineering effort and contributions are welcome. Areas where help would be most valuable:
 
 1. **Texture Mapping:** Investigate how the original formats assign textures to submeshes and implement a reliable mapping strategy for high-LOD models.
-2. **Format Documentation:** Expand and improve the format analyses in the [docs repository](https://github.com/Superposition28/TheSimpsonsGame-PS3-Docs/tree/main/FormatAnalysis).
+2. **Format Documentation:** Expand and improve the format analyses in the [docs repository](https://github.com/Superposition28/TheSimpsonsGame-PS3-Docs/tree/main/).
 3. **Blender / Import Pipelines:** Improve Blender automation scripts for robust material assignment and layer handling.
 
 To contribute, open issues or PRs, or jump into the format docs and submit patches. If you want to discuss complex reverse-engineering tasks first, open an issue describing your approach and refer to the relevant `operations/` or `reversing/` files.
