@@ -30,7 +30,7 @@ If you want to reproduce the current extraction pipeline or help debug mapping, 
 This is a large reverse-engineering effort and contributions are welcome. Areas where help would be most valuable:
 
 1. **Texture Mapping:** Investigate how the original formats assign textures to submeshes and implement a reliable mapping strategy for high-LOD models.
-2. **Format Documentation:** Expand and improve the format analyses in the docs repo (`reversing/docs/FormatAnalysis`).
+2. **Format Documentation:** Expand and improve the format analyses in the [docs repository](https://github.com/Superposition28/TheSimpsonsGame-PS3-Docs/tree/main/FormatAnalysis).
 3. **Blender / Import Pipelines:** Improve Blender automation scripts for robust material assignment and layer handling.
 
 To contribute, open issues or PRs, or jump into the format docs and submit patches. If you want to discuss complex reverse-engineering tasks first, open an issue describing your approach and refer to the relevant `operations/` or `reversing/` files.
@@ -317,9 +317,9 @@ This module is fully automated and designed to be executed by [The Remake Engine
 
 For technical details and reverse-engineering notes on the file formats used in The Simpsons Game (PS3), see:
 
-- [reversing/docs/readme.md](./reversing/docs/readme.md) -- Overview of the in-module documentation repo layout.
-- [reversing/docs/FormatAnalysis/index.html](./reversing/docs/FormatAnalysis/index.html) -- Landing page for format-specific analyses, including audio, RenderWare assets, and miscellaneous formats.
-- [reversing/docs/PS3_GAME/index.html](./reversing/docs/PS3_GAME/index.html) -- Disc layout documentation and links into `USRDIR` content.
+- [TheSimpsonsGame-PS3-Docs README](https://github.com/Superposition28/TheSimpsonsGame-PS3-Docs/blob/main/readme.md) -- Overview of the documentation repository layout.
+- [Format Analysis](https://github.com/Superposition28/TheSimpsonsGame-PS3-Docs/blob/main/FormatAnalysis/index.html) -- Landing page for format-specific analyses, including audio, RenderWare assets, and miscellaneous formats.
+- [PS3 Game Layout](https://github.com/Superposition28/TheSimpsonsGame-PS3-Docs/blob/main/PS3_GAME/index.html) -- Disc layout documentation and links into `USRDIR` content.
 
 These resources provide:
 
