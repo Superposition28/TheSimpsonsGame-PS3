@@ -23,7 +23,6 @@ operations/Blender/test/blend/
 **/.backup/**
 
 
-
 # operations, generated files
 operations/Blender/asset_map.sqlite
 operations/Blender/blend.log

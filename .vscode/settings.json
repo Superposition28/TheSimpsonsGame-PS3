@@ -65,4 +65,14 @@
         "utf8": "disable",
     },
     "Lua.workspace.checkThirdParty": "true",
+    "VSCodeCounter.exclude": [
+        "**/.gitignore",
+        "**/.vscode/**",
+        "**/*.db",
+        "**/*.old*",
+        "**/*.ignore*",
+        "**/reversing/**",
+        "**/Godot/GodotGame/PreBuilt/addons/godotsteam/**",
+        "**/Godot/GodotGame/PreBuilt/addons/steam-csbindings-1.1.0/**"
+    ]
 }
