@@ -572,8 +572,12 @@ local function main()
 end
 
 
-local ok, result = pcall(main)
-if not ok or not result then
-    colour_print{colour=Colours.RED, message="Initialization failed with error: " .. tostring(result)}
-    os.exit(1)
+if _G.__tsg_init_import_only then
+    return main
+else
+    local ok, result = pcall(main)
+    if not ok or not result then
+        colour_print{colour=Colours.RED, message="Initialization failed with error: " .. tostring(result)}
+        os.exit(1)
+    end
 end

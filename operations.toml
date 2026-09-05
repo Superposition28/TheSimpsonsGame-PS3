@@ -305,3 +305,30 @@ args = [
     "--iconPath", "{{SourcePath}}/{{Region}}/{{PostSourcePath}}",
     "--no-exit"
 ]
+
+
+[[operation]]
+id = 6677
+name = "RESET GAME MODULE, This will delete all generated files and reset the game module to its original state, or move them to .backup/<dateTime> folder"
+run-all = false
+depends-on = []
+script_type = "lua"
+script = "{{Game_Root}}/operations/resetThisBih.lua"
+[[operation.prompts]]
+type = "confirm"
+name = "confirm_reset"
+message = "I understand this permanently removes generated module data or moves it to a backup folder."
+default = false
+cli_arg = "--confirmed"
+[[operation.prompts]]
+type = "text"
+name = "reset_mode"
+message = "Reset mode (backup or delete)"
+default = "backup"
+cli_arg = "--mode"
+[[operation.prompts]]
+type = "confirm"
+name = "include_source"
+message = "Also remove Source/ containing the copied original game files?"
+default = false
+cli_arg = "--include-source"

@@ -19,6 +19,10 @@
 dev/
 operations/Blender/test/blend/
 
+/.backup/
+**/.backup/**
+
+
 
 # operations, generated files
 operations/Blender/asset_map.sqlite
