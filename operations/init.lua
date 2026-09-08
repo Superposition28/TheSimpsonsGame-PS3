@@ -84,8 +84,8 @@ local function main()
         placeholders["Region"] = region
     else
         colour_print{colour=Colours.YELLOW, message="No valid Region set in config.toml. You'll be prompted to set one (US, EU, or Both)."}
-                while true do
-            local input = get_input("Enter the game region (US, EU, or Both) and press Enter (leave blank to cancel):", "tsg_region")
+        while true do
+            local input = prompt("Enter the game region (US, EU, or Both) and press Enter (leave blank to cancel):", "Game Region")
             if not input or input == "" then
                 colour_print{colour=Colours.RED, message="Initialization aborted: no valid Region provided."}
                 colour_print{colour=Colours.YELLOW, message="Please update '" .. cfg_path .. "' with Region = \"US\", \"EU\", or \"Both\" and re-run this initializer."}
@@ -131,7 +131,7 @@ local function main()
         -- Get EU path
         colour_print{colour=Colours.MAGENTA, message="\n--- EU Version ---"}
         while not path_from_config do
-            local input = prompt("Enter the path to your EU game root (this folder should contain a folder named USRDIR) and press Enter (leave blank to cancel):")
+            local input = prompt("Enter the path to your EU game root (this folder should contain a folder named USRDIR) and press Enter (leave blank to cancel):", "EU File Path")
             if not input or input == "" then
                 colour_print{colour=Colours.RED, message="Initialization aborted: no valid EU path provided."}
                 return false
@@ -161,7 +161,7 @@ local function main()
         colour_print{colour=Colours.MAGENTA, message="\n--- US Version ---"}
         local copy_source_root_us = nil
         while not path_from_config_us do
-            local input = prompt("Enter the path to your US game root (this folder should contain a folder named USRDIR) and press Enter (leave blank to cancel):")
+            local input = prompt("Enter the path to your US game root (this folder should contain a folder named USRDIR) and press Enter (leave blank to cancel):", "US File Path")
             if not input or input == "" then
                 colour_print{colour=Colours.RED, message="Initialization aborted: no valid US path provided."}
                 return false
@@ -211,7 +211,7 @@ local function main()
         end
 
         while not path_from_config do
-            local input = prompt("Enter the path to your game root (this folder should contain a folder named USRDIR) and press Enter (leave blank to cancel):")
+            local input = prompt("Enter the path to your game root (this folder should contain a folder named USRDIR) and press Enter (leave blank to cancel):", "Game Root Path")
             if not input or input == "" then
                 colour_print{colour=Colours.RED, message="Initialization aborted: no valid MainSourcePath is configured and no input was provided."}
                 colour_print{colour=Colours.YELLOW, message="Please update '" .. cfg_path .. "' with a valid MainSourcePath and re-run this initializer."}

@@ -3,7 +3,6 @@
 ---@field USRDIR_DIRS_ORIGINAL table<integer, string>
 ---@field ends_with_usrdir fun(p: string|nil): boolean
 ---@field normalize_region fun(value: string|nil): ("US"|"EU"|"BOTH")|nil
----@field get_input fun(msg: string, id?: string): string
 ---@field check_dirs_exist fun(base_path: string, required_dirs: table<integer, string>): boolean
 ---@field check_dirs_exist_verbose fun(base_path: string, required_dirs: table<integer, string>, list_name?: string): boolean
 ---@field read_placeholders fun(cfg_path: string): table
@@ -33,10 +32,6 @@ function normalize_region(value)
     return nil
 end
 
--- Input helper using engine's guaranteed prompt() global
-function get_input(msg, id)
-    return prompt(msg, id or "tsg_init", false)
-end
 
 -- Required directory sets (either original or USRDIR layout is accepted)
 USRDIR_DIRS = {
