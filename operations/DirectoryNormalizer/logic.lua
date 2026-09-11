@@ -87,6 +87,8 @@ import(utilspath)
 
 -- Functions -----------------------------------------------------------------
 
+---@param str string The input string to convert to camel case.
+---@return string The camel case version of the input string.
 function to_camel_case(str)
     if not str or not string.find(str, "_") then return str end
     local parts = {}

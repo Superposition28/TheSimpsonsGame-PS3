@@ -22,8 +22,18 @@ This script normalizes a directory by performing transformations:
 
 ]]
 
+---@class Args
+---@field src string|nil The source directory.
+---@field dst string|nil The destination directory.
+---@field ignores string[] List of paths to ignore.
+---@field copyonly string[] List of paths to copy only.
+---@field dry_run boolean Whether to perform a dry run.
+---@field map_db_file string|nil Path to the map database file.
+---@field camel_only boolean Whether to apply camel case only.
+
 
 -- Arg parsing ---------------------------------------------------------------
+---@return Args
 local function parse_args()
     local function gets(i) local v = argv[i]; return type(v) == "string" and v or nil end
     local out = { ignores = {}, copyonly = {}, dry_run = false, map_db_file = nil, camel_only = false }
@@ -81,6 +91,8 @@ local function main()
     sdk.colour_print({ colour = "green", message = string.format("Destination directory: %s", args.dst), newline = true })
 
     -- Load rename map for canonical UID generation
+    -- ensures the UIDs are consistent even if the base folder names are not updated
+    -- may not be required when all operations are run
     local rename_map = {}
     if args.map_db_file and args.map_db_file ~= "" then
         local db_path = norm_slashes(args.map_db_file)
@@ -171,9 +183,11 @@ local function main()
         -- PASS 2: Build the collapse map
         -- This map will store { [old_dir] = new_collapsed_dir }
         local path_map = {}
+        if script_prog then script_prog:Update(4, "Collapse map built.") end
         build_collapse_map(target_tree, path_map, "", "")
 
         -- PASS 3: Process and copy normalized files
+        if script_prog then script_prog:Update(5, "Processing normalized files...") end
         for i=1, #file_targets do
             local target = file_targets[i]
 
@@ -193,7 +207,6 @@ local function main()
                 new_collapsed_dir = NormalizeCollapsedDir(new_collapsed_dir, level_folder_lower, level_name_lower)
             end
 
-            -- This is the final, normalized, collapsed path
             local new_rel = join(new_collapsed_dir, filename)
             local new_path = join(args.dst, new_rel)
 
@@ -204,17 +217,14 @@ local function main()
             }
             table.insert(mapping_rows, row_data)
 
-            -- NEW: Group by top-level folder
             local parts = split_path(target.rel)
             if #parts > 0 then
                 local top_folder = parts[1]
                 if not per_folder_maps[top_folder] then
                     per_folder_maps[top_folder] = {}
                 end
-                -- Insert the same row data
                 table.insert(per_folder_maps[top_folder], row_data)
             end
-            -- END NEW
 
             if not args.dry_run then
                 copy_with_collision_handling(target.full, new_path)
@@ -222,10 +232,10 @@ local function main()
 
             total = total + 1
             if prog then prog:Update(1) end
-            if script_prog then script_prog:Update(1, "Normalizing " .. target.rel) end
         end
 
         -- PASS 4: Copy copy-only directories as-is (no normalization)
+        if script_prog then script_prog:Update(6, "Copying copy-only files...") end
         for i=1, #copyonly_files do
             local full = copyonly_files[i]
             local rel = rel_path(full, args.src)
@@ -253,8 +263,9 @@ local function main()
             end
             total = total + 1
             if prog then prog:Update(1) end
-            if script_prog then script_prog:Update(1, "Copying " .. rel) end
         end
+
+        if script_prog then script_prog:Update(7, "Writing outputs and summary...") end
 
         -- Sort rows
         table.sort(mapping_rows, function(a,b)
@@ -267,6 +278,7 @@ local function main()
 
         sdk.color_print("cyan", "Writing per-folder JSON maps...")
         Diagnostics.Trace("[DirectoryNormalizer] Writing per-folder JSON maps...")
+        if script_prog then script_prog:Update(8, "Writing per-folder JSON maps...") end
         local per_folder_files = {}
         for top_folder, rows in pairs(per_folder_maps) do
             -- Ensure these are also sorted just like the main map

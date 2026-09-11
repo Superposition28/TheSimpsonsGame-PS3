@@ -12,6 +12,8 @@
     "Lua.type.checkTableShape": true,
     "Lua.workspace.ignoreDir": [
         ".betterGit",
+        ".git",
+        ".backup",
         ".github",
         ".history",
         ".idea",
@@ -25,11 +27,12 @@
         "GameFiles",
         "Source",
         "EngineBuild",
-        "EngineNet",
+        "Godot",
         "logs",
         "RemakeEngineDocs",
         "schemas",
-        "tmp"
+        "tmp",
+        "reversing"
     ],
     "Lua.workspace.ignoreSubmodules": false,
     "Lua.workspace.useGitIgnore": false,
