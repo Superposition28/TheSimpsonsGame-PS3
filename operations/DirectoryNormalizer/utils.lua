@@ -1,23 +1,12 @@
 
 ---@class DirectoryNormalizerUtils
----@field Path_sep string
----@field norm_slashes fun(p: string|nil): string|nil
----@field to_posix fun(p: string|nil): string|nil
----@field split_path fun(p: string): string[]
----@field write_all_text fun(path: string, data: string): boolean
----@field dirname fun(p: string): string
----@field basename fun(p: string): string
----@field json_encode fun(obj: any, indent?: boolean): string
----@field get_hex_uid fun(s: string, length?: integer): string
----@field multi_ext fun(name: string): string, string
----@field should_ignore_dir fun(name: string, ignore_list: string[]): boolean
----@field ext_lower fun(name: string): string
----@field rel_path fun(full: string, root: string): string
----@field copy_with_collision_handling fun(src: string, dst: string): boolean
 
 
 Path_sep = package.config:sub(1,1) or "/"
 
+--- Normalize slashes in a path according to the current platform
+---@param p string|nil
+---@return string|nil
 function norm_slashes(p)
     if not p then return p end
     if Path_sep == "\\" then
@@ -29,11 +18,19 @@ function norm_slashes(p)
     return p
 end
 
-function to_posix(p)
+--- Convert a path to POSIX style (forward slashes)
+---@param p string|nil
+---@return string|nil
+---@return integer? count
+function ToPosix(p)
     if not p then return p end
     return p:gsub("\\", "/")
 end
 
+
+--- Split a path into its components
+---@param p string
+---@return string[]
 function split_path(p)
     local parts = {}
     for part in p:gmatch("[^/\\]+") do table.insert(parts, part) end
@@ -54,6 +51,9 @@ function write_all_text(path, data)
     return true
 end
 
+--- Get the directory name of a path
+---@param p string
+---@return string
 function dirname(p)
     local s = norm_slashes(p)
     local last = 0
@@ -65,6 +65,9 @@ function dirname(p)
     return s:sub(1, last-1)
 end
 
+--- Get the base name of a path
+---@param p string
+---@return string
 function basename(p)
     local s = norm_slashes(p)
     local last = 0
@@ -76,10 +79,18 @@ function basename(p)
     return s:sub(last+1)
 end
 
+--- Encode an object as JSON
+---@param obj any
+---@param indent boolean
+---@return string
 function json_encode(obj, indent)
     return sdk.text.json.encode(obj, { indent = indent ~= false })
 end
 
+--- Get a hexadecimal UID for a string
+---@param s string
+---@param length integer
+---@return string
 function get_hex_uid(s, length)
     length = length or 6
     local hex = sdk.md5(s) or ""
@@ -87,6 +98,9 @@ function get_hex_uid(s, length)
     return string.lower(hex:sub(1, length))
 end
 
+--- Get the name and extension of a file, supporting multiple dots
+---@param name string
+---@return string, string
 function multi_ext(name)
     local idx = nil
     for i = 1, #name do
@@ -98,6 +112,10 @@ function multi_ext(name)
     return name:sub(1, idx-1), name:sub(idx)
 end
 
+--- Check if a directory should be ignored based on an ignore list
+---@param name string
+---@param ignore_list string[]
+---@return boolean
 function should_ignore_dir(name, ignore_list)
     local lname = string.lower(name)
     for _,ig in ipairs(ignore_list) do
@@ -107,6 +125,9 @@ function should_ignore_dir(name, ignore_list)
     return false
 end
 
+--- Get the lowercase extension of a file
+---@param name string
+---@return string
 function ext_lower(name)
     local last = nil
     for i=1,#name do
@@ -116,6 +137,10 @@ function ext_lower(name)
     return string.lower(name:sub(last))
 end
 
+--- Get the relative path from a root directory
+---@param full string
+---@param root string
+---@return string
 function rel_path(full, root)
     local f = norm_slashes(full)
     local r = norm_slashes(root)
@@ -127,6 +152,10 @@ function rel_path(full, root)
     return full
 end
 
+--- Copy a file to a destination, handling name collisions by appending a suffix
+---@param src string
+---@param dst string
+---@return boolean
 function copy_with_collision_handling(src, dst)
     local parent = dirname(dst)
     if parent and parent ~= "" then sdk.ensure_dir(parent) end

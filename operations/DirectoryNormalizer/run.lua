@@ -5,7 +5,7 @@ This script normalizes a directory by performing transformations:
 1. Removes the nested path segments '/build/PS3/pal_en' or '/build/PS3/ntsc_en'.
 2. Renames any folder named 'texture_dictionary' to 'txd'.
 3. NEW: Removes redundant "level name" folders from sub-paths.
-   e.g., 'Map_X/level/a/b/level/c' -> 'Map_X/level/a/b/c'
+    e.g., 'Map_X/level/a/b/level/c' -> 'Map_X/level/a/b/c'
 4. Finds any folder that contains only one other folder, and merges their names.
 5. Appends a 6-character hex UID to each filename.
 6. NEW: When --copyonly is used, those directories are excluded from normalization and copied as-is after normalization.
@@ -31,11 +31,26 @@ This script normalizes a directory by performing transformations:
 ---@field map_db_file string|nil Path to the map database file.
 ---@field camel_only boolean Whether to apply camel case only.
 
+---@class FileTarget
+---@field full string
+---@field rel string
+---@field rel_no_build string
+---@field uid string
+
+---@class MappingRow
+---@field uid string
+---@field original_path string
+---@field new_path string
+
 
 -- Arg parsing ---------------------------------------------------------------
 ---@return Args
 local function parse_args()
+    ---@param i integer
+    ---@return string|nil
     local function gets(i) local v = argv[i]; return type(v) == "string" and v or nil end
+
+    ---@type Args
     local out = { ignores = {}, copyonly = {}, dry_run = false, map_db_file = nil, camel_only = false }
     out.src = gets(1)
     out.dst = gets(2)
@@ -64,7 +79,9 @@ local function parse_args()
     return out
 end
 
+---@return nil
 local function main()
+    ---@type Args
     local args = parse_args()
     local script_prog = progress.script.start(15, "Initializing Normalization...")
 
@@ -78,7 +95,6 @@ local function main()
     sdk.colour_print({ colour = "cyan", message = string.format("Importing logic from: %s", logicpath), newline = true })
     ---@type DirectoryNormalizerLogic
     import(logicpath)
-    --init(utils)
 
     sdk.colour_print({ colour = "green", message = "Modules initialized.", newline = true })
 
@@ -93,6 +109,7 @@ local function main()
     -- Load rename map for canonical UID generation
     -- ensures the UIDs are consistent even if the base folder names are not updated
     -- may not be required when all operations are run
+    ---@type table<string, string>
     local rename_map = {}
     if args.map_db_file and args.map_db_file ~= "" then
         local db_path = norm_slashes(args.map_db_file)
@@ -110,8 +127,11 @@ local function main()
 
     if script_prog then script_prog:Update(1, "Starting normalization...") end
 
+    ---@type string[]
     local files = walk_files(args.src, args.ignores)
+    ---@type table<string, boolean>
     local copyonly_set = BuildCopyOnlySet(args.copyonly)
+    ---@type string[]
     local copyonly_files = {}
 
     local prog = progress.panel.new(#files, "normalize", "Normalizing directory")
@@ -144,10 +164,14 @@ local function main()
             return -- Exit early, completely bypassing full normalization
         end
 
+        ---@type FileTarget[]
         local file_targets = {}
+        ---@type table<string, {dirs: table<string, any>, files: string[]}>
         local target_tree = { [""] = { dirs={}, files={} } } -- Init root node
+        ---@type MappingRow[]
         local mapping_rows = {}
         local total = 0
+        ---@type table<string, MappingRow[]>
         local per_folder_maps = {} -- NEW: To store per-folder mappings
 
         -- PASS 1: Pre-scan all files
@@ -182,6 +206,7 @@ local function main()
 
         -- PASS 2: Build the collapse map
         -- This map will store { [old_dir] = new_collapsed_dir }
+        ---@type table<string, string>
         local path_map = {}
         if script_prog then script_prog:Update(4, "Collapse map built.") end
         build_collapse_map(target_tree, path_map, "", "")
@@ -210,10 +235,11 @@ local function main()
             local new_rel = join(new_collapsed_dir, filename)
             local new_path = join(args.dst, new_rel)
 
+            ---@type MappingRow
             local row_data = {
                 uid = target.uid,
-                original_path = to_posix(target.rel),
-                new_path = to_posix(new_rel),
+                original_path = ToPosix(target.rel),
+                new_path = ToPosix(new_rel),
             }
             table.insert(mapping_rows, row_data)
 
@@ -242,10 +268,11 @@ local function main()
             local new_path = join(args.dst, rel)
 
             local uid = GetCopyOnlyUid(rel, get_hex_uid, rename_map)
+            ---@type MappingRow
             local row_data = {
                 uid = uid,
-                original_path = to_posix(rel),
-                new_path = to_posix(rel),
+                original_path = ToPosix(rel),
+                new_path = ToPosix(rel),
             }
             table.insert(mapping_rows, row_data)
 
@@ -279,6 +306,8 @@ local function main()
         sdk.color_print("cyan", "Writing per-folder JSON maps...")
         Diagnostics.Trace("[DirectoryNormalizer] Writing per-folder JSON maps...")
         if script_prog then script_prog:Update(8, "Writing per-folder JSON maps...") end
+
+        ---@type string[]
         local per_folder_files = {}
         for top_folder, rows in pairs(per_folder_maps) do
             -- Ensure these are also sorted just like the main map

@@ -1,6 +1,6 @@
 
 ---@class DirectoryNormalizerLogic
----@field segments_to_remove string[][]
+---@field Segments_to_remove string[][]
 ---@field LevelAliasMap table<string, string[]>
 ---@field EpisodeMap table<string, string[][]>
 ---@field IgnoredExtensions table<string, boolean>
@@ -29,12 +29,12 @@
 
 -- Constants -----------------------------------------------------------------
 
-segments_to_remove = {
+local Segments_to_remove = {
     { "build", "ps3", "palen" },
     { "build", "ps3", "ntscen" }
 }
 
-LevelAliasMap = {
+local LevelAliasMap = {
     ["l01_landofchocolate"] = { "loc" },
     ["l02_bartmanbegins"] = { "brt" },
     ["l03_hungryhungryhomer"] = { "eighty_bites" },
@@ -57,7 +57,7 @@ LevelAliasMap = {
     ["a2_characters"] = { "simpsons_chars" }
 }
 
-EpisodeMap = {
+local EpisodeMap = {
     ["loc"] = { {"land", "of", "chocolate"}, {"landofchocolate"}, {"loc"} },
     ["brt"] = { {"bartman", "begins"}, {"bartmanbegins"}, {"brt"} },
     ["80b"] = { {"around", "the", "world", "in", "80", "bites"}, {"eighty", "bites"}, {"80b"}, {"80bites"} },
@@ -76,7 +76,7 @@ EpisodeMap = {
     ["mtp"] = { {"game", "over"}, {"meet", "thy", "player"}, {"meetthyplayer"}, {"mtp"} }
 }
 
-IgnoredExtensions = {
+local IgnoredExtensions = {
     [".blend"] = true,
     [".blend1"] = true
 }
@@ -88,7 +88,7 @@ import(utilspath)
 -- Functions -----------------------------------------------------------------
 
 ---@param str string The input string to convert to camel case.
----@return string The camel case version of the input string.
+---@return string return The camel case version of the input string.
 function to_camel_case(str)
     if not str or not string.find(str, "_") then return str end
     local parts = {}
@@ -96,6 +96,7 @@ function to_camel_case(str)
         table.insert(parts, token)
     end
     if #parts == 0 then return str end
+    ---@type string The resulting camel case string.
     local res = string.lower(parts[1])
     for i = 2, #parts do
         local t = string.lower(parts[i])
@@ -104,6 +105,9 @@ function to_camel_case(str)
     return res
 end
 
+---Simplifies episode names in a relative path according to the EpisodeMap.
+---@param rel_path string The relative path to simplify.
+---@return string return The simplified relative path.
 function simplify_episode_names(rel_path)
     local parts = split_path(rel_path)
     if #parts <= 1 then return rel_path end
@@ -181,6 +185,9 @@ function simplify_episode_names(rel_path)
     return table.concat(parts, Path_sep)
 end
 
+--- Applies camelCase formatting to each folder segment in a relative path, excluding the root and file name.
+--- @param rel_path string The relative path to format.
+--- @return string return The relative path with camelCase applied to each folder segment, excluding the root and file name.
 function apply_camel_case_to_path(rel_path)
     rel_path = simplify_episode_names(rel_path)
 
@@ -201,6 +208,9 @@ function apply_camel_case_to_path(rel_path)
     return table.concat(parts, Path_sep)
 end
 
+--- Splits a folder segment into individual tokens based on underscores and camelCase boundaries.
+--- @param segment string The folder segment to split.
+--- @return table return A list of tokens extracted from the segment.
 function SplitTokens(segment)
     local tokens = {}
     -- Convert camelCase boundaries to underscores temporarily so gmatch still works
@@ -211,6 +221,9 @@ function SplitTokens(segment)
     return tokens
 end
 
+--- Splits a folder segment into individual tokens based on underscores and camelCase boundaries.
+--- @param level_folder_lower string The folder segment to split.
+--- @return table return A list of tokens extracted from the segment.
 function BuildAliasTokenSequences(level_folder_lower)
     local sequences = {}
     local aliases = LevelAliasMap[level_folder_lower] or {}
@@ -224,6 +237,11 @@ function BuildAliasTokenSequences(level_folder_lower)
     return sequences
 end
 
+--- Checks if a sequence of tokens matches a portion of the token list starting at a given index.
+--- @param tokens table The list of tokens to check.
+--- @param index number The starting index in the tokens list.
+--- @param sequence table The sequence of tokens to match.
+--- @return boolean return True if the sequence matches, false otherwise.
 function MatchesSequence(tokens, index, sequence)
     if index + #sequence - 1 > #tokens then
         return false
@@ -236,6 +254,9 @@ function MatchesSequence(tokens, index, sequence)
     return true
 end
 
+--- Extracts the zone prefix from a folder segment.
+--- @param segment string The folder segment.
+--- @return string|nil return The zone prefix (e.g., "zone1") if found, or nil otherwise.
 function GetZonePrefix(segment)
     if not segment then
         return nil
@@ -248,6 +269,10 @@ function GetZonePrefix(segment)
     return "zone" .. zone_number
 end
 
+--- Checks if the child segment corresponds to the "assets" of the parent zone.
+--- @param parent_segment string The parent folder segment.
+--- @param child_segment string The child folder segment.
+--- @return boolean return True if the child segment matches the "assets" of the parent zone, false otherwise.
 function IsMatchingZoneAssets(parent_segment, child_segment)
     if not parent_segment or not child_segment then
         return false
@@ -260,6 +285,11 @@ function IsMatchingZoneAssets(parent_segment, child_segment)
     return child_lower == ("assetsenvirons" .. parent_zone)
 end
 
+
+--- Checks if the child segment corresponds to the "environs" assets of the parent zone.
+--- @param parent_segment string The parent folder segment.
+--- @param child_segment string The child folder segment.
+--- @return boolean return True if the child segment matches the "environs" assets of the parent zone, false otherwise.
 function IsMatchingZoneAssets2(parent_segment, child_segment)
     if not parent_segment or not child_segment then
         return false
@@ -272,6 +302,10 @@ function IsMatchingZoneAssets2(parent_segment, child_segment)
     return child_lower == ("environs" .. parent_zone)
 end
 
+--- Normalizes a folder segment based on alias sequences.
+--- @param segment string The folder segment to normalize.
+--- @param alias_sequences table A list of alias token sequences.
+--- @return string return The normalized folder segment.
 function NormalizeFolderSegment(segment, alias_sequences)
     if not segment or segment == "" then
         return segment
@@ -320,6 +354,11 @@ function NormalizeFolderSegment(segment, alias_sequences)
     return res
 end
 
+--- Normalizes a collapsed directory path based on the level folder and level name.
+--- @param dir_path string The directory path to normalize.
+--- @param level_folder_lower string The lowercased name of the level folder.
+--- @param level_name_lower string The lowercased name of the level.
+--- @return string return The normalized collapsed directory path.
 function NormalizeCollapsedDir(dir_path, level_folder_lower, level_name_lower)
     if not dir_path or dir_path == "" then
         return dir_path
@@ -384,6 +423,13 @@ function NormalizeCollapsedDir(dir_path, level_folder_lower, level_name_lower)
     return table.concat(new_parts, Path_sep)
 end
 
+---Applies file normalization rules to a given relative path.
+---@param original_rel string The original relative path of the file.
+---@param process_rel string The relative path to process and normalize.
+---@param uid_generator_func function Function to generate unique IDs for files.
+---@param rename_map table A mapping of old names to new names for renaming purposes.
+---@return string return The normalized relative path.
+---@return string return The unique ID associated with the file.
 function apply_file_rules(original_rel, process_rel, uid_generator_func, rename_map)
     local parts = split_path(process_rel)
     if #parts == 0 then return process_rel, "000000" end
@@ -407,7 +453,7 @@ function apply_file_rules(original_rel, process_rel, uid_generator_func, rename_
         local part_lower = string.lower(part)
         local matched_segment = false
 
-        for _, segment in ipairs(segments_to_remove) do
+        for _, segment in ipairs(Segments_to_remove) do
             if part_lower == segment[1] and i + #segment - 1 <= #parts then
                 local match = true
                 for j = 1, #segment do
@@ -487,6 +533,9 @@ function apply_file_rules(original_rel, process_rel, uid_generator_func, rename_
     return new_rel_path, uid
 end
 
+--- Extracts the unique ID from an audio filename, if present.
+---@param filename string The audio filename to extract the UID from.
+---@return string|nil return The extracted UID, or nil if not found.
 function ExtractAudioUidFromFilename(filename)
     if not filename or filename == "" then
         return nil
@@ -506,6 +555,11 @@ function ExtractAudioUidFromFilename(filename)
     return nil
 end
 
+--- Gets the unique ID for a copy-only file, using the audio UID if available, or generating one otherwise.
+---@param rel_path string The relative path of the copy-only file.
+---@param uid_generator_func function Function to generate unique IDs.
+---@param rename_map table A mapping of old names to new names for renaming purposes.
+---@return string return The unique ID for the copy-only file.
 function GetCopyOnlyUid(rel_path, uid_generator_func, rename_map)
     local filename = basename(rel_path or "")
     local audio_uid = ExtractAudioUidFromFilename(filename)
@@ -518,6 +572,10 @@ function GetCopyOnlyUid(rel_path, uid_generator_func, rename_map)
     return uid_generator_func(canonical_rel_stem, 6)
 end
 
+--- Adds a file path to the directory tree structure.
+---@param tree table The directory tree to add the path to.
+---@param path_str string The relative path of the file to add.
+---@return nil return This function updates the directory tree with the given file path.
 function add_to_tree(tree, path_str)
     local parts = split_path(path_str)
     local filename = table.remove(parts)
@@ -541,6 +599,12 @@ function add_to_tree(tree, path_str)
     end
 end
 
+--- Builds a map of collapsed directory paths for normalization.
+---@param tree table The directory tree structure.
+---@param map table The map to store collapsed paths.
+---@param current_orig_path string The current original path being processed.
+---@param current_new_path string The current new path after collapsing.
+--- @return nil return This function updates the map with collapsed directory paths.
 function build_collapse_map(tree, map, current_orig_path, current_new_path)
     local node = tree[current_orig_path]
     if not node then return end
@@ -578,7 +642,11 @@ function build_collapse_map(tree, map, current_orig_path, current_new_path)
     end
 end
 
+--- load the rename map db
+--- @param db_path string The path to the rename map database file.
+--- @return table return A mapping of new names to old names from the rename map database.
 function load_rename_map(db_path)
+    ---@type table<string, string> A mapping of new names to old names.
     local map = {}
     if not sdk.path_exists(db_path) then
         return map
@@ -608,6 +676,10 @@ function load_rename_map(db_path)
     return map
 end
 
+--- Normalizes a relative path to its canonical form based on the provided rename map.
+--- @param rel_path string The relative path to normalize.
+--- @param rename_map table A mapping of new names to old names.
+--- @return string return The canonical form of the relative path based on the rename map.
 function normalize_to_canonical(rel_path, rename_map)
     if not rename_map or not rel_path then
         return rel_path
@@ -624,8 +696,13 @@ function normalize_to_canonical(rel_path, rename_map)
     return table.concat(parts, "/")
 end
 
+--- Walks through the directory tree starting from the root, collecting all file paths.
+--- @param root string The root directory to start scanning from.
+--- @param ignore_list table A list of directory names to ignore during the scan.
+--- @return table return A list of all file paths found under the root, excluding ignored directories.
 function walk_files(root, ignore_list)
     local stack = { root }
+    ---@type table<string> A list to store all discovered file paths.
     local files = {}
 
     -- Start with 1 total directory (the root)
@@ -671,6 +748,9 @@ function walk_files(root, ignore_list)
     return files
 end
 
+--- Builds a set of copy-only paths from a list of directory names.
+--- @param copyonly_list table A list of directory names that should be treated as copy-only.
+--- @return table return A set where the keys are the lowercased directory names and the values are true.
 function BuildCopyOnlySet(copyonly_list)
     local Set = {}
     for _, entry in ipairs(copyonly_list or {}) do
@@ -682,6 +762,10 @@ function BuildCopyOnlySet(copyonly_list)
     return Set
 end
 
+--- Checks if a given relative path is under a copy-only directory.
+--- @param rel_path string The relative path to check.
+--- @param copyonly_set table A set of copy-only directory names.
+--- @return boolean return True if the path is under a copy-only directory, false otherwise.
 function IsCopyOnlyPath(rel_path, copyonly_set)
     if not rel_path or not copyonly_set then
         return false
