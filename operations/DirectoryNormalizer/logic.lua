@@ -27,19 +27,14 @@
 ---@field BuildCopyOnlySet fun(copyonly_list: string[]): table<string, boolean>
 ---@field IsCopyOnlyPath fun(rel_path: string, copyonly_set: table<string, boolean>): boolean
 
-
-
-local logic = {}
-local utils = {}
-
 -- Constants -----------------------------------------------------------------
 
-logic.segments_to_remove = {
+segments_to_remove = {
     { "build", "ps3", "palen" },
     { "build", "ps3", "ntscen" }
 }
 
-logic.LevelAliasMap = {
+LevelAliasMap = {
     ["l01_landofchocolate"] = { "loc" },
     ["l02_bartmanbegins"] = { "brt" },
     ["l03_hungryhungryhomer"] = { "eighty_bites" },
@@ -62,7 +57,7 @@ logic.LevelAliasMap = {
     ["a2_characters"] = { "simpsons_chars" }
 }
 
-logic.EpisodeMap = {
+EpisodeMap = {
     ["loc"] = { {"land", "of", "chocolate"}, {"landofchocolate"}, {"loc"} },
     ["brt"] = { {"bartman", "begins"}, {"bartmanbegins"}, {"brt"} },
     ["80b"] = { {"around", "the", "world", "in", "80", "bites"}, {"eighty", "bites"}, {"80b"}, {"80bites"} },
@@ -81,18 +76,18 @@ logic.EpisodeMap = {
     ["mtp"] = { {"game", "over"}, {"meet", "thy", "player"}, {"meetthyplayer"}, {"mtp"} }
 }
 
-logic.IgnoredExtensions = {
+IgnoredExtensions = {
     [".blend"] = true,
     [".blend1"] = true
 }
 
+local utilspath = join(Game_Root, join("operations", join("DirectoryNormalizer", "utils.lua")))
+sdk.colour_print({ colour = "cyan", message = string.format("Importing utils from: %s", utilspath), newline = true })
+import(utilspath)
+
 -- Functions -----------------------------------------------------------------
 
-function logic.init(util)
-    utils = util
-end
-
-function logic.to_camel_case(str)
+function to_camel_case(str)
     if not str or not string.find(str, "_") then return str end
     local parts = {}
     for token in string.gmatch(str, "[^_]+") do
@@ -107,8 +102,8 @@ function logic.to_camel_case(str)
     return res
 end
 
-function logic.simplify_episode_names(rel_path)
-    local parts = utils.split_path(rel_path)
+function simplify_episode_names(rel_path)
+    local parts = split_path(rel_path)
     if #parts <= 1 then return rel_path end
 
     local root_lower = string.lower(parts[1])
@@ -120,7 +115,7 @@ function logic.simplify_episode_names(rel_path)
 
     for i = 2, #parts - 1 do
         local part = parts[i]
-        local tokens = logic.SplitTokens(part)
+        local tokens = SplitTokens(part)
 
         local new_tokens = {}
         local t_idx = 1
@@ -128,9 +123,9 @@ function logic.simplify_episode_names(rel_path)
             local matched_shortcode = nil
             local matched_len = 0
 
-            for shortcode, sequences in pairs(logic.EpisodeMap) do
+            for shortcode, sequences in pairs(EpisodeMap) do
                 for _, seq in ipairs(sequences) do
-                    if logic.MatchesSequence(tokens, t_idx, seq) then
+                    if MatchesSequence(tokens, t_idx, seq) then
                         if #seq > matched_len then
                             matched_len = #seq
                             matched_shortcode = shortcode
@@ -157,9 +152,9 @@ function logic.simplify_episode_names(rel_path)
             while f_idx <= #tokens do
                 local matched_shortcode = nil
                 local matched_len = 0
-                for shortcode, sequences in pairs(logic.EpisodeMap) do
+                for shortcode, sequences in pairs(EpisodeMap) do
                     for _, seq in ipairs(sequences) do
-                        if logic.MatchesSequence(tokens, f_idx, seq) then
+                        if MatchesSequence(tokens, f_idx, seq) then
                             if #seq > matched_len then
                                 matched_len = #seq
                                 matched_shortcode = shortcode
@@ -181,13 +176,13 @@ function logic.simplify_episode_names(rel_path)
         parts[i] = table.concat(new_tokens, "_")
     end
 
-    return table.concat(parts, utils.path_sep)
+    return table.concat(parts, Path_sep)
 end
 
-function logic.apply_camel_case_to_path(rel_path)
-    rel_path = logic.simplify_episode_names(rel_path)
+function apply_camel_case_to_path(rel_path)
+    rel_path = simplify_episode_names(rel_path)
 
-    local parts = utils.split_path(rel_path)
+    local parts = split_path(rel_path)
     -- Don't process paths that are just root or root/file
     if #parts <= 1 then return rel_path end
 
@@ -198,13 +193,13 @@ function logic.apply_camel_case_to_path(rel_path)
 
     -- Exclude parts[1] (root folder) and parts[#parts] (file name)
     for i = 2, #parts - 1 do
-        parts[i] = logic.to_camel_case(parts[i])
+        parts[i] = to_camel_case(parts[i])
     end
 
-    return table.concat(parts, utils.path_sep)
+    return table.concat(parts, Path_sep)
 end
 
-function logic.SplitTokens(segment)
+function SplitTokens(segment)
     local tokens = {}
     -- Convert camelCase boundaries to underscores temporarily so gmatch still works
     local s = segment:gsub("([a-z])([A-Z])", "%1_%2")
@@ -214,11 +209,11 @@ function logic.SplitTokens(segment)
     return tokens
 end
 
-function logic.BuildAliasTokenSequences(level_folder_lower)
+function BuildAliasTokenSequences(level_folder_lower)
     local sequences = {}
-    local aliases = logic.LevelAliasMap[level_folder_lower] or {}
+    local aliases = LevelAliasMap[level_folder_lower] or {}
     for _, alias in ipairs(aliases) do
-        local alias_tokens = logic.SplitTokens(string.lower(alias))
+        local alias_tokens = SplitTokens(string.lower(alias))
         if #alias_tokens > 0 then
             table.insert(sequences, alias_tokens)
         end
@@ -227,7 +222,7 @@ function logic.BuildAliasTokenSequences(level_folder_lower)
     return sequences
 end
 
-function logic.MatchesSequence(tokens, index, sequence)
+function MatchesSequence(tokens, index, sequence)
     if index + #sequence - 1 > #tokens then
         return false
     end
@@ -239,7 +234,7 @@ function logic.MatchesSequence(tokens, index, sequence)
     return true
 end
 
-function logic.GetZonePrefix(segment)
+function GetZonePrefix(segment)
     if not segment then
         return nil
     end
@@ -251,11 +246,11 @@ function logic.GetZonePrefix(segment)
     return "zone" .. zone_number
 end
 
-function logic.IsMatchingZoneAssets(parent_segment, child_segment)
+function IsMatchingZoneAssets(parent_segment, child_segment)
     if not parent_segment or not child_segment then
         return false
     end
-    local parent_zone = logic.GetZonePrefix(parent_segment)
+    local parent_zone = GetZonePrefix(parent_segment)
     if not parent_zone then
         return false
     end
@@ -263,11 +258,11 @@ function logic.IsMatchingZoneAssets(parent_segment, child_segment)
     return child_lower == ("assetsenvirons" .. parent_zone)
 end
 
-function logic.IsMatchingZoneAssets2(parent_segment, child_segment)
+function IsMatchingZoneAssets2(parent_segment, child_segment)
     if not parent_segment or not child_segment then
         return false
     end
-    local parent_zone = logic.GetZonePrefix(parent_segment)
+    local parent_zone = GetZonePrefix(parent_segment)
     if not parent_zone then
         return false
     end
@@ -275,12 +270,12 @@ function logic.IsMatchingZoneAssets2(parent_segment, child_segment)
     return child_lower == ("environs" .. parent_zone)
 end
 
-function logic.NormalizeFolderSegment(segment, alias_sequences)
+function NormalizeFolderSegment(segment, alias_sequences)
     if not segment or segment == "" then
         return segment
     end
 
-    local tokens = logic.SplitTokens(segment)
+    local tokens = SplitTokens(segment)
     if #tokens == 0 then
         return segment
     end
@@ -290,7 +285,7 @@ function logic.NormalizeFolderSegment(segment, alias_sequences)
     while i <= #tokens do
         local matched_alias = false
         for _, sequence in ipairs(alias_sequences) do
-            if logic.MatchesSequence(tokens, i, sequence) then
+            if MatchesSequence(tokens, i, sequence) then
                 i = i + #sequence
                 matched_alias = true
                 break
@@ -323,17 +318,17 @@ function logic.NormalizeFolderSegment(segment, alias_sequences)
     return res
 end
 
-function logic.NormalizeCollapsedDir(dir_path, level_folder_lower, level_name_lower)
+function NormalizeCollapsedDir(dir_path, level_folder_lower, level_name_lower)
     if not dir_path or dir_path == "" then
         return dir_path
     end
 
-    local parts = utils.split_path(dir_path)
+    local parts = split_path(dir_path)
     if #parts == 0 then
         return dir_path
     end
 
-    local alias_sequences = logic.BuildAliasTokenSequences(level_folder_lower)
+    local alias_sequences = BuildAliasTokenSequences(level_folder_lower)
     local new_parts = {}
     local i = 1
     while i <= #parts do
@@ -356,16 +351,16 @@ function logic.NormalizeCollapsedDir(dir_path, level_folder_lower, level_name_lo
             if not skip_part then
                 if i > 2 and #new_parts > 0 then
                     local parent_part = new_parts[#new_parts]
-                    if logic.IsMatchingZoneAssets(parent_part, part) then
+                    if IsMatchingZoneAssets(parent_part, part) then
                         part = "assetsEnvirons"
                     end
-                    if logic.IsMatchingZoneAssets2(parent_part, part) then
+                    if IsMatchingZoneAssets2(parent_part, part) then
                         part = "environs"
                     end
                 end
 
                 if i > 2 then
-                    local normalized = logic.NormalizeFolderSegment(part, alias_sequences)
+                    local normalized = NormalizeFolderSegment(part, alias_sequences)
                     if normalized ~= "" then
                         part = normalized
                     else
@@ -384,11 +379,11 @@ function logic.NormalizeCollapsedDir(dir_path, level_folder_lower, level_name_lo
     if #new_parts == 0 then
         return ""
     end
-    return table.concat(new_parts, utils.path_sep)
+    return table.concat(new_parts, Path_sep)
 end
 
-function logic.apply_file_rules(original_rel, process_rel, uid_generator_func, rename_map)
-    local parts = utils.split_path(process_rel)
+function apply_file_rules(original_rel, process_rel, uid_generator_func, rename_map)
+    local parts = split_path(process_rel)
     if #parts == 0 then return process_rel, "000000" end
 
     local level_name_lower = ""
@@ -401,7 +396,7 @@ function logic.apply_file_rules(original_rel, process_rel, uid_generator_func, r
         level_folder_lower = string.lower(parts[1])
     end
 
-    local alias_sequences = logic.BuildAliasTokenSequences(level_folder_lower)
+    local alias_sequences = BuildAliasTokenSequences(level_folder_lower)
 
     local new_parts = {}
     local i = 1
@@ -410,7 +405,7 @@ function logic.apply_file_rules(original_rel, process_rel, uid_generator_func, r
         local part_lower = string.lower(part)
         local matched_segment = false
 
-        for _, segment in ipairs(logic.segments_to_remove) do
+        for _, segment in ipairs(segments_to_remove) do
             if part_lower == segment[1] and i + #segment - 1 <= #parts then
                 local match = true
                 for j = 1, #segment do
@@ -447,12 +442,12 @@ function logic.apply_file_rules(original_rel, process_rel, uid_generator_func, r
                     end
                     if i > 2 and #new_parts > 0 then
                         local parent_part = new_parts[#new_parts]
-                        if logic.IsMatchingZoneAssets(parent_part, part) then
+                        if IsMatchingZoneAssets(parent_part, part) then
                             part = "assetsEnvirons"
                         end
                     end
                     if i > 2 and i < #parts then
-                        local normalized = logic.NormalizeFolderSegment(part, alias_sequences)
+                        local normalized = NormalizeFolderSegment(part, alias_sequences)
                         if normalized ~= "" then
                             part = normalized
                         else
@@ -471,11 +466,11 @@ function logic.apply_file_rules(original_rel, process_rel, uid_generator_func, r
     if #new_parts == 0 then return process_rel, "000000" end
 
     local filename = table.remove(new_parts)
-    local new_dir = table.concat(new_parts, utils.path_sep)
+    local new_dir = table.concat(new_parts, Path_sep)
 
     -- Use original_rel for stable UID generation regardless of camelCase
-    local canonical_rel = logic.normalize_to_canonical(original_rel, rename_map)
-    local canonical_rel_stem, _ = utils.multi_ext(canonical_rel)
+    local canonical_rel = normalize_to_canonical(original_rel, rename_map)
+    local canonical_rel_stem, _ = multi_ext(canonical_rel)
     local uid = uid_generator_func(canonical_rel_stem, 6)
 
     local base, rest = filename:match("^(.-)%.(.*)$")
@@ -490,7 +485,7 @@ function logic.apply_file_rules(original_rel, process_rel, uid_generator_func, r
     return new_rel_path, uid
 end
 
-function logic.ExtractAudioUidFromFilename(filename)
+function ExtractAudioUidFromFilename(filename)
     if not filename or filename == "" then
         return nil
     end
@@ -509,20 +504,20 @@ function logic.ExtractAudioUidFromFilename(filename)
     return nil
 end
 
-function logic.GetCopyOnlyUid(rel_path, uid_generator_func, rename_map)
-    local filename = utils.basename(rel_path or "")
-    local audio_uid = logic.ExtractAudioUidFromFilename(filename)
+function GetCopyOnlyUid(rel_path, uid_generator_func, rename_map)
+    local filename = basename(rel_path or "")
+    local audio_uid = ExtractAudioUidFromFilename(filename)
     if audio_uid then
         return audio_uid
     end
 
-    local canonical_rel = logic.normalize_to_canonical(rel_path, rename_map)
-    local canonical_rel_stem, _ = utils.multi_ext(canonical_rel)
+    local canonical_rel = normalize_to_canonical(rel_path, rename_map)
+    local canonical_rel_stem, _ = multi_ext(canonical_rel)
     return uid_generator_func(canonical_rel_stem, 6)
 end
 
-function logic.add_to_tree(tree, path_str)
-    local parts = utils.split_path(path_str)
+function add_to_tree(tree, path_str)
+    local parts = split_path(path_str)
     local filename = table.remove(parts)
     local current_path = ""
     local t = tree[""]
@@ -544,7 +539,7 @@ function logic.add_to_tree(tree, path_str)
     end
 end
 
-function logic.build_collapse_map(tree, map, current_orig_path, current_new_path)
+function build_collapse_map(tree, map, current_orig_path, current_new_path)
     local node = tree[current_orig_path]
     if not node then return end
 
@@ -557,31 +552,31 @@ function logic.build_collapse_map(tree, map, current_orig_path, current_new_path
         local child_name = dir_names[1]
         local child_orig_path = join(current_orig_path, child_name)
 
-        local new_basename = utils.basename(current_new_path)
+        local new_basename = basename(current_new_path)
         if current_orig_path == "" then
             new_basename = child_name
         elseif new_basename == "" then
-            new_basename = utils.basename(current_orig_path)
+            new_basename = basename(current_orig_path)
         end
 
         -- Capitalize the first letter of the child folder to merge in camelCase
         local capitalized_child = string.upper(string.sub(child_name, 1, 1)) .. string.sub(child_name, 2)
         local new_collapsed_name = new_basename .. capitalized_child
 
-        local new_collapsed_path = join(utils.dirname(current_new_path), new_collapsed_name)
+        local new_collapsed_path = join(dirname(current_new_path), new_collapsed_name)
 
-        logic.build_collapse_map(tree, map, child_orig_path, new_collapsed_path)
+        build_collapse_map(tree, map, child_orig_path, new_collapsed_path)
     else
         map[current_orig_path] = current_new_path
         for _, name in ipairs(dir_names) do
             local child_orig = join(current_orig_path, name)
             local child_new = join(current_new_path, name)
-            logic.build_collapse_map(tree, map, child_orig, child_new)
+            build_collapse_map(tree, map, child_orig, child_new)
         end
     end
 end
 
-function logic.load_rename_map(db_path)
+function load_rename_map(db_path)
     local map = {}
     if not sdk.path_exists(db_path) then
         return map
@@ -611,11 +606,11 @@ function logic.load_rename_map(db_path)
     return map
 end
 
-function logic.normalize_to_canonical(rel_path, rename_map)
+function normalize_to_canonical(rel_path, rename_map)
     if not rename_map or not rel_path then
         return rel_path
     end
-    local parts = utils.split_path(rel_path)
+    local parts = split_path(rel_path)
     if #parts == 0 then
         return rel_path
     end
@@ -627,7 +622,7 @@ function logic.normalize_to_canonical(rel_path, rename_map)
     return table.concat(parts, "/")
 end
 
-function logic.walk_files(root, ignore_list)
+function walk_files(root, ignore_list)
     local stack = { root }
     local files = {}
 
@@ -652,7 +647,7 @@ function logic.walk_files(root, ignore_list)
             local attr = sdk.attributes(p)
 
             if attr and attr.mode == "directory" then
-                if not utils.should_ignore_dir(entry, ignore_list) then
+                if not should_ignore_dir(entry, ignore_list) then
                     table.insert(stack, p)
 
                     -- We discovered a new directory: expand the progress bar's Total
@@ -660,8 +655,8 @@ function logic.walk_files(root, ignore_list)
                     prog:SetTotal(total_dirs)
                 end
             else
-                local ext = utils.ext_lower(entry)
-                if not logic.IgnoredExtensions[ext] then
+                local ext = ext_lower(entry)
+                if not IgnoredExtensions[ext] then
                     table.insert(files, p)
                 end
             end
@@ -674,7 +669,7 @@ function logic.walk_files(root, ignore_list)
     return files
 end
 
-function logic.BuildCopyOnlySet(copyonly_list)
+function BuildCopyOnlySet(copyonly_list)
     local Set = {}
     for _, entry in ipairs(copyonly_list or {}) do
         local Name = entry or ""
@@ -685,15 +680,13 @@ function logic.BuildCopyOnlySet(copyonly_list)
     return Set
 end
 
-function logic.IsCopyOnlyPath(rel_path, copyonly_set)
+function IsCopyOnlyPath(rel_path, copyonly_set)
     if not rel_path or not copyonly_set then
         return false
     end
-    local parts = utils.split_path(rel_path)
+    local parts = split_path(rel_path)
     if #parts == 0 then
         return false
     end
     return copyonly_set[string.lower(parts[1])] == true
 end
-
-return logic

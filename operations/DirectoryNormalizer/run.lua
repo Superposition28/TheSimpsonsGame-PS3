@@ -56,25 +56,26 @@ end
 
 local function main()
     local args = parse_args()
+    local script_prog = progress.script.start(15, "Initializing Normalization...")
 
-    sdk.colour_print("green", "Starting Directory Normalization...", true)
+    sdk.colour_print("green", "Initializing Normalization...", true)
 
     local utilspath = join(Game_Root, join("operations", join("DirectoryNormalizer", "utils.lua")))
     sdk.colour_print({ colour = "cyan", message = string.format("Importing utils from: %s", utilspath), newline = true })
-    local utils = import(utilspath)
+    import(utilspath)
 
     local logicpath = join(Game_Root, join("operations", join("DirectoryNormalizer", "logic.lua")))
     sdk.colour_print({ colour = "cyan", message = string.format("Importing logic from: %s", logicpath), newline = true })
     ---@type DirectoryNormalizerLogic
-    local logic = import(logicpath)
-    logic.init(utils)
+    import(logicpath)
+    --init(utils)
 
     sdk.colour_print({ colour = "green", message = "Modules initialized.", newline = true })
 
     if not args.src or args.src == "" then error("source dir missing") end
     if not args.dst or args.dst == "" then error("output dir missing") end
-    args.src = utils.norm_slashes(args.src)
-    args.dst = utils.norm_slashes(args.dst)
+    args.src = norm_slashes(args.src)
+    args.dst = norm_slashes(args.dst)
 
     sdk.colour_print({ colour = "green", message = string.format("Source directory: %s", args.src), newline = true })
     sdk.colour_print({ colour = "green", message = string.format("Destination directory: %s", args.dst), newline = true })
@@ -82,10 +83,10 @@ local function main()
     -- Load rename map for canonical UID generation
     local rename_map = {}
     if args.map_db_file and args.map_db_file ~= "" then
-        local db_path = utils.norm_slashes(args.map_db_file)
+        local db_path = norm_slashes(args.map_db_file)
         sdk.colour_print({ colour = "cyan", message = string.format("Loading rename mappings from: %s", db_path), newline = true })
         Diagnostics.Trace(string.format("[DirectoryNormalizer] Loading rename mappings from: %s", db_path))
-        rename_map = logic.load_rename_map(db_path)
+        rename_map = load_rename_map(db_path)
         local count = (function() local c=0; for _ in pairs(rename_map) do c=c+1 end; return c end)()
         sdk.colour_print({ colour = "green", message = string.format("Loaded %d rename mappings", count), newline = true })
         Diagnostics.Trace(string.format("[DirectoryNormalizer] Loaded %d rename mappings", count))
@@ -95,36 +96,37 @@ local function main()
 
     sdk.ensure_dir(args.dst)
 
-    local files = logic.walk_files(args.src, args.ignores)
-    local copyonly_set = logic.BuildCopyOnlySet(args.copyonly)
+    if script_prog then script_prog:Update(1, "Starting normalization...") end
+
+    local files = walk_files(args.src, args.ignores)
+    local copyonly_set = BuildCopyOnlySet(args.copyonly)
     local copyonly_files = {}
 
     local prog = progress.panel.new(#files, "normalize", "Normalizing directory")
-    local script_prog = progress.script.start(#files, "Normalizing directory")
     local ok, err = pcall(function()
         Diagnostics.Trace(string.format("Starting normalization: %d files found", #files))
 
         -- NEW: Optional exit for isolated camelCase testing
         if args.camel_only then
             sdk.colour_print({ colour = "cyan", message = "Running in camel-only mode...", newline = true })
+            if script_prog then script_prog:Update(2, "Starting camel-only normalization...") end
             local total = 0
             for i=1, #files do
                 local full = files[i]
-                local rel = utils.rel_path(full, args.src)
+                local rel = rel_path(full, args.src)
                 local new_rel = rel
 
                 -- Skip conversion for copy-only sets
-                if not logic.IsCopyOnlyPath(rel, copyonly_set) then
-                    new_rel = logic.apply_camel_case_to_path(rel)
+                if not IsCopyOnlyPath(rel, copyonly_set) then
+                    new_rel = apply_camel_case_to_path(rel)
                 end
 
                 local new_path = join(args.dst, new_rel)
                 if not args.dry_run then
-                    utils.copy_with_collision_handling(full, new_path)
+                    copy_with_collision_handling(full, new_path)
                 end
                 total = total + 1
                 if prog then prog:Update(1) end
-                if script_prog then script_prog:Update(1, "Normalizing " .. rel) end
             end
             sdk.colour_print({ colour = "green", message = string.format("Camel-only pass complete. Copied %d files.", total), newline = true })
             return -- Exit early, completely bypassing full normalization
@@ -139,18 +141,19 @@ local function main()
         -- PASS 1: Pre-scan all files
         -- Build the list of target files (after build-path removal)
         -- Build the in-memory tree of the target structure
+        if script_prog then script_prog:Update(3, "Starting pre-scan of files...") end
         for i=1,#files do
             local full = files[i]
-            local rel = utils.rel_path(full, args.src)
+            local rel = rel_path(full, args.src)
 
-            if logic.IsCopyOnlyPath(rel, copyonly_set) then
+            if IsCopyOnlyPath(rel, copyonly_set) then
                 table.insert(copyonly_files, full)
             else
                 -- Apply CamelCase conversion strictly before hitting the rules engine
-                local camel_rel = logic.apply_camel_case_to_path(rel)
+                local camel_rel = apply_camel_case_to_path(rel)
 
                 -- Note: apply_file_rules now takes BOTH rel and camel_rel
-                local rel_no_build, uid = logic.apply_file_rules(rel, camel_rel, utils.get_hex_uid, rename_map)
+                local rel_no_build, uid = apply_file_rules(rel, camel_rel, get_hex_uid, rename_map)
 
                 -- Store for Pass 3
                 table.insert(file_targets, {
@@ -161,22 +164,21 @@ local function main()
                 })
 
                 -- Add this conceptual path to the tree for Pass 2
-                logic.add_to_tree(target_tree, rel_no_build)
+                add_to_tree(target_tree, rel_no_build)
             end
-            if script_prog then script_prog:Update(0, "Scanning " .. rel) end
         end
 
         -- PASS 2: Build the collapse map
         -- This map will store { [old_dir] = new_collapsed_dir }
         local path_map = {}
-        logic.build_collapse_map(target_tree, path_map, "", "")
+        build_collapse_map(target_tree, path_map, "", "")
 
         -- PASS 3: Process and copy normalized files
         for i=1, #file_targets do
             local target = file_targets[i]
 
-            local pre_collapse_dir = utils.dirname(target.rel_no_build)
-            local filename = utils.basename(target.rel_no_build)
+            local pre_collapse_dir = dirname(target.rel_no_build)
+            local filename = basename(target.rel_no_build)
 
             -- Look up the collapsed path. Fallback to original if not in map (e.g., root files)
             local new_collapsed_dir = path_map[pre_collapse_dir]
@@ -184,11 +186,11 @@ local function main()
                 new_collapsed_dir = pre_collapse_dir
             end
 
-            local rel_parts = utils.split_path(target.rel)
+            local rel_parts = split_path(target.rel)
             local level_folder_lower = rel_parts[1] and string.lower(rel_parts[1]) or ""
             local level_name_lower = rel_parts[2] and string.lower(rel_parts[2]) or ""
             if new_collapsed_dir and new_collapsed_dir ~= "" then
-                new_collapsed_dir = logic.NormalizeCollapsedDir(new_collapsed_dir, level_folder_lower, level_name_lower)
+                new_collapsed_dir = NormalizeCollapsedDir(new_collapsed_dir, level_folder_lower, level_name_lower)
             end
 
             -- This is the final, normalized, collapsed path
@@ -197,13 +199,13 @@ local function main()
 
             local row_data = {
                 uid = target.uid,
-                original_path = utils.to_posix(target.rel),
-                new_path = utils.to_posix(new_rel),
+                original_path = to_posix(target.rel),
+                new_path = to_posix(new_rel),
             }
             table.insert(mapping_rows, row_data)
 
             -- NEW: Group by top-level folder
-            local parts = utils.split_path(target.rel)
+            local parts = split_path(target.rel)
             if #parts > 0 then
                 local top_folder = parts[1]
                 if not per_folder_maps[top_folder] then
@@ -215,7 +217,7 @@ local function main()
             -- END NEW
 
             if not args.dry_run then
-                utils.copy_with_collision_handling(target.full, new_path)
+                copy_with_collision_handling(target.full, new_path)
             end
 
             total = total + 1
@@ -226,18 +228,18 @@ local function main()
         -- PASS 4: Copy copy-only directories as-is (no normalization)
         for i=1, #copyonly_files do
             local full = copyonly_files[i]
-            local rel = utils.rel_path(full, args.src)
+            local rel = rel_path(full, args.src)
             local new_path = join(args.dst, rel)
 
-            local uid = logic.GetCopyOnlyUid(rel, utils.get_hex_uid, rename_map)
+            local uid = GetCopyOnlyUid(rel, get_hex_uid, rename_map)
             local row_data = {
                 uid = uid,
-                original_path = utils.to_posix(rel),
-                new_path = utils.to_posix(rel),
+                original_path = to_posix(rel),
+                new_path = to_posix(rel),
             }
             table.insert(mapping_rows, row_data)
 
-            local parts = utils.split_path(rel)
+            local parts = split_path(rel)
             if #parts > 0 then
                 local top_folder = parts[1]
                 if not per_folder_maps[top_folder] then
@@ -247,7 +249,7 @@ local function main()
             end
 
             if not args.dry_run then
-                utils.copy_with_collision_handling(full, new_path)
+                copy_with_collision_handling(full, new_path)
             end
             total = total + 1
             if prog then prog:Update(1) end
@@ -261,7 +263,7 @@ local function main()
 
         -- Write JSON outputs
         local map_json = join(args.dst, "normalized_map.json")
-        utils.write_all_text(map_json, utils.json_encode(mapping_rows, true))
+        write_all_text(map_json, json_encode(mapping_rows, true))
 
         sdk.color_print("cyan", "Writing per-folder JSON maps...")
         Diagnostics.Trace("[DirectoryNormalizer] Writing per-folder JSON maps...")
@@ -277,7 +279,7 @@ local function main()
             local map_filename = string.format("map_%s.json", safe_name)
             local map_json_path = join(args.dst, map_filename)
 
-            utils.write_all_text(map_json_path, utils.json_encode(rows, true))
+            write_all_text(map_json_path, json_encode(rows, true))
             table.insert(per_folder_files, map_filename)
         end
         sdk.color_print("green", string.format("Wrote %d per-folder maps.", #per_folder_files))
@@ -285,7 +287,7 @@ local function main()
 
         local summary = {
             total_assets = total,
-            files_written = { utils.basename(map_json) }
+            files_written = { basename(map_json) }
         }
 
         -- NEW: Add per-folder maps to summary
@@ -293,7 +295,7 @@ local function main()
             table.insert(summary.files_written, f)
         end
 
-        utils.write_all_text(join(args.dst, "normalized_map_summary.json"), utils.json_encode(summary, true))
+        write_all_text(join(args.dst, "normalized_map_summary.json"), json_encode(summary, true))
 
         sdk.color_print("green", "-------------------------------------------")
         sdk.color_print("green", string.format("Normalized %d assets.", total))
