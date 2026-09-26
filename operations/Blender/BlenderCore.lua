@@ -73,10 +73,7 @@ Notes
 if not sqlite then
     error("sqlite module is not available; ensure LuaScriptAction exposes sqlite helpers")
 end
--- run_process is always available in engine runtime
-if not sdk.run_process then
-    error("sdk.run_process helper is required for BlenderCore.lua")
-end
+
 
 local path_sep = package.config:sub(1, 1)
 
