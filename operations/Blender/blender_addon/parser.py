@@ -18,12 +18,11 @@ _SOF_HDR0_CONSTS = [
 _SOF_HDR1_CONSTS = [
     (0x38, bytes.fromhex("2D 00 02 1C")),
 ]
-_TEX_HDR_VARIANTS = [
-    bytes.fromhex("02 11 01 00 02 00 00 00 14 00 00 00 2D 00 02 1C"),
-    bytes.fromhex("02 11 01 00 02 00 00 00 18 00 00 00 2D 00 02 1C"),
-    bytes.fromhex("02 11 01 00 02 00 00 00 10 00 00 00 2D 00 02 1C"),
-]
-_REL_STRING_OFFSET_FROM_TEX_HDR = 16
+_RW_STRUCT_TYPE = bytes.fromhex("01 00 00 00")
+_RW_STRING_TYPE = bytes.fromhex("02 00 00 00")
+_RW_VERSION = bytes.fromhex("2D 00 02 1C")
+_STRING_STRUCT_PAYLOAD_SIZE = 4
+_MAX_TEXTURE_STRING_BYTES = 0x80
 _TLFD_MARKER = b"TLFD"
 _EOF_MARKER  = bytes.fromhex("16 EA 00 00 05 00 00 00 2D 00 02 1C 01 00 00 00 00")
 
@@ -116,6 +115,44 @@ def find_strings_by_signature_in_data(data: bytes, signatures_info: list, max_st
     return results
 
 
+def _iter_texture_names(data: bytes) -> Generator[tuple[int, str], None, None]:
+    """Yield names from a validated RenderWare STRUCT + STRING chunk pair."""
+    search_offset = 0
+    while True:
+        string_chunk_offset = data.find(_RW_STRING_TYPE, search_offset)
+        if string_chunk_offset == -1:
+            return
+        search_offset = string_chunk_offset + len(_RW_STRING_TYPE)
+
+        struct_chunk_offset = string_chunk_offset - 16
+        if struct_chunk_offset < 0 or string_chunk_offset + 12 > len(data):
+            continue
+        if data[struct_chunk_offset:struct_chunk_offset + 4] != _RW_STRUCT_TYPE:
+            continue
+        if int.from_bytes(data[struct_chunk_offset + 4:struct_chunk_offset + 8], "little") != _STRING_STRUCT_PAYLOAD_SIZE:
+            continue
+        if data[struct_chunk_offset + 8:struct_chunk_offset + 12] != _RW_VERSION:
+            continue
+        if data[string_chunk_offset + 8:string_chunk_offset + 12] != _RW_VERSION:
+            continue
+
+        string_size = int.from_bytes(data[string_chunk_offset + 4:string_chunk_offset + 8], "little")
+        string_start = string_chunk_offset + 12
+        string_end = string_start + string_size
+        if string_size == 0 or string_size > _MAX_TEXTURE_STRING_BYTES or string_end > len(data):
+            continue
+
+        string_bytes = data[string_start:string_end].split(b"\x00", maxsplit=1)[0].rstrip(b"\xBF")
+        name_end = 0
+        while name_end < len(string_bytes) and string_bytes[name_end] in _ALLOWED_CHARS_BYTES:
+            name_end += 1
+        if name_end == 0:
+            continue
+
+        name = string_bytes[:name_end].decode("ascii")
+        yield string_chunk_offset - 4, name
+
+
 def build_texture_mesh_links(data: bytes, preinstanced_filepath: str | None = None) -> tuple[dict[int, list[str]], dict[str, str], set[str]]:
     """
     Scans binary data for texture names and established links between meshes and textures.
@@ -129,14 +166,11 @@ def build_texture_mesh_links(data: bytes, preinstanced_filepath: str | None = No
     _check_required_headers(data)
 
     tex_hits = 0
-    for hdr in _TEX_HDR_VARIANTS:
-        for off in _iter_all_occurrences(data, hdr):
-            name = _extract_ascii_from(data, off + _REL_STRING_OFFSET_FROM_TEX_HDR, MAX_POTENTIAL_STRING_LENGTH)
-            if name:
-                tex_hits += 1
-                events.append((off, "tex_name", name))
-                all_texture_names_found.add(name)
-                _maybe_cache_texture_path(name, resolved_paths, preinstanced_filepath)
+    for off, name in _iter_texture_names(data):
+        tex_hits += 1
+        events.append((off, "tex_name", name))
+        all_texture_names_found.add(name)
+        _maybe_cache_texture_path(name, resolved_paths, preinstanced_filepath)
 
     if tex_hits == 0:
         bPrinter("[TexScan] No texture strings found via header variants.", console_colour="yellow")

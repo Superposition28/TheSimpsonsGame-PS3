@@ -180,10 +180,9 @@ class SimpGameImport(bpy.types.Operator, ImportHelper):
         cur_collection = bpy.data.collections.new(collection_name)
         bpy.context.scene.collection.children.link(cur_collection)
 
-        mesh_iter = 0
         data_io = io.BytesIO(tmpRead)
 
-        for x in mesh_chunks:
+        for mesh_iter, x in enumerate(mesh_chunks):
             mesh_chunk_off = x.start()
 
             data_io.seek(x.end() + 4)
@@ -251,6 +250,9 @@ class SimpGameImport(bpy.types.Operator, ImportHelper):
                     VertChunkSize = int.from_bytes(data_io.read(4), byteorder='big')
                     if VertChunkSize <= 0:
                         bPrinter(f"[Mesh {mesh_iter}_{i}] Warning: VertChunkSize is non-positive ({VertChunkSize}). Skipping mesh part.")
+                        continue
+                    if VertChunkSize < 12:
+                        bPrinter(f"[Mesh {mesh_iter}_{i}] Warning: VertChunkSize is too small for a position ({VertChunkSize}). Skipping mesh part.")
                         continue
                     VertCount = int(VertChunkTotalSize / VertChunkSize)
                     data_io.seek(8, 1)
@@ -338,26 +340,26 @@ class SimpGameImport(bpy.types.Operator, ImportHelper):
                         v_off = vert_data_start + FIXED_V_OFFSET
                         TempU = 0.0
                         TempV = 0.0
-                        if u_off + 4 <= len(tmpRead):
+                        if FIXED_U_OFFSET + 4 <= VertChunkSize and u_off + 4 <= len(tmpRead):
                             data_io.seek(u_off)
                             TempU = struct.unpack('>f', data_io.read(4))[0]
                         else:
-                            bPrinter(f"[MeshPart {mesh_iter}_{i}] Warning: Insufficient data for U at {u_off:08X} for vertex {v}.", require_debug_mode=True)
-                        if v_off + 4 <= len(tmpRead):
+                            bPrinter(f"[MeshPart {mesh_iter}_{i}] Warning: U at {u_off:08X} is outside the vertex stride or file for vertex {v}.", require_debug_mode=True)
+                        if FIXED_V_OFFSET + 4 <= VertChunkSize and v_off + 4 <= len(tmpRead):
                             data_io.seek(v_off)
                             TempV = struct.unpack('>f', data_io.read(4))[0]
                         else:
-                            bPrinter(f"[MeshPart {mesh_iter}_{i}] Warning: Insufficient data for V at {v_off:08X} for vertex {v}.", require_debug_mode=True)
+                            bPrinter(f"[MeshPart {mesh_iter}_{i}] Warning: V at {v_off:08X} is outside the vertex stride or file for vertex {v}.", require_debug_mode=True)
                         # Flip V per findings
                         UVTable.append((TempU, 1.0 - TempV))
 
                         # Secondary (CM) UV
                         cm_off = vert_data_start + FIXED_CM_OFFSET
-                        if cm_off + 8 <= len(tmpRead):
+                        if FIXED_CM_OFFSET + 8 <= VertChunkSize and cm_off + 8 <= len(tmpRead):
                             data_io.seek(cm_off)
                             cm_u, cm_v = struct.unpack('>ff', data_io.read(8))
                         else:
-                            bPrinter(f"[MeshPart {mesh_iter}_{i}] Warning: Insufficient data for CM at {cm_off:08X} for vertex {v}.", require_debug_mode=True)
+                            bPrinter(f"[MeshPart {mesh_iter}_{i}] Warning: CM UV at {cm_off:08X} is outside the vertex stride or file for vertex {v}.", require_debug_mode=True)
                             cm_u, cm_v = (0.0, 0.0)
                         CMTable.append((cm_u, 1.0 - cm_v))
 

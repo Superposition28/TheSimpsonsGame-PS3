@@ -171,7 +171,7 @@ args = [
 id = 8
 name = "Convert Models (.preinstanced -> .blend)"
 run-all = true
-depends-on = [6] # depends on blender, str extraction for assets, and texture extraction and conversion for materials
+depends-on = [6] # depends on blender, str extraction for assets, and texture extraction and conversion for materials, depends on normalized folder structure and produced normalised json map files for texture resolution
 script_type = "lua"
 script = "{{Game_Root}}/operations/Blender/run.lua"
 args = [
@@ -230,6 +230,27 @@ args = [
 ## convert Audio into a usable format for godot
 [[operation]]
 id = 10
+name = "Convert Audio (.sbk -> .wav)"
+run-all = true
+depends-on = [6] # depends on vgmstream being downloaded, could depend on audio reorg but that is technically optional
+script_type = "engine"
+script = "format-convert"
+tool = "vgmstream"
+args = [
+    "-m", "vgmstream",
+    "--type", "audio",
+    ## doesnt need to specify the location of the audiostreams folder as its within the source path and {{STROUT}} and the only location snu files exist
+    "-s", "{{Game_Root}}/GameFiles/{{Region}}-{{Type}}-{{audio_state}}-{{isRenamed}}",
+    "-t", "{{Game_Root}}/GameFiles/{{Region}}-{{Type}}-{{audio_state}}-{{isRenamed}}",
+    "-i", ".sbk",
+    "-o", ".wav",
+    "--godot-compatible",
+    "--replace"
+]
+
+## convert Audio into a usable format for godot
+[[operation]]
+id = 11
 name = "Convert Audio (.snu -> .wav)"
 run-all = true
 depends-on = [6] # depends on vgmstream being downloaded, could depend on audio reorg but that is technically optional
@@ -250,7 +271,7 @@ args = [
 
 ## convert Mus to Music files .wav
 [[operation]]
-id = 11
+id = 12
 name = "Convert Music (.mus -> .snr/.sns -> .wav)"
 run-all = true
 depends-on = [10] # depends on vgmstream, quickbms, and audio files existing
@@ -263,7 +284,7 @@ args = [
 
 
 [[operation]]
-id = 12
+id = 13
 name = "Convert Videos (.vp6 -> .ogv)"
 run-all = true
 depends-on = [6] # depends on ffmpeg being downloaded
@@ -282,10 +303,10 @@ args = [
 
 
 [[operation]]
-id = 13
+id = 14
 name = "generate game.toml"
 run-all = false
-depends-on = [8,9,10,11]
+depends-on = [8,9,11,12]
 script_type = "lua"
 script = "{{Game_Root}}/operations/generate-game-toml.lua"
 
@@ -295,7 +316,7 @@ script = "{{Game_Root}}/operations/generate-game-toml.lua"
 id = 69
 name = "generate Godot Game (EXPERIMENTAL)"
 run-all = false
-depends-on = [8,9,10,11]
+depends-on = [8,9,11,12,13]
 script_type = "lua"
 script = "{{Game_Root}}/Godot/godot-init-V0.5.2.lua"
 args = [
