@@ -70,9 +70,9 @@ name = "rename folder STROUT-{{Region}}-{{Type}}-{{audio_state}}-{{isRenamed}} t
 script_type = "lua"
 script = "{{Game_Root}}/operations/rename.lua"
 args = [
-                    # should be something like GameFiles\EU-Full-audio_none-notRenamed
+    # should be something like GameFiles\EU-Full-audio_none-notRenamed
     "--old_path", "{{Game_Root}}/GameFiles/{{Region}}-{{Type}}-audio_none-{{isRenamed}}",
-                    # should be something like GameFiles\EU-Full-audio_og-notRenamed
+    # should be something like GameFiles\EU-Full-audio_og-notRenamed
     "--new_path", "{{Game_Root}}/GameFiles/{{Region}}-{{Type}}-{{audio_state}}-{{isRenamed}}"
 ]
 
