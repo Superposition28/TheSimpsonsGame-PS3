@@ -17,19 +17,19 @@ Godot provides the runtime (rendering, physics and scripting). This module conce
 ## Current Status & Known Issues
 The module is in active development (Beta). Highlights and known problems:
 
-- **Textures & Models:** Texture extraction completes reliably, and most models extract correctly. Texture-to-submesh mapping is currently unreliable on complex, high-LOD meshes — the importer falls back to texture name heuristics and may assign textures unpredictably (but repeatably). Low-LOD models are more likely to receive correct texture assignments.
+- **Textures & Models:** Texture extraction completes reliably, and most models extract correctly. Texture-to-submesh mapping has improved, but it remains imperfect and cannot yet reproduce the exact correct output for complex, high-LOD meshes, Low-LOD meshes are almost all accurate.
 - **Audio:** Localized dialogue (~14,698 files) and ~128 ambient clips convert and map successfully using `reversing/docs/PS3_GAME/USRDIR/A1_Audio/AudioMap.yaml`.
 - **Music (.MUS):** The 17 music `.mus` archives can now be unpacked into paired `.snr` and `.sns` files with `operations/mus.bms`, and the resulting `.snr` files decode correctly in vgmstream as EA-XAS music streams.
 - **Video:** VP6 and other video formats convert successfully with the toolchain.
 
-Screenshots showing current extraction results (high-LOD texture issues vs. low-LOD working textures) appear further below in this document.
+Screenshots showing earlier extraction results (high-LOD texture issues and low-LOD examples) appear further below in this document; they illustrate the remaining material-mapping problem, not guaranteed current behavior for every asset.
 
 If you want to reproduce the current extraction pipeline or help debug mapping, see the `operations/` scripts and the format docs in `reversing/docs`.
 
 ## Help Wanted!
 This is a large reverse-engineering effort and contributions are welcome. Areas where help would be most valuable:
 
-1. **Texture Mapping:** Investigate how the original formats assign textures to submeshes and implement a reliable mapping strategy for high-LOD models.
+1. **Texture Mapping:** Validate whether TLFD events delimit material texture groups and how submesh material IDs index those groups; replace the pair heuristic only after checking known-good assets.
 2. **Format Documentation:** Expand and improve the format analyses in the [docs repository](https://github.com/Superposition28/TheSimpsonsGame-PS3-Docs/tree/main/).
 3. **Blender / Import Pipelines:** Improve Blender automation scripts for robust material assignment and layer handling.
 
