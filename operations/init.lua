@@ -2,9 +2,9 @@
 -- Initializes source files by optionally copying/moving them to a local workspace
 -- to avoid modifying originals (unless the user chooses to use-in-place).
 -- Uses a module-local config.toml ([[placeholders]]) with path components:
---   MainSourcePath: Full path to USRDIR (e.g., A:\...\Source\EU\PS3_GAME\USRDIR)
---   SourcePath: Base Source directory (e.g., A:\...\Source)
---   PostSourcePath: Relative path from Source to USRDIR (e.g., EU\PS3_GAME\USRDIR)
+--   MainSourcePath: Full path to USRDIR (e.g., A:\...\Source\PS3\EU\1\PS3_GAME\USRDIR)
+--   SourcePath: Platform Source directory (e.g., A:\...\Source\PS3)
+--   PostSourcePath: Relative path from numbered folder to USRDIR (e.g., PS3_GAME\USRDIR)
 -- Supports platforms: PS3 or XBOX 360
 -- Supports regions: US, EU, or Both (prompts for both, stores EU as primary)
 --
@@ -154,11 +154,19 @@ local function main()
         end
     end
 
-    -- Define local_data_path AFTER region is known
-    -- For "Both" region, create separate EU and US directories, but use EU as primary
-    local local_data_path_eu = join(module_dir, "Source", "EU")
-    local local_data_path_us = join(module_dir, "Source", "US")
-    local local_data_path = (region == "BOTH") and local_data_path_eu or join(module_dir, "Source", region)
+    -- Keep the configured instance number without prompting so each source copy has a stable location.
+    local num = placeholders["num"]
+    if type(num) ~= "string" or not num:match("^%d+$") then
+        num = "1"
+        placeholders["num"] = num
+        write_placeholders(cfg_path, placeholders)
+    end
+
+    -- For "Both" region, create separate EU and US directories, but use EU as primary.
+    local source_platform_dir = join(module_dir, "Source", platform)
+    local local_data_path_eu = join(source_platform_dir, "EU", num)
+    local local_data_path_us = join(source_platform_dir, "US", num)
+    local local_data_path = (region == "BOTH") and local_data_path_eu or join(source_platform_dir, region, num)
 
     colour_print(placeholders)
     local existing = placeholders["MainSourcePath"]
@@ -577,8 +585,8 @@ local function main()
 
     -- Persist the effective SourcePath in config.toml as three components (EU path is primary)
     colour_print{colour=Colours.YELLOW, message="  Updating config.toml with effective Source Path..."}
-    local base_source_dir = join(module_dir, "Source")
-    -- Calculate PostSourcePath relative to the region folder, not the Source folder
+    local base_source_dir = source_platform_dir
+    -- Calculate PostSourcePath relative to the numbered region folder.
     local post_source_relative = get_relative_path(local_data_path, effective_source_path)
 
     placeholders["MainSourcePath"] = effective_source_path
@@ -600,8 +608,8 @@ local function main()
     end
 
     if found_original or found_usrdir then
-        local base_source_dir = join(module_dir, "Source")
-        -- Calculate PostSourcePath relative to the region folder, not the Source folder
+        local base_source_dir = source_platform_dir
+        -- Calculate PostSourcePath relative to the numbered region folder.
         local post_source_relative = get_relative_path(local_data_path, path_to_validate)
 
         placeholders["MainSourcePath"] = path_to_validate
