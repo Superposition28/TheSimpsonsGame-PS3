@@ -145,7 +145,7 @@ Select a game:
 
 ### 3. Select the module and answer the initialization prompts
 
-When you select `TheSimpsonsGame-PS3`, the engine runs the module initialization step and asks for your game region and the path to your dumped game files.
+When you select `TheSimpsonsGame-PS3`, the engine runs the module initialization step and asks for your game platform, game region, and the path to your dumped game files.
 
 The source path you enter should point at the game root folder that contains `USRDIR`. For example:
 
@@ -159,6 +159,10 @@ Reading module config: A:\TSG-test\RemakeEngine\EngineApps\Games\TheSimpsonsGame
 Initialized placeholders.num = "1"
 Initialized placeholders.audio_state = "audio_none"
 Initialized placeholders.Type = "Full"
+No valid Platform set in config.toml. You'll be prompted to set one (PS3 or XBOX 360).
+? Enter the game platform (PS3 or XBOX 360) and press Enter (leave blank to cancel):
+PS3
+Set Platform to 'PS3'.
 No valid Region set in config.toml. You'll be prompted to set one (US, EU, or Both).
 ? Enter the game region (US, EU, or Both) and press Enter (leave blank to cancel):
 EU
@@ -275,17 +279,20 @@ For a full pipeline run, select `Run All`. If you are debugging a specific step,
 RemakeEngine operations use built-in placeholders for paths and configuration. These are provided by the engine, initialized by `operations/init.lua`, and updated by follow-up config steps defined in `operations.toml`.
 
 **Built-in placeholders for `operations.toml`:**
-- `{{Game_Root}}` — Path to this module's root directory.
-- `{{Project_Root}}` — Path to the RemakeEngine root project directory.
+
+* `{{Game_Root}}` — Path to this module's root directory.
+* `{{Project_Root}}` — Path to the RemakeEngine root project directory.
 
 **Key custom placeholders defined in `config.toml`:**
-- `{{SourcePath}}` — Path to your original game dump root (set by `operations/init.lua` and stored in `config.toml`).
-- `{{PostSourcePath}}` — Subpath appended under `{{SourcePath}}` when the pipeline targets the game data root (currently `PS3_GAME/USRDIR`).
-- `{{Region}}` — Game region, e.g. `US` or `EU`.
-- `{{Type}}` — Extraction/structure type for validation. Set to `FullFlattened` after normalization.
-- `{{audio_state}}` — Audio layout state; set to `audio_reorg` after running the audio setup step.
-- `{{isRenamed}}` — Flag indicating base folder rename status; set to `isRenamed` after the rename step.
-- `{{STROUT}}` — Output root for extracted STR content; updated to `STROUT_Normalized` after normalization.
+
+* `{{SourcePath}}` — Path to your original game dump root (set by `operations/init.lua` and stored in `config.toml`).
+* `{{PostSourcePath}}` — Subpath appended under `{{SourcePath}}` when the pipeline targets the game data root (currently `PS3_GAME/USRDIR`).
+* `{{Platform}}` — Game platform, e.g. `PS3` or `XBOX 360`.
+* `{{Region}}` — Game region, e.g. `US` or `EU`.
+* `{{Type}}` — Extraction/structure type for validation. Set to `FullFlattened` after normalization.
+* `{{audio_state}}` — Audio layout state; set to `audio_reorg` after running the audio setup step.
+* `{{isRenamed}}` — Flag indicating base folder rename status; set to `isRenamed` after the rename step.
+* `{{STROUT}}` — Output root for extracted STR content; updated to `STROUT_Normalized` after normalization.
 
 **Usage:**
 - Placeholders are referenced in TOML and scripts as `{{PlaceholderName}}`.
@@ -345,7 +352,8 @@ This project automates extraction of assets (3D models, sounds, videos) from *Th
 ---
 ---
 
-GameFiles\EU-FullFlattened-audio_reorg-isRenamed\LHub-00_SprHub\sprHub\zone08str\assets\environs\sprIndustrialBldgDuffBreweryGeo\exportBldgDuffBrewery\
+GameFiles\PS3-EU-FullFlattened-audio_reorg-isRenamed\LHub-00_SprHub\sprHub\zone08str\assets\environs\sprIndustrialBldgDuffBreweryGeo\exportBldgDuffBrewery
+
 High LOD model with broken textures
 ![](.github/assets/blendersnip/lodmodel1_3f18fc.rws.PS3.blend.png)
 low LOD model with working textures

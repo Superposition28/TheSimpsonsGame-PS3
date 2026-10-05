@@ -5,6 +5,7 @@
 --   MainSourcePath: Full path to USRDIR (e.g., A:\...\Source\EU\PS3_GAME\USRDIR)
 --   SourcePath: Base Source directory (e.g., A:\...\Source)
 --   PostSourcePath: Relative path from Source to USRDIR (e.g., EU\PS3_GAME\USRDIR)
+-- Supports platforms: PS3 or XBOX 360
 -- Supports regions: US, EU, or Both (prompts for both, stores EU as primary)
 --
 
@@ -22,6 +23,7 @@ import("init/util")
 ---@field MainSourcePath string?
 ---@field SourcePath string?
 ---@field PostSourcePath string?
+---@field Platform string?
 ---@field Region string?
 ---@field isRenamed string?
 ---@field num string?
@@ -34,6 +36,21 @@ import("init/util")
 ---@field id string
 ---@field label string
 
+---@param val string|nil
+---@return string|nil
+local function normalize_platform(val)
+    if not val or type(val) ~= "string" then
+        return nil
+    end
+    local cleaned = trim(val):upper()
+    if cleaned == "PS3" then
+        return "PS3"
+    elseif cleaned == "XBOX 360" or cleaned == "XBOX360" then
+        return "XBOX 360"
+    end
+    return nil
+end
+
 local function main()
     -- Determine module directory (two levels up from this script: operations/init.lua -> module root)
     local module_dir = dirname(script_dir)
@@ -42,8 +59,8 @@ local function main()
     -- Ensure config.toml exists with a placeholders block
     if not sdk.path_exists(cfg_path) then
         colour_print{colour=Colours.YELLOW, message="Config not found. Creating: " .. cfg_path}
-        -- Include isRenamed = "notRenamed" by default
-        write_placeholders(cfg_path, { MainSourcePath = "", SourcePath = "", PostSourcePath = "", Region = "", isRenamed = "notRenamed" })
+        -- Include Platform = "" and isRenamed = "notRenamed" by default
+        write_placeholders(cfg_path, { MainSourcePath = "", SourcePath = "", PostSourcePath = "", Platform = "", Region = "", isRenamed = "notRenamed" })
         colour_print{colour=Colours.GREEN, message="Created config.toml with default placeholders."}
     end
 
@@ -53,6 +70,7 @@ local function main()
     -- Auto-add with defaults if missing
     ---@type table<string, string>
     local defaults = {
+        Platform = "",
         isRenamed = "notRenamed",
         num = "1",
         audio_state = "audio_none",
@@ -78,6 +96,34 @@ local function main()
     --    write_placeholders(cfg_path,placeholders)
     --    colour_print{colour=Colours.GREEN, message="Initialized placeholders.STROUT = \"STROUT\""}
     --end
+
+    local platform = normalize_platform(placeholders["Platform"])
+    if platform then
+        if placeholders["Platform"] ~= platform then
+            placeholders["Platform"] = platform
+            write_placeholders(cfg_path, placeholders)
+        end
+    else
+        colour_print{colour=Colours.YELLOW, message="No valid Platform set in config.toml. You'll be prompted to set one (PS3 or XBOX 360)."}
+        while true do
+            local input = prompt("Enter the game platform (PS3 or XBOX 360) and press Enter (leave blank to cancel):", "Game Platform")
+            if not input or input == "" then
+                colour_print{colour=Colours.RED, message="Initialization aborted: no valid Platform provided."}
+                colour_print{colour=Colours.YELLOW, message="Please update '" .. cfg_path .. "' with Platform = \"PS3\" or \"XBOX 360\" and re-run this initializer."}
+                return false
+            end
+            local normalized = normalize_platform(input)
+            if normalized then
+                platform = normalized
+                placeholders["Platform"] = platform
+                write_placeholders(cfg_path, placeholders)
+                colour_print{colour=Colours.GREEN, message="Set Platform to '" .. platform .. "'."}
+                break
+            else
+                colour_print{colour=Colours.RED, message="Invalid platform. Please enter 'PS3' or 'XBOX 360'."}
+            end
+        end
+    end
 
     local region = normalize_region(placeholders["Region"])
     if region then

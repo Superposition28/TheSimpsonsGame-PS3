@@ -1,14 +1,12 @@
-
-
 # Placeholders: Game_Root, Project_Root are built into the engine
 
 
 ## creates config.toml and ensures placeholders exist
 ## operations marked with init = true are not displayed in interactive UI or GUI lists to ensure they are always run every time
-##  - ensure placeholders exist: SourcePath, Region
+##  - ensure placeholders exist: Platform, SourcePath, Region
 ##  - create ./config.toml on first run if missing
 ##  - verify {{SourcePath}}/{{Region}}/{{PostSourcePath}} exists and is readable
-## get user input for values like region and path if needed
+## get user input for values like platform, region, and path if needed
 [[operation]]
 id = 0
 init = true
@@ -42,7 +40,7 @@ depends-on = [-1] # depends on qbms tool
 script_type = "bms"
 script = "{{Game_Root}}/operations/simpsons_str.bms"
 input = "{{SourcePath}}/{{Region}}/{{PostSourcePath}}"
-output = "{{Game_Root}}/GameFiles/{{Region}}-{{Type}}-{{audio_state}}-{{isRenamed}}" # always output to STROUT not {{STROUT}}
+output = "{{Game_Root}}/GameFiles/{{Platform}}-{{Region}}-{{Type}}-{{audio_state}}-{{isRenamed}}" # always output to STROUT not {{STROUT}}
 extension = ".str"
 
 
@@ -55,8 +53,8 @@ script_type = "lua"
 script = "{{Game_Root}}/operations/CopySourceAudioVideo.lua"
 args = [
     "--source", "{{SourcePath}}/{{Region}}/{{PostSourcePath}}",
-    # this path should look somthing like GameFiles\EU-Full-audio_none-notRenamed
-    "--target", "{{Game_Root}}/GameFiles/{{Region}}-{{Type}}-{{audio_state}}-{{isRenamed}}"
+    # this path should look somthing like GameFiles\PS3-EU-Full-audio_none-notRenamed
+    "--target", "{{Game_Root}}/GameFiles/{{Platform}}-{{Region}}-{{Type}}-{{audio_state}}-{{isRenamed}}"
 ]
 [[operation.onsuccess]] # when successful, update {{audio_state}} placeholder to "audio_og" since we just copied the original audio files without any reorganization
 id = 2.1
@@ -66,14 +64,14 @@ script = "config"
 args = ["--group", "placeholders", "--key", "audio_state", "--value", "audio_og", "--type", "string"]
 [[operation.onsuccess]]
 id = 2.2
-name = "rename folder STROUT-{{Region}}-{{Type}}-{{audio_state}}-{{isRenamed}} to STROUT-{{Region}}-{{Type}}-{{audio_state}}-isRenamed"
+name = "rename folder STROUT-{{Platform}}-{{Region}}-{{Type}}-{{audio_state}}-{{isRenamed}} to STROUT-{{Platform}}-{{Region}}-{{Type}}-{{audio_state}}-isRenamed"
 script_type = "lua"
 script = "{{Game_Root}}/operations/rename.lua"
 args = [
-    # should be something like GameFiles\EU-Full-audio_none-notRenamed
-    "--old_path", "{{Game_Root}}/GameFiles/{{Region}}-{{Type}}-audio_none-{{isRenamed}}",
-    # should be something like GameFiles\EU-Full-audio_og-notRenamed
-    "--new_path", "{{Game_Root}}/GameFiles/{{Region}}-{{Type}}-{{audio_state}}-{{isRenamed}}"
+    # should be something like GameFiles\PS3-EU-Full-audio_none-notRenamed
+    "--old_path", "{{Game_Root}}/GameFiles/{{Platform}}-{{Region}}-{{Type}}-audio_none-{{isRenamed}}",
+    # should be something like GameFiles\PS3-EU-Full-audio_og-notRenamed
+    "--new_path", "{{Game_Root}}/GameFiles/{{Platform}}-{{Region}}-{{Type}}-{{audio_state}}-{{isRenamed}}"
 ]
 
 [[operation]]
@@ -85,7 +83,7 @@ script_type = "engine"
 script = "format-extract"
 format = "txd"
 args = [
-    "--source", "{{Game_Root}}/GameFiles/{{Region}}-{{Type}}-{{audio_state}}-{{isRenamed}}",
+    "--source", "{{Game_Root}}/GameFiles/{{Platform}}-{{Region}}-{{Type}}-{{audio_state}}-{{isRenamed}}",
     "--output-ext", ".png"
 ]
 
@@ -97,7 +95,7 @@ depends-on = [3]
 script_type = "engine"
 script = "rename-folders"
 args = [
-    "{{Game_Root}}/GameFiles/{{Region}}-{{Type}}-{{audio_state}}-{{isRenamed}}",
+    "{{Game_Root}}/GameFiles/{{Platform}}-{{Region}}-{{Type}}-{{audio_state}}-{{isRenamed}}",
     "--map-db-file", "{{Game_Root}}/config/RenameMap.db"
 ]
 [[operation.onsuccess]] # when successful, update {{isRenamed}} placeholder to "isRenamed"
@@ -108,12 +106,12 @@ script = "config"
 args = ["--group", "placeholders", "--key", "isRenamed", "--value", "isRenamed", "--type", "string"]
 [[operation.onsuccess]]
 id = 4.2
-name = "rename folder STROUT-{{Region}}-{{Type}}-{{audio_state}}-{{isRenamed}} to STROUT-{{Region}}-{{Type}}-{{audio_state}}-isRenamed"
+name = "rename folder STROUT-{{Platform}}-{{Region}}-{{Type}}-{{audio_state}}-{{isRenamed}} to STROUT-{{Platform}}-{{Region}}-{{Type}}-{{audio_state}}-isRenamed"
 script_type = "lua"
 script = "{{Game_Root}}/operations/rename.lua"
 args = [
-    "--old_path", "{{Game_Root}}/GameFiles/{{Region}}-{{Type}}-{{audio_state}}-notRenamed",
-    "--new_path", "{{Game_Root}}/GameFiles/{{Region}}-{{Type}}-{{audio_state}}-{{isRenamed}}"
+    "--old_path", "{{Game_Root}}/GameFiles/{{Platform}}-{{Region}}-{{Type}}-{{audio_state}}-notRenamed",
+    "--new_path", "{{Game_Root}}/GameFiles/{{Platform}}-{{Region}}-{{Type}}-{{audio_state}}-{{isRenamed}}"
 ]
 
 [[operation]]
@@ -123,7 +121,7 @@ run-all = true
 depends-on = [4]
 script_type = "lua"
 script = "{{Game_Root}}/operations/SetupAudioDir.lua"
-args = ["{{Game_Root}}/GameFiles/{{Region}}-{{Type}}-{{audio_state}}-{{isRenamed}}"]
+args = ["{{Game_Root}}/GameFiles/{{Platform}}-{{Region}}-{{Type}}-{{audio_state}}-{{isRenamed}}"]
 [[operation.onsuccess]] # when successful, update isRenamed placeholder to "isRenamed"
 id = 5.1
 name = "set audio_state placeholder"
@@ -132,12 +130,12 @@ script = "config"
 args = ["--group", "placeholders", "--key", "audio_state", "--value", "audio_reorg", "--type", "string"]
 [[operation.onsuccess]]
 id = 5.2
-name = "rename folder STROUT-{{Region}}-{{Type}}-{{audio_state}}-{{isRenamed}} to STROUT-{{Region}}-{{Type}}-audio_reorg-{{isRenamed}}"
+name = "rename folder STROUT-{{Platform}}-{{Region}}-{{Type}}-{{audio_state}}-{{isRenamed}} to STROUT-{{Platform}}-{{Region}}-{{Type}}-audio_reorg-{{isRenamed}}"
 script_type = "lua"
 script = "{{Game_Root}}/operations/rename.lua"
 args = [
-    "--old_path", "{{Game_Root}}/GameFiles/{{Region}}-{{Type}}-audio_og-{{isRenamed}}",
-    "--new_path", "{{Game_Root}}/GameFiles/{{Region}}-{{Type}}-{{audio_state}}-{{isRenamed}}"
+    "--old_path", "{{Game_Root}}/GameFiles/{{Platform}}-{{Region}}-{{Type}}-audio_og-{{isRenamed}}",
+    "--new_path", "{{Game_Root}}/GameFiles/{{Platform}}-{{Region}}-{{Type}}-{{audio_state}}-{{isRenamed}}"
 ]
 
 [[operation]]
@@ -148,8 +146,8 @@ depends-on = [5]
 script_type = "lua"
 script = "{{Game_Root}}/operations/DirectoryNormalizer/run.lua"
 args = [
-    "{{Game_Root}}/GameFiles/{{Region}}-{{Type}}-{{audio_state}}-{{isRenamed}}",
-    "{{Game_Root}}/GameFiles/{{Region}}-{{Type}}Flattened-{{audio_state}}-{{isRenamed}}",
+    "{{Game_Root}}/GameFiles/{{Platform}}-{{Region}}-{{Type}}-{{audio_state}}-{{isRenamed}}",
+    "{{Game_Root}}/GameFiles/{{Platform}}-{{Region}}-{{Type}}Flattened-{{audio_state}}-{{isRenamed}}",
     "--copyonly", "A1_Audio",
     #"--copyonly", "A1_Video",
     "--copyonly", "audiostreams",
@@ -177,10 +175,10 @@ script = "{{Game_Root}}/operations/Blender/run.lua"
 args = [
     "--operations-dir", "{{Game_Root}}/operations",
     "--blender-dir", "{{Game_Root}}/operations/Blender",
-    "--GameFiles", "{{Game_Root}}/GameFiles/{{Region}}-{{Type}}-{{audio_state}}-{{isRenamed}}",
+    "--GameFiles", "{{Game_Root}}/GameFiles/{{Platform}}-{{Region}}-{{Type}}-{{audio_state}}-{{isRenamed}}",
     "--blank-blend", "{{Game_Root}}/blank.blend",
-    "--symlink-path", "{{Game_Root}}/TMP_TSG_LNKS-{{Region}}-{{Type}}-{{audio_state}}-{{isRenamed}}", # symbolic link root to avoid path length issues
-    "--asset-map-db", "{{Game_Root}}/GameFiles/config/{{Region}}-{{Type}}-{{audio_state}}-{{isRenamed}}/AssetMap.sqlite",
+    "--symlink-path", "{{Game_Root}}/TMP_TSG_LNKS-{{Platform}}-{{Region}}-{{Type}}-{{audio_state}}-{{isRenamed}}", # symbolic link root to avoid path length issues
+    "--asset-map-db", "{{Game_Root}}/GameFiles/config/{{Platform}}-{{Region}}-{{Type}}-{{audio_state}}-{{isRenamed}}/AssetMap.sqlite",
 ]
 # for debugging
 #[[operation.prompts]]
@@ -223,7 +221,7 @@ depends-on = [6]
 script_type = "lua"
 script = "{{Game_Root}}/operations/lh2_to_csv.lua"
 args = [
-    "--input-dir", "{{Game_Root}}/GameFiles/{{Region}}-{{Type}}-{{audio_state}}-{{isRenamed}}"
+    "--input-dir", "{{Game_Root}}/GameFiles/{{Platform}}-{{Region}}-{{Type}}-{{audio_state}}-{{isRenamed}}"
     # auto output to same location as input files
 ]
 
@@ -240,8 +238,8 @@ args = [
     "-m", "vgmstream",
     "--type", "audio",
     ## doesnt need to specify the location of the audiostreams folder as its within the source path and {{STROUT}} and the only location snu files exist
-    "-s", "{{Game_Root}}/GameFiles/{{Region}}-{{Type}}-{{audio_state}}-{{isRenamed}}",
-    "-t", "{{Game_Root}}/GameFiles/{{Region}}-{{Type}}-{{audio_state}}-{{isRenamed}}",
+    "-s", "{{Game_Root}}/GameFiles/{{Platform}}-{{Region}}-{{Type}}-{{audio_state}}-{{isRenamed}}",
+    "-t", "{{Game_Root}}/GameFiles/{{Platform}}-{{Region}}-{{Type}}-{{audio_state}}-{{isRenamed}}",
     "-i", ".sbk",
     "-o", ".wav",
     "--godot-compatible",
@@ -261,8 +259,8 @@ args = [
     "-m", "vgmstream",
     "--type", "audio",
     ## doesnt need to specify the location of the audiostreams folder as its within the source path and {{STROUT}} and the only location snu files exist
-    "-s", "{{Game_Root}}/GameFiles/{{Region}}-{{Type}}-{{audio_state}}-{{isRenamed}}",
-    "-t", "{{Game_Root}}/GameFiles/{{Region}}-{{Type}}-{{audio_state}}-{{isRenamed}}",
+    "-s", "{{Game_Root}}/GameFiles/{{Platform}}-{{Region}}-{{Type}}-{{audio_state}}-{{isRenamed}}",
+    "-t", "{{Game_Root}}/GameFiles/{{Platform}}-{{Region}}-{{Type}}-{{audio_state}}-{{isRenamed}}",
     "-i", ".snu",
     "-o", ".wav",
     "--godot-compatible",
@@ -279,7 +277,7 @@ script_type = "lua"
 script = "{{Game_Root}}/operations/SetupMusicFiles.lua"
 args = [
     "--bmsscript", "{{Game_Root}}/operations/mus.bms",
-    "--GameDir", "{{Game_Root}}/GameFiles/{{Region}}-{{Type}}-{{audio_state}}-{{isRenamed}}",
+    "--GameDir", "{{Game_Root}}/GameFiles/{{Platform}}-{{Region}}-{{Type}}-{{audio_state}}-{{isRenamed}}",
 ]
 
 
@@ -294,8 +292,8 @@ tool = "ffmpeg"
 args = [
     "-m", "ffmpeg",
     "--type", "video",
-    "-s", "{{Game_Root}}/GameFiles/{{Region}}-{{Type}}-{{audio_state}}-{{isRenamed}}",
-    "-t", "{{Game_Root}}/GameFiles/{{Region}}-{{Type}}-{{audio_state}}-{{isRenamed}}",
+    "-s", "{{Game_Root}}/GameFiles/{{Platform}}-{{Region}}-{{Type}}-{{audio_state}}-{{isRenamed}}",
+    "-t", "{{Game_Root}}/GameFiles/{{Platform}}-{{Region}}-{{Type}}-{{audio_state}}-{{isRenamed}}",
     "-i", ".vp6",
     "-o", ".ogv",
     "--replace"
@@ -322,7 +320,7 @@ script = "{{Game_Root}}/Godot/godot-init-V0.5.2.lua"
 args = [
     "--project-name", "SimpsonsGamePS3",
     "--repo-root", "{{Project_Root}}",
-    "--sourcePath", "{{Game_Root}}/GameFiles/{{Region}}-{{Type}}-{{audio_state}}-{{isRenamed}}",
+    "--sourcePath", "{{Game_Root}}/GameFiles/{{Platform}}-{{Region}}-{{Type}}-{{audio_state}}-{{isRenamed}}",
     "--iconPath", "{{SourcePath}}/{{Region}}/{{PostSourcePath}}",
     "--no-exit"
 ]
@@ -353,3 +351,4 @@ name = "include_source"
 message = "Also remove Source/ containing the copied original game files?"
 default = false
 cli_arg = "--include-source"
+
