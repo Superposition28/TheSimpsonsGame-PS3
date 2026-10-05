@@ -2,7 +2,7 @@
 DirectoryNormalizer.lua (Simple Mode + Collapse + Rules v2)
 
 This script normalizes a directory by performing transformations:
-1. Removes the nested path segments '/build/PS3/pal_en' or '/build/PS3/ntsc_en'.
+1. Removes the nested path segments '/build/PS3|XEN/pal_en' or '/build/PS3|XEN/ntsc_en'.
 2. Renames any folder named 'texture_dictionary' to 'txd'.
 3. NEW: Removes redundant "level name" folders from sub-paths.
     e.g., 'Map_X/level/a/b/level/c' -> 'Map_X/level/a/b/c'

@@ -10,7 +10,7 @@
 [[operation]]
 id = 0
 init = true
-run-all = false # rerun when using run-all to ensure config is valid
+run-all = true # rerun when using run-all to ensure config is valid
 depends-on = []
 script_type = "lua"
 script = "{{Game_Root}}/operations/init.lua"

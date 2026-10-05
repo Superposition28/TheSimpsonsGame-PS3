@@ -31,7 +31,9 @@
 
 local Segments_to_remove = {
     { "build", "ps3", "palen" },
-    { "build", "ps3", "ntscen" }
+    { "build", "ps3", "ntscen" },
+    { "build", "xen", "palen" },
+    { "build", "xen", "ntscen" }
 }
 
 local LevelAliasMap = {

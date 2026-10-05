@@ -5,7 +5,7 @@
 --   MainSourcePath: Full path to USRDIR (e.g., A:\...\Source\PS3\EU\1\PS3_GAME\USRDIR)
 --   SourcePath: Platform Source directory (e.g., A:\...\Source\PS3)
 --   PostSourcePath: Relative path from numbered folder to USRDIR (e.g., PS3_GAME\USRDIR)
--- Supports platforms: PS3 or XBOX 360
+-- Supports platforms: PS3 or XBOX360
 -- Supports regions: US, EU, or Both (prompts for both, stores EU as primary)
 --
 
@@ -45,8 +45,8 @@ local function normalize_platform(val)
     local cleaned = trim(val):upper()
     if cleaned == "PS3" then
         return "PS3"
-    elseif cleaned == "XBOX 360" or cleaned == "XBOX360" then
-        return "XBOX 360"
+    elseif cleaned == "XBOX 360" or cleaned == "XBOX360" or cleaned == "XBOX" or cleaned == "360" then
+        return "XBOX360"
     end
     return nil
 end
@@ -104,12 +104,12 @@ local function main()
             write_placeholders(cfg_path, placeholders)
         end
     else
-        colour_print{colour=Colours.YELLOW, message="No valid Platform set in config.toml. You'll be prompted to set one (PS3 or XBOX 360)."}
+        colour_print{colour=Colours.YELLOW, message="No valid Platform set in config.toml. You'll be prompted to set one (PS3 or XBOX360)."}
         while true do
-            local input = prompt("Enter the game platform (PS3 or XBOX 360) and press Enter (leave blank to cancel):", "Game Platform")
+            local input = prompt("Enter the game platform (PS3 or XBOX360) and press Enter (leave blank to cancel):", "Game Platform")
             if not input or input == "" then
                 colour_print{colour=Colours.RED, message="Initialization aborted: no valid Platform provided."}
-                colour_print{colour=Colours.YELLOW, message="Please update '" .. cfg_path .. "' with Platform = \"PS3\" or \"XBOX 360\" and re-run this initializer."}
+                colour_print{colour=Colours.YELLOW, message="Please update '" .. cfg_path .. "' with Platform = \"PS3\" or \"XBOX360\" and re-run this initializer."}
                 return false
             end
             local normalized = normalize_platform(input)
@@ -120,7 +120,7 @@ local function main()
                 colour_print{colour=Colours.GREEN, message="Set Platform to '" .. platform .. "'."}
                 break
             else
-                colour_print{colour=Colours.RED, message="Invalid platform. Please enter 'PS3' or 'XBOX 360'."}
+                colour_print{colour=Colours.RED, message="Invalid platform. Please enter 'PS3' or 'XBOX360'."}
             end
         end
     end
@@ -586,8 +586,8 @@ local function main()
     -- Persist the effective SourcePath in config.toml as three components (EU path is primary)
     colour_print{colour=Colours.YELLOW, message="  Updating config.toml with effective Source Path..."}
     local base_source_dir = source_platform_dir
-    -- Calculate PostSourcePath relative to the numbered region folder.
-    local post_source_relative = get_relative_path(local_data_path, effective_source_path)
+    -- Prefix the local relative path with the instance number used by operation templates.
+    local post_source_relative = join(num, get_relative_path(local_data_path, effective_source_path))
 
     placeholders["MainSourcePath"] = effective_source_path
     placeholders["SourcePath"] = base_source_dir
@@ -609,8 +609,8 @@ local function main()
 
     if found_original or found_usrdir then
         local base_source_dir = source_platform_dir
-        -- Calculate PostSourcePath relative to the numbered region folder.
-        local post_source_relative = get_relative_path(local_data_path, path_to_validate)
+        -- Prefix the local relative path with the instance number used by operation templates.
+        local post_source_relative = join(num, get_relative_path(local_data_path, path_to_validate))
 
         placeholders["MainSourcePath"] = path_to_validate
         placeholders["SourcePath"] = base_source_dir
