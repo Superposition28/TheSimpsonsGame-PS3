@@ -616,7 +616,8 @@ function build_collapse_map(tree, map, current_orig_path, current_new_path)
     local file_names = {}
     for k,_ in pairs(node.files) do table.insert(file_names, k) end
 
-    if #dir_names == 1 and #file_names == 0 then
+    local is_root_level = current_orig_path ~= "" and dirname(current_orig_path) == ""
+    if #dir_names == 1 and #file_names == 0 and not is_root_level then
         local child_name = dir_names[1]
         local child_orig_path = join(current_orig_path, child_name)
 
