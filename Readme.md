@@ -204,6 +204,19 @@ Initialization completed successfully. Time: 40.5s. Press any key to continue...
 
 Once initialization completes, the module operations menu becomes available.
 
+### Non-interactive initialization
+
+Operation `0` accepts optional Lua arguments for every initialization prompt. Omitted values keep the interactive behavior; supplied values are validated and used without prompting.
+
+```pwsh
+dotnet run -c Debug --project .\EngineNet\ -- `
+  --game TheSimpsonsGame-PS3 `
+  --run_op 0 `
+  --args '["--platform","ps3","--region","EU","--path","D:\\Dump\\PS3_GAME","--action","use"]'
+```
+
+Use `--platform` (`PS3` or `XBOX360`), `--region` (`EU`, `US`, or `BOTH`), `--path` (also `--MainSourcePath`), and `--action` (`copy`, `move`, or `use`). For `BOTH`, provide `--us-path` and `--us-action` for the US source. The engine requires these script arguments in a JSON array supplied to `--args`.
+
 ### 4. Run the pipeline
 
 After initialization, the operations menu looks like this:

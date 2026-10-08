@@ -679,12 +679,12 @@ function load_rename_map(db_path)
     return map
 end
 
---- Normalizes a relative path to its canonical form based on the provided rename map.
+--- Normalizes a relative path for stable cross-platform UID generation.
 --- @param rel_path string The relative path to normalize.
 --- @param rename_map table A mapping of new names to old names.
---- @return string return The canonical form of the relative path based on the rename map.
+--- @return string return The canonical form with platform and region markers removed from UID identity.
 function normalize_to_canonical(rel_path, rename_map)
-    if not rename_map or not rel_path then
+    if not rel_path then
         return rel_path
     end
     local parts = split_path(rel_path)
@@ -693,9 +693,34 @@ function normalize_to_canonical(rel_path, rename_map)
     end
     local base_folder = parts[1]
     local base_folder_lower = string.lower(base_folder)
-    if rename_map[base_folder_lower] then
+    if rename_map and rename_map[base_folder_lower] then
         parts[1] = rename_map[base_folder_lower]
     end
+
+    local canonical_parts = {}
+    local i = 1
+    while i <= #parts do
+        local part_lower = string.lower(parts[i])
+        local platform = string.lower(parts[i + 1] or "")
+        local region = string.lower(parts[i + 2] or "")
+        if part_lower == "build"
+            and (platform == "ps3" or platform == "xen")
+            and (region == "pal_en" or region == "ntsc_en") then
+            i = i + 3
+        else
+            table.insert(canonical_parts, parts[i])
+            i = i + 1
+        end
+    end
+    parts = canonical_parts
+
+    local filename = parts[#parts]
+    filename = filename:gsub("%.[Xx][Ee][Nn]%.", ".")
+    filename = filename:gsub("%.[Pp][Ss]3%.", ".")
+    filename = filename:gsub("%.[Xx][Ee][Nn]$", "")
+    filename = filename:gsub("%.[Pp][Ss]3$", "")
+    parts[#parts] = filename
+
     return table.concat(parts, "/")
 end
 

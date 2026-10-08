@@ -87,11 +87,11 @@ local function main()
 
     sdk.colour_print("green", "Initializing Normalization...", true)
 
-    local utilspath = join(Game_Root, join("operations", join("DirectoryNormalizer", "utils.lua")))
+    local utilspath = join(Game_Root, "operations", "DirectoryNormalizer", "utils.lua")
     sdk.colour_print({ colour = "cyan", message = string.format("Importing utils from: %s", utilspath), newline = true })
     import(utilspath)
 
-    local logicpath = join(Game_Root, join("operations", join("DirectoryNormalizer", "logic.lua")))
+    local logicpath = join(Game_Root, "operations", "DirectoryNormalizer", "logic.lua")
     sdk.colour_print({ colour = "cyan", message = string.format("Importing logic from: %s", logicpath), newline = true })
     ---@type DirectoryNormalizerLogic
     import(logicpath)

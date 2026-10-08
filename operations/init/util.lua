@@ -12,7 +12,7 @@
 ---@field validate_source_path fun(path: string): boolean, string, string
 
 ---@type SharedUtils
-import("../SharedUtils")
+--import(join(Game_Root, "operations", "SharedUtils.lua"))
 
 -- Local application-specific helpers
 function ends_with_usrdir(p)
