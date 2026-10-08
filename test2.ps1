@@ -7,6 +7,9 @@ $ConfigPath = Join-Path $ModuleRoot "config.toml"
 
 Set-Location $ProjectRoot
 
+# download tools
+dotnet run -c Debug --project .\EngineNet\ -- --game TheSimpsonsGame-PS3 --run_op -1;
+
 function Invoke-InitTest {
     param(
         [Parameter(Mandatory)] [string] $Platform,

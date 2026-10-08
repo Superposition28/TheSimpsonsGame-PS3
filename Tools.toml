@@ -21,7 +21,7 @@ unpack = true
 
 [[tool]]
 name = "vgmstream-cli"
-version = "r2023"
+version = "r2117"
 unpack = true
 
 [[tool]]

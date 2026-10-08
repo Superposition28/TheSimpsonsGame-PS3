@@ -251,7 +251,7 @@ args = [
 id = 11
 name = "Convert Audio (.snu -> .wav)"
 run-all = false
-depends-on = [6] # depends on vgmstream being downloaded, could depend on audio reorg but that is technically optional
+depends-on = [6] # depends on vgmstream and ffmpeg being downloaded, could depend on audio reorg but that is technically optional
 script_type = "engine"
 script = "format-convert"
 tool = "vgmstream"
@@ -263,7 +263,7 @@ args = [
     "-t", "{{Game_Root}}/GameFiles/{{Platform}}-{{Region}}-{{Type}}-{{audio_state}}-{{isRenamed}}",
     "-i", ".snu",
     "-o", ".wav",
-    "--godot-compatible",
+    "--godot-compatible", # uses ffmpeg, and vgmstream to split the 4-channel audio into separate files for Godot compatibility
     "--replace"
 ]
 
