@@ -30,13 +30,10 @@ function Invoke-InitTest {
 
 }
 
+Invoke-InitTest -Platform "ps3" -Region "EU" -SourcePath "$ModuleRoot\Source\PS3\EU\1\PS3_GAME"
+Invoke-InitTest -Platform "ps3" -Region "US" -SourcePath "$ModuleRoot\Source\PS3\US\1\PS3_GAME"
 
 
 Invoke-InitTest -Platform "xbox360" -Region "EU" -SourcePath "$ModuleRoot\Source\XBOX360\EU\1\TSG"
 Invoke-InitTest -Platform "xbox360" -Region "US" -SourcePath "$ModuleRoot\Source\XBOX360\US\1\extractedFiles"
-
-
-
-Invoke-InitTest -Platform "ps3" -Region "EU" -SourcePath "$ModuleRoot\Source\PS3\EU\1\PS3_GAME"
-Invoke-InitTest -Platform "ps3" -Region "US" -SourcePath "$ModuleRoot\Source\PS3\US\1\PS3_GAME"
 
