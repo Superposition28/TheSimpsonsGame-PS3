@@ -108,3 +108,34 @@
 * `mtp_heav` → **Meet Thy Player/Game Over** heaven (full/lite mixes)
 * `mus_simp` → **Simpsons Theme Song** cue (`rwc_` level’s music)
 * `sss_cont` / `sss_lab_` / `sss_mall` → **Invasion of the Yokel-Snatchers** control room/lab/mall lot
+
+rename map .db
+
+1,audiostreams,A1_Audio
+2,movies,A1_Video
+3,frontend,A2_Frontend
+4,simpsons_chars,A2_Characters
+5,spr_hub,LHub-00_SprHub
+6,loc,L01_LandOfChocolate
+7,brt,L02_BartmanBegins
+8,eighty_bites,L03_HungryHungryHomer
+9,tree_hugger,L04_TreeHugger
+10,mob_rules,L05_MobRules
+11,cheater,L06_EnterTheCheatrix
+12,dayofthedolphins,L07_DayOfTheDolphin
+13,colossaldonut,L08_TheColossalDonut
+14,dayspringfieldstoodstill,L09_Invasion
+15,bargainbin,L10_BargainBin
+16,gamehub,LHub-00_GameHub
+17,neverquest,L11_NeverQuest
+18,grand_theft_scratchy,L12_GrandTheftScratchy
+19,medal_of_homer,L13_MedalOfHomer
+20,bigsuperhappy,L14_BigSuperHappy
+21,rhymes,L15_Rhymes
+22,meetthyplayer,L16_MeetThyPlayer
+
+and demo folder variants
+
+23, demo_frontend, A2_Frontend
+24, demo_scd, L08_TheColossalDonut
+
