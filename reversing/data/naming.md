@@ -27,7 +27,7 @@
 
 * `loc` → `loc` → **The Land of Chocolate**
 * `brt` → `brt` → **Bartman Begins**
-* `eighty_bites` → `80b` → **Around the World in 80 Bites**
+* `eighty_bites` → `80b` → **Around the World in 80 Bites**, or L03_HungryHungryHomer
 * `tree_hugger` → `hug` → **Lisa the Tree Hugger**
 * `mob_rules` → `mob` → **Mob Rules**
 * `cheater` → `che` → **Enter the Cheatrix**

@@ -39,7 +39,7 @@ local Segments_to_remove = {
 local LevelAliasMap = {
     ["l01_landofchocolate"] = { "loc" },
     ["l02_bartmanbegins"] = { "brt" },
-    ["l03_hungryhungryhomer"] = { "eighty_bites" },
+    ["l03_hungryhungryhomer"] = { "eighty_bites", "80b", "80bites" },
     ["l04_treehugger"] = { "tree_hugger" },
     ["l05_mobrules"] = { "mob_rules" },
     ["l06_enterthecheatrix"] = { "cheater" },
@@ -202,6 +202,11 @@ function apply_camel_case_to_path(rel_path)
         parts[2] = "sss_invasion"
     end
 
+    -- Standardize the L03 primary level folder before applying child-folder rules.
+    if #parts >= 2 and string.lower(parts[1]) == "l03_hungryhungryhomer" and string.lower(parts[2]) == "eightybites" then
+        parts[2] = "80b"
+    end
+
     -- Exclude parts[1] (root folder) and parts[#parts] (file name)
     for i = 2, #parts - 1 do
         parts[i] = to_camel_case(parts[i])
@@ -311,6 +316,25 @@ end
 function NormalizeFolderSegment(segment, alias_sequences)
     if not segment or segment == "" then
         return segment
+    end
+
+    -- Numeric shortcodes can be embedded in compound folder names such as eps80bites.
+    local embedded_aliases = {}
+    for _, sequence in ipairs(alias_sequences) do
+        local alias = table.concat(sequence)
+        if alias:find("%d") then
+            table.insert(embedded_aliases, alias)
+        end
+    end
+    table.sort(embedded_aliases, function(a, b) return #a > #b end)
+    for _, alias in ipairs(embedded_aliases) do
+        while true do
+            local start_index, end_index = string.lower(segment):find(alias, 1, true)
+            if not start_index then
+                break
+            end
+            segment = segment:sub(1, start_index - 1) .. segment:sub(end_index + 1)
+        end
     end
 
     local tokens = SplitTokens(segment)
