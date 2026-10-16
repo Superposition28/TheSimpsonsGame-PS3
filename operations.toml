@@ -310,20 +310,20 @@ script = "{{Game_Root}}/operations/generate-game-toml.lua"
 
 
 
-[[operation]]
-id = 69
-name = "generate Godot Game (EXPERIMENTAL)"
-run-all = false
-depends-on = [8,9,11,12,13]
-script_type = "lua"
-script = "{{Game_Root}}/Godot/godot-init-V0.5.2.lua"
-args = [
-    "--project-name", "SimpsonsGamePS3",
-    "--repo-root", "{{Project_Root}}",
-    "--sourcePath", "{{Game_Root}}/GameFiles/{{Platform}}-{{Region}}-{{Type}}-{{audio_state}}-{{isRenamed}}",
-    "--iconPath", "{{SourcePath}}/{{Region}}/{{PostSourcePath}}",
-    "--no-exit"
-]
+#[[operation]]
+#id = 69
+#name = "generate Godot Game (EXPERIMENTAL)"
+#run-all = false
+#depends-on = [8,9,11,12,13]
+#script_type = "lua"
+#script = "{{Game_Root}}/Godot/godot-init-V0.5.2.lua"
+#args = [
+#    "--project-name", "SimpsonsGamePS3",
+#    "--repo-root", "{{Project_Root}}",
+#    "--sourcePath", "{{Game_Root}}/GameFiles/{{Platform}}-{{Region}}-{{Type}}-{{audio_state}}-{{isRenamed}}",
+#    "--iconPath", "{{SourcePath}}/{{Region}}/{{PostSourcePath}}",
+#    "--no-exit"
+#]
 
 
 [[operation]]
