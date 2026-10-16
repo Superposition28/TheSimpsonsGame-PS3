@@ -294,12 +294,6 @@ function Core.main(cli_arguments)
         return false
     end
 
-    local cli_type = normalize_game_type(cli_arguments.type)
-    if cli_arguments.type ~= nil and cli_type == nil then
-        colour_print({ colour = Colours.RED, message = "Invalid command-line type: '" .. tostring(cli_arguments.type) .. "'." })
-        return false
-    end
-
     local prompt_msg = cli_region == "BOTH"
         and "Enter the path to your EU game root (ISO root, PS3_GAME, USRDIR, or extracted Xbox 360 folder):"
         or "Enter the path to your game root (ISO root, PS3_GAME, USRDIR, or extracted Xbox 360 folder):"
@@ -337,12 +331,12 @@ function Core.main(cli_arguments)
         end
     end
 
-    -- Resolve Game Type ("Full" or "Demo")
+    -- Resolve Game Edition ("Full" or "Demo") for folder validation
     ---@type "Full"|"Demo"
-    local game_type = (detected_info and detected_info.game_type) or cli_type or normalize_game_type(placeholders.Type) or "Full"
+    local game_edition = (detected_info and detected_info.game_type) or "Full"
 
-    -- Resolve Region (prefer SFO-detected region unless BOTH is requested; prompt only when SFO is absent)
-    ---@type ("US"|"EU"|"BOTH")|nil
+    -- Resolve Region (prefer SFO/tree-detected region unless BOTH is requested; prompt only when SFO is absent)
+    ---@type ("US"|"EU"|"DEMO"|"BOTH")|nil
     local region = nil
     if cli_region == "BOTH" or cli_arguments.us_path ~= nil then
         region = "BOTH"
@@ -351,10 +345,10 @@ function Core.main(cli_arguments)
             colour_print({
                 colour = Colours.YELLOW,
                 message = string.format(
-                    "Warning: CLI specified region '%s', but PARAM.SFO identified region '%s' (%s). Using '%s'.",
+                    "Warning: CLI specified region '%s', but source was identified as '%s' (%s). Using '%s'.",
                     cli_region,
                     detected_info.region,
-                    tostring(detected_info.title_id or "SFO"),
+                    tostring(detected_info.title_id or detected_info.game_type or "SFO"),
                     detected_info.region
                 )
             })
@@ -363,20 +357,24 @@ function Core.main(cli_arguments)
     else
         region = cli_region or normalize_region(placeholders.Region)
         while not region do
-            local input = prompt("Enter the game region (US, EU, or Both):", "Game Region")
+            local input = prompt("Enter the game region (US, EU, DEMO, or Both):", "Game Region")
             if not input or trim(input) == "" then
                 return false
             end
             region = normalize_region(input)
             if not region then
-                colour_print({ colour = Colours.RED, message = "Invalid region. Please enter US, EU, or Both." })
+                colour_print({ colour = Colours.RED, message = "Invalid region. Please enter US, EU, DEMO, or Both." })
             end
+        end
+
+        if region == "DEMO" then
+            game_edition = "Demo"
         end
 
         if platform == "PS3" then
             local resolved_reg = region == "BOTH" and "EU" or region
-            ---@cast resolved_reg "EU"|"US"
-            local sup_level, sup_msg = build_support_info(platform, resolved_reg, game_type, nil)
+            ---@cast resolved_reg "EU"|"US"|"DEMO"
+            local sup_level, sup_msg = build_support_info(platform, resolved_reg, game_edition, nil)
             colour_print({
                 colour = sup_level == "full" and Colours.GREEN or Colours.YELLOW,
                 message = "  " .. sup_msg
@@ -392,9 +390,7 @@ function Core.main(cli_arguments)
     local effective_region = region == "BOTH" and "EU" or region
     local source_platform_dir = join(module_dir, "Source", platform)
     local primary_region_root = join(source_platform_dir, effective_region)
-    local primary_data_path = game_type == "Demo"
-        and join(primary_region_root, "Demo", instance_number)
-        or join(primary_region_root, instance_number)
+    local primary_data_path = join(primary_region_root, instance_number)
 
     local effective_source = PlaceSource(primary_source, primary_data_path, cli_arguments.action, "Primary")
     if not effective_source then
@@ -411,17 +407,14 @@ function Core.main(cli_arguments)
         if not us_source then
             return false
         end
-        local us_type = (us_source.version_info and us_source.version_info.game_type) or "Full"
         local us_region_root = join(source_platform_dir, "US")
-        local us_data_path = us_type == "Demo"
-            and join(us_region_root, "Demo", instance_number)
-            or join(us_region_root, instance_number)
+        local us_data_path = join(us_region_root, instance_number)
         if not PlaceSource(us_source, us_data_path, cli_arguments.us_action, "US") then
             return false
         end
     end
 
-    local validated_source = ValidateFinalSource(effective_source, game_type)
+    local validated_source = ValidateFinalSource(effective_source, game_edition)
     if not validated_source then
         colour_print({ colour = Colours.RED, message = "Source validation failed for '" .. effective_source .. "'." })
         return false
@@ -429,15 +422,13 @@ function Core.main(cli_arguments)
 
     placeholders.Platform = platform
     placeholders.Region = effective_region
-    placeholders.Type = game_type
+    if placeholders.Type ~= "Full" and placeholders.Type ~= "FullFlattened" then
+        placeholders.Type = "Full"
+    end
     placeholders.num = instance_number
     placeholders.MainSourcePath = validated_source
     placeholders.SourcePath = source_platform_dir
-    if StartsWithPath(validated_source, primary_region_root) then
-        placeholders.PostSourcePath = get_relative_path(primary_region_root, validated_source)
-    else
-        placeholders.PostSourcePath = join(instance_number, get_relative_path(primary_data_path, validated_source))
-    end
+    placeholders.PostSourcePath = join(instance_number, get_relative_path(primary_data_path, validated_source))
     write_placeholders(config_path, placeholders)
     colour_print({ colour = Colours.GREEN, message = "Success: Source validated and saved: " .. validated_source })
     return true

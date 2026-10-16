@@ -1,15 +1,21 @@
 ---@class SfoData
----@field title_id string|nil
----@field title string|nil
----@field category string|nil
----@field version string|nil
 ---@field app_ver string|nil
+---@field attribute integer|nil
+---@field bootable integer|nil
+---@field category string|nil
+---@field license string|nil
+---@field parental_level integer|nil
 ---@field ps3_system_ver string|nil
+---@field resolution integer|nil
+---@field sound_format integer|nil
+---@field title string|nil
+---@field title_id string|nil
+---@field version string|nil
 ---@field entries table<string, string|integer>
 
 ---@class GameVersionInfo
 ---@field platform "PS3"|"XBOX360"
----@field region "EU"|"US"|nil
+---@field region "EU"|"US"|"DEMO"|nil
 ---@field game_type "Full"|"Demo"
 ---@field title_id string|nil
 ---@field title string|nil
@@ -37,7 +43,7 @@
 ---@field USRDIR_DIRS_DEMO table<integer, string>
 ---@field USRDIR_OPTIONAL_FILES table<integer, string>
 ---@field ends_with_usrdir fun(p: string|nil): boolean
----@field normalize_region fun(value: string|nil): ("US"|"EU"|"BOTH")|nil
+---@field normalize_region fun(value: string|nil): ("US"|"EU"|"DEMO"|"BOTH")|nil
 ---@field normalize_game_type fun(value: string|nil): ("Full"|"Demo")|nil
 ---@field check_dirs_exist fun(base_path: string, required_dirs: table<integer, string>): boolean, table<integer, string>
 ---@field check_dirs_exist_verbose fun(base_path: string, required_dirs: table<integer, string>, list_name?: string): boolean
@@ -47,7 +53,7 @@
 ---@field parse_sfo fun(sfo_path: string): SfoData|nil, string|nil
 ---@field is_ps3_game_folder fun(path: string): boolean
 ---@field is_unextracted_xbox_iso fun(path: string): boolean
----@field build_support_info fun(platform: "PS3"|"XBOX360", region: "EU"|"US"|nil, game_type: "Full"|"Demo", title_id: string|nil): ("full"|"partial"|"unsupported", string)
+---@field build_support_info fun(platform: "PS3"|"XBOX360", region: "EU"|"US"|"DEMO"|nil, game_type: "Full"|"Demo", title_id: string|nil): ("full"|"partial"|"unsupported", string)
 ---@field inspect_source_path fun(path: string): SourceValidationResult
 ---@field validate_source_path fun(path: string): boolean, string, string, SourceValidationResult
 ---@field print_version_report fun(result: SourceValidationResult): nil
@@ -63,9 +69,9 @@ function ends_with_usrdir(p)
     return name ~= nil and name:lower() == "usrdir"
 end
 
---- Normalizes a region string into "US", "EU", or "BOTH".
+--- Normalizes a region string into "US", "EU", "DEMO", or "BOTH".
 ---@param value string|nil
----@return ("US"|"EU"|"BOTH")|nil
+---@return ("US"|"EU"|"DEMO"|"BOTH")|nil
 function normalize_region(value)
     if type(value) ~= "string" then
         return nil
@@ -75,7 +81,7 @@ function normalize_region(value)
         return nil
     end
     region = region:upper()
-    if region == "US" or region == "EU" or region == "BOTH" then
+    if region == "US" or region == "EU" or region == "DEMO" or region == "BOTH" then
         return region
     end
     return nil
@@ -242,15 +248,125 @@ local function ReadU32LE(data, pos)
     return (b1 or 0) + ((b2 or 0) * 256) + ((b3 or 0) * 65536) + ((b4 or 0) * 16777216)
 end
 
---- Reads a null-terminated string from binary Latin1 data starting at 1-based start_pos up to max_end.
+--- Encodes a raw binary string as uppercase hexadecimal (matching Python's raw_data.hex().upper()).
+---@param raw string
+---@return string
+local function ToHexUpper(raw)
+    ---@type table<integer, string>
+    local hex_parts = {}
+    for i = 1, #raw do
+        hex_parts[i] = string.format("%02X", string.byte(raw, i))
+    end
+    return table.concat(hex_parts)
+end
+
+--- Strips trailing null (0x00) bytes from a raw binary string (matching Python's raw_data.rstrip(b'\x00')).
+---@param raw string
+---@return string
+local function StripTrailingNulls(raw)
+    local end_pos = #raw
+    while end_pos >= 1 and string.byte(raw, end_pos) == 0 do
+        end_pos = end_pos - 1
+    end
+    if end_pos < 1 then
+        return ""
+    end
+    return raw:sub(1, end_pos)
+end
+
+--- Decodes a raw UTF-8 byte sequence (stored in a Latin1 MoonSharp string) into a Unicode string.
+--- Also counts unprintable characters (excluding \n, \r, \t) to match reversing/sfo.csv.py.
+---@param raw string
+---@param replace_invalid boolean
+---@return string|nil decoded, integer unprintable_count
+local function DecodeUtf8(raw, replace_invalid)
+    ---@type table<integer, string>
+    local chars = {}
+    local unprintable = 0
+    local i = 1
+    local len = #raw
+
+    ---@param cp integer
+    local function CheckPrintable(cp)
+        if (cp < 0x20 and cp ~= 0x09 and cp ~= 0x0A and cp ~= 0x0D) or (cp >= 0x7F and cp <= 0x9F) then
+            unprintable = unprintable + 1
+        end
+    end
+
+    while i <= len do
+        local b1 = string.byte(raw, i)
+        if b1 < 0x80 then
+            CheckPrintable(b1)
+            table.insert(chars, string.char(b1))
+            i = i + 1
+        elseif b1 >= 0xC2 and b1 <= 0xDF then
+            local b2 = i + 1 <= len and string.byte(raw, i + 1) or nil
+            if b2 and b2 >= 0x80 and b2 <= 0xBF then
+                local cp = ((b1 - 0xC0) * 64) + (b2 - 0x80)
+                CheckPrintable(cp)
+                table.insert(chars, string.char(cp))
+                i = i + 2
+            elseif replace_invalid then
+                table.insert(chars, string.char(0xFFFD))
+                i = i + 1
+            else
+                return nil, unprintable
+            end
+        elseif b1 >= 0xE0 and b1 <= 0xEF then
+            local b2 = i + 1 <= len and string.byte(raw, i + 1) or nil
+            local b3 = i + 2 <= len and string.byte(raw, i + 2) or nil
+            local valid_b2 = b2 ~= nil and b2 >= 0x80 and b2 <= 0xBF
+                and not (b1 == 0xE0 and b2 < 0xA0)
+                and not (b1 == 0xED and b2 >= 0xA0)
+            if valid_b2 and b3 and b3 >= 0x80 and b3 <= 0xBF then
+                local cp = ((b1 - 0xE0) * 4096) + ((b2 - 0x80) * 64) + (b3 - 0x80)
+                CheckPrintable(cp)
+                table.insert(chars, string.char(cp))
+                i = i + 3
+            elseif replace_invalid then
+                table.insert(chars, string.char(0xFFFD))
+                i = i + 1
+            else
+                return nil, unprintable
+            end
+        elseif b1 >= 0xF0 and b1 <= 0xF4 then
+            local b2 = i + 1 <= len and string.byte(raw, i + 1) or nil
+            local b3 = i + 2 <= len and string.byte(raw, i + 2) or nil
+            local b4 = i + 3 <= len and string.byte(raw, i + 3) or nil
+            local valid_b2 = b2 ~= nil and b2 >= 0x80 and b2 <= 0xBF
+                and not (b1 == 0xF0 and b2 < 0x90)
+                and not (b1 == 0xF4 and b2 >= 0x90)
+            if valid_b2 and b3 and b3 >= 0x80 and b3 <= 0xBF and b4 and b4 >= 0x80 and b4 <= 0xBF then
+                local cp = ((b1 - 0xF0) * 262144) + ((b2 - 0x80) * 4096) + ((b3 - 0x80) * 64) + (b4 - 0x80)
+                local offset = cp - 0x10000
+                local high = 0xD800 + math.floor(offset / 1024)
+                local low = 0xDC00 + (offset % 1024)
+                table.insert(chars, string.char(high, low))
+                i = i + 4
+            elseif replace_invalid then
+                table.insert(chars, string.char(0xFFFD))
+                i = i + 1
+            else
+                return nil, unprintable
+            end
+        elseif replace_invalid then
+            table.insert(chars, string.char(0xFFFD))
+            i = i + 1
+        else
+            return nil, unprintable
+        end
+    end
+
+    return table.concat(chars), unprintable
+end
+
+--- Reads a null-terminated key string from binary Latin1 data starting at 1-based start_pos.
 ---@param data string
 ---@param start_pos integer
----@param max_end integer
 ---@return string
-local function ReadCString(data, start_pos, max_end)
-    local limit = math.min(#data, max_end)
+local function ReadNullTerminatedUtf8(data, start_pos)
     local end_pos = start_pos - 1
-    for pos = start_pos, limit do
+    for pos = start_pos, #data do
         if string.byte(data, pos) == 0 then
             break
         end
@@ -260,14 +376,12 @@ local function ReadCString(data, start_pos, max_end)
         return ""
     end
     local raw = data:sub(start_pos, end_pos)
-    -- Normalize common UTF-8 sequences read via Latin1 stream (e.g. TM, (C), (R))
-    raw = raw:gsub(string.char(0xE2, 0x84, 0xA2), "(TM)")
-    raw = raw:gsub(string.char(0xC2, 0xA9), "(C)")
-    raw = raw:gsub(string.char(0xC2, 0xAE), "(R)")
-    return raw
+    local decoded = DecodeUtf8(raw, true)
+    return decoded or raw
 end
 
---- Parses a PS3 PARAM.SFO binary file and extracts all key-value entries.
+--- Parses a PS3 PARAM.SFO binary file and extracts all key-value entries,
+--- matching the reference implementation in reversing/sfo.csv.py.
 ---@param sfo_path string
 ---@return SfoData|nil sfo_data, string|nil err
 function parse_sfo(sfo_path)
@@ -284,12 +398,13 @@ function parse_sfo(sfo_path)
     handle:close()
 
     if type(data) ~= "string" or #data < 20 then
-        return nil, "PARAM.SFO is too small or empty."
+        return nil, "File is too small to be a valid SFO."
     end
 
+    -- magic (\0PSF) and version are at bytes 1..8; key_table_start, data_table_start, tables_entries at 9..20 (Little Endian)
     local m1, m2, m3, m4 = string.byte(data, 1, 4)
     if m1 ~= 0x00 or m2 ~= 0x50 or m3 ~= 0x53 or m4 ~= 0x46 then
-        return nil, "Invalid PARAM.SFO magic header (expected \\0PSF)."
+        return nil, "Invalid magic number. Not a PARAM.SFO file."
     end
 
     local key_table_start = ReadU32LE(data, 9)
@@ -310,16 +425,36 @@ function parse_sfo(sfo_path)
         local data_len = ReadU32LE(data, entry_pos + 4)
         local data_offset = ReadU32LE(data, entry_pos + 12)
 
+        -- 1. Extract Key (NULL-terminated UTF-8)
         local key_start = key_table_start + key_offset + 1
         if key_start <= #data then
-            local key = ReadCString(data, key_start, #data)
+            local key = ReadNullTerminatedUtf8(data, key_start)
+            -- 2. Extract Data (only read the used bytes: data_len)
             local val_start = data_table_start + data_offset + 1
-            if key ~= "" and val_start <= #data then
-                if data_fmt == 0x0404 and (val_start + 3) <= #data then
-                    entries[key] = ReadU32LE(data, val_start)
-                elseif data_fmt == 0x0204 or data_fmt == 0x0004 then
-                    local val_end = math.min(#data, val_start + math.max(0, data_len - 1))
-                    entries[key] = ReadCString(data, val_start, val_end)
+            if key ~= "" and val_start <= (#data + 1) then
+                local val_end = math.min(#data, val_start + data_len - 1)
+                local raw_data = (data_len > 0 and val_start <= #data) and data:sub(val_start, val_end) or ""
+
+                -- 3. Interpret Data based on data_fmt (matching reversing/sfo.csv.py)
+                if data_fmt == 0x0404 then
+                    -- fmt 04 04 -> int32 (Little Endian 0x0404)
+                    if #raw_data >= 4 then
+                        entries[key] = ReadU32LE(raw_data, 1)
+                    end
+                elseif data_fmt == 0x0204 then
+                    -- fmt 04 02 -> utf8, NULL terminated (Little Endian 0x0204)
+                    local stripped = StripTrailingNulls(raw_data)
+                    entries[key] = DecodeUtf8(stripped, true) or ""
+                elseif data_fmt == 0x0004 then
+                    -- fmt 04 00 -> utf8-S, NOT NULL terminated / reserved binary (Little Endian 0x0004)
+                    local decoded, unprintable = DecodeUtf8(raw_data, false)
+                    if decoded ~= nil and unprintable <= 5 then
+                        entries[key] = decoded
+                    else
+                        entries[key] = "RAW_HEX:" .. ToHexUpper(raw_data)
+                    end
+                else
+                    entries[key] = "RAW_HEX:" .. ToHexUpper(raw_data)
                 end
             end
         end
@@ -327,12 +462,18 @@ function parse_sfo(sfo_path)
 
     ---@type SfoData
     local sfo_data = {
-        title_id = type(entries["TITLE_ID"]) == "string" and trim(entries["TITLE_ID"]) or nil,
-        title = type(entries["TITLE"]) == "string" and trim(entries["TITLE"]) or nil,
-        category = type(entries["CATEGORY"]) == "string" and trim(entries["CATEGORY"]) or nil,
-        version = type(entries["VERSION"]) == "string" and trim(entries["VERSION"]) or nil,
         app_ver = type(entries["APP_VER"]) == "string" and trim(entries["APP_VER"]) or nil,
+        attribute = type(entries["ATTRIBUTE"]) == "number" and entries["ATTRIBUTE"] --[[@as integer]] or nil,
+        bootable = type(entries["BOOTABLE"]) == "number" and entries["BOOTABLE"] --[[@as integer]] or nil,
+        category = type(entries["CATEGORY"]) == "string" and trim(entries["CATEGORY"]) or nil,
+        license = type(entries["LICENSE"]) == "string" and entries["LICENSE"] or nil,
+        parental_level = type(entries["PARENTAL_LEVEL"]) == "number" and entries["PARENTAL_LEVEL"] --[[@as integer]] or nil,
         ps3_system_ver = type(entries["PS3_SYSTEM_VER"]) == "string" and trim(entries["PS3_SYSTEM_VER"]) or nil,
+        resolution = type(entries["RESOLUTION"]) == "number" and entries["RESOLUTION"] --[[@as integer]] or nil,
+        sound_format = type(entries["SOUND_FORMAT"]) == "number" and entries["SOUND_FORMAT"] --[[@as integer]] or nil,
+        title = type(entries["TITLE"]) == "string" and trim(entries["TITLE"]) or nil,
+        title_id = type(entries["TITLE_ID"]) == "string" and trim(entries["TITLE_ID"]) or nil,
+        version = type(entries["VERSION"]) == "string" and trim(entries["VERSION"]) or nil,
         entries = entries,
     }
 
@@ -341,7 +482,7 @@ end
 
 --- Builds support status level and helpful message for a given version configuration.
 ---@param platform "PS3"|"XBOX360"
----@param region "EU"|"US"|nil
+---@param region "EU"|"US"|"DEMO"|nil
 ---@param game_type "Full"|"Demo"
 ---@param title_id string|nil
 ---@return "full"|"partial"|"unsupported" support_level, string support_message
@@ -353,7 +494,7 @@ function build_support_info(platform, region, game_type, title_id)
             .. "(only the EU PS3 Full version is targeted for full support)."
     end
 
-    if game_type == "Demo" then
+    if game_type == "Demo" or region == "DEMO" then
         local id_label = title_id and (" (" .. title_id .. ")") or ""
         return "partial",
             "Notice: PS3 Demo version" .. id_label .. " detected. Currently only the EU PS3 Full version (BLES00142) "
@@ -395,8 +536,8 @@ local function ClassifySfoVersion(sfo, sfo_path)
         ["BLES00140"] = { region = "EU", game_type = "Full" },
         ["BLES00141"] = { region = "EU", game_type = "Full" },
         ["BLUS30065"] = { region = "US", game_type = "Full" },
-        ["NPEB90029"] = { region = "EU", game_type = "Demo" },
-        ["NPUB90035"] = { region = "US", game_type = "Demo" },
+        ["NPEB90029"] = { region = "DEMO", game_type = "Demo" },
+        ["NPUB90035"] = { region = "DEMO", game_type = "Demo" },
     }
 
     local known = title_id and known_ids[title_id] or nil
@@ -410,20 +551,25 @@ local function ClassifySfoVersion(sfo, sfo_path)
         )
     end
 
-    ---@type "EU"|"US"|nil
-    local region = known and known.region or nil
-    if not region and title_id then
-        if title_id:match("^BLES") or title_id:match("^BCES") or title_id:match("^NPEB") then
-            region = "EU"
-        elseif title_id:match("^BLUS") or title_id:match("^BCUS") or title_id:match("^NPUB") then
-            region = "US"
-        end
-    end
-
     ---@type "Full"|"Demo"
     local game_type = known and known.game_type or "Full"
     if not known then
         if category == "HG" or title:lower():find("demo", 1, true) ~= nil then
+            game_type = "Demo"
+        end
+    end
+
+    ---@type "EU"|"US"|"DEMO"|nil
+    local region = known and known.region or nil
+    if game_type == "Demo" then
+        region = "DEMO"
+    elseif not region and title_id then
+        if title_id:match("^BLES") or title_id:match("^BCES") then
+            region = "EU"
+        elseif title_id:match("^BLUS") or title_id:match("^BCUS") then
+            region = "US"
+        elseif title_id:match("^NPEB") or title_id:match("^NPUB") then
+            region = "DEMO"
             game_type = "Demo"
         end
     end
@@ -490,7 +636,7 @@ end
 ---@param usrdir string
 ---@param ps3_game_root string|nil
 ---@param platform "PS3"|"XBOX360"
----@param region "EU"|"US"|nil
+---@param region "EU"|"US"|"DEMO"|nil
 ---@param game_type "Full"|"Demo"
 ---@param title_id string|nil
 ---@param warnings table<integer, string>
@@ -762,13 +908,19 @@ function inspect_source_path(path)
 
     -- Build version_info if SFO was missing
     if not sfo_version_info then
+        ---@type "EU"|"US"|"DEMO"|nil
+        local inferred_region = detected_type == "Demo" and "DEMO" or nil
         if platform == "PS3" then
-            table.insert(result.warnings, "PARAM.SFO was not found in parent folder; region will need to be specified or prompted.")
+            if inferred_region == "DEMO" then
+                table.insert(result.warnings, "PARAM.SFO was not found in parent folder; detected Demo region from USRDIR layout.")
+            else
+                table.insert(result.warnings, "PARAM.SFO was not found in parent folder; region will need to be specified or prompted.")
+            end
         end
-        local support_level, support_message = build_support_info(platform, nil, detected_type, nil)
+        local support_level, support_message = build_support_info(platform, inferred_region, detected_type, nil)
         sfo_version_info = {
             platform = platform,
-            region = nil,
+            region = inferred_region,
             game_type = detected_type,
             title_id = nil,
             title = nil,
@@ -824,7 +976,7 @@ function print_version_report(result)
     local region_label = info.region or "Unknown (will prompt)"
     colour_print({
         colour = Colours.WHITE,
-        message = string.format("  Platform / Type    : %s | Region: %s | Type: %s", info.platform, region_label, info.game_type)
+        message = string.format("  Platform / Region  : %s | Region: %s | Edition: %s", info.platform, region_label, info.game_type)
     })
 
     if info.sfo_data then
