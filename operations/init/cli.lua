@@ -1,6 +1,7 @@
 ---@class InitCliArguments
 ---@field platform string|nil
 ---@field region string|nil
+---@field type string|nil
 ---@field path string|nil
 ---@field action string|nil
 ---@field us_path string|nil
@@ -31,6 +32,8 @@ function Cli.parse_args()
                 arguments.platform = value
             elseif normalized_flag == "--region" then
                 arguments.region = value
+            elseif normalized_flag == "--type" then
+                arguments.type = value
             elseif normalized_flag == "--path" or normalized_flag == "--main-source-path" then
                 arguments.path = value
             elseif normalized_flag == "--action" then
