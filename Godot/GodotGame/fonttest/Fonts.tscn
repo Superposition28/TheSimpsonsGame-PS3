@@ -1,0 +1,78 @@
+[gd_scene format=3 uid="uid://cy7tdt6a68s01"]
+
+[ext_resource type="FontFile" uid="uid://cw3d2ufkjanbw" path="res://frontendStr/assets/shared/fonts/buttons_fd7e46.fnt" id="1_17gai"]
+[ext_resource type="FontFile" uid="uid://dw2tulh3jcsqo" path="res://frontendStr/assets/shared/fonts/DomCasualStd3636_09608f.fnt" id="2_63cbf"]
+[ext_resource type="FontFile" uid="uid://bgi88uaj0vpqe" path="res://frontendStr/assets/shared/fonts/HighlanderStdBold6060b_929fdc.fnt" id="3_0p1y1"]
+[ext_resource type="FontFile" uid="uid://chiq2w002jgps" path="res://frontendStr/assets/shared/fonts/HighlanderStdMed3636_c14f63.fnt" id="4_6ap77"]
+[ext_resource type="FontFile" uid="uid://b4qignlk0wxgx" path="res://frontendStr/assets/shared/fonts/LetterGothicStdBold2424b_4aa417.fnt" id="5_41m5h"]
+[ext_resource type="FontFile" uid="uid://cki37jlu00ngb" path="res://frontendStr/assets/shared/fonts/simpsons_font_acdf54.fnt" id="6_hemgh"]
+
+[node name="Node2D" type="Node2D" unique_id=1990298482]
+
+[node name="buttons_fd7e46" type="RichTextLabel" parent="." unique_id=419282830]
+offset_right = 93.0
+offset_bottom = 458.0
+theme_override_fonts/normal_font = ExtResource("1_17gai")
+text = "
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+"
+
+[node name="DomCasualStd3636_09608f" type="RichTextLabel" parent="." unique_id=1469527819]
+offset_left = 96.0
+offset_top = 1.0
+offset_right = 346.0
+offset_bottom = 20.0
+theme_override_fonts/normal_font = ExtResource("2_63cbf")
+text = "abcdefghijklmnopqrstuvwxyz"
+
+[node name="HighlanderStdBold6060b_929fdc" type="RichTextLabel" parent="." unique_id=407526202]
+offset_left = 96.0
+offset_top = 18.0
+offset_right = 346.0
+offset_bottom = 37.0
+theme_override_fonts/normal_font = ExtResource("3_0p1y1")
+text = "abcdefghijklmnopqrstuvwxyz"
+
+[node name="HighlanderStdMed3636_c14f63" type="RichTextLabel" parent="." unique_id=356948884]
+offset_left = 96.0
+offset_top = 34.0
+offset_right = 346.0
+offset_bottom = 53.0
+theme_override_fonts/normal_font = ExtResource("4_6ap77")
+text = "abcdefghijklmnopqrstuvwxyz"
+
+[node name="LetterGothicStdBold2424b_4aa417" type="RichTextLabel" parent="." unique_id=748040417]
+offset_left = 96.0
+offset_top = 51.0
+offset_right = 346.0
+offset_bottom = 70.0
+theme_override_fonts/normal_font = ExtResource("5_41m5h")
+text = "abcdefghijklmnopqrstuvwxyz"
+
+[node name="simpsons_font_acdf54" type="RichTextLabel" parent="." unique_id=1950783559]
+offset_left = 96.0
+offset_top = 67.0
+offset_right = 346.0
+offset_bottom = 86.0
+theme_override_fonts/normal_font = ExtResource("6_hemgh")
+text = "abcdefghijklmnopqrstuvwxyz"
