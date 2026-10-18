@@ -235,6 +235,8 @@ After initialization, the operations menu looks like this:
   Normalize folder structure
   Convert Models (.preinstanced -> .blend)
   Extract Dialogue/Subtitles (.lh2 -> .csv)
+  Convert Fonts (.inf -> .fnt)
+  Convert FMV Subtitles (.tox.PS3 -> .srt/.vtt/.csv)
   Convert Audio (.snu -> .wav)
   Convert Videos (.vp6 -> .ogv)
   generate Godot Game (EXPERIMENTAL)
@@ -251,6 +253,8 @@ For a full pipeline run, select `Run All`. If you are debugging a specific step,
 - Converted textures, audio, video, and model outputs
 - Blender `.blend` files for `.preinstanced` assets
 - CSV exports for `.lh2` dialogue/subtitle files
+- Localized SRT/WebVTT subtitles and multilingual timing CSV files for `.tox.PS3` FMV tables
+- Godot-compatible AngelCode `.fnt` descriptors for `.inf` bitmap fonts, referencing the extracted PNG atlases
 - An experimental generated Godot project via `generate Godot Game (EXPERIMENTAL)`
 
 
@@ -328,10 +332,42 @@ This module is fully automated and designed to be executed by [The Remake Engine
 - Normalize folder structure: `operations/DirectoryNormalizer/run.lua` normalizes the extracted tree and sets `Type=FullFlattened`.
 - Convert models: `operations/Blender/run.lua` converts `.preinstanced` assets into `.blend` files, with optional `glb` and `fbx` export.
 - Extract dialogue/subtitles: `operations/lh2_to_csv.lua` converts `.lh2` files to `.csv`.
+- Convert fonts (operation `15`): `operations/inf_to_fnt.Fonts.lua` converts EA FONT v6 `.inf` descriptors to Godot-compatible `.fnt` files. It runs after normalized assets and PNG atlases are available (dependency `6`), appears after LH2 extraction, and is excluded from Run All.
+- Convert FMV subtitles (operation `16`): `operations/tox_to_srt.Subtitles.lua` resolves `.tox.PS3` timing IDs against original `.LH2` localization tables and writes `.srt`, `.vtt` and multilingual `.csv` files. It follows font conversion in the operations list, depends on normalized assets (operation `6`), and is excluded from Run All.
 - Convert audio/video: engine `format-convert` converts `.snu` to `.wav` and `.vp6` to `.ogv`.
 - Generate Godot project: `Godot/godot-init-V0.5.2.lua` builds the generated Godot project (experimental).
 
 ---
+
+### Font conversion
+
+From the engine repository root, run the font operation for the configured platform and region:
+
+```pwsh
+dotnet run -c Debug --project EngineNet --framework net10.0 -- --game_module TheSimpsonsGame-PS3 --run_op 15
+```
+
+The Lua converter writes each `.fnt` beside its `.inf`. It strips extraction hash suffixes when matching PNG atlases, prefers textures from the same archive, and writes relative PNG references with forward slashes. Raw glyph IDs, signed bearings, surviving kerning pairs, extended Unicode aliases and button-icon aliases (U+E000..U+E020) match `operations/inf_to_fnt.Fonts.py`.
+
+To choose another input or output directory, override the operation arguments:
+
+```pwsh
+dotnet run -c Debug --project EngineNet --framework net10.0 -- --game_module TheSimpsonsGame-PS3 --run_op 15 --args '["--input-dir", "{{Game_Root}}/GameFiles/PS3-EU-FullFlattened-audio_reorg-isRenamed", "--output-dir", "{{Game_Root}}/TMP/fonts", "--copy-png"]'
+```
+
+`--input-dir`/`-i` selects the asset root; `--output-dir`/`-o` gathers descriptors into one directory. `--copy-png` copies matching atlases beside the descriptors. `--no-unicode-aliases` emits only original byte IDs. Without an input argument, the script uses `GameFiles/PS3-EU-FullFlattened-audio_reorg-isRenamed` under the module root; the manifest supplies the configured asset root explicitly. Invalid font data, missing atlases and invalid PNG headers fail the operation.
+
+### FMV subtitle conversion
+
+From the engine repository root, run the subtitle operation for the configured asset directory:
+
+```pwsh
+dotnet run -c Debug --project EngineNet --framework net10.0 -- --game_module TheSimpsonsGame-PS3 --run_op 16
+```
+
+`operations/tox_to_srt.Subtitles.lua` reads EA `1BOT` timing tables and resolves their string IDs through the first non-empty, sorted `simpsons_global.{en,es,fr,it,ss}.LH2` tables. It decodes Windows-1252 text and writes English, Spanish, French and Italian subtitles beside each timing file. The CSV retains all timing records; SRT/VTT omit blank translations. Empty timing files produce a CSV header only. Matching `.ogv` and `.vp6` files under `A1_Video/<language>/` also receive subtitle companions, with the first sorted matching timing file winning when multiple archives refer to the same movie.
+
+Override operation arguments with `--args` to use `--input-dir`/`-i`, gather output with `--output-dir`/`-o`, disable video companions with `--no-video-pairing`, or add speaker codes with `--include-speaker`. Selecting an output directory also suppresses video companions. Without an input argument, the script uses `GameFiles/PS3-EU-FullFlattened-audio_reorg-isRenamed` under the module root; the manifest supplies the configured asset directory. SRT/VTT use LF separators and CSV uses CRLF rows, matching the Python converter, including its missing Bart scream fallback. Invalid timing headers, sizes, record counts or localization tables fail the operation.
 
 ## Reverse Engineering & Format Documentation
 

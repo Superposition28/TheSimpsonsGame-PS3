@@ -225,6 +225,30 @@ args = [
     # auto output to same location as input files
 ]
 
+# Convert FONT v6 descriptors to Godot BMFont files beside each source .inf.
+[[operation]]
+id = 15
+name = "Convert Fonts (.inf -> .fnt)"
+run-all = false
+depends-on = [6] # normalized archives and extracted PNG texture atlases
+script_type = "lua"
+script = "{{Game_Root}}/operations/inf_to_fnt.Fonts.lua"
+args = [
+    "--input-dir", "{{Game_Root}}/GameFiles/{{Platform}}-{{Region}}-{{Type}}-{{audio_state}}-{{isRenamed}}"
+]
+
+# Resolve FMV timing IDs through LH2 localization and export subtitle companions.
+[[operation]]
+id = 16
+name = "Convert FMV Subtitles (.tox.PS3 -> .srt/.vtt/.csv)"
+run-all = false
+depends-on = [6] # normalized timing files and original LH2 localization tables
+script_type = "lua"
+script = "{{Game_Root}}/operations/tox_to_srt.Subtitles.lua"
+args = [
+    "--input-dir", "{{Game_Root}}/GameFiles/{{Platform}}-{{Region}}-{{Type}}-{{audio_state}}-{{isRenamed}}"
+]
+
 ## convert Audio into a usable format for godot
 [[operation]]
 id = 10
