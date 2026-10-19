@@ -2,6 +2,14 @@
 
 This file contains game module-specific guidelines that override general engine instructions.
 
+## Game Documentation Submodule
+
+The game and file-format reference lives in [reversing/docs](reversing/docs/), a separate Git submodule named `TheSimpsonsGame-PS3-Docs` in [.gitmodules](.gitmodules). It documents the game independently of this module; Remake Engine-specific material belongs in its integration section. The PS3 and Xbox 360 homepage coverage panels are an explicit exception: they combine format research progress with Remake Engine implementation support.
+
+Before making any changes under `reversing/docs/`, read and follow [the documentation project's AGENTS.md](reversing/docs/AGENTS.md). It requires reading [docs.html](reversing/docs/docs.html) and the relevant reference pages, source registries and affected files before editing. Check for more specific instructions within the documentation tree as well.
+
+Documentation changes belong to the submodule repository; the game module tracks its Git commit separately. Preserve existing work in both repositories. Changes to module code that consumes documentation data, including `operations/SetupAudioDir.lua`, must also account for the documented consumer contract before changing paths or schemas.
+
 # to execute an operation:
 ```pwsh
 cd A:\RemakeEngine\Main; dotnet run -c Debug --project .\EngineNet\ -- --game_module TheSimpsonsGame-PS3 --run_op 12
