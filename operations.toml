@@ -1,5 +1,8 @@
 # Placeholders: Game_Root, Project_Root are built into the engine
 
+# run-all, this will run all tasks set to true and any dependent tasks automatically, it may run some at the same time if they have no interdependencies
+# this means we must ensure running both at the same time Does Not cause issues like overlapping file system changes eg update to the placeholders and output dir
+
 
 ## creates config.toml and ensures placeholders exist
 ## operations marked with init = true are not displayed in interactive UI or GUI lists to ensure they are always run every time
@@ -11,17 +14,17 @@
 id = 0
 init = true
 run-all = true # rerun when using run-all to ensure config is valid
-depends-on = []
+depends-on = [] # no dependencies for init operation
 script_type = "lua"
 script = "{{Game_Root}}/operations/init/main.lua"
 
 
-##
+## Downloads the tools listed in Tools.toml
 [[operation]]
 id = -1
 name = "Download Required Tools"
 run-all = true
-depends-on = [0]
+depends-on = [0] # depends on init
 script_type = "engine"
 script = "download-tools"
 tools_manifest = "{{Game_Root}}/Tools.toml"
@@ -31,12 +34,12 @@ tools_manifest = "{{Game_Root}}/Tools.toml"
 #message = "Force override existing downloads?"
 #default = false
 
-
+# extractes all files other than audio and video from the str archives, most subsequent operations depend on this step
 [[operation]]
 id = 1
 name = "Extract Archives (.STR)"
 run-all = true
-depends-on = [-1] # depends on qbms tool
+depends-on = [0, -1] # deps: Init, Tools (qbms)
 script_type = "bms"
 script = "{{Game_Root}}/operations/simpsons_str.bms"
 input = "{{SourcePath}}/{{Region}}/{{PostSourcePath}}"
@@ -44,11 +47,12 @@ output = "{{Game_Root}}/GameFiles/{{Platform}}-{{Region}}-{{Type}}-{{audio_state
 extension = ".str"
 
 
+# Copy the "audiostreams" and "movies" folders into the GameFiles directory
 [[operation]]
 id = 2
 name = "Copy Source Audio/Video Files"
 run-all = true
-depends-on = [1]
+depends-on = [0, 1] # deps: Init, STR
 script_type = "lua"
 script = "{{Game_Root}}/operations/CopySourceAudioVideo.lua"
 args = [
@@ -74,24 +78,12 @@ args = [
     "--new_path", "{{Game_Root}}/GameFiles/{{Platform}}-{{Region}}-{{Type}}-{{audio_state}}-{{isRenamed}}"
 ]
 
+# changes the names of each folder in the Root dir, according to the RenameMap.db
 [[operation]]
 id = 3
-name = "Extract Textures (.txd -> .png)"
-run-all = false
-depends-on = [2] # depends on STR extraction
-script_type = "engine"
-script = "format-extract"
-format = "txd"
-args = [
-    "--source", "{{Game_Root}}/GameFiles/{{Platform}}-{{Region}}-{{Type}}-{{audio_state}}-{{isRenamed}}",
-    "--output-ext", ".png"
-]
-
-[[operation]]
-id = 4
 name = "Rename base folders"
 run-all = true
-depends-on = [3]
+depends-on = [0, 1, 2] # deps: Init, STR, Copy Audio/Video
 script_type = "engine"
 script = "rename-folders"
 args = [
@@ -99,13 +91,13 @@ args = [
     "--map-db-file", "{{Game_Root}}/config/RenameMap.db"
 ]
 [[operation.onsuccess]] # when successful, update {{isRenamed}} placeholder to "isRenamed"
-id = 4.1
+id = 3.1
 name = "set isRenamed placeholder"
 script_type = "engine"
 script = "config"
 args = ["--group", "placeholders", "--key", "isRenamed", "--value", "isRenamed", "--type", "string"]
 [[operation.onsuccess]]
-id = 4.2
+id = 3.2
 name = "rename folder STROUT-{{Platform}}-{{Region}}-{{Type}}-{{audio_state}}-{{isRenamed}} to STROUT-{{Platform}}-{{Region}}-{{Type}}-{{audio_state}}-isRenamed"
 script_type = "lua"
 script = "{{Game_Root}}/operations/rename.lua"
@@ -114,22 +106,24 @@ args = [
     "--new_path", "{{Game_Root}}/GameFiles/{{Platform}}-{{Region}}-{{Type}}-{{audio_state}}-{{isRenamed}}"
 ]
 
+# rearrange audio files after copying them into the GameFiles directory
+# does not 'depend' on the base folder renaming, however they cant run at the same time
 [[operation]]
-id = 5
+id = 4
 name = "Reorganize Audio Files"
 run-all = true
-depends-on = [4]
+depends-on = [0, 1, 2, 3] # deps: Init, STR, Copy Audio/Video, Rename base folders
 script_type = "lua"
 script = "{{Game_Root}}/operations/SetupAudioDir.lua"
-args = ["{{Game_Root}}/GameFiles/{{Platform}}-{{Region}}-{{Type}}-{{audio_state}}-{{isRenamed}}"]
+args = ["{{Game_Root}}/GameFiles/{{Platform}}-{{Region}}-{{Type}}-{{audio_state}}-{{isRenamed}}", "--execute"]
 [[operation.onsuccess]] # when successful, update isRenamed placeholder to "isRenamed"
-id = 5.1
+id = 4.1
 name = "set audio_state placeholder"
 script_type = "engine"
 script = "config"
 args = ["--group", "placeholders", "--key", "audio_state", "--value", "audio_reorg", "--type", "string"]
 [[operation.onsuccess]]
-id = 5.2
+id = 4.2
 name = "rename folder STROUT-{{Platform}}-{{Region}}-{{Type}}-{{audio_state}}-{{isRenamed}} to STROUT-{{Platform}}-{{Region}}-{{Type}}-audio_reorg-{{isRenamed}}"
 script_type = "lua"
 script = "{{Game_Root}}/operations/rename.lua"
@@ -138,11 +132,32 @@ args = [
     "--new_path", "{{Game_Root}}/GameFiles/{{Platform}}-{{Region}}-{{Type}}-{{audio_state}}-{{isRenamed}}"
 ]
 
+
+## finds all .txd archives extracted from the .STR archives and extracts there textures into subfolders named after the txd file with the pngs in them
+[[operation]]
+id = 5
+name = "Extract Textures (.txd -> .png)"
+run-all = false
+depends-on = [0, 1, 3] # deps: Init, STR, Rename base folders
+script_type = "engine"
+script = "format-extract"
+format = "txd"
+args = [
+    "--source", "{{Game_Root}}/GameFiles/{{Platform}}-{{Region}}-{{Type}}-{{audio_state}}-{{isRenamed}}",
+    "--output-ext", ".png"
+]
+
+# this operation cuts out redundant folder nesting and flattens the directory structure
+# to the best possible extent, without losing important file tree context info, skips the main audio folder
+# and uses the original file paths to generate deterministic reproducible Ids for all files that exist at this point
+# it outputs a Map of all files there before and after paths and there ids, making files searchable by id instead of name or path, that may change when normalisation changes
+# many files that are converted after can be resolved by simply using the index to locate the og file path, remove the og extension and append the Correct extension
+# this is to avoid having Two different IDs for what is effectivly the same file before and after there respective conversions
 [[operation]]
 id = 6
 name = "Normalize folder structure"
 run-all = true
-depends-on = [5]
+depends-on = [0, 1, 3] # deps: Init, STR, Rename base folders
 script_type = "lua"
 script = "{{Game_Root}}/operations/DirectoryNormalizer/run.lua"
 args = [
@@ -163,13 +178,15 @@ args = [
     "--set", "Type=FullFlattened:string"
 ]
 
+
+
 ## convert 3d models into .blend files, and export to glb for godot use
 ## auto apply textures within blender as well, however materials will need to be manually adjusted within godot
 [[operation]]
-id = 8
+id = 7
 name = "Convert Models (.preinstanced -> .blend)"
 run-all = false
-depends-on = [6] # depends on blender, str extraction for assets, and texture extraction and conversion for materials, depends on normalized folder structure and produced normalised json map files for texture resolution
+depends-on = [0, -1, 1, 3, 5, 6] # deps: Tools (blender), str, TXD, normalized structure,
 script_type = "lua"
 script = "{{Game_Root}}/operations/Blender/run.lua"
 args = [
@@ -214,10 +231,10 @@ validation = { required = true, message = "You must select at least one format."
 
 # convert all lh2 dialogue/subtitles to csv
 [[operation]]
-id = 9
+id = 8
 name = "Extract Dialogue/Subtitles (.lh2 -> .csv)"
 run-all = false
-depends-on = [6]
+depends-on = [6] # deps: normalised structure (to make the file id's copy over to the CSV file names)
 script_type = "lua"
 script = "{{Game_Root}}/operations/lh2_to_csv.lua"
 args = [
@@ -227,10 +244,10 @@ args = [
 
 # Convert FONT v6 descriptors to Godot BMFont files beside each source .inf.
 [[operation]]
-id = 15
+id = 9
 name = "Convert Fonts (.inf -> .fnt)"
 run-all = false
-depends-on = [6] # normalized archives and extracted PNG texture atlases
+depends-on = [6] # deps: normalised structure (to make the file id's copy over to the font output files)
 script_type = "lua"
 script = "{{Game_Root}}/operations/inf_to_fnt.Fonts.lua"
 args = [
@@ -239,10 +256,10 @@ args = [
 
 # Resolve FMV timing IDs through LH2 localization and export subtitle companions.
 [[operation]]
-id = 16
+id = 10
 name = "Convert FMV Subtitles (.tox.PS3 -> .srt/.vtt/.csv)"
 run-all = false
-depends-on = [6] # normalized timing files and original LH2 localization tables
+depends-on = [6]
 script_type = "lua"
 script = "{{Game_Root}}/operations/tox_to_srt.Subtitles.lua"
 args = [
@@ -250,11 +267,12 @@ args = [
 ]
 
 ## convert Audio into a usable format for godot
+# specifically the audio files found in levels Not in the A1 Audio folder copied from source
 [[operation]]
-id = 10
+id = 11
 name = "Convert Audio (.sbk -> .wav)"
 run-all = false
-depends-on = [6] # depends on vgmstream being downloaded, could depend on audio reorg but that is technically optional
+depends-on = [-1, 6] # deps: Tools (vgmstream) being downloaded, and normalised structure, to avoid duplicated entryies in the file index
 script_type = "engine"
 script = "format-convert"
 tool = "vgmstream"
@@ -272,10 +290,10 @@ args = [
 
 ## convert Audio into a usable format for godot
 [[operation]]
-id = 11
+id = 12
 name = "Convert Audio (.snu -> .wav)"
 run-all = false
-depends-on = [6] # depends on vgmstream and ffmpeg being downloaded, could depend on audio reorg but that is technically optional
+depends-on = [-1, 6] # depends on (vgmstream) and (ffmpeg) being downloaded, could depend on audio reorg but that is technically optional, as reorg would still work after this stage, however thats only if running this without normalisation
 script_type = "engine"
 script = "format-convert"
 tool = "vgmstream"
@@ -291,12 +309,12 @@ args = [
     "--replace"
 ]
 
-## convert Mus to Music files .wav
+## convert Mus to Music files .wav in the A1 audio folder
 [[operation]]
-id = 12
+id = 13
 name = "Convert Music (.mus -> .snr/.sns -> .wav)"
 run-all = false
-depends-on = [10] # depends on vgmstream, quickbms, and audio files existing
+depends-on = [-1, 2] # depends on (vgmstream), (quickbms), and copy audio/video files
 script_type = "lua"
 script = "{{Game_Root}}/operations/SetupMusicFiles.lua"
 args = [
@@ -304,12 +322,14 @@ args = [
     "--GameDir", "{{Game_Root}}/GameFiles/{{Platform}}-{{Region}}-{{Type}}-{{audio_state}}-{{isRenamed}}",
 ]
 
-
+# converts the movies from the A1 video folder into .ogv format for Godot compatibility
+# i Think the normalisation does apply ids to the video files so we should depend in it here to allow that
+# there arnt many so it may not be entirely necessary to give them id's
 [[operation]]
-id = 13
+id = 14
 name = "Convert Videos (.vp6 -> .ogv)"
 run-all = false
-depends-on = [6] # depends on ffmpeg being downloaded
+depends-on = [-1, 6] # depends on ffmpeg being downloaded
 script_type = "engine"
 script = "format-convert"
 tool = "ffmpeg"
@@ -323,22 +343,11 @@ args = [
     "--replace"
 ]
 
-
-[[operation]]
-id = 14
-name = "generate game.toml"
-run-all = false
-depends-on = [8,9,11,12]
-script_type = "lua"
-script = "{{Game_Root}}/operations/generate-game-toml.lua"
-
-
-
 #[[operation]]
 #id = 69
 #name = "generate Godot Game (EXPERIMENTAL)"
 #run-all = false
-#depends-on = [8,9,11,12,13]
+#depends-on = [7,8,10,11,12,13]
 #script_type = "lua"
 #script = "{{Game_Root}}/Godot/godot-init-V0.5.2.lua"
 #args = [
@@ -348,6 +357,17 @@ script = "{{Game_Root}}/operations/generate-game-toml.lua"
 #    "--iconPath", "{{SourcePath}}/{{Region}}/{{PostSourcePath}}",
 #    "--no-exit"
 #]
+
+# generates the game.toml file, This file Tells the remake engine how to Run the Game, specifically it lets it launch the godot project file using godot editor fornow
+# but can be used to launch a full generated output from the built Godot project, if ever completed
+[[operation]]
+id = 15
+name = "generate game.toml"
+run-all = false
+depends-on = [7,8,10,11] # basically depends on everything, but the current godot system is incomplete, and even moved to a static build away from generating the entire godot project, the hard way
+script_type = "lua"
+script = "{{Game_Root}}/operations/generate-game-toml.lua"
+
 
 
 [[operation]]

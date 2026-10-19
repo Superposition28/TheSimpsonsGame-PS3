@@ -92,7 +92,7 @@ Pop-Location
 
 [CmdletBinding()]
 param (
-    [string]$Configuration = "Debug",
+    [string]$Configuration = "run",
     [switch]$Release
 )
 

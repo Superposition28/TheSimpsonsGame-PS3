@@ -18,7 +18,7 @@ Godot provides the runtime (rendering, physics and scripting). This module conce
 The module is in active development (Beta). Highlights and known problems:
 
 - **Textures & Models:** Texture extraction completes reliably, and most models extract correctly. Texture-to-submesh mapping has improved, but it remains imperfect and cannot yet reproduce the exact correct output for complex, high-LOD meshes, Low-LOD meshes are almost all accurate.
-- **Audio:** Localized dialogue (~14,698 files) and ~128 ambient clips convert and map successfully using `reversing/docs/PS3_GAME/USRDIR/A1_Audio/AudioMap.yaml`.
+- **Audio:** Operation 4 organizes audio using the maintained V2 `reversing/docs/PS3_GAME/USRDIR/A1_Audio/AudioMap.yaml`. It plans automatically, verifies copied files and resumes interrupted moves. See [audio usage and validation](tools/audio/README.md).
 - **Music (.MUS):** The 17 music `.mus` archives can now be unpacked into paired `.snr` and `.sns` files with `operations/mus.bms`, and the resulting `.snr` files decode correctly in vgmstream as EA-XAS music streams.
 - **Video:** VP6 and other video formats convert successfully with the toolchain.
 
@@ -328,12 +328,12 @@ This module is fully automated and designed to be executed by [The Remake Engine
 - Copy source audio/video: `operations/CopySourceAudioVideo.lua` copies source media into the working `GameFiles/` tree.
 - Extract textures: engine `format-extract` converts `.txd` textures into `.png` outputs.
 - Rename base folders: engine `rename-folders` uses `config/RenameMap.db` and sets `isRenamed`.
-- Reorganize audio: `operations/SetupAudioDir.lua` sets `audio_state`, applies `Dialogue` and `EN-CUTSCENE` folder rename rules from `reversing/docs/PS3_GAME/USRDIR/A1_Audio/AudioMap.yaml` across `EN/ES/FR/IT`, applies `Global-Sound` folder rename rules inside `A1_Audio/Global`, supports nested destination folders like `Enemies/Bosses`, and places mapped dialogue voice-line files inside `NEW_DIR_NAME/<CharacterName>/` while moving unmatched files to the `NEW_DIR_NAME` root.
+- Reorganize audio (operation `4`): `operations/SetupAudioDir.lua` uses AudioMap V2 to plan and verify speaker/type/location sorting across `EN/ES/FR/IT` and `Global`. It preserves filenames, resumes interrupted copies, and rejects unmapped audio or collisions before moving files. Success hooks set `audio_state=audio_reorg`. See [audio usage and validation](tools/audio/README.md).
 - Normalize folder structure: `operations/DirectoryNormalizer/run.lua` normalizes the extracted tree and sets `Type=FullFlattened`.
 - Convert models: `operations/Blender/run.lua` converts `.preinstanced` assets into `.blend` files, with optional `glb` and `fbx` export.
 - Extract dialogue/subtitles: `operations/lh2_to_csv.lua` converts `.lh2` files to `.csv`.
-- Convert fonts (operation `15`): `operations/inf_to_fnt.Fonts.lua` converts EA FONT v6 `.inf` descriptors to Godot-compatible `.fnt` files. It runs after normalized assets and PNG atlases are available (dependency `6`), appears after LH2 extraction, and is excluded from Run All.
-- Convert FMV subtitles (operation `16`): `operations/tox_to_srt.Subtitles.lua` resolves `.tox.PS3` timing IDs against original `.LH2` localization tables and writes `.srt`, `.vtt` and multilingual `.csv` files. It follows font conversion in the operations list, depends on normalized assets (operation `6`), and is excluded from Run All.
+- Convert fonts (operation `9`): `operations/inf_to_fnt.Fonts.lua` converts EA FONT v6 `.inf` descriptors to Godot-compatible `.fnt` files. It runs after normalized assets and PNG atlases are available (dependency `6`), appears after LH2 extraction, and is excluded from Run All.
+- Convert FMV subtitles (operation `10`): `operations/tox_to_srt.Subtitles.lua` resolves `.tox.PS3` timing IDs against original `.LH2` localization tables and writes `.srt`, `.vtt` and multilingual `.csv` files. It follows font conversion in the operations list, depends on normalized assets (operation `6`), and is excluded from Run All.
 - Convert audio/video: engine `format-convert` converts `.snu` to `.wav` and `.vp6` to `.ogv`.
 - Generate Godot project: `Godot/godot-init-V0.5.2.lua` builds the generated Godot project (experimental).
 
