@@ -17,6 +17,8 @@
 # Use separate output directories per archive and -o to overwrite on reruns.
 # QuickBMS -K / rename-on-collision can still create extra files.
 # Named assets retain their embedded paths and exact payload bytes.
+# Repeated asset paths keep the first output in place; later records go to
+# __str_duplicates__/sNNN_oXXXXXXXX/<path> (drive colons replaced by '_').
 # Layouts/evidence: reversing/docs/PS3_GAME/FormatAnalysis/STR/index.html
 # and STR/imbedded-formats/simgroup.dat.html.
 
@@ -30,6 +32,7 @@ get INFO_OFF long
 xmath FILES "(SECTION_INFO >> 24) & 0xff"
 xmath BASE_OFF "INFO_OFF + (FILES * 24)"
 math BASE_OFF x 0x800
+putarray 0 0 ""
 
 goto INFO_OFF
 for i = 0 < FILES
@@ -130,6 +133,17 @@ for i = 0 < FILES
                     string NAME p "unnamed_asset_s%03d_o%08x.dat" i OFFSET
                 endif
                 print "STR unnamed asset: %NAME% type=%RESOURCE_TYPE% object=%OBJECT_NAME%"
+            endif
+            set NAME_KEY string NAME
+            string NAME_KEY l NAME_KEY
+            searcharray DUPLICATE_INDEX 0 NAME_KEY
+            if DUPLICATE_INDEX >= 0
+                set DUP_PATH string NAME
+                string DUP_PATH R ":" "_"
+                string NAME p "__str_duplicates__/s%03d_o%08x/%s" i OFFSET DUP_PATH
+                print "STR repeated asset path preserved as %NAME%"
+            else
+                putarray 0 -1 NAME_KEY
             endif
             log NAME HEADER_END SIZE MEMORY_FILE
         else

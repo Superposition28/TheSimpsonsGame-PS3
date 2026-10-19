@@ -1,40 +1,58 @@
+-- Organize generated audio using the maintained AudioMap V2 registry.
+-- Operation 4 passes --execute; direct script calls default to a dry run.
+
 -- AudioMap V2 runtime. Creates/reuses a hashed plan and preflights the complete
 -- current inventory before moving files. Python tools provide independent checks.
 -- Files are copied without overwrite, verified, then removed from the old path.
 
----@class AudioV2Usage
+---@class Usage
 ---@field world_hub boolean|nil
 ---@field hubs string[]|nil
 ---@field levels string[]|nil
 ---@field unresolved string[]|nil
 
----@class AudioV2Speaker
+---@class Speaker
+---@field display_name string
 ---@field speaker_type string
+---@field groups string[]
+---@field review_status string
 ---@field character_id string|nil
 ---@field variant string|nil
 
----@class AudioV2Source
+---@class Location
+---@field folder string
+---@field display_name string
+---@field original_directory string|nil
+---@field code string|nil
+---@field aliases string[]|nil
+
+---@class Source
 ---@field scope string
 ---@field original_directory string
 ---@field file_patterns string[]
 ---@field legacy_directories string[]|nil
 
----@class AudioV2Asset
+---@class Asset
 ---@field id string
 ---@field audio_type string
 ---@field speaker_id string|nil
----@field source AudioV2Source
----@field usage AudioV2Usage
+---@field source Source
+---@field usage Usage
 ---@field category string|nil
 ---@field area string|nil
+---@field notes string|nil
+---@field nickname string|nil
+---@field legacy table<string, any>|nil
 
----@class AudioV2Map
----@field schema_version integer
----@field speakers table<string, AudioV2Speaker>
----@field locations table<string, table<string, {folder: string}>>
----@field assets AudioV2Asset[]
+---@class Map
+---@field schema_version integer|nil
+---@field speakers table<string, Speaker>
+---@field locations table<string, table<string, Location>>
+---@field assets Asset[]
+---@field provenance table<string, any>|nil
+---@field legacy table<string, any>|nil
 
----@class AudioV2Record
+---@class Record
 ---@field source string
 ---@field destination string|nil
 ---@field asset_id string|nil
@@ -43,32 +61,32 @@
 ---@field sha1 string
 ---@field sha256 string|nil
 
----@class AudioV2Plan
+---@class Plan
 ---@field runtime_plan_version integer
 ---@field map_path string
 ---@field map_sha1 string
----@field manifest AudioV2Manifest
----@field route_cases AudioV2RouteCase[]
+---@field manifest Manifest
+---@field route_cases RouteCase[]
 
----@class AudioV2Manifest
+---@class Manifest
 ---@field root string
 ---@field layout string
 ---@field hashed boolean
----@field files AudioV2Record[]
----@field summary AudioV2ManifestSummary
+---@field files Record[]
+---@field summary ManifestSummary
 
----@class AudioV2ManifestSummary
+---@class ManifestSummary
 ---@field preflight_passed boolean
 ---@field all_audio_matched boolean
 ---@field files integer
 
----@class AudioV2RouteCase
+---@class RouteCase
 ---@field asset_id string
 ---@field filename string
 ---@field language string
 ---@field destination string
 
----@class AudioV2Event
+---@class Event
 ---@field plan_sha1 string
 ---@field index integer
 ---@field phase string
@@ -76,7 +94,7 @@
 ---@field destination string
 ---@field sha1 string
 
----@class AudioV2Options
+---@class Options
 ---@field Root string
 ---@field Map string
 ---@field Plan string
@@ -85,18 +103,18 @@
 ---@field Execute boolean
 ---@field StopAfterCopy integer|nil
 
----@class AudioV2Job
----@field Record AudioV2Record
+---@class Job
+---@field Record Record
 ---@field Index integer
 ---@field Mode string
 
----@class AudioV2PatternNamespace
+---@class PatternNamespace
 ---@field Scope string
 ---@field Pattern string
 ---@field Route string
 ---@field Banks string[]
 
----@class AudioV2Report
+---@class Report
 ---@field mode string
 ---@field plan_sha1 string
 ---@field files integer
@@ -110,12 +128,10 @@
 ---@field complete boolean
 ---@field error string|nil
 
----@class AudioV2Runtime
----@field Run fun(Arguments: string[]): nil
----@field Resolve fun(Map: AudioV2Map, Asset: AudioV2Asset, Filename: string, Language: string): string
+---@class Attributes
+---@field size integer|nil
+---@field mode integer|nil
 
----@type AudioV2Runtime
-local Runtime = {}
 local Languages = {EN=true, ES=true, FR=true, IT=true}
 local SpeakerFolders = {named_character="Characters", unnamed_character="UnnamedCharacters",
     unidentified_voice="UnidentifiedVoices", announcer="Announcers", narrator="Narrators",
@@ -217,26 +233,27 @@ local function WriteJson(Path, Value)
 end
 
 ---@param Path string
----@param Record AudioV2Record
+---@param Record Record
 ---@param DeepLinks boolean|nil
 ---@return boolean
 local function ContentsMatch(Path, Record, DeepLinks)
     if DeepLinks ~= false then NoLinks(Path)
     else Require(not sdk.is_symlink(Path), "linked file is forbidden: " .. Path) end
     local Attributes = sdk.attributes(Path)
+    ---@cast Attributes Attributes
     return Attributes ~= nil and Attributes.mode == "file" and Attributes.size == Record.size and sdk.sha1_file(Path) == Record.sha1
 end
 
 ---@param Path string
----@param Record AudioV2Record
+---@param Record Record
 ---@param DeepLinks boolean|nil
 ---@return nil
 local function Verify(Path, Record, DeepLinks)
     Require(ContentsMatch(Path, Record, DeepLinks), "file hash mismatch or size/type changed: " .. Path)
 end
 
----@param Map AudioV2Map
----@param Asset AudioV2Asset
+---@param Map Map
+---@param Asset Asset
 ---@return string
 local function LocationFolder(Map, Asset)
     local Count, Folder = 0, nil
@@ -254,12 +271,12 @@ local function LocationFolder(Map, Asset)
     return Count > 1 and "MultipleLocations" or "UnresolvedLocation"
 end
 
----@param Map AudioV2Map
----@param Asset AudioV2Asset
+---@param Map Map
+---@param Asset Asset
 ---@param Name string
 ---@param Language string
 ---@return string
-function Runtime.Resolve(Map, Asset, Name, Language)
+function Resolve(Map, Asset, Name, Language)
     Component(Name)
     local Prefix = "Global"
     if Asset.source.scope == "localized" then
@@ -307,8 +324,8 @@ local function MatchesPattern(Pattern, Name)
     return Name:lower():match("^" .. Escaped .. "$") ~= nil
 end
 
----@param Map AudioV2Map
----@param Asset AudioV2Asset
+---@param Map Map
+---@param Asset Asset
 ---@param Path string
 ---@param Layout string
 ---@return boolean
@@ -325,7 +342,7 @@ local function MatchesSource(Map, Asset, Path, Layout)
         if (Top:upper() == "GLOBAL") ~= (Asset.source.scope == "global") then return false end
         Language, Local = Top:upper(), Path:sub(#Top+2)
     end
-    if (Layout == "auto" or Layout == "v2") and Path:lower() == Runtime.Resolve(Map, Asset, Name, Language):lower() then return true end
+    if (Layout == "auto" or Layout == "v2") and Path:lower() == Resolve(Map, Asset, Name, Language):lower() then return true end
     if Layout == "auto" or Layout == "raw" or Layout == "legacy_sorted" then
         local Bank = Component(Asset.source.original_directory):lower() .. "/"
         if Local:lower():sub(1,#Bank) == Bank then return true end
@@ -424,16 +441,16 @@ local function PatternsOverlap(Left, Right)
 end
 
 ---@param Path string
----@return AudioV2Map
+---@return Map
 local function ReadMap(Path)
     local Map = sdk.text.yaml.read_file(Path)
-    ---@cast Map AudioV2Map
+    ---@cast Map Map
     Fields(Map, {"schema_version", "locations", "speakers", "assets"}, {"provenance", "legacy"})
     Map.schema_version = tonumber(Map.schema_version)
     Require(Map.schema_version == 2, "V2 schema required")
     Fields(Map.locations, {"hubs", "levels"})
     local Folders, Assets = {}, {}
-    ---@type AudioV2PatternNamespace[]
+    ---@type PatternNamespace[]
     local Patterns = {}
     for _, Kind in ipairs({"hubs", "levels"}) do
         Require(type(Map.locations[Kind]) == "table", "missing location registry")
@@ -461,7 +478,7 @@ local function ReadMap(Path)
     end
     Require(type(Map.assets) == "table" and #Map.assets > 0, "empty assets")
     for Index, Asset in pairs(Map.assets) do
-        ---@cast Asset AudioV2Asset
+        ---@cast Asset Asset
         Require(type(Index) == "number" and Index >= 1 and Index <= #Map.assets and Index % 1 == 0, "assets must be an array")
         Fields(Asset, {"id", "audio_type", "source", "usage"}, {"speaker_id", "category", "area", "notes", "nickname", "legacy"})
         Identifier(Asset.id)
@@ -498,7 +515,7 @@ local function ReadMap(Path)
         for _, Pattern in ipairs(Asset.source.file_patterns) do
             MatchesPattern(Pattern, "validation.exa.snu")
             local Sample = Pattern:gsub("#######", "0000000")
-            local Route = Parent(Runtime.Resolve(Map, Asset, Sample, "EN")):lower()
+            local Route = Parent(Resolve(Map, Asset, Sample, "EN")):lower()
             for _, Previous in ipairs(Patterns) do
                 if Asset.source.scope == Previous.Scope and PatternsOverlap(Pattern, Previous.Pattern) then
                     local SharedBank = false
@@ -516,9 +533,9 @@ local function ReadMap(Path)
     return Map
 end
 
----@param Options AudioV2Options
----@param Map AudioV2Map
----@return AudioV2Plan
+---@param Options Options
+---@param Map Map
+---@return Plan
 local function PreparePlan(Options, Map)
     local Files, Folders, Names, Records, Targets, Index = {}, {}, {}, {}, {}, {}
     Walk(Options.Root, "", Files, Folders)
@@ -538,13 +555,16 @@ local function PreparePlan(Options, Map)
     for Number, Path in ipairs(Names) do
         local Full = Options.Root .. "/" .. Path
         local Attributes = sdk.attributes(Full)
+        ---@cast Attributes Attributes
         Require(Attributes and Attributes.mode == "file", "inventory entry changed")
         local Record = {source=Path, size=Attributes.size, sha1=sdk.sha1_file(Full), status="unmanaged"}
-        ---@cast Record AudioV2Record
+        ---@cast Record Record
         Require(type(Record.sha1) == "string" and #Record.sha1 == 40, "cannot fingerprint " .. Path)
         local Name = Filename(Path)
         if Name:lower():sub(-8) == ".exa.snu" then
             local Found, Candidates = nil, {}
+            ---@cast Candidates table<string, Asset>
+            ---@cast Found Asset
             for Length, Prefixes in pairs(Index) do
                 for Key, Asset in pairs(Prefixes[Name:lower():sub(1,Length)] or {}) do Candidates[Key] = Asset end
             end
@@ -558,7 +578,7 @@ local function PreparePlan(Options, Map)
             local Language = Path:match("^[^/]+"):upper()
             if not Languages[Language] then Language = "EN" end
             Record.asset_id = Found.id
-            Record.destination = Runtime.Resolve(Map, Found, Name, Language)
+            Record.destination = Resolve(Map, Found, Name, Language)
             local Key = Record.destination:lower()
             Require(not Targets[Key], "destination collision: " .. Record.destination)
             Require(not Folders[Key], "directory occupies destination filename")
@@ -581,7 +601,7 @@ local function PreparePlan(Options, Map)
             summary={preflight_passed=true, all_audio_matched=true, files=#Records}}}
 end
 
----@param Options AudioV2Options
+---@param Options Options
 ---@param Index integer
 ---@param Phase string
 ---@return string
@@ -589,7 +609,7 @@ local function EventPath(Options, Index, Phase)
     return Options.State .. "/events/" .. string.format("%08d-%s.json", Index, Phase)
 end
 
----@param Options AudioV2Options
+---@param Options Options
 ---@param Index integer
 ---@param Phase string
 ---@param PlanHash string
@@ -601,13 +621,13 @@ local function HasEvent(Options, Index, Phase, PlanHash)
     -- mutate Source; all writes/removals still check their entire ancestor chain.
     Require(not sdk.is_symlink(Path), "linked journal record")
     local Event = ReadJson(Path)
-    ---@cast Event AudioV2Event
+    ---@cast Event Event
     Require(Event.plan_sha1 == PlanHash and Event.index == Index and Event.phase == Phase, "journal does not match plan: " .. Path)
     return true
 end
 
----@param Options AudioV2Options
----@param Job AudioV2Job
+---@param Options Options
+---@param Job Job
 ---@param Phase string
 ---@param PlanHash string
 ---@return nil
@@ -626,11 +646,11 @@ local function SaveEvent(Options, Job, Phase, PlanHash)
     Require(HasEvent(Options, Job.Index, Phase, PlanHash), "journal verification failed")
 end
 
----@param Options AudioV2Options
----@param Plan AudioV2Plan
----@param Map AudioV2Map
+---@param Options Options
+---@param Plan Plan
+---@param Map Map
 ---@param PlanHash string
----@return AudioV2Job[]
+---@return Job[]
 local function Preflight(Options, Plan, Map, PlanHash)
     Require((Plan.runtime_plan_version == 1 or Plan.runtime_plan_version == 2) and Plan.manifest.hashed == true, "expected a hashed runtime plan")
     Require(Plan.manifest.summary.preflight_passed == true and Plan.manifest.summary.all_audio_matched == true, "plan preflight did not pass")
@@ -641,19 +661,19 @@ local function Preflight(Options, Plan, Map, PlanHash)
         or Plan.manifest.layout == "legacy_sorted" or Plan.manifest.layout == "v2", "invalid input layout")
     local Assets = {}
     for _, Asset in ipairs(Map.assets) do
-        ---@cast Asset AudioV2Asset
+        ---@cast Asset Asset
         Require(not Assets[Asset.id], "duplicate asset ID")
         Assets[Asset.id] = Asset
     end
     for _, Case in ipairs(Plan.route_cases) do
         Require(Assets[Case.asset_id], "missing parity asset")
-        local Actual = Runtime.Resolve(Map, Assets[Case.asset_id], Case.filename, Case.language)
+        local Actual = Resolve(Map, Assets[Case.asset_id], Case.filename, Case.language)
         Require(Actual == Case.destination, "Python/Lua destination disagreement: " .. Case.asset_id .. "; expected " .. Case.destination .. "; got " .. Actual)
     end
     local Files, Folders, Consumed, Targets, Sources, Jobs = {}, {}, {}, {}, {}, {}
     Walk(Options.Root, "", Files, Folders)
     for Index, Record in ipairs(Plan.manifest.files) do
-        ---@cast Record AudioV2Record
+        ---@cast Record Record
         Relative(Record.source)
         Require(not Sources[Record.source:lower()], "duplicate plan source")
         Sources[Record.source:lower()] = true
@@ -674,7 +694,7 @@ local function Preflight(Options, Plan, Map, PlanHash)
             Require(Asset and MatchesSource(Map, Asset, Record.source, Plan.manifest.layout), "source bank/pattern mismatch: " .. Record.source)
             local Language = Record.source:match("^[^/]+"):upper()
             if not Languages[Language] then Language = "EN" end
-            Require(Runtime.Resolve(Map, Asset, Filename(Record.source), Language) == Record.destination, "route differs from execution plan")
+            Require(Resolve(Map, Asset, Filename(Record.source), Language) == Record.destination, "route differs from execution plan")
             Require(not Targets[Record.destination:lower()], "destination collision")
             Targets[Record.destination:lower()] = true
             Require(not Folders[Record.destination:lower()], "directory occupies destination filename")
@@ -718,7 +738,7 @@ local function Preflight(Options, Plan, Map, PlanHash)
 end
 
 ---@param Arguments string[]
----@return AudioV2Options
+---@return Options
 local function Parse(Arguments)
     local Options = {Execute=false}
     local Fields = {["--root"]="Root", ["--map"]="Map", ["--plan"]="Plan", ["--state"]="State", ["--report"]="Report"}
@@ -765,14 +785,14 @@ local function Parse(Arguments)
     return Options
 end
 
----@param Options AudioV2Options
----@param Jobs AudioV2Job[]
----@param Report AudioV2Report
+---@param Options Options
+---@param Jobs Job[]
+---@param Report Report
 ---@return nil
 local function Execute(Options, Jobs, Report)
     local Copies = 0
     for _, Job in ipairs(Jobs) do
-        ---@cast Job AudioV2Job
+        ---@cast Job Job
         local Record = Job.Record
         local Source, Destination = Options.Root .. "/" .. Record.source, Options.Root .. "/" .. (Record.destination or Record.source)
         if Job.Mode == "planned" or Job.Mode == "copied" or Job.Mode == "partial_copy" then
@@ -826,9 +846,10 @@ local function Execute(Options, Jobs, Report)
     for Key, Path in pairs(Actual) do Require(Expected[Key], "unexpected remaining file: " .. Path) end
 end
 
+
 ---@param Arguments string[]
 ---@return nil
-function Runtime.Run(Arguments)
+function Run(Arguments)
     local Options = Parse(Arguments)
     local MapHash = sdk.sha1_file(Options.Map)
     local Map = ReadMap(Options.Map)
@@ -844,7 +865,7 @@ function Runtime.Run(Arguments)
     local Report = {mode=Options.Execute and "execute" or "dry_run", plan_sha1="",
         files=0, planned=0, moved=0, already_sorted=0, resumed=0, unmanaged=0, partial_repaired=0,
         route_cases=0, complete=false}
-    ---@cast Report AudioV2Report
+    ---@cast Report Report
     ---@return nil
     local function Work()
         Require(sdk.ensure_dir(Options.State), "cannot create audit state directory")
@@ -860,7 +881,7 @@ function Runtime.Run(Arguments)
             Require(sdk.rename_file(Pending, Options.Plan, false), "cannot commit execution plan")
         end
         local Plan = ReadJson(Options.Plan)
-        ---@cast Plan AudioV2Plan
+        ---@cast Plan Plan
         Require(type(Plan.route_cases) == "table" and type(Plan.manifest) == "table"
             and type(Plan.manifest.files) == "table" and type(Plan.manifest.summary) == "table", "invalid runtime plan")
         local PlanHash = sdk.sha1_file(Options.Plan)
@@ -893,4 +914,4 @@ function Runtime.Run(Arguments)
     print("Audio V2 audit: " .. Options.Report)
 end
 
-return Runtime
+Run(argv or {})

@@ -52,7 +52,7 @@ extension = ".str"
 id = 2
 name = "Copy Source Audio/Video Files"
 run-all = true
-depends-on = [0, 1] # deps: Init, STR
+depends-on = [0] # deps: Init
 script_type = "lua"
 script = "{{Game_Root}}/operations/CopySourceAudioVideo.lua"
 args = [
@@ -114,7 +114,7 @@ name = "Reorganize Audio Files"
 run-all = true
 depends-on = [0, 1, 2, 3] # deps: Init, STR, Copy Audio/Video, Rename base folders
 script_type = "lua"
-script = "{{Game_Root}}/operations/SetupAudioDir.lua"
+script = "{{Game_Root}}/operations/Audio/SetupAudioDir.lua"
 args = ["{{Game_Root}}/GameFiles/{{Platform}}-{{Region}}-{{Type}}-{{audio_state}}-{{isRenamed}}", "--execute"]
 [[operation.onsuccess]] # when successful, update isRenamed placeholder to "isRenamed"
 id = 4.1
@@ -316,7 +316,7 @@ name = "Convert Music (.mus -> .snr/.sns -> .wav)"
 run-all = false
 depends-on = [-1, 2] # depends on (vgmstream), (quickbms), and copy audio/video files
 script_type = "lua"
-script = "{{Game_Root}}/operations/SetupMusicFiles.lua"
+script = "{{Game_Root}}/operations/Audio/SetupMusicFiles.lua"
 args = [
     "--bmsscript", "{{Game_Root}}/operations/mus.bms",
     "--GameDir", "{{Game_Root}}/GameFiles/{{Platform}}-{{Region}}-{{Type}}-{{audio_state}}-{{isRenamed}}",
