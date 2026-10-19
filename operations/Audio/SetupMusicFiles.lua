@@ -3,7 +3,7 @@
 
 -- make all shared util functions globally available
 ---@type SharedUtils
-import("SharedUtils")
+import(join(Game_Root, "/operations", "SharedUtils"))
 
 ---@class SetupMusicFilesOptions
 ---@field bmsscript string?

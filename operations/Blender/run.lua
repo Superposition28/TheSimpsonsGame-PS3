@@ -35,7 +35,7 @@ Usage
 sdk.color_print({ colour = "cyan", message = "[BlenderRun] Starting Blender operations runner..." })
 
 ---@type SharedUtils
-import(join("..", "SharedUtils.lua"))
+import(join(Game_Root, "operations", "SharedUtils.lua"))
 
 sdk.color_print({ colour = "cyan", message = "[BlenderRun] Imported SharedUtils." })
 

@@ -1,13 +1,15 @@
 -- Simple file/directory rename script using CLI arguments
--- Usage: --old_path <path> --new_path <path>
+-- Usage: --old_path <path> --new_path <path> [--skip-if-renamed]
 
 ---@type SharedUtils
-import("./SharedUtils.lua")
+import(join(Game_Root, "operations", "SharedUtils.lua"))
 
 ---@type string|nil
 local old_path = nil
 ---@type string|nil
 local new_path = nil
+---@type boolean
+local SkipIfRenamed = false
 
 ---@param message string
 ---@return nil
@@ -23,6 +25,8 @@ for i = 1, argc do
         old_path = normalize(argv[i + 1])
     elseif arg == "--new_path" and i < argc then
         new_path = normalize(argv[i + 1])
+    elseif arg == "--skip-if-renamed" then
+        SkipIfRenamed = true
     end
 end
 
@@ -33,6 +37,10 @@ end
 
 -- Check if source exists
 if not sdk.path_exists(old_path) then
+    if SkipIfRenamed and sdk.is_dir(new_path) and not sdk.is_symlink(new_path) then
+        sdk.colour_print({ colour = "Green", message = "Dataset already renamed: " .. new_path })
+        return
+    end
     Fail("Source path does not exist: " .. old_path)
 end
 
