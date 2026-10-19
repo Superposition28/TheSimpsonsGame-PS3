@@ -1,6 +1,6 @@
 [gd_scene format=3 uid="uid://by2s80yalx154"]
 
-[ext_resource type="PackedScene" uid="uid://4mmxeyjspg6u" path="res://assets/L01_LandOfChocolate/loc/zone01str/assetsEnvirons/export/terrain/lodmodel1_c8c552.rws.PS3.glb" id="1_pa750"]
+[ext_resource type="PackedScene" path="res://assets/L01_LandOfChocolate/loc/zone01str/assetsEnvirons/export/terrain/lodmodel1_6850eb.rws.PS3.glb" id="1_pa750"]
 
 [sub_resource type="ConcavePolygonShape3D" id="ConcavePolygonShape3D_1dnfh"]
 data = PackedVector3Array(-5.4361997, -27.507599, -1.0605999, -5.7864, -28.555199, -1.0527999, -5.6812997, -28.5744, -1.6031, -5.3749, -27.547499, -1.6031, -5.4361997, -27.507599, -1.0605999, -5.6812997, -28.5744, -1.6031, -5.3591, -27.558498, -2.1901, -5.3749, -27.547499, -1.6031, -5.6812997, -28.5744, -1.6031, -5.3591, -27.558498, -2.1901, -5.6812997, -28.5744, -1.6031, -5.6738, -28.5752, -2.1901, -5.3803, -27.5583, -2.7663999, -5.3591, -27.558498, -2.1901, -5.6738, -28.5752, -2.1901, -5.3803, -27.5583, -2.7663999, -5.6738, -28.5752, -2.1901, -5.6933, -28.5814, -2.7663999)

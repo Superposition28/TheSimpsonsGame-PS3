@@ -15,17 +15,22 @@
 ---@field IsMatchingZoneAssets fun(parent_segment: string, child_segment: string): boolean
 ---@field IsMatchingZoneAssets2 fun(parent_segment: string, child_segment: string): boolean
 ---@field NormalizeFolderSegment fun(segment: string, alias_sequences: string[][]): string
----@field NormalizeCollapsedDir fun(dir_path: string, level_folder_lower: string, level_name_lower: string): string
----@field apply_file_rules fun(original_rel: string, process_rel: string, uid_generator_func: function, rename_map: table<string, string>): string, string
+---@field NormalizeCollapsedDir fun(dir_path: string, level_folder_lower: string, level_name_lower: string, txd_exports: TxdExportFolders|nil): string
+---@field BuildTxdExportFolders fun(files: string[], source_root: string, uid_generator_func: fun(path: string, length: integer): string, rename_map: table<string, string>): TxdExportFolders
+---@field apply_file_rules fun(original_rel: string, process_rel: string, uid_generator_func: function, rename_map: table<string, string>, txd_exports: TxdExportFolders|nil): string, string
 ---@field ExtractAudioUidFromFilename fun(filename: string): string|nil
 ---@field GetCopyOnlyUid fun(rel_path: string, uid_generator_func: function, rename_map: table<string, string>): string
 ---@field add_to_tree fun(tree: table, path_str: string)
----@field build_collapse_map fun(tree: table, map: table<string, string>, current_orig_path: string, current_new_path: string)
+---@field build_collapse_map fun(tree: table, map: table<string, string>, current_orig_path: string, current_new_path: string, txd_exports: TxdExportFolders|nil)
 ---@field load_rename_map fun(db_path: string): table<string, string>
 ---@field normalize_to_canonical fun(rel_path: string, rename_map: table<string, string>): string
 ---@field walk_files fun(root: string, ignore_list: table): string[]
 ---@field BuildCopyOnlySet fun(copyonly_list: string[]): table<string, boolean>
 ---@field IsCopyOnlyPath fun(rel_path: string, copyonly_set: table<string, boolean>): boolean
+
+---@class TxdExportFolders
+---@field uids_by_path table<string, string> Camel-case source directory paths mapped to their partner TXD UID.
+---@field protected_names table<string, boolean> Export folder names that must survive collapsing and token normalization.
 
 -- Constants -----------------------------------------------------------------
 
@@ -384,8 +389,9 @@ end
 --- @param dir_path string The directory path to normalize.
 --- @param level_folder_lower string The lowercased name of the level folder.
 --- @param level_name_lower string The lowercased name of the level.
+---@param txd_exports TxdExportFolders|nil
 --- @return string return The normalized collapsed directory path.
-function NormalizeCollapsedDir(dir_path, level_folder_lower, level_name_lower)
+function NormalizeCollapsedDir(dir_path, level_folder_lower, level_name_lower, txd_exports)
     if not dir_path or dir_path == "" then
         return dir_path
     end
@@ -426,7 +432,7 @@ function NormalizeCollapsedDir(dir_path, level_folder_lower, level_name_lower)
                     end
                 end
 
-                if i > 2 then
+                if i > 2 and not (txd_exports and txd_exports.protected_names[part]) then
                     local normalized = NormalizeFolderSegment(part, alias_sequences)
                     if normalized ~= "" then
                         part = normalized
@@ -449,14 +455,36 @@ function NormalizeCollapsedDir(dir_path, level_folder_lower, level_name_lower)
     return table.concat(new_parts, Path_sep)
 end
 
+--- Index exported directory paths using the same canonical identity as their TXD files.
+---@param files string[]
+---@param source_root string
+---@param uid_generator_func fun(path: string, length: integer): string
+---@param rename_map table<string, string>
+---@return TxdExportFolders
+function BuildTxdExportFolders(files, source_root, uid_generator_func, rename_map)
+    ---@type TxdExportFolders
+    local exports = { uids_by_path = {}, protected_names = {} }
+    for _, full in ipairs(files) do
+        local rel = rel_path(full, source_root)
+        if ext_lower(rel) == ".txd" then
+            local stem = multi_ext(rel)
+            -- Treat the TXD stem as a directory so camelCase and episode rules match its textures.
+            local export_dir = dirname(apply_camel_case_to_path(join(stem, "__texture__")))
+            exports.uids_by_path[string.lower(ToPosix(export_dir))] = GetCopyOnlyUid(rel, uid_generator_func, rename_map)
+        end
+    end
+    return exports
+end
+
 ---Applies file normalization rules to a given relative path.
 ---@param original_rel string The original relative path of the file.
 ---@param process_rel string The relative path to process and normalize.
----@param uid_generator_func function Function to generate unique IDs for files.
----@param rename_map table A mapping of old names to new names for renaming purposes.
+---@param uid_generator_func fun(path: string, length: integer): string Function to generate unique IDs for files.
+---@param rename_map table<string, string> A mapping of original and renamed base folders to renamed names.
+---@param txd_exports TxdExportFolders|nil
 ---@return string return The normalized relative path.
 ---@return string return The unique ID associated with the file.
-function apply_file_rules(original_rel, process_rel, uid_generator_func, rename_map)
+function apply_file_rules(original_rel, process_rel, uid_generator_func, rename_map, txd_exports)
     local parts = split_path(process_rel)
     if #parts == 0 then return process_rel, "000000" end
 
@@ -478,6 +506,11 @@ function apply_file_rules(original_rel, process_rel, uid_generator_func, rename_
         local part = parts[i]
         local part_lower = string.lower(part)
         local matched_segment = false
+        local export_uid = nil
+        if txd_exports and i < #parts then
+            local source_dir = table.concat(parts, "/", 1, i)
+            export_uid = txd_exports.uids_by_path[string.lower(source_dir)]
+        end
 
         for _, segment in ipairs(Segments_to_remove) do
             if part_lower == segment[1] and i + #segment - 1 <= #parts then
@@ -498,10 +531,10 @@ function apply_file_rules(original_rel, process_rel, uid_generator_func, rename_
         end
 
         if not matched_segment then
-            if i > 2 and part_lower == level_name_lower then
+            if i > 2 and part_lower == level_name_lower and not export_uid then
             else
                 local skip_part = false
-                if i > 2 and i < #parts then
+                if i > 2 and i < #parts and not export_uid then
                     if part_lower == "challengemode" or part_lower == "storymode" then
                         local next_part = parts[i + 1]
                         if next_part and string.lower(next_part):find("^" .. part_lower) then
@@ -524,11 +557,15 @@ function apply_file_rules(original_rel, process_rel, uid_generator_func, rename_
                         local normalized = NormalizeFolderSegment(part, alias_sequences)
                         if normalized ~= "" then
                             part = normalized
-                        else
+                        elseif not export_uid then
                             part = nil
                         end
                     end
                     if part and part ~= "" then
+                        if export_uid then
+                            part = part .. "_" .. export_uid
+                            txd_exports.protected_names[part] = true
+                        end
                         table.insert(new_parts, part)
                     end
                 end
@@ -583,8 +620,8 @@ end
 
 --- Gets the unique ID for a copy-only file, using the audio UID if available, or generating one otherwise.
 ---@param rel_path string The relative path of the copy-only file.
----@param uid_generator_func function Function to generate unique IDs.
----@param rename_map table A mapping of old names to new names for renaming purposes.
+---@param uid_generator_func fun(path: string, length: integer): string Function to generate unique IDs.
+---@param rename_map table<string, string> A mapping of original and renamed base folders to renamed names.
 ---@return string return The unique ID for the copy-only file.
 function GetCopyOnlyUid(rel_path, uid_generator_func, rename_map)
     local filename = basename(rel_path or "")
@@ -630,8 +667,9 @@ end
 ---@param map table The map to store collapsed paths.
 ---@param current_orig_path string The current original path being processed.
 ---@param current_new_path string The current new path after collapsing.
+---@param txd_exports TxdExportFolders|nil
 --- @return nil return This function updates the map with collapsed directory paths.
-function build_collapse_map(tree, map, current_orig_path, current_new_path)
+function build_collapse_map(tree, map, current_orig_path, current_new_path, txd_exports)
     local node = tree[current_orig_path]
     if not node then return end
 
@@ -641,7 +679,9 @@ function build_collapse_map(tree, map, current_orig_path, current_new_path)
     for k,_ in pairs(node.files) do table.insert(file_names, k) end
 
     local is_root_level = current_orig_path ~= "" and dirname(current_orig_path) == ""
-    if #dir_names == 1 and #file_names == 0 and not is_root_level then
+    local export_boundary = txd_exports and (txd_exports.protected_names[basename(current_orig_path)]
+        or (#dir_names == 1 and txd_exports.protected_names[dir_names[1]]))
+    if #dir_names == 1 and #file_names == 0 and not is_root_level and not export_boundary then
         local child_name = dir_names[1]
         local child_orig_path = join(current_orig_path, child_name)
 
@@ -658,56 +698,63 @@ function build_collapse_map(tree, map, current_orig_path, current_new_path)
 
         local new_collapsed_path = join(dirname(current_new_path), new_collapsed_name)
 
-        build_collapse_map(tree, map, child_orig_path, new_collapsed_path)
+        build_collapse_map(tree, map, child_orig_path, new_collapsed_path, txd_exports)
     else
         map[current_orig_path] = current_new_path
         for _, name in ipairs(dir_names) do
             local child_orig = join(current_orig_path, name)
             local child_new = join(current_new_path, name)
-            build_collapse_map(tree, map, child_orig, child_new)
+            build_collapse_map(tree, map, child_orig, child_new, txd_exports)
         end
     end
 end
 
 --- load the rename map db
 --- @param db_path string The path to the rename map database file.
---- @return table return A mapping of new names to old names from the rename map database.
+---@return table<string, string> Map original and renamed base folders to the renamed spelling.
 function load_rename_map(db_path)
-    ---@type table<string, string> A mapping of new names to old names.
+    ---@type table<string, string>
     local map = {}
     if not sdk.path_exists(db_path) then
-        return map
+        error("Rename map not found: " .. db_path)
     end
     local db = sqlite.open(db_path)
     if not db then
-        return map
+        error("Unable to open rename map: " .. db_path)
     end
     local prog = progress.console.new(0, "RenameMap", "Loading rename mappings...")
-    local ok, rows = pcall(function()
+    local ok, rows = pcall(
+    ---@return table<integer, table<string, any>>
+    function()
         return db:query("SELECT old_name, new_name FROM rename_mappings")
     end)
-    if ok and rows then
-        prog:SetTotal(#rows)
-        for i, row in ipairs(rows) do
-            local old_name = row.old_name
-            local new_name = row.new_name
-            if old_name and new_name then
-                map[string.lower(new_name)] = old_name
-            end
-            prog:SetLabel("Loaded " .. i .. " mappings")
-            prog:Update(1, 1, 0, 0)
-        end
-    end
     db:close()
+    if not ok or not rows then
+        prog:Complete()
+        error("Unable to read rename map " .. db_path .. ": " .. tostring(rows))
+    end
+    prog:SetTotal(#rows)
+    for i, row in ipairs(rows) do
+        local old_name = row.old_name
+        local new_name = row.new_name
+        if old_name and old_name ~= "" and new_name and new_name ~= "" then
+            map[string.lower(old_name)] = new_name
+            map[string.lower(new_name)] = new_name
+        end
+        prog:SetLabel("Loaded " .. i .. " mappings")
+        prog:Update(1, 1, 0, 0)
+    end
     prog:Complete()
     return map
 end
 
 --- Normalizes a relative path for stable cross-platform UID generation.
 --- @param rel_path string The relative path to normalize.
---- @param rename_map table A mapping of new names to old names.
+---@param rename_map table<string, string> A mapping of original and renamed base folders to renamed names.
 --- @return string return The canonical form with platform and region markers removed from UID identity.
 function normalize_to_canonical(rel_path, rename_map)
+    -- Persistent identity contract: preserve these canonical hash inputs and all
+    -- established output UIDs when changing path/export rules (see README.md).
     if not rel_path then
         return rel_path
     end

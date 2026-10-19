@@ -1,6 +1,10 @@
 --[[
 DirectoryNormalizer.lua (Simple Mode + Collapse + Rules v2)
 
+UID compatibility contract: future changes MUST NOT change existing output UIDs.
+Hash canonical original source paths, never flattened/output paths. Preserve the
+current canonical identity through path-rule and exporter changes. See README.md.
+
 This script normalizes a directory by performing transformations:
 1. Removes the nested path segments '/build/PS3|XEN/pal_en' or '/build/PS3|XEN/ntsc_en'.
 2. Renames any folder named 'texture_dictionary' to 'txd'.
@@ -8,6 +12,7 @@ This script normalizes a directory by performing transformations:
     e.g., 'Map_X/level/a/b/level/c' -> 'Map_X/level/a/b/c'
 4. Finds any folder that contains only one other folder, and merges their names.
 5. Appends a 6-character hex UID to each filename.
+   TXD export folders receive their partner TXD's UID and retain their directory boundary.
 6. NEW: When --copyonly is used, those directories are excluded from normalization and copied as-is after normalization.
     - Copy-only assets are still included in mapping outputs with uid/new_path/original_path fields.
     - Audio UIDs are extracted from *.exa.wav filenames (last 6 chars before .exa.wav).
@@ -51,7 +56,8 @@ local function parse_args()
     local function gets(i) local v = argv[i]; return type(v) == "string" and v or nil end
 
     ---@type Args
-    local out = { ignores = {}, copyonly = {}, dry_run = false, map_db_file = nil, camel_only = false }
+    local out = { ignores = {}, copyonly = {}, dry_run = false,
+        map_db_file = join(Game_Root, "config", "RenameMap.db"), camel_only = false }
     out.src = gets(1)
     out.dst = gets(2)
     local i = 3
@@ -107,21 +113,16 @@ local function main()
     sdk.colour_print({ colour = "green", message = string.format("Destination directory: %s", args.dst), newline = true })
 
     -- Load rename map for canonical UID generation
-    -- ensures the UIDs are consistent even if the base folder names are not updated
-    -- may not be required when all operations are run
+    -- Use renamed base folders for UIDs even when the source folders still have original names.
+    local db_path = norm_slashes(args.map_db_file or join(Game_Root, "config", "RenameMap.db"))
+    sdk.colour_print({ colour = "cyan", message = string.format("Loading rename mappings from: %s", db_path), newline = true })
+    Diagnostics.Trace(string.format("[DirectoryNormalizer] Loading rename mappings from: %s", db_path))
     ---@type table<string, string>
-    local rename_map = {}
-    if args.map_db_file and args.map_db_file ~= "" then
-        local db_path = norm_slashes(args.map_db_file)
-        sdk.colour_print({ colour = "cyan", message = string.format("Loading rename mappings from: %s", db_path), newline = true })
-        Diagnostics.Trace(string.format("[DirectoryNormalizer] Loading rename mappings from: %s", db_path))
-        rename_map = load_rename_map(db_path)
-        local count = (function() local c=0; for _ in pairs(rename_map) do c=c+1 end; return c end)()
-        sdk.colour_print({ colour = "green", message = string.format("Loaded %d rename mappings", count), newline = true })
-        Diagnostics.Trace(string.format("[DirectoryNormalizer] Loaded %d rename mappings", count))
-    else
-        sdk.colour_print({ colour = "yellow", message = "No rename map provided, UIDs will be based on original paths.", newline = true })
-    end
+    local rename_map = load_rename_map(db_path)
+    local count = 0
+    for _ in pairs(rename_map) do count = count + 1 end
+    sdk.colour_print({ colour = "green", message = string.format("Loaded %d rename aliases", count), newline = true })
+    Diagnostics.Trace(string.format("[DirectoryNormalizer] Loaded %d rename aliases", count))
 
     sdk.ensure_dir(args.dst)
 
@@ -173,6 +174,7 @@ local function main()
         local total = 0
         ---@type table<string, MappingRow[]>
         local per_folder_maps = {} -- NEW: To store per-folder mappings
+        local txd_exports = BuildTxdExportFolders(files, args.src, get_hex_uid, rename_map)
 
         -- PASS 1: Pre-scan all files
         -- Build the list of target files (after build-path removal)
@@ -189,7 +191,7 @@ local function main()
                 local camel_rel = apply_camel_case_to_path(rel)
 
                 -- Note: apply_file_rules now takes BOTH rel and camel_rel
-                local rel_no_build, uid = apply_file_rules(rel, camel_rel, get_hex_uid, rename_map)
+                local rel_no_build, uid = apply_file_rules(rel, camel_rel, get_hex_uid, rename_map, txd_exports)
 
                 -- Store for Pass 3
                 table.insert(file_targets, {
@@ -209,7 +211,7 @@ local function main()
         ---@type table<string, string>
         local path_map = {}
         if script_prog then script_prog:Update(4, "Collapse map built.") end
-        build_collapse_map(target_tree, path_map, "", "")
+        build_collapse_map(target_tree, path_map, "", "", txd_exports)
 
         -- PASS 3: Process and copy normalized files
         if script_prog then script_prog:Update(5, "Processing normalized files...") end
@@ -229,7 +231,7 @@ local function main()
             local level_folder_lower = rel_parts[1] and string.lower(rel_parts[1]) or ""
             local level_name_lower = rel_parts[2] and string.lower(rel_parts[2]) or ""
             if new_collapsed_dir and new_collapsed_dir ~= "" then
-                new_collapsed_dir = NormalizeCollapsedDir(new_collapsed_dir, level_folder_lower, level_name_lower)
+                new_collapsed_dir = NormalizeCollapsedDir(new_collapsed_dir, level_folder_lower, level_name_lower, txd_exports)
             end
 
             local new_rel = join(new_collapsed_dir, filename)

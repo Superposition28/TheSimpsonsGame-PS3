@@ -62,7 +62,7 @@ $logosDestination = Join-Path $PreBuiltPath 'logos'
 $null = New-Item -ItemType Directory -Path $assetsDestination, $logosDestination -Force
 
 # Populate the main asset tree only once, preserving its folder structure and supported file types.
-$assetExtensions = @('.png', '.glb', '.ogv', '.graph', '.fnt')
+$assetExtensions = @('.png', '.glb', '.ogv', '.graph', '.fnt', '.json')
 $existingAssets = @(Get-ChildItem -LiteralPath $assetsDestination -Force)
 if ($existingAssets.Count -eq 0) {
     $assetFiles = @(Get-ChildItem -LiteralPath $AssetsSourcePath -File -Recurse |
@@ -77,6 +77,14 @@ if ($existingAssets.Count -eq 0) {
     Write-Host "Copied $($assetFiles.Count) supported asset file(s) into '$assetsDestination'."
 } else {
     Write-Host "Leaving '$assetsDestination' unchanged because it is not empty."
+}
+
+# Scene refresh must use maps from the same dataset as these assets. Never replace
+# an existing project's maps with maps from a potentially different platform/region.
+$destinationMaps = @(Get-ChildItem -LiteralPath $assetsDestination -File |
+    Where-Object { $_.Name -eq 'normalized_map.json' -or $_.Name -like 'map_*.json' })
+if ($destinationMaps.Count -eq 0) {
+    Write-Warning "No normalization maps found in '$assetsDestination'. refreshTSCNpaths.py requires normalized_map.json or map_*.json copied with the matching asset dataset."
 }
 
 # Add source icons only when missing; invalidate Godot's import cache for each new file.

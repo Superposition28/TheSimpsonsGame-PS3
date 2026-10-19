@@ -1,13 +1,13 @@
 [gd_scene format=3 uid="uid://b8uyul7qkynam"]
 
-[ext_resource type="Texture2D" uid="uid://dqm0btp77bcg3" path="res://assets/A2_Frontend/frontendStr/assetsRws/txd/txd/1_frontend_assets_ee93fa.png" id="1_pjpqm"]
-[ext_resource type="Texture2D" uid="uid://dwwsq1qssokqu" path="res://assets/A2_Frontend/frontendStr/assetsRws/txd/split16txd/buttons_005d67.png" id="2_tbeom"]
-[ext_resource type="Texture2D" uid="uid://ctrc2hlktob61" path="res://assets/A2_Frontend/frontendStr/assetsRws/txd/split19txd/4_SharedLibrary_6a3576.png" id="3_snivv"]
-[ext_resource type="Texture2D" uid="uid://dbpluv5awx6ln" path="res://assets/A2_Frontend/frontendStr/assetsRws/txd/split24txd/2_SharedLibrary_e36432.png" id="4_qvios"]
-[ext_resource type="Texture2D" uid="uid://bsiaarjivcwn4" path="res://assets/A2_Frontend/frontendStr/assetsRws/txd/split20txd/3_SharedLibrary_0b4178.png" id="5_2pn7y"]
-[ext_resource type="Texture2D" uid="uid://b4bnbb00mycxc" path="res://assets/A2_Frontend/frontendStr/assetsRws/txd/split3txd/9_SharedLibrary_704032.png" id="6_wp5mb"]
-[ext_resource type="Texture2D" uid="uid://1ppbq7uuftwg" path="res://assets/A2_Frontend/frontendStr/assetsRws/txd/split24txd/8_SharedLibrary_7e0f3c.png" id="7_kswnw"]
-[ext_resource type="Texture2D" uid="uid://8dpwg85wo1w2" path="res://assets/A2_Frontend/frontendStr/assetsRws/txd/split11txd/7_SharedLibrary_44e6ea.png" id="8_unox3"]
+[ext_resource type="Texture2D" path="res://assets/A2_Frontend/frontendStr/assetsRws/txd/frontend_409a3f/1_frontend_assets_7b7a8e.png" id="1_pjpqm"]
+[ext_resource type="Texture2D" path="res://assets/A2_Frontend/frontendStr/assetsRws/txd/split16_704679/buttons_cfff7f.png" id="2_tbeom"]
+[ext_resource type="Texture2D" path="res://assets/A2_Frontend/frontendStr/assetsRws/txd/split19_127e84/4_SharedLibrary_dd7c8d.png" id="3_snivv"]
+[ext_resource type="Texture2D" path="res://assets/A2_Frontend/frontendStr/assetsRws/txd/split24_a22477/2_SharedLibrary_f7001f.png" id="4_qvios"]
+[ext_resource type="Texture2D" path="res://assets/A2_Frontend/frontendStr/assetsRws/txd/split20_856c2c/3_SharedLibrary_69a16f.png" id="5_2pn7y"]
+[ext_resource type="Texture2D" path="res://assets/A2_Frontend/frontendStr/assetsRws/txd/split3_0b9f37/9_SharedLibrary_865d75.png" id="6_wp5mb"]
+[ext_resource type="Texture2D" path="res://assets/A2_Frontend/frontendStr/assetsRws/txd/split24_a22477/8_SharedLibrary_d111da.png" id="7_kswnw"]
+[ext_resource type="Texture2D" path="res://assets/A2_Frontend/frontendStr/assetsRws/txd/split11_dd3125/7_SharedLibrary_d873ea.png" id="8_unox3"]
 
 [node name="SaveMenu" type="Control" unique_id=2045311312]
 layout_mode = 3

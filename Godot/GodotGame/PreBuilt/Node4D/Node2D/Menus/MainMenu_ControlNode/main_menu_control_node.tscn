@@ -1,12 +1,12 @@
 [gd_scene format=3 uid="uid://d3xs8pvro5jn6"]
 
-[ext_resource type="Texture2D" uid="uid://dxj3k3tn5i45" path="res://assets/A2_Frontend/frontendStr/assetsRws/txd/split16txd/15_popup_2ea038.png" id="1_e2o5f"]
-[ext_resource type="Texture2D" uid="uid://x5mvd42b3hg2" path="res://assets/A2_Frontend/frontendStr/assetsRws/txd/split17txd/18_popup_b3d383.png" id="2_xc2x5"]
-[ext_resource type="Texture2D" uid="uid://037e0a4sllk4" path="res://assets/A2_Frontend/frontendStr/assetsRws/txd/split18txd/21_popup_a5e9e4.png" id="3_hsop0"]
-[ext_resource type="Texture2D" uid="uid://dwwsq1qssokqu" path="res://assets/A2_Frontend/frontendStr/assetsRws/txd/split16txd/buttons_005d67.png" id="4_qnwdl"]
-[ext_resource type="Texture2D" uid="uid://b4bnbb00mycxc" path="res://assets/A2_Frontend/frontendStr/assetsRws/txd/split3txd/9_SharedLibrary_704032.png" id="5_inoei"]
-[ext_resource type="Texture2D" uid="uid://1ppbq7uuftwg" path="res://assets/A2_Frontend/frontendStr/assetsRws/txd/split24txd/8_SharedLibrary_7e0f3c.png" id="6_71bwf"]
-[ext_resource type="Texture2D" uid="uid://8dpwg85wo1w2" path="res://assets/A2_Frontend/frontendStr/assetsRws/txd/split11txd/7_SharedLibrary_44e6ea.png" id="7_kp120"]
+[ext_resource type="Texture2D" path="res://assets/A2_Frontend/frontendStr/assetsRws/txd/split16_704679/15_popup_212967.png" id="1_e2o5f"]
+[ext_resource type="Texture2D" path="res://assets/A2_Frontend/frontendStr/assetsRws/txd/split17_5a4954/18_popup_2f83cc.png" id="2_xc2x5"]
+[ext_resource type="Texture2D" path="res://assets/A2_Frontend/frontendStr/assetsRws/txd/split18_92798d/21_popup_5e1ffa.png" id="3_hsop0"]
+[ext_resource type="Texture2D" path="res://assets/A2_Frontend/frontendStr/assetsRws/txd/split16_704679/buttons_cfff7f.png" id="4_qnwdl"]
+[ext_resource type="Texture2D" path="res://assets/A2_Frontend/frontendStr/assetsRws/txd/split3_0b9f37/9_SharedLibrary_865d75.png" id="5_inoei"]
+[ext_resource type="Texture2D" path="res://assets/A2_Frontend/frontendStr/assetsRws/txd/split24_a22477/8_SharedLibrary_d111da.png" id="6_71bwf"]
+[ext_resource type="Texture2D" path="res://assets/A2_Frontend/frontendStr/assetsRws/txd/split11_dd3125/7_SharedLibrary_d873ea.png" id="7_kp120"]
 
 [node name="NewsMenu" type="Control" unique_id=992877009]
 layout_mode = 3

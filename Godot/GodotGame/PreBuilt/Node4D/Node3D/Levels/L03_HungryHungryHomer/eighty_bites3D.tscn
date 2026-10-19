@@ -1,12 +1,12 @@
 [gd_scene load_steps=8 format=3]
 
-[ext_resource type="PackedScene" path="res://assets/L03_HungryHungryHomer/eightyBites/zone1str/assetsEnvirons/export/terrain/lodmodel1_592a6f.rws.PS3.glb" id="1_lb1id"]
-[ext_resource type="PackedScene" path="res://assets/L03_HungryHungryHomer/eightyBites/zone2str/assetsEnvirons/export/terrain/lodmodel1_eacd0a.rws.PS3.glb" id="2_io5e7"]
-[ext_resource type="PackedScene" path="res://assets/L03_HungryHungryHomer/eightyBites/zone3str/assetsEnvirons/export/terrain/lodmodel1_2ff71d.rws.PS3.glb" id="3_xw5y5"]
-[ext_resource type="PackedScene" path="res://assets/L03_HungryHungryHomer/eightyBites/zone4str/assetsEnvirons/export/terrain/lodmodel1_833f42.rws.PS3.glb" id="4_so4ke"]
-[ext_resource type="PackedScene" path="res://assets/L03_HungryHungryHomer/eightyBites/zone5str/assetsEnvirons/export/terrain/lodmodel1_36aea4.rws.PS3.glb" id="5_07u7p"]
-[ext_resource type="PackedScene" path="res://assets/L03_HungryHungryHomer/eightyBites/zone6str/assetsEnvirons/export/terrain/lodmodel1_b9da23.rws.PS3.glb" id="6_c653m"]
-[ext_resource type="PackedScene" path="res://assets/L03_HungryHungryHomer/eightyBites/zone7str/assetsEnvirons/export/terrain/lodmodel1_93345b.rws.PS3.glb" id="7_ls4ir"]
+[ext_resource type="PackedScene" path="res://assets/L03_HungryHungryHomer/eightyBites/zone1str/assetsEnvirons/export/terrain/lodmodel1_30a189.rws.PS3.glb" id="1_lb1id"]
+[ext_resource type="PackedScene" path="res://assets/L03_HungryHungryHomer/eightyBites/zone2str/assetsEnvirons/export/terrain/lodmodel1_40dd76.rws.PS3.glb" id="2_io5e7"]
+[ext_resource type="PackedScene" path="res://assets/L03_HungryHungryHomer/eightyBites/zone3str/assetsEnvirons/export/terrain/lodmodel1_4cfb32.rws.PS3.glb" id="3_xw5y5"]
+[ext_resource type="PackedScene" path="res://assets/L03_HungryHungryHomer/eightyBites/zone4str/assetsEnvirons/export/terrain/lodmodel1_113da6.rws.PS3.glb" id="4_so4ke"]
+[ext_resource type="PackedScene" path="res://assets/L03_HungryHungryHomer/eightyBites/zone5str/assetsEnvirons/export/terrain/lodmodel1_c03cac.rws.PS3.glb" id="5_07u7p"]
+[ext_resource type="PackedScene" path="res://assets/L03_HungryHungryHomer/eightyBites/zone6str/assetsEnvirons/export/terrain/lodmodel1_7f678e.rws.PS3.glb" id="6_c653m"]
+[ext_resource type="PackedScene" path="res://assets/L03_HungryHungryHomer/eightyBites/zone7str/assetsEnvirons/export/terrain/lodmodel1_4d1d76.rws.PS3.glb" id="7_ls4ir"]
 
 [node name="eighty_bites3D" type="Node3D"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 1000, -400.111, 0)

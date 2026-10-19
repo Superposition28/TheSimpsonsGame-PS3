@@ -1,14 +1,14 @@
 [gd_scene load_steps=10 format=3]
 
-[ext_resource type="PackedScene" path="res://assets/L04_TreeHugger/treeHugger/zone00str/assets/environsZone00/export/terrain/lodmodel1_7fec86.rws.PS3.glb" id="1_3ebe7"]
-[ext_resource type="PackedScene" path="res://assets/L04_TreeHugger/treeHugger/zone02str/assets/environsZone02/export/terrain/lodmodel1_4280a0.rws.PS3.glb" id="2_g752p"]
-[ext_resource type="PackedScene" path="res://assets/L04_TreeHugger/treeHugger/zone03str/assets/environsZone03/export/terrain/lodmodel1_b0bfb4.rws.PS3.glb" id="3_hribj"]
-[ext_resource type="PackedScene" path="res://assets/L04_TreeHugger/treeHugger/zone04str/assets/environsZone04/export/terrain/lodmodel1_fa496a.rws.PS3.glb" id="4_oewop"]
-[ext_resource type="PackedScene" path="res://assets/L04_TreeHugger/treeHugger/zone05str/assets/environsZone05/export/terrain/lodmodel1_5f4c5f.rws.PS3.glb" id="5_445iw"]
-[ext_resource type="PackedScene" path="res://assets/L04_TreeHugger/treeHugger/zone06str/assetsEnvirons/export/terrain/lodmodel1_c47c86.rws.PS3.glb" id="6_5tp74"]
-[ext_resource type="PackedScene" path="res://assets/L04_TreeHugger/treeHugger/zone07str/assetsEnvirons/export/terrain/lodmodel1_3d96ca.rws.PS3.glb" id="7_tb2k4"]
-[ext_resource type="PackedScene" path="res://assets/L04_TreeHugger/treeHugger/zone09str/assetsEnvirons/export/terrain/lodmodel1_12dcba.rws.PS3.glb" id="8_3ikw4"]
-[ext_resource type="PackedScene" path="res://assets/L04_TreeHugger/treeHuggerStr/assets/props/epsTreehuggerHugBackgroundGeo/exportHugBackground/model1_46445a.rws.PS3.glb" id="9_g74oa"]
+[ext_resource type="PackedScene" path="res://assets/L04_TreeHugger/treeHugger/zone00str/assets/environsZone00/export/terrain/lodmodel1_f65011.rws.PS3.glb" id="1_3ebe7"]
+[ext_resource type="PackedScene" path="res://assets/L04_TreeHugger/treeHugger/zone02str/assets/environsZone02/export/terrain/lodmodel1_04911a.rws.PS3.glb" id="2_g752p"]
+[ext_resource type="PackedScene" path="res://assets/L04_TreeHugger/treeHugger/zone03str/assets/environsZone03/export/terrain/lodmodel1_75d1a3.rws.PS3.glb" id="3_hribj"]
+[ext_resource type="PackedScene" path="res://assets/L04_TreeHugger/treeHugger/zone04str/assets/environsZone04/export/terrain/lodmodel1_30bd59.rws.PS3.glb" id="4_oewop"]
+[ext_resource type="PackedScene" path="res://assets/L04_TreeHugger/treeHugger/zone05str/assets/environsZone05/export/terrain/lodmodel1_6d7c22.rws.PS3.glb" id="5_445iw"]
+[ext_resource type="PackedScene" path="res://assets/L04_TreeHugger/treeHugger/zone06str/assetsEnvirons/export/terrain/lodmodel1_e6bcb5.rws.PS3.glb" id="6_5tp74"]
+[ext_resource type="PackedScene" path="res://assets/L04_TreeHugger/treeHugger/zone07str/assetsEnvirons/export/terrain/lodmodel1_e680eb.rws.PS3.glb" id="7_tb2k4"]
+[ext_resource type="PackedScene" path="res://assets/L04_TreeHugger/treeHugger/zone09str/assetsEnvirons/export/terrain/lodmodel1_495b63.rws.PS3.glb" id="8_3ikw4"]
+[ext_resource type="PackedScene" path="res://assets/L04_TreeHugger/treeHuggerStr/assets/props/epsTreehuggerHugBackgroundGeo/exportHugBackground/model1_172b24.rws.PS3.glb" id="9_g74oa"]
 
 [node name="tree_hugger3D" type="Node3D"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -1000, -500.111, 0)

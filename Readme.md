@@ -329,13 +329,27 @@ This module is fully automated and designed to be executed by [The Remake Engine
 - Extract textures: engine `format-extract` converts `.txd` textures into `.png` outputs.
 - Rename base folders: engine `rename-folders` uses `config/RenameMap.db` and sets `isRenamed`.
 - Reorganize audio (operation `4`): `operations/Audio/SetupAudioDir.lua` first stages loose English banks under `EN` and mapped global banks under `Global`, then sorts by speaker/type/location. It uses same-volume moves, preserves filenames, leaves unmatched files and collisions in place, removes only empty directories, and displays progress for each phase. Success hooks set `audio_state=audio_reorg`. See the [audio consumer contract](reversing/docs/integrations/remake-engine/index.html#audio-map).
-- Normalize folder structure: `operations/DirectoryNormalizer/run.lua` normalizes the extracted tree and sets `Type=FullFlattened`.
+- Normalize folder structure: `operations/DirectoryNormalizer/run.lua` runs after TXD extraction, normalizes the extracted tree and sets `Type=FullFlattened`. It loads `config/RenameMap.db` by default and generates UIDs from renamed base folder names even when inputs use original names. Each TXD export folder shares its partner TXD's UID, while exported textures receive their own UIDs (for example, `txd/global_3c6811/Arcs_fbbd37.png`).
 - Convert models: `operations/Blender/run.lua` converts `.preinstanced` assets into `.blend` files, with optional `glb` and `fbx` export.
 - Extract dialogue/subtitles: `operations/lh2_to_csv.lua` converts `.lh2` files to `.csv`.
 - Convert fonts (operation `9`): `operations/inf_to_fnt.Fonts.lua` converts EA FONT v6 `.inf` descriptors to Godot-compatible `.fnt` files. It runs after normalized assets and PNG atlases are available (dependency `6`), appears after LH2 extraction, and is excluded from Run All.
 - Convert FMV subtitles (operation `10`): `operations/tox_to_srt.Subtitles.lua` resolves `.tox.PS3` timing IDs against original `.LH2` localization tables and writes `.srt`, `.vtt` and multilingual `.csv` files. It follows font conversion in the operations list, depends on normalized assets (operation `6`), and is excluded from Run All.
 - Convert audio/video: engine `format-convert` converts `.snu` to `.wav` and `.vp6` to `.ogv`.
 - Generate Godot project: `Godot/godot-init-V0.5.2.lua` builds the generated Godot project (experimental).
+
+Asset UIDs are persistent: future normalizer changes must preserve the established
+UIDs even when output paths or extraction rules change. See the
+[UID compatibility contract](operations/DirectoryNormalizer/README.md).
+
+After copying assets with `operations/copyassets.ps1`, run
+`python Godot/GodotGame/refreshTSCNpaths.py --dry-run` to preview scene path updates,
+then omit `--dry-run` to apply them. The refresher reads `normalized_map.json`
+(or `map_*.json` if the full map is absent) from the selected Godot project's
+`assets` directory, so it uses that project's platform and region. Use
+`--project <path>` for another project. Missing or malformed maps stop the run;
+missing target assets and ambiguous UIDs are reported and left unchanged. Changed
+external resource declarations have stale Godot UID hints removed so Godot loads
+the corrected path. Historical backup maps are not used by the normal refresher.
 
 ---
 
