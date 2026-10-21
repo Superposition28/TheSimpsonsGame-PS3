@@ -22,6 +22,11 @@ The module is in active development (Beta). Highlights and known problems:
 - **Music (.MUS):** The 17 music `.mus` archives can now be unpacked into paired `.snr` and `.sns` files with `operations/mus.bms`, and the resulting `.snr` files decode correctly in vgmstream as EA-XAS music streams.
 - **Video:** VP6 and other video formats convert successfully with the toolchain.
 
+godot project generation is nolonger in dev, opting for a hopfully better option, hardcoded godot project and scene files
+currently the godot project can lauch and render multiple in game maps with basic level geometry and incorrect textures
+there is a player charactor so technically the game is 'playable' in a sense, the original collision is not yet implemented so godot generated collision will be used, this requires manually applying collision to all meshes, very few have this, that also introduces other issues, so it may be best to investigate the original collision file format(s)
+
+
 Screenshots showing earlier extraction results (high-LOD texture issues and low-LOD examples) appear further below in this document; they illustrate the remaining material-mapping problem, not guaranteed current behavior for every asset.
 
 If you want to reproduce the current extraction pipeline or help debug mapping, see the `operations/` scripts and the format docs in `reversing/docs`.
