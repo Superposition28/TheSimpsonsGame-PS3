@@ -11,7 +11,40 @@
 
 [node name="Node2D" parent="." unique_id=632899416 instance=ExtResource("1_yfemj")]
 
-[node name="Panel" parent="Node2D/HUD_ControlNode" parent_id_path=PackedInt32Array(632899416, 1395966345) index="0"]
+[node name="Cliche_ControlNode" parent="Node2D" index="0" unique_id=1947079729]
+visible = true
+
+[node name="Panel" parent="Node2D/Cliche_ControlNode" index="0" unique_id=505893291]
+visible = false
+
+[node name="HUD_ControlNode" parent="Node2D" index="1" unique_id=1395966345]
+visible = true
+
+[node name="Panel" parent="Node2D/HUD_ControlNode" index="0"]
+visible = false
+
+[node name="SaveMenu" parent="Node2D/Menus" parent_id_path=PackedInt32Array(632899416, 1846780113) index="1" unique_id=184329548]
+offset_top = -1500.0
+offset_bottom = -854.0
+
+[node name="TV" parent="Node2D/Menus/SaveMenu" index="1" unique_id=1545567085]
+visible = true
+
+[node name="1_frontend_assets_ee93fa" parent="Node2D/Menus/SaveMenu" index="2" unique_id=444228297]
+position = Vector2(-1447, 138)
+
+[node name="NewsMenu" parent="Node2D/Menus" parent_id_path=PackedInt32Array(632899416, 1846780113) index="2" unique_id=1940973925]
+visible = true
+offset_top = -2500.0
+offset_bottom = -1854.0
+
+[node name="frontendGlobalStr2" parent="Node2D/All_pngs/A2_Frontend" parent_id_path=PackedInt32Array(632899416, 1902323337) index="0" unique_id=2129455572]
+visible = false
+
+[node name="frontendStr" parent="Node2D/All_pngs/A2_Frontend" parent_id_path=PackedInt32Array(632899416, 1902323337) index="1" unique_id=692562448]
+visible = false
+
+[node name="Logos" parent="Node2D/All_pngs" parent_id_path=PackedInt32Array(632899416, 436312367) index="1" unique_id=683430129]
 visible = false
 
 [node name="Node3D" parent="." unique_id=718631278 instance=ExtResource("2_hfcck")]
@@ -64,17 +97,6 @@ compositor = SubResource("Compositor_v4qd3")
 [editable path="Node3D/Levels/L16_MeetThyPlayer"]
 [editable path="Node3D/Levels/LHub-00_GameHub"]
 [editable path="Node3D/Levels/LHub-00_SprHub"]
-[editable path="Node3D/Levels/LHub-00_SprHub/Zone01_Terrain"]
-[editable path="Node3D/Levels/LHub-00_SprHub/Zone01_opt"]
-[editable path="Node3D/Levels/LHub-00_SprHub/Zone15_Terrain"]
-[editable path="Node3D/Levels/LHub-00_SprHub/Zone15_opt"]
-[editable path="Node3D/Levels/LHub-00_SprHub/Zone16_Terrain"]
-[editable path="Node3D/Levels/LHub-00_SprHub/Zone17_Terrain"]
-[editable path="Node3D/Levels/LHub-00_SprHub/Zone18_Terrain"]
-[editable path="Node3D/Levels/LHub-00_SprHub/Zone19_Terrain"]
-[editable path="Node3D/Levels/LHub-00_SprHub/Zone20_Terrain"]
-[editable path="Node3D/Levels/LHub-00_SprHub/Zone21_Terrain"]
-[editable path="Node3D/Levels/LHub-00_SprHub/Zone21_opt"]
 [editable path="Node3D/Characters"]
 [editable path="Node3D/Characters/All"]
 [editable path="Node3D/Characters/All/Bart"]

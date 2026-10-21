@@ -1,0 +1,7 @@
+[gd_scene format=3 uid="uid://dxjmq7ajrcxhe"]
+
+[ext_resource type="PackedScene" uid="uid://dyy2scpsqwlcx" path="res://assets/L02_BartmanBegins/brt/zone04str/assets/environsZone04/export/terrain/lodmodel1_f6a050.rws.PS3.glb" id="1_jk487"]
+
+[node name="Zone04_Terrain_2de7bd" type="Node3D" unique_id=312174610]
+
+[node name="Zone04_Terrain_2de7bd" parent="." unique_id=1859071161 instance=ExtResource("1_jk487")]

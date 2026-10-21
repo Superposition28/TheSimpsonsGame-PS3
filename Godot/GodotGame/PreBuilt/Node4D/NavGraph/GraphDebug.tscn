@@ -1,8 +1,8 @@
 [gd_scene format=3 uid="uid://b75ymgtmclck0"]
 
 [ext_resource type="Script" uid="uid://7cu6lsib5ff" path="res://Scripts/nav_graph_visualizer.gd" id="1_wxtfj"]
-[ext_resource type="PackedScene" uid="uid://b32puxwimiu18" path="res://Node4D/NavGraph/LOC.tscn" id="2_tteyv"]
-[ext_resource type="PackedScene" uid="uid://bileyslndbcm4" path="res://Node4D/NavGraph/BRT.tscn" id="3_tteyv"]
+[ext_resource type="PackedScene" uid="uid://b32puxwimiu18" path="res://Node4D/Node3D/Levels/L01_LandOfChocolate/NavGraphs.tscn" id="2_tteyv"]
+[ext_resource type="PackedScene" uid="uid://bileyslndbcm4" path="res://Node4D/Node3D/Levels/L02_BartmanBegins/NavGraphs.tscn" id="3_tteyv"]
 
 [node name="Node3D" type="Node3D" unique_id=770378131]
 

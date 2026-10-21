@@ -1,5 +1,6 @@
 [gd_scene format=3 uid="uid://c2si5whqgc83b"]
 
+[ext_resource type="PackedScene" uid="uid://b32puxwimiu18" path="res://Node4D/Node3D/Levels/L01_LandOfChocolate/NavGraphs.tscn" id="1_1ta6b"]
 [ext_resource type="PackedScene" uid="uid://by2s80yalx154" path="res://Node4D/Node3D/Levels/L01_LandOfChocolate/Zone01_Terrain_c8c552.tscn" id="1_5pf6p"]
 [ext_resource type="PackedScene" uid="uid://cjwxkj8ux1w6k" path="res://Node4D/Node3D/Levels/L01_LandOfChocolate/Zone02_opt_427e88.tscn" id="2_1ta6b"]
 [ext_resource type="PackedScene" uid="uid://dmkfwwm147qi3" path="res://Node4D/Node3D/Levels/L01_LandOfChocolate/Zone02_Terrain_41ea3c.tscn" id="3_vbs7i"]
@@ -11,7 +12,9 @@
 
 [node name="L01_LandOfChocolate" type="Node3D" unique_id=288624590]
 
-[node name="lodmodel1_c8c552_rws_PS3" parent="." unique_id=1665009894 instance=ExtResource("1_5pf6p")]
+[node name="NavGraphs" parent="." unique_id=1440381790 instance=ExtResource("1_1ta6b")]
+
+[node name="Zone01_Terrain_6850eb" parent="." unique_id=1665009894 instance=ExtResource("1_5pf6p")]
 
 [node name="Zone02_opt_427e88" parent="." unique_id=1327567664 instance=ExtResource("2_1ta6b")]
 
@@ -27,19 +30,7 @@
 
 [node name="Zone06_Terrain_5be553" parent="." unique_id=36592135 instance=ExtResource("8_5qkpp")]
 
-[editable path="lodmodel1_c8c552_rws_PS3"]
-[editable path="lodmodel1_c8c552_rws_PS3/lodmodel1_c8c552_rws_PS3"]
+[editable path="Zone01_Terrain_6850eb"]
+[editable path="Zone01_Terrain_6850eb/lodmodel1_6850eb_rws_PS3"]
 [editable path="Zone02_opt_427e88"]
 [editable path="Zone02_opt_427e88/opt_model1_427e88_rws_PS4"]
-[editable path="Zone02_Terrain_41ea3c"]
-[editable path="Zone02_Terrain_41ea3c/lodmodel1_41ea3c_rws_PS3"]
-[editable path="Zone03_Terrain_5d2e2e"]
-[editable path="Zone03_Terrain_5d2e2e/lodmodel1_5d2e2e_rws_PS3"]
-[editable path="Zone04_opt_964017"]
-[editable path="Zone04_opt_964017/opt_model1_964017_rws_PS3"]
-[editable path="Zone04_Terrain_805e5a"]
-[editable path="Zone04_Terrain_805e5a/lodmodel1_805e5a_rws_PS3"]
-[editable path="Zone05_Terrain_98db0d"]
-[editable path="Zone05_Terrain_98db0d/lodmodel1_98db0d_rws_PS3"]
-[editable path="Zone06_Terrain_5be553"]
-[editable path="Zone06_Terrain_5be553/lodmodel1_5be553_rws_PS3"]
