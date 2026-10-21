@@ -1,0 +1,411 @@
+# Placeholders: Game_Root, Project_Root are built into the engine
+
+# run-all, this will run all tasks set to true and any dependent tasks automatically, it may run some at the same time if they have no interdependencies
+# this means we must ensure running both at the same time Does Not cause issues like overlapping file system changes eg update to the placeholders and output dir
+
+
+## creates config.toml and ensures placeholders exist
+## operations marked with init = true are not displayed in interactive UI or GUI lists to ensure they are always run every time
+##  - ensure placeholders exist: Platform, SourcePath, Region
+##  - create ./config.toml on first run if missing
+##  - verify {{SourcePath}}/{{Region}}/{{PostSourcePath}} exists and is readable
+## get user input for values like platform, region, and path if needed
+[[operation]]
+id = 0
+init = true
+name = "init"
+run-all = true # rerun when using run-all to ensure config is valid
+depends-on = [] # no dependencies for init operation
+script_type = "lua"
+script = "{{Game_Root}}/operations/init/main.lua"
+
+
+## Downloads the tools listed in Tools.toml
+[[operation]]
+id = -1
+name = "Download Required Tools"
+run-all = true
+depends-on = [0] # depends on init
+script_type = "engine"
+script = "download-tools"
+tools_manifest = "{{Game_Root}}/Tools.toml"
+#[[operation.prompts]]
+#type = "confirm"
+#name = "force download"
+#message = "Force override existing downloads?"
+#default = false
+
+# extractes all files other than audio and video from the str archives, most subsequent operations depend on this step
+[[operation]]
+id = 1
+name = "Extract Archives (.STR)"
+run-all = true
+depends-on = [0, -1] # deps: Init, Tools (qbms)
+script_type = "bms"
+script = "{{Game_Root}}/operations/simpsons_str.bms"
+input = "{{SourcePath}}/{{Region}}/{{PostSourcePath}}"
+output = "{{Game_Root}}/GameFiles/{{Platform}}-{{Region}}-{{Type}}-{{audio_state}}-{{isRenamed}}" # always output to STROUT not {{STROUT}}
+extension = ".str"
+
+
+# Copy the "audiostreams" and "movies" folders into the GameFiles directory
+# the str dep here is to prevent file system conflicts when this op changed the folder name
+[[operation]]
+id = 2
+name = "Copy Source Audio/Video Files"
+run-all = true
+depends-on = [0, 1] # deps: Init
+script_type = "lua"
+script = "{{Game_Root}}/operations/CopySourceAudioVideo.lua"
+args = [
+    "--source", "{{SourcePath}}/{{Region}}/{{PostSourcePath}}",
+    # this path should look somthing like GameFiles\PS3-EU-Full-audio_none-notRenamed
+    "--target", "{{Game_Root}}/GameFiles/{{Platform}}-{{Region}}-{{Type}}-{{audio_state}}-{{isRenamed}}"
+]
+[[operation.onsuccess]] # when successful, update {{audio_state}} placeholder to "audio_og" since we just copied the original audio files without any reorganization
+id = 2.1
+name = "set audio_state placeholder"
+script_type = "engine"
+script = "config"
+args = ["--group", "placeholders", "--key", "audio_state", "--value", "audio_og", "--type", "string"]
+[[operation.onsuccess]]
+id = 2.2
+name = "rename folder STROUT-{{Platform}}-{{Region}}-{{Type}}-{{audio_state}}-{{isRenamed}} to STROUT-{{Platform}}-{{Region}}-{{Type}}-{{audio_state}}-isRenamed"
+script_type = "lua"
+script = "{{Game_Root}}/operations/rename.lua"
+args = [
+    # should be something like GameFiles\PS3-EU-Full-audio_none-notRenamed
+    "--old_path", "{{Game_Root}}/GameFiles/{{Platform}}-{{Region}}-{{Type}}-audio_none-{{isRenamed}}",
+    # should be something like GameFiles\PS3-EU-Full-audio_og-notRenamed
+    "--new_path", "{{Game_Root}}/GameFiles/{{Platform}}-{{Region}}-{{Type}}-{{audio_state}}-{{isRenamed}}"
+]
+
+# changes the names of each folder in the Root dir, according to the RenameMap.db
+[[operation]]
+id = 3
+name = "Rename base folders"
+run-all = true
+depends-on = [0, 1, 2] # deps: Init, STR, Copy Audio/Video
+script_type = "engine"
+script = "rename-folders"
+args = [
+    "{{Game_Root}}/GameFiles/{{Platform}}-{{Region}}-{{Type}}-{{audio_state}}-{{isRenamed}}",
+    "--map-db-file", "{{Game_Root}}/config/RenameMap.db"
+]
+## it might make sense to switch these two operations (.1 and .2) to rename the folder Then update the placeholder, to ensure the placeholder always reflects the current folder name
+# helpfull if rename fails it wont update the placeholder incorrectly...
+[[operation.onsuccess]] # when successful, update {{isRenamed}} placeholder to "isRenamed"
+id = 3.1
+name = "set isRenamed placeholder"
+script_type = "engine"
+script = "config"
+args = ["--group", "placeholders", "--key", "isRenamed", "--value", "isRenamed", "--type", "string"]
+[[operation.onsuccess]]
+id = 3.2
+name = "rename folder STROUT-{{Platform}}-{{Region}}-{{Type}}-{{audio_state}}-{{isRenamed}} to STROUT-{{Platform}}-{{Region}}-{{Type}}-{{audio_state}}-isRenamed"
+script_type = "lua"
+script = "{{Game_Root}}/operations/rename.lua"
+args = [
+    "--old_path", "{{Game_Root}}/GameFiles/{{Platform}}-{{Region}}-{{Type}}-{{audio_state}}-notRenamed", # cant use placeholder since it was already changed
+    "--new_path", "{{Game_Root}}/GameFiles/{{Platform}}-{{Region}}-{{Type}}-{{audio_state}}-{{isRenamed}}" # we use the is renamed placeholder as it should be updated from op 3.1
+]
+
+# rearrange audio files after copying them into the GameFiles directory
+# does not 'depend' on the base folder renaming, however they cant run at the same time
+[[operation]]
+id = 4
+name = "Reorganize Audio Files"
+run-all = true
+depends-on = [0, 1, 2, 3] # deps: Init, STR, Copy Audio/Video, Rename base folders
+script_type = "lua"
+script = "{{Game_Root}}/operations/Audio/SetupAudioDir.lua"
+args = ["{{Game_Root}}/GameFiles/{{Platform}}-{{Region}}-{{Type}}-{{audio_state}}-{{isRenamed}}", "--execute"]
+[[operation.onsuccess]] # when successful, update isRenamed placeholder to "isRenamed"
+id = 4.1
+name = "set audio_state placeholder"
+script_type = "engine"
+script = "config"
+args = ["--group", "placeholders", "--key", "audio_state", "--value", "audio_reorg", "--type", "string"]
+[[operation.onsuccess]]
+id = 4.2
+name = "rename folder STROUT-{{Platform}}-{{Region}}-{{Type}}-{{audio_state}}-{{isRenamed}} to STROUT-{{Platform}}-{{Region}}-{{Type}}-audio_reorg-{{isRenamed}}"
+script_type = "lua"
+script = "{{Game_Root}}/operations/rename.lua"
+args = [
+    "--old_path", "{{Game_Root}}/GameFiles/{{Platform}}-{{Region}}-{{Type}}-audio_og-{{isRenamed}}",
+    "--new_path", "{{Game_Root}}/GameFiles/{{Platform}}-{{Region}}-{{Type}}-{{audio_state}}-{{isRenamed}}",
+    "--skip-if-renamed"
+]
+
+
+## finds all .txd archives extracted from the .STR archives and extracts there textures into subfolders named after the txd file with the pngs in them
+[[operation]]
+id = 5
+name = "Extract Textures (.txd -> .png)"
+run-all = true
+depends-on = [0, 1, 3, 4] # deps: Init, STR, Rename base folders, does not depend on reorganizing audio files but its here to avoid File System conflicts when the folder is renamed
+script_type = "engine"
+script = "format-extract"
+format = "txd"
+args = [
+    "--source", "{{Game_Root}}/GameFiles/{{Platform}}-{{Region}}-{{Type}}-{{audio_state}}-{{isRenamed}}",
+    "--output-ext", ".png"
+]
+
+# this operation cuts out redundant folder nesting and flattens the directory structure
+# to the best possible extent, without losing important file tree context info, skips the main audio folder
+# and uses canonical renamed paths to generate deterministic reproducible Ids for all files that exist at this point
+# it outputs a Map of all files there before and after paths and there ids, making files searchable by id instead of name or path, that may change when normalisation changes
+# many files that are converted after can be resolved by simply using the index to locate the og file path, remove the og extension and append the Correct extension
+# this is to avoid having Two different IDs for what is effectivly the same file before and after there respective conversions
+[[operation]]
+id = 6
+name = "Normalize folder structure"
+run-all = true
+depends-on = [0, 1, 3, 5] # deps: Init, STR, Rename base folders, TXD export (textures need their own UIDs)
+script_type = "lua"
+script = "{{Game_Root}}/operations/DirectoryNormalizer/run.lua"
+args = [
+    "{{Game_Root}}/GameFiles/{{Platform}}-{{Region}}-{{Type}}-{{audio_state}}-{{isRenamed}}",
+    "{{Game_Root}}/GameFiles/{{Platform}}-{{Region}}-{{Type}}Flattened-{{audio_state}}-{{isRenamed}}",
+    "--copyonly", "A1_Audio",
+    #"--copyonly", "A1_Video",
+    "--copyonly", "audiostreams",
+    #"--copyonly", "movies",
+]
+[[operation.onsuccess]]
+id = 6.1
+name = "update normalized placeholders"
+script_type = "engine"
+script = "config"
+args = [
+    "--group", "placeholders",
+    "--set", "Type=FullFlattened:string"
+]
+
+
+
+## convert 3d models into .blend files, and export to glb for godot use
+## auto apply textures within blender as well, however materials will need to be manually adjusted within godot
+[[operation]]
+id = 7
+name = "Convert Models (.preinstanced -> .blend)"
+run-all = true
+depends-on = [0, -1, 1, 3, 5, 6] # deps: Tools (blender), str, TXD, normalized structure,
+script_type = "lua"
+script = "{{Game_Root}}/operations/Blender/run.lua"
+args = [
+    "--operations-dir", "{{Game_Root}}/operations",
+    "--blender-dir", "{{Game_Root}}/operations/Blender",
+    "--GameFiles", "{{Game_Root}}/GameFiles/{{Platform}}-{{Region}}-{{Type}}-{{audio_state}}-{{isRenamed}}",
+    "--blank-blend", "{{Game_Root}}/blank.blend",
+    "--symlink-path", "{{Game_Root}}/TMP_TSG_LNKS-{{Platform}}-{{Region}}-{{Type}}-{{audio_state}}-{{isRenamed}}", # symbolic link root to avoid path length issues
+    "--asset-map-db", "{{Game_Root}}/GameFiles/config/{{Platform}}-{{Region}}-{{Type}}-{{audio_state}}-{{isRenamed}}/AssetMap.sqlite",
+]
+# for debugging
+#[[operation.prompts]]
+#type = "confirm"
+#name = "verbose"
+#message = "Model Conversion: Enable verbose output?"
+#default = false
+#cli_arg = "--verbose"
+# for debugging
+#[[operation.prompts]]
+#type = "confirm"
+#name = "debug mode"
+#message = "Model Conversion: Enable debug mode?"
+#default = false
+#cli_arg = "--debug-sleep"
+## for direct export to glb or fbx instead of just creating .blend files
+[[operation.prompts]]
+type = "confirm"
+name = "enable_export"
+message = "Model Conversion: Export additional formats (FBX/GLTF)?"
+default = true
+## for direct export to glb or fbx instead of just creating .blend files
+[[operation.prompts]]
+type = "checkbox"
+name = "export_formats"
+message = "Select export formats: press Enter to default to glb, type the selection like 'fbx, glb' to select multiple formats"
+default = ["glb"]
+choices = ["fbx", "glb"]
+cli_prefix = "--export"
+condition = "enable_export"
+validation = { required = true, message = "You must select at least one format." }
+
+
+# convert all lh2 dialogue/subtitles to csv
+[[operation]]
+id = 8
+name = "Extract Dialogue/Subtitles (.lh2 -> .csv)"
+run-all = true
+depends-on = [6] # deps: normalised structure (to make the file id's copy over to the CSV file names)
+script_type = "lua"
+script = "{{Game_Root}}/operations/lh2_to_csv.lua"
+args = [
+    "--input-dir", "{{Game_Root}}/GameFiles/{{Platform}}-{{Region}}-{{Type}}-{{audio_state}}-{{isRenamed}}"
+    # auto output to same location as input files
+]
+
+# Convert FONT v6 descriptors to Godot BMFont files beside each source .inf.
+[[operation]]
+id = 9
+name = "Convert Fonts (.inf -> .fnt)"
+run-all = true
+depends-on = [6] # deps: normalised structure (to make the file id's copy over to the font output files)
+script_type = "lua"
+script = "{{Game_Root}}/operations/inf_to_fnt.Fonts.lua"
+args = [
+    "--input-dir", "{{Game_Root}}/GameFiles/{{Platform}}-{{Region}}-{{Type}}-{{audio_state}}-{{isRenamed}}"
+]
+
+# Resolve FMV timing IDs through LH2 localization and export subtitle companions.
+[[operation]]
+id = 10
+name = "Convert FMV Subtitles (.tox.PS3 -> .srt/.vtt/.csv)"
+run-all = true
+depends-on = [6]
+script_type = "lua"
+script = "{{Game_Root}}/operations/tox_to_srt.Subtitles.lua"
+args = [
+    "--input-dir", "{{Game_Root}}/GameFiles/{{Platform}}-{{Region}}-{{Type}}-{{audio_state}}-{{isRenamed}}"
+]
+
+## convert Audio into a usable format for godot
+# specifically the audio files found in levels Not in the A1 Audio folder copied from source
+[[operation]]
+id = 11
+name = "Convert Audio (.sbk -> .wav)"
+run-all = true
+depends-on = [-1, 6] # deps: Tools (vgmstream) being downloaded, and normalised structure, to avoid duplicated entryies in the file index
+script_type = "engine"
+script = "format-convert"
+tool = "vgmstream"
+args = [
+    "-m", "vgmstream",
+    "--type", "audio",
+    ## doesnt need to specify the location of the audiostreams folder as its within the source path and {{STROUT}} and the only location snu files exist
+    "-s", "{{Game_Root}}/GameFiles/{{Platform}}-{{Region}}-{{Type}}-{{audio_state}}-{{isRenamed}}",
+    "-t", "{{Game_Root}}/GameFiles/{{Platform}}-{{Region}}-{{Type}}-{{audio_state}}-{{isRenamed}}",
+    "-i", ".sbk",
+    "-o", ".wav",
+    "--godot-compatible",
+    "--replace"
+]
+
+## convert Audio into a usable format for godot
+[[operation]]
+id = 12
+name = "Convert Audio (.snu -> .wav)"
+run-all = true
+depends-on = [-1, 6] # depends on (vgmstream) and (ffmpeg) being downloaded, could depend on audio reorg but that is technically optional, as reorg would still work after this stage, however thats only if running this without normalisation
+script_type = "engine"
+script = "format-convert"
+tool = "vgmstream"
+args = [
+    "-m", "vgmstream",
+    "--type", "audio",
+    ## doesnt need to specify the location of the audiostreams folder as its within the source path and {{STROUT}} and the only location snu files exist
+    "-s", "{{Game_Root}}/GameFiles/{{Platform}}-{{Region}}-{{Type}}-{{audio_state}}-{{isRenamed}}",
+    "-t", "{{Game_Root}}/GameFiles/{{Platform}}-{{Region}}-{{Type}}-{{audio_state}}-{{isRenamed}}",
+    "-i", ".snu",
+    "-o", ".wav",
+    "--godot-compatible", # uses ffmpeg, and vgmstream to split the 4-channel audio into separate files for Godot compatibility
+    "--replace"
+]
+
+## convert Mus to Music files .wav in the A1 audio folder
+[[operation]]
+id = 13
+name = "Convert Music (.mus -> .snr/.sns -> .wav)"
+run-all = true
+depends-on = [-1, 2, 6] # depends on (vgmstream), (quickbms), and copy audio/video files
+script_type = "lua"
+script = "{{Game_Root}}/operations/Audio/SetupMusicFiles.lua"
+args = [
+    "--bmsscript", "{{Game_Root}}/operations/mus.bms",
+    "--GameDir", "{{Game_Root}}/GameFiles/{{Platform}}-{{Region}}-{{Type}}-{{audio_state}}-{{isRenamed}}",
+]
+
+# converts the movies from the A1 video folder into .ogv format for Godot compatibility
+# i Think the normalisation does apply ids to the video files so we should depend in it here to allow that
+# there arnt many so it may not be entirely necessary to give them id's
+[[operation]]
+id = 14
+name = "Convert Videos (.vp6 -> .ogv)"
+run-all = true
+depends-on = [-1, 6] # depends on ffmpeg being downloaded
+script_type = "engine"
+script = "format-convert"
+tool = "ffmpeg"
+args = [
+    "-m", "ffmpeg",
+    "--type", "video",
+    "-s", "{{Game_Root}}/GameFiles/{{Platform}}-{{Region}}-{{Type}}-{{audio_state}}-{{isRenamed}}",
+    "-t", "{{Game_Root}}/GameFiles/{{Platform}}-{{Region}}-{{Type}}-{{audio_state}}-{{isRenamed}}",
+    "-i", ".vp6",
+    "-o", ".ogv",
+    "--replace"
+]
+
+#[[operation]]
+#id = 69
+#name = "generate Godot Game (EXPERIMENTAL)"
+#run-all = false
+#depends-on = [7,8,10,11,12,13]
+#script_type = "lua"
+#script = "{{Game_Root}}/Godot/godot-init-V0.5.2.lua"
+#args = [
+#    "--project-name", "SimpsonsGamePS3",
+#    "--repo-root", "{{Project_Root}}",
+#    "--sourcePath", "{{Game_Root}}/GameFiles/{{Platform}}-{{Region}}-{{Type}}-{{audio_state}}-{{isRenamed}}",
+#    "--iconPath", "{{SourcePath}}/{{Region}}/{{PostSourcePath}}",
+#    "--no-exit"
+#]
+
+
+###
+# TODO:
+# - convert the operations\copyassets.ps1 to lua and add here as an operation dependent on all other significant operations, it coppies all assets including the json index maps used by below op
+# - convert the Godot\GodotGame\refreshTSCNpaths.py into a lua operation, in operations, it should update the TSCN paths according to the normalised file maps
+#
+###
+
+# generates the game.toml file, This file Tells the remake engine how to Run the Game, specifically it lets it launch the godot project file using godot editor fornow
+# but can be used to launch a full generated output from the built Godot project, if ever completed
+[[operation]]
+id = 15
+name = "generate game.toml"
+run-all = true
+depends-on = [-1, 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14] # basically depends on everything, but the current godot system is incomplete, and even moved to a static build away from generating the entire godot project, the hard way
+script_type = "lua"
+script = "{{Game_Root}}/operations/generate-game-toml.lua"
+
+
+
+[[operation]]
+id = 6677
+name = "RESET GAME MODULE, This will delete all generated files and reset the game module to its original state, or move them to .backup/<dateTime> folder"
+run-all = false
+depends-on = []
+script_type = "lua"
+script = "{{Game_Root}}/operations/resetThisBih.lua"
+[[operation.prompts]]
+type = "confirm"
+name = "confirm_reset"
+message = "I understand this permanently removes generated module data or moves it to a backup folder."
+default = false
+cli_arg = "--confirmed"
+[[operation.prompts]]
+type = "text"
+name = "reset_mode"
+message = "Reset mode (backup or delete)"
+default = "backup"
+cli_arg = "--mode"
+[[operation.prompts]]
+type = "confirm"
+name = "include_source"
+message = "Also remove Source/ containing the copied original game files?"
+default = false
+cli_arg = "--include-source"
+

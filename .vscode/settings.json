@@ -77,5 +77,30 @@
         "**/reversing/**",
         "**/Godot/GodotGame/PreBuilt/addons/godotsteam/**",
         "**/Godot/GodotGame/PreBuilt/addons/steam-csbindings-1.1.0/**"
+    ],
+    // standard python settings
+    "pylint.enabled": true,
+    "pylint.ignorePatterns": [
+        "**/GameFiles/**",
+        "**/Godot/**",
+        "**/*tmp*/**",
+        "**/*TMP*/**",
+        "**/.history/**",
+        "**/.git/**",
+        "**/.idea/**",
+        "**/.backup/**",
+        "**/.VSCodeCounter/**"
+    ],
+    "python.analysis.exclude": [
+        "**/GameFiles/**",
+        "**/Godot/**",
+        "**/*tmp*/**",
+        "**/*TMP*/**",
+        "**/.history/**",
+        "**/.git/**",
+        "**/.idea/**",
+        "**/.backup/**",
+        "**/.VSCodeCounter/**"
     ]
+
 }
