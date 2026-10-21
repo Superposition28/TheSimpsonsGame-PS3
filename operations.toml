@@ -244,7 +244,7 @@ name = "Extract Dialogue/Subtitles (.lh2 -> .csv)"
 run-all = true
 depends-on = [6] # deps: normalised structure (to make the file id's copy over to the CSV file names)
 script_type = "lua"
-script = "{{Game_Root}}/operations/lh2_to_csv.lua"
+script = "{{Game_Root}}/operations/Converters/lh2_to_csv.lua"
 args = [
     "--input-dir", "{{Game_Root}}/GameFiles/{{Platform}}-{{Region}}-{{Type}}-{{audio_state}}-{{isRenamed}}"
     # auto output to same location as input files
@@ -257,7 +257,7 @@ name = "Convert Fonts (.inf -> .fnt)"
 run-all = true
 depends-on = [6] # deps: normalised structure (to make the file id's copy over to the font output files)
 script_type = "lua"
-script = "{{Game_Root}}/operations/inf_to_fnt.Fonts.lua"
+script = "{{Game_Root}}/operations/Converters/inf_to_fnt.Fonts.lua"
 args = [
     "--input-dir", "{{Game_Root}}/GameFiles/{{Platform}}-{{Region}}-{{Type}}-{{audio_state}}-{{isRenamed}}"
 ]
@@ -269,7 +269,7 @@ name = "Convert FMV Subtitles (.tox.PS3 -> .srt/.vtt/.csv)"
 run-all = true
 depends-on = [6]
 script_type = "lua"
-script = "{{Game_Root}}/operations/tox_to_srt.Subtitles.lua"
+script = "{{Game_Root}}/operations/Converters/tox_to_srt.Subtitles.lua"
 args = [
     "--input-dir", "{{Game_Root}}/GameFiles/{{Platform}}-{{Region}}-{{Type}}-{{audio_state}}-{{isRenamed}}"
 ]

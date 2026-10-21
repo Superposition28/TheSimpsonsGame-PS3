@@ -1,5 +1,6 @@
 {
     "godotTools.editorPath.godot4": "b:\\Installed_Apps\\Program_Files_x86\\Steam\\steamapps\\common\\Godot Engine\\godot.windows.opt.tools.64.exe",
+    //"godotTools.editorPath.godot4": "A:\\RemakeEngine\\Main\\EngineApps\\Tools\\Godot-4.6-stable-win-x64\\Godot_v4.6-stable_win64_console",
     "godotTools.editorPath.godot3": "",
     "Lua.diagnostics.libraryFiles": "Enable",
     "Lua.hint.enable": true,
@@ -89,7 +90,22 @@
         "**/.git/**",
         "**/.idea/**",
         "**/.backup/**",
-        "**/.VSCodeCounter/**"
+        "**/.VSCodeCounter/**",
+        ".betterGit",
+        ".git",
+        ".backup",
+        ".github",
+        ".history",
+        ".idea",
+        ".vscode",
+        ".VSCodeCounter",
+        "__pycache__",
+        "GameFiles",
+        "Source",
+        "Godot",
+        "logs",
+        "tmp",
+        "reversing/**Archive/**"
     ],
     "python.analysis.exclude": [
         "**/GameFiles/**",
@@ -100,7 +116,22 @@
         "**/.git/**",
         "**/.idea/**",
         "**/.backup/**",
-        "**/.VSCodeCounter/**"
+        "**/.VSCodeCounter/**",
+        ".betterGit",
+        ".git",
+        ".backup",
+        ".github",
+        ".history",
+        ".idea",
+        ".vscode",
+        ".VSCodeCounter",
+        "__pycache__",
+        "GameFiles",
+        "Source",
+        "Godot",
+        "logs",
+        "tmp",
+        "reversing/**Archive/**"
     ]
 
 }

@@ -5,7 +5,7 @@ param(
 )
 
 $ErrorActionPreference = 'Stop'
-$gameRoot = (Resolve-Path (Join-Path $PSScriptRoot '..')).Path
+$gameRoot = (Resolve-Path (Join-Path $PSScriptRoot '..\..')).Path
 
 # Read the module's placeholders when source paths are not supplied explicitly.
 function Get-PlaceholderValue {
