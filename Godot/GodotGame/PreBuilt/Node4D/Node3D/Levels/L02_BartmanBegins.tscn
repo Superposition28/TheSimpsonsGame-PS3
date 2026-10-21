@@ -1,25 +1,25 @@
 [gd_scene format=3 uid="uid://b2xbp70yqhqx3"]
 
 [ext_resource type="PackedScene" uid="uid://bileyslndbcm4" path="res://Node4D/Node3D/Levels/L02_BartmanBegins/NavGraphs.tscn" id="1_rdywc"]
-[ext_resource type="PackedScene" uid="uid://gdy16ng2rbi1" path="res://Node4D/Node3D/Levels/L02_BartmanBegins/Zone01_Terrain_999873.tscn" id="2_rdywc"]
-[ext_resource type="PackedScene" uid="uid://bqxtlsecdkhqh" path="res://Node4D/Node3D/Levels/L02_BartmanBegins/Zone02_Terrain_459e37.tscn" id="3_vucau"]
-[ext_resource type="PackedScene" uid="uid://bbvephpsfb8ax" path="res://Node4D/Node3D/Levels/L02_BartmanBegins/Zone03_Terrain_3b9e19.tscn" id="4_6r5is"]
-[ext_resource type="PackedScene" uid="uid://dxjmq7ajrcxhe" path="res://Node4D/Node3D/Levels/L02_BartmanBegins/Zone04_Terrain_2de7bd.tscn" id="5_qmuyf"]
+[ext_resource type="PackedScene" uid="uid://gdy16ng2rbi1" path="res://Node4D/Node3D/Levels/L02_BartmanBegins/Zone01_Terrain_f5691a.tscn" id="2_rdywc"]
+[ext_resource type="PackedScene" uid="uid://bqxtlsecdkhqh" path="res://Node4D/Node3D/Levels/L02_BartmanBegins/Zone02_Terrain_14e39e.tscn" id="3_vucau"]
+[ext_resource type="PackedScene" uid="uid://bbvephpsfb8ax" path="res://Node4D/Node3D/Levels/L02_BartmanBegins/Zone03_Terrain_965851.tscn" id="4_6r5is"]
+[ext_resource type="PackedScene" uid="uid://dxjmq7ajrcxhe" path="res://Node4D/Node3D/Levels/L02_BartmanBegins/Zone04_Terrain_f6a050.tscn" id="5_qmuyf"]
 
 [node name="L02_BartmanBegins" type="Node3D" unique_id=803259023]
 
 [node name="NavGraphs" parent="." unique_id=787532859 instance=ExtResource("1_rdywc")]
 
-[node name="Zone01_Terrain_999873" parent="." unique_id=994315717 instance=ExtResource("2_rdywc")]
+[node name="Zone01_Terrain_f5691a" parent="." unique_id=994315717 instance=ExtResource("2_rdywc")]
 
-[node name="Zone02_Terrain_459e37" parent="." unique_id=923282575 instance=ExtResource("3_vucau")]
+[node name="Zone02_Terrain_14e39e" parent="." unique_id=923282575 instance=ExtResource("3_vucau")]
 
-[node name="Zone03_Terrain_3b9e19" parent="." unique_id=512098297 instance=ExtResource("4_6r5is")]
+[node name="Zone03_Terrain_965851" parent="." unique_id=512098297 instance=ExtResource("4_6r5is")]
 
-[node name="Zone04_Terrain_2de7bd" parent="." unique_id=312174610 instance=ExtResource("5_qmuyf")]
+[node name="Zone04_Terrain_f6a050" parent="." unique_id=312174610 instance=ExtResource("5_qmuyf")]
 
 [editable path="NavGraphs"]
-[editable path="Zone01_Terrain_999873"]
-[editable path="Zone02_Terrain_459e37"]
-[editable path="Zone03_Terrain_3b9e19"]
-[editable path="Zone04_Terrain_2de7bd"]
+[editable path="Zone01_Terrain_f5691a"]
+[editable path="Zone02_Terrain_14e39e"]
+[editable path="Zone03_Terrain_965851"]
+[editable path="Zone04_Terrain_f6a050"]

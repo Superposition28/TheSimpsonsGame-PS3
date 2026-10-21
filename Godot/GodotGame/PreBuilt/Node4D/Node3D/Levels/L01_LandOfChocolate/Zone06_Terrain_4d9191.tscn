@@ -2,8 +2,8 @@
 
 [ext_resource type="PackedScene" uid="uid://cf7acpdaajgww" path="res://assets/L01_LandOfChocolate/loc/zone06str/assetsEnvirons/export/terrain/lodmodel1_4d9191.rws.PS3.glb" id="1_605iy"]
 
-[node name="Zone06_Terrain_5be553" type="Node3D" unique_id=36592135]
+[node name="Zone06_Terrain_4d9191" type="Node3D" unique_id=36592135]
 
-[node name="lodmodel1_5be553_rws_PS3" parent="." unique_id=361924444 instance=ExtResource("1_605iy")]
+[node name="lodmodel1_4d9191_rws_PS3" parent="." unique_id=361924444 instance=ExtResource("1_605iy")]
 
-[editable path="lodmodel1_5be553_rws_PS3"]
+[editable path="lodmodel1_4d9191_rws_PS3"]

@@ -2,6 +2,6 @@
 
 [ext_resource type="PackedScene" uid="uid://cgctct1ee4he0" path="res://assets/L02_BartmanBegins/brt/zone01str/assets/environsZone01/export/terrain/lodmodel1_14e39e.rws.PS3.glb" id="1_ljion"]
 
-[node name="Zone02_Terrain_459e37" type="Node3D" unique_id=923282575]
+[node name="Zone02_Terrain_14e39e" type="Node3D" unique_id=923282575]
 
-[node name="Zone02_Terrain_459e37" parent="." unique_id=1205881441 instance=ExtResource("1_ljion")]
+[node name="Zone02_Terrain_14e39e" parent="." unique_id=1205881441 instance=ExtResource("1_ljion")]
