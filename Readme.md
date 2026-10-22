@@ -21,10 +21,11 @@ The module is in active development (Beta). Highlights and known problems:
 - **Audio:** Operation 4 stages English banks under `EN`, sorts streams using AudioMap V2, leaves unresolved files for review, removes empty source folders and displays live progress. See the [audio consumer contract](reversing/docs/integrations/remake-engine/index.html#audio-map).
 - **Music (.MUS):** The 17 music `.mus` archives can now be unpacked into paired `.snr` and `.sns` files with `operations/mus.bms`, and the resulting `.snr` files decode correctly in vgmstream as EA-XAS music streams.
 - **Video:** VP6 and other video formats convert successfully with the toolchain.
+- **Collision (`Godot/GodotGame/collisionTest`):** Successfully created a collision Test Godot project that directly reads PS3 Havok 4.1 packfiles (`.hkt.PS3`, `.hko.PS3`) and character/weapon auxiliary collision files (`.acs.PS3` paired with `.bbn.PS3` and `.preinstanced`), builds editor-visible previews and native Godot 3D static collision shapes (`ConcavePolygonShape3D`, `BoxShape3D`, `SphereShape3D`, `ConvexPolygonShape3D`), pairs them with exported `.glb` visual models, and bakes standalone `.tscn` scenes.
 
 godot project generation is nolonger in dev, opting for a hopfully better option, hardcoded godot project and scene files
 currently the godot project can lauch and render multiple in game maps with basic level geometry and incorrect textures
-there is a player charactor so technically the game is 'playable' in a sense, the original collision is not yet implemented so godot generated collision will be used, this requires manually applying collision to all meshes, very few have this, that also introduces other issues, so it may be best to investigate the original collision file format(s)
+there is a player charactor so technically the game is 'playable' in a sense, the original collision is not yet implemented in the main game project so godot generated collision was previously used (which requires manually applying collision to all meshes); however, we have now successfully created a collision Test Godot project (`Godot/GodotGame/collisionTest`) that parses and integrates the original PS3 collision formats directly into Godot.
 
 
 Screenshots showing earlier extraction results (high-LOD texture issues and low-LOD examples) appear further below in this document; they illustrate the remaining material-mapping problem, not guaranteed current behavior for every asset.
@@ -277,7 +278,7 @@ For a full pipeline run, select `Run All`. If you are debugging a specific step,
       - `import-V*.gd` - Main scene builder script.
     - `Json/**/*.json` - Asset locations and node/script mapping.
     - `project.godot` - Persistent Godot project settings template.
-  - `GodotGame/` - Generated Godot project outputs, such as `Godot/GodotGame/SimpsonsGamePS3/`.
+  - `GodotGame/` - Generated and standalone Godot projects, including `Godot/GodotGame/SimpsonsGamePS3/`, `Godot/GodotGame/fonttest/`, and the collision Test Godot project at `Godot/GodotGame/collisionTest/`.
   - `godot-init-V*.lua` - Godot project bootstrap script.
 
 - `operations/` - Core operation scripts (Lua, BMS, Blender, etc.).
@@ -387,6 +388,22 @@ dotnet run -c Debug --project EngineNet --framework net10.0 -- --game_module The
 `operations/tox_to_srt.Subtitles.lua` reads EA `1BOT` timing tables and resolves their string IDs through the first non-empty, sorted `simpsons_global.{en,es,fr,it,ss}.LH2` tables. It decodes Windows-1252 text and writes English, Spanish, French and Italian subtitles beside each timing file. The CSV retains all timing records; SRT/VTT omit blank translations. Empty timing files produce a CSV header only. Matching `.ogv` and `.vp6` files under `A1_Video/<language>/` also receive subtitle companions, with the first sorted matching timing file winning when multiple archives refer to the same movie.
 
 Override operation arguments with `--args` to use `--input-dir`/`-i`, gather output with `--output-dir`/`-o`, disable video companions with `--no-video-pairing`, or add speaker codes with `--include-speaker`. Selecting an output directory also suppresses video companions. Without an input argument, the script uses `GameFiles/PS3-EU-FullFlattened-audio_reorg-isRenamed` under the module root; the manifest supplies the configured asset directory. SRT/VTT use LF separators and CSV uses CRLF rows, matching the Python converter, including its missing Bart scream fallback. Invalid timing headers, sizes, record counts or localization tables fail the operation.
+
+### Collision Test Godot Project (`Godot/GodotGame/collisionTest`)
+
+A standalone Godot 4 project under `Godot/GodotGame/collisionTest` demonstrates direct GDScript parsing, editor previewing, physics integration, and `.tscn` scene baking for the original PS3 collision files:
+
+- **Havok 4.1 Packfile Reader (`scripts/tsg_havok_reader.gd`):** Reads big-endian `Hkx`-wrapped `Havok-4.1.0-r1` `.hkt.PS3` and `.hko.PS3` files, resolving `__classnames__` and `__data__` local/global/virtual fixups to decode `EAStorageMeshShape`, `hkBoxShape`, `hkSphereShape`, `hkConvexVerticesShape`, `hkMoppBvTreeShape` child references, and `hkRigidBody` world transforms.
+- **Character & Prop ACS/BBN Reader (`scripts/tsg_character_reader.gd`):** Reads `.acs.PS3` record tables (kinds `1`, `2`, and `3`), resolves SDBM hash bindings via `.bbn.PS3` rig/alias tables, and inspects RenderWare `.preinstanced` `FrameList` + `HAnim` hierarchies.
+- **Editor & Runtime Node (`scripts/collision_asset_3d.gd` & `CollisionLab.tscn`):** `@tool` `CollisionAsset3D` node that generates `StaticBody3D` + `CollisionShape3D` nodes (`ConcavePolygonShape3D`, `BoxShape3D`, `SphereShape3D`, `ConvexPolygonShape3D`), wireframe/solid preview meshes, paired `.glb` visual models, interactive physics probe drops, and baked `.tscn` scenes under `res://generated/`.
+
+To stage sample assets from `GameFiles/PS3-EU-FullFlattened-audio_reorg-isRenamed` and run the headless integration test suite:
+
+```pwsh
+python -B Godot/GodotGame/collisionTest/tools/prepare_samples.py
+python -B Godot/GodotGame/collisionTest/tools/run_godot.py -- --headless --editor --import --quit
+python -B Godot/GodotGame/collisionTest/tools/run_godot.py -- --headless --script res://tests/run_tests.gd
+```
 
 ## Reverse Engineering & Format Documentation
 
