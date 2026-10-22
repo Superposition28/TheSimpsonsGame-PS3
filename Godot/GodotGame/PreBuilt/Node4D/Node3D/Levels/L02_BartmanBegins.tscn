@@ -17,9 +17,3 @@
 [node name="Zone03_Terrain_965851" parent="." unique_id=512098297 instance=ExtResource("4_6r5is")]
 
 [node name="Zone04_Terrain_f6a050" parent="." unique_id=312174610 instance=ExtResource("5_qmuyf")]
-
-[editable path="NavGraphs"]
-[editable path="Zone01_Terrain_f5691a"]
-[editable path="Zone02_Terrain_14e39e"]
-[editable path="Zone03_Terrain_965851"]
-[editable path="Zone04_Terrain_f6a050"]

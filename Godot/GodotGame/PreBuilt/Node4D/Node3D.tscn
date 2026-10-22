@@ -1,6 +1,6 @@
 [gd_scene format=3 uid="uid://dc6r56ih2mi1s"]
 
-[ext_resource type="PackedScene" path="res://Node4D/Node3D/Environment.tscn" id="1_otajk"]
+[ext_resource type="PackedScene" uid="uid://dvkrpfw3sfh2b" path="res://Node4D/Node3D/Environment.tscn" id="1_otajk"]
 [ext_resource type="PackedScene" uid="uid://c7bhnp5kfy7if" path="res://Node4D/Node3D/Levels.tscn" id="2_3q5bf"]
 [ext_resource type="PackedScene" uid="uid://b647ru5vdwr4v" path="res://Node4D/Node3D/Characters.tscn" id="44_wdcb1"]
 
@@ -13,6 +13,8 @@
 [node name="Characters" parent="." unique_id=1658918774 instance=ExtResource("44_wdcb1")]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 62.476242, 0)
 
+[editable path="Environment"]
+[editable path="Levels"]
 [editable path="Characters"]
 [editable path="Characters/All"]
 [editable path="Characters/All/Bart"]

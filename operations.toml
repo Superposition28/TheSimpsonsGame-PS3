@@ -411,4 +411,9 @@ name = "include_source"
 message = "Also remove Source/ containing the copied original game files?"
 default = false
 cli_arg = "--include-source"
-
+[[operation.prompts]]
+type = "confirm"
+name = "include_godot"
+message = "Also reset Godot (remove Godot/GodotGame/PreBuilt/assets/ and .godot/)?"
+default = false
+cli_arg = "--include-godot"
