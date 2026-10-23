@@ -169,6 +169,9 @@ end
 5. Update class definitions when adding/removing fields to data structures
 6. Use consistent naming conventions: prefer full field names over abbreviations
 
+
+- Avoid scanning .history/ or .backup/ directories when searching for files or performing operations unless specifically required
+
 ### Examples from this module
 - See [BlenderCore.lua](operations/Blender/BlenderCore.lua) for proper class and function type usage
 - All operation scripts should follow this pattern as reference
