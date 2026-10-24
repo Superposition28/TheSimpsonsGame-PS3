@@ -1,6 +1,6 @@
 {
-    "godotTools.editorPath.godot4": "b:\\Installed_Apps\\Program_Files_x86\\Steam\\steamapps\\common\\Godot Engine\\godot.windows.opt.tools.64.exe",
-    //"godotTools.editorPath.godot4": "A:\\RemakeEngine\\Main\\EngineApps\\Tools\\Godot-4.6-stable-win-x64\\Godot_v4.6-stable_win64_console",
+    //"godotTools.editorPath.godot4": "b:\\Installed_Apps\\Program_Files_x86\\Steam\\steamapps\\common\\Godot Engine\\godot.windows.opt.tools.64.exe",
+    "godotTools.editorPath.godot4": "A:\\RemakeEngine\\Main\\EngineApps\\Tools\\Godot-4.6-stable-win-x64\\Godot_v4.6-stable_win64_console",
     "godotTools.editorPath.godot3": "",
     "Lua.diagnostics.libraryFiles": "Enable",
     "Lua.hint.enable": true,
@@ -12,6 +12,7 @@
     "Lua.type.inferParamType": true,
     "Lua.type.checkTableShape": true,
     "Lua.workspace.ignoreDir": [
+        "EngineFiles/**",
         ".betterGit",
         ".git",
         ".backup",

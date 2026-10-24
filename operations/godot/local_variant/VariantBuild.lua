@@ -115,19 +115,15 @@ end
 function VariantFindGodot(Explicit, Work)
     local Executable = Explicit
     if not Executable then
-        local Ok, Preferred = pcall(tool, "Godot", "4.6-stable")
-        if Ok and type(Preferred) == "string" and sdk.is_file(Preferred) then Executable = Preferred
-        else Executable = tool("Godot") end
+        local tool_fn = rawget(_G, "tool") or tool
+        Executable = tool_fn and tool_fn("Godot") or nil
     end
-    assert(type(Executable) == "string" and sdk.is_file(Executable), "Godot not found; supply --godot with a registered Godot 4.6+ executable")
+    assert(type(Executable) == "string" and sdk.is_file(Executable), "Godot executable not found via tool('Godot'); ensure Godot is installed and configured in the engine.")
     Executable = VariantAbsolute(Executable)
     for _, Marker in ipairs({ "_sc_", "._sc_" }) do
         assert(not sdk.path_exists(join(dirname(Executable), Marker)),
             "Select a registered Godot without a portable " .. Marker .. " marker; its profile cannot be isolated through the Lua SDK")
     end
-    local Result = sdk.run_process({ Executable, "--version" }, { env=BuildEnvironment(Work), timeout_ms=30000 })
-    local Major, Minor = (Result.stdout or ""):match("(%d+)%.(%d+)")
-    assert(Result.success and Major and (tonumber(Major) > 4 or tonumber(Major) == 4 and tonumber(Minor) >= 6), "Godot 4.6+ is required")
     return Executable
 end
 

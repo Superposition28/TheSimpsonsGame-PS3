@@ -366,18 +366,6 @@ args = [
 #    "--no-exit"
 #]
 
-
-# generates the game.toml file, This file Tells the remake engine how to Run the Game, specifically it lets it launch the godot project file using godot editor fornow
-# but can be used to launch a full generated output from the built Godot project, if ever completed
-[[operation]]
-id = 15
-name = "generate game.toml"
-run-all = true
-depends-on = [-1, 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 16] # includes asset copying and scene refresh before generating the launch manifest
-script_type = "lua"
-script = "{{Game_Root}}/operations/generate-game-toml.lua"
-
-
 # Copy the completed exports and matching maps once, then add missing source logos.
 [[operation]]
 id = 17
@@ -431,6 +419,23 @@ name = "dry_run"
 message = "Preview variant adaptation without building a project?"
 default = false
 cli_arg = "--dry-run"
+
+
+
+
+# generates the game.toml file, This file Tells the remake engine how to Run the Game, specifically it lets it launch the godot project file using godot editor fornow
+# but can be used to launch a full generated output from the built Godot project, if ever completed
+[[operation]]
+id = 15
+name = "generate game.toml"
+run-all = true
+depends-on = [-1, 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 16] # includes asset copying and scene refresh before generating the launch manifest
+script_type = "lua"
+script = "{{Game_Root}}/operations/generate-game-toml.lua"
+
+
+
+
 
 [[operation]]
 id = 6677

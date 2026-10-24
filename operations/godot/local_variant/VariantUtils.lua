@@ -172,8 +172,13 @@ end
 --- Accept the collision lab's current location as well as older module layouts.
 ---@return string
 function VariantHavokReaderPath()
-    for _, Relative in ipairs({ "collisionTest", "tmp/collisionTest" }) do
-        local Path = join(Game_Root, "Godot", "GodotGame", Relative, "scripts", "tsg_havok_reader.gd")
+    local Candidates = {
+        join(Game_Root, "operations", "godot", "variant_runtime", "tsg_havok_reader.gd"),
+        join(Game_Root, "dev", "tmp", "collisionTest", "scripts", "tsg_havok_reader.gd"),
+        join(Game_Root, "Godot", "GodotGame", "collisionTest", "scripts", "tsg_havok_reader.gd"),
+        join(Game_Root, "Godot", "GodotGame", "tmp", "collisionTest", "scripts", "tsg_havok_reader.gd"),
+    }
+    for _, Path in ipairs(Candidates) do
         if sdk.is_file(Path) then return Path end
     end
     assert(false, "The collision lab's tsg_havok_reader.gd was not found")
