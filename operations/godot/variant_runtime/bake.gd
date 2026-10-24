@@ -12,6 +12,8 @@ func _initialize() -> void:
 		quit(1)
 		return
 	var results: Array[Dictionary] = []
+	var total: int = input.get("jobs", []).size()
+	print("VARIANT_PROGRESS 0 %d Bake original collision" % total)
 	for job: Dictionary in input.get("jobs", []):
 		var report: Dictionary = Reader.read_file(str(job["source"]))
 		var result: Dictionary = {"uid": job["uid"], "source_hash": job["source_hash"],
@@ -19,6 +21,7 @@ func _initialize() -> void:
 		if not bool(report.get("ok", false)):
 			result["error"] = report.get("error", "Unsupported or malformed collision")
 			results.append(result)
+			print("VARIANT_PROGRESS %d %d %s (unsupported)" % [results.size(), total, job["uid"]])
 			continue
 		var node: Node3D = Builder.build(report)
 		node.set_meta("collision_uid", str(job["uid"]))
@@ -44,6 +47,7 @@ func _initialize() -> void:
 			result["ok"] = true
 		node.free()
 		results.append(result)
+		print("VARIANT_PROGRESS %d %d %s" % [results.size(), total, job["uid"]])
 		print("Collision ", job["uid"], ": ", count, " bodies; ", result["ok"])
 	var output: FileAccess = FileAccess.open("res://variant_bake_results.json", FileAccess.WRITE)
 	if output == null:

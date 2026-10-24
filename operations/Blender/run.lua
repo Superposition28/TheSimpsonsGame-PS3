@@ -97,7 +97,7 @@ local function parse_arguments(args)
         local token = tostring(args[i])
         -- Normalize token by trimming whitespace and trailing punctuation
         local arg_token = trim_trailing_punct_ws(trim_ascii(token))
-        
+
         if arg_token == "--verbose" then
             result.verbose = true
         elseif arg_token == "--debug-sleep" then

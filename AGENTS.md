@@ -20,6 +20,19 @@ cd A:\RemakeEngine\Main; dotnet run -c Debug --project .\EngineNet\ -- --game_mo
 ```
 this will execute the operation with ID 12 in this modules [operations.toml](operations.toml) for the list of operations and their IDs.
 
+## Engine Source & API Definitions (`EngineFiles/`)
+
+The [EngineFiles](EngineFiles/) directory provides local read access to the parent Remake Engine source tree and API definitions within this workspace:
+
+- **[EngineFiles/EngineApps/api_definitions](EngineFiles/EngineApps/api_definitions/)** — Lua/engine API definitions and stubs.
+- **[EngineFiles/EngineNet](EngineFiles/EngineNet/)** — Remake Engine `.NET` source tree.
+- **[EngineFiles/EngineBuild](EngineFiles/EngineBuild/)** — Manually added directory symlink to the engine build output folder.
+- **[EngineFiles/tmp.ps1](EngineFiles/tmp.ps1)** — PowerShell script used to populate the file symlinks from the parent repository (`git ls-files`), excluding `EngineBuild` which was linked manually.
+
+**Important caveats:**
+- Most directories inside `EngineFiles/` are **real directories** recreated to mirror the parent folder structure, where only the **individual files inside them are symbolic links** (the only directory that is itself a symlink is `EngineFiles/EngineBuild`).
+- Because `EngineFiles/EngineNet` is a real folder containing file symlinks rather than a directory symlink (and lacks build/output context in place), **do not run `dotnet` commands from `EngineFiles/`**. Always run `dotnet` commands from the real engine root (`A:\RemakeEngine\Main`) as shown above. Use `EngineFiles/` strictly for reading/inspecting engine source code and API definitions.
+
 ## Lua Type System Requirements
 
 ### Class Definitions for Large Objects

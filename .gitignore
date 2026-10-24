@@ -5,6 +5,8 @@
 
 .VSCodeCounter/
 
+EngineFiles/
+
 # godot project artifacts, in Game.*/**
 #*.uid
 #.godot/
@@ -63,3 +65,7 @@ reversing/Format-Analysis/ps3/hkt/collisionmodel.hkt.PS3
 **old**
 **.hko.PS3
 operation_execution.log
+
+# Disposable local Godot projects, imported assets, and collision payloads.
+/Godot/GodotGame/LocalVariant/
+/Godot/GodotGame/.local_variant_work/

@@ -28,6 +28,47 @@ previous valid project.
 
 ## Headless commands
 
+The Lua operation is **18 — Build Isolated Local Godot Variant**. From the engine
+root, run:
+
+```powershell
+dotnet run -c Debug --project .\EngineNet\ -- --game_module TheSimpsonsGame-PS3 --run_op 18
+```
+
+For direct Lua calls, use `--script_type lua --script` with
+`{{Game_Root}}/operations/godot/BuildLocalVariant.lua` and pass the same options
+listed below through the engine's `--args` JSON array. The operation is excluded
+from run-all and depends on asset copying, rather than in-place scene refresh.
+`--clean` only removes marked, fixed local output/staging directories; it does
+not remove canonical scenes or the selected input datasets.
+
+The Lua builder imports `RefreshGodotTSCNPaths.lua` as global functions with
+`GodotRefreshImportOnly=true`, restoring the previous flag after loading.
+Its own `GodotVariantImportOnly=true` flag permits global library imports without
+starting a build. Shared classes live in `local_variant/VariantTypes.lua`; the
+other files separate scene adaptation, dataset handling, and build orchestration.
+
+Lua processes must use a registered Godot 4.6+ executable (`--godot` can select
+one). The builder prefers registered Godot 4.6, checks the executable's version,
+and redirects APPDATA, LOCALAPPDATA, and XDG profile directories into the work
+directory. Portable `_sc_`/`._sc_` installations are rejected because their
+settings would be written beside the executable. This uses the SDK's registered
+tool policy without launching an unregistered copied binary. Native Godot helper
+scripts batch the SHA-256 job hashes and publish with directory renames and
+rollback; the SDK's move helper can fall back to copy/delete and is unsuitable
+for publication.
+
+The copy, path-refresh, and local-variant Lua operations all show overall script
+stages and a separate current-activity bar. Counts cover discovered entries,
+copied files, map rows, scene adaptation, collision attachment, and owned-output
+cleanup. Scans discover their totals as they traverse the tree. Activity updates
+are throttled, with periodic text output for terminal users. Godot runs are polled
+so output appears immediately and their active job stays visible; hashing,
+baking, and validation also send item counts to the activity bar. Both progress
+handles close on success or failure. Importing the Lua libraries starts no bars.
+
+The editor plugin currently invokes the Python entry point. Its commands remain:
+
 Run from the game module root:
 
 ```powershell
@@ -111,7 +152,8 @@ it has stopped, then remove `.local_variant_work/build.lock` before retrying.
 ## Verification
 
 ```powershell
-python -B -m unittest discover -s operations/godot -p test_local_variant.py -v
+# From the engine root; omit --args for the Lua-only synthetic checks.
+dotnet run -c Debug --project .\EngineNet\ -- --game_module TheSimpsonsGame-PS3 --script_type lua --script "{{Game_Root}}/operations/godot/tests/LocalVariantTests.lua" --args '["--integration"]'
 ```
 
 These tests use authored synthetic fixtures. A normal build additionally imports

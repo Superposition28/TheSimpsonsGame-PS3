@@ -33,7 +33,9 @@ func _scenes(directory: String) -> Array[String]:
 
 func _run() -> void:
 	await _primitive_tests()
-	for path: String in _scenes("res://"):
+	var scenes: Array[String] = _scenes("res://")
+	print("VARIANT_PROGRESS 0 %d Validate scenes" % scenes.size())
+	for path: String in scenes:
 		var scene: PackedScene = load(path) as PackedScene
 		_check(scene != null, "Cannot reload scene: " + path)
 		if scene == null:
@@ -43,14 +45,20 @@ func _run() -> void:
 		if instance != null:
 			instance.free()
 		scene_count += 1
+		print("VARIANT_PROGRESS %d %d %s" % [scene_count, scenes.size(), path])
 	var jobs: Dictionary = JSON.parse_string(FileAccess.get_file_as_string("res://variant_jobs.json"))
 	var baked: Dictionary = JSON.parse_string(FileAccess.get_file_as_string("res://variant_bake_results.json"))
 	var successful: Dictionary = {}
 	for job: Dictionary in baked.get("jobs", []):
 		if bool(job.get("ok", false)):
 			successful[str(job["uid"])] = job
-	for job: Dictionary in jobs.get("jobs", []):
+	var collision_jobs: Array = jobs.get("jobs", [])
+	var processed: int = 0
+	print("VARIANT_PROGRESS 0 %d Validate collision physics" % collision_jobs.size())
+	for job: Dictionary in collision_jobs:
+		processed += 1
 		if not successful.has(str(job["uid"])):
+			print("VARIANT_PROGRESS %d %d %s (skipped)" % [processed, collision_jobs.size(), job["uid"]])
 			continue
 		var scene: PackedScene = load(str(job["output"])) as PackedScene
 		_check(scene != null, "Cannot reload baked collision " + str(job["uid"]))
@@ -69,6 +77,7 @@ func _run() -> void:
 		root.remove_child(instance)
 		instance.free()
 		await physics_frame
+		print("VARIANT_PROGRESS %d %d %s" % [processed, collision_jobs.size(), job["uid"]])
 	var output: FileAccess = FileAccess.open("res://variant_validation.json", FileAccess.WRITE)
 	output.store_string(JSON.stringify({"failures": failures, "scenes": scene_count, "physics_bodies": body_count}, "\t"))
 	output.close()
