@@ -12,7 +12,8 @@ local Cli = {}
 ---@param flag string
 ---@return string
 local function NormalizeFlag(flag)
-    return flag:lower():gsub("_", "-")
+    local NormalizedFlag, NormalizedFlagCount = flag:lower():gsub("_", "-")
+    return NormalizedFlag
 end
 
 --- Parses operation arguments injected by MoonSharp through argc and argv.

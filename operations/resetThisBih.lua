@@ -101,7 +101,7 @@ local function resolve_symlink_target(root, options)
     end
 
     ---@type ResetPlaceholders
-    local placeholders = read_placeholders(config_path)
+    local placeholders = Read_placeholders(config_path)
     local platform = placeholders.Platform
     local region = placeholders.Region
     local game_type = placeholders.Type

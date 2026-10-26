@@ -42,26 +42,22 @@
 ---@field USRDIR_DIRS_ORIGINAL table<integer, string>
 ---@field USRDIR_DIRS_DEMO table<integer, string>
 ---@field USRDIR_OPTIONAL_FILES table<integer, string>
----@field ends_with_usrdir fun(p: string|nil): boolean
----@field normalize_region fun(value: string|nil): ("US"|"EU"|"DEMO"|"BOTH")|nil
----@field normalize_game_type fun(value: string|nil): ("Full"|"Demo")|nil
+---@field Normalize_region fun(value: string|nil): ("US"|"EU"|"DEMO"|"BOTH")|nil
 ---@field check_dirs_exist fun(base_path: string, required_dirs: table<integer, string>): boolean, table<integer, string>
----@field check_dirs_exist_verbose fun(base_path: string, required_dirs: table<integer, string>, list_name?: string): boolean
----@field read_placeholders fun(cfg_path: string): table
+---@field Check_dirs_exist_verbose fun(base_path: string, required_dirs: table<integer, string>, list_name?: string): boolean
+---@field Read_placeholders fun(cfg_path: string): table
 ---@field write_placeholders fun(cfg_path: string, new_placeholders: table): nil
 ---@field count_files fun(path: string): integer
 ---@field parse_sfo fun(sfo_path: string): SfoData|nil, string|nil
----@field is_ps3_game_folder fun(path: string): boolean
 ---@field is_unextracted_xbox_iso fun(path: string): boolean
 ---@field build_support_info fun(platform: "PS3"|"XBOX360", region: "EU"|"US"|"DEMO"|nil, game_type: "Full"|"Demo", title_id: string|nil): ("full"|"partial"|"unsupported", string)
----@field inspect_source_path fun(path: string): SourceValidationResult
----@field validate_source_path fun(path: string): boolean, string, string, SourceValidationResult
----@field print_version_report fun(result: SourceValidationResult): nil
+---@field Inspect_source_path fun(path: string): SourceValidationResult
+---@field Print_version_report fun(result: SourceValidationResult): nil
 
 --- Checks whether a path ends with a directory named USRDIR.
 ---@param p string|nil
 ---@return boolean
-function ends_with_usrdir(p)
+local function ends_with_usrdir(p)
     if not p then
         return false
     end
@@ -72,7 +68,7 @@ end
 --- Normalizes a region string into "US", "EU", "DEMO", or "BOTH".
 ---@param value string|nil
 ---@return ("US"|"EU"|"DEMO"|"BOTH")|nil
-function normalize_region(value)
+function Normalize_region(value)
     if type(value) ~= "string" then
         return nil
     end
@@ -83,23 +79,6 @@ function normalize_region(value)
     region = region:upper()
     if region == "US" or region == "EU" or region == "DEMO" or region == "BOTH" then
         return region
-    end
-    return nil
-end
-
---- Normalizes a game type string into "Full" or "Demo".
----@param value string|nil
----@return ("Full"|"Demo")|nil
-function normalize_game_type(value)
-    if type(value) ~= "string" then
-        return nil
-    end
-    local cleaned = trim(value):lower()
-    if cleaned == "full" then
-        return "Full"
-    end
-    if cleaned == "demo" then
-        return "Demo"
     end
     return nil
 end
@@ -171,7 +150,7 @@ end
 ---@param required_dirs table<integer, string>
 ---@param list_name? string
 ---@return boolean
-function check_dirs_exist_verbose(base_path, required_dirs, list_name)
+function Check_dirs_exist_verbose(base_path, required_dirs, list_name)
     local ok, missing = check_dirs_exist(base_path, required_dirs)
     if ok and #missing == 0 then
         colour_print({
@@ -188,7 +167,7 @@ end
 --- Reads placeholders table from config.toml.
 ---@param cfg_path string
 ---@return table
-function read_placeholders(cfg_path)
+function Read_placeholders(cfg_path)
     local doc = sdk.toml_read_file(cfg_path)
     if not doc then
         return {}
@@ -466,7 +445,7 @@ function parse_sfo(sfo_path)
         attribute = type(entries["ATTRIBUTE"]) == "number" and entries["ATTRIBUTE"] --[[@as integer]] or nil,
         bootable = type(entries["BOOTABLE"]) == "number" and entries["BOOTABLE"] --[[@as integer]] or nil,
         category = type(entries["CATEGORY"]) == "string" and trim(entries["CATEGORY"]) or nil,
-        license = type(entries["LICENSE"]) == "string" and entries["LICENSE"] or nil,
+        license = type(entries["LICENSE"]) == "string" and (entries["LICENSE"] --[[@as string]]) or nil,
         parental_level = type(entries["PARENTAL_LEVEL"]) == "number" and entries["PARENTAL_LEVEL"] --[[@as integer]] or nil,
         ps3_system_ver = type(entries["PS3_SYSTEM_VER"]) == "string" and trim(entries["PS3_SYSTEM_VER"]) or nil,
         resolution = type(entries["RESOLUTION"]) == "number" and entries["RESOLUTION"] --[[@as integer]] or nil,
@@ -595,20 +574,10 @@ local function ClassifySfoVersion(sfo, sfo_path)
     return info, nil
 end
 
---- Checks if a folder contains USRDIR (PS3 game container folder).
----@param path string
----@return boolean
-function is_ps3_game_folder(path)
-    if not sdk.is_dir(path) then
-        return false
-    end
-    return sdk.is_dir(join(path, "USRDIR"))
-end
-
 --- Detects whether the path points to an unextracted Xbox 360 ISO mounted in Windows (AUDIO_TS / VIDEO_TS).
 ---@param path string
 ---@return boolean
-function is_unextracted_xbox_iso(path)
+local function is_unextracted_xbox_iso(path)
     if not path or path == "" or not sdk.is_dir(path) then
         return false
     end
@@ -692,7 +661,7 @@ end
 --- parsing PARAM.SFO when available, and validating required folders and executables.
 ---@param path string
 ---@return SourceValidationResult
-function inspect_source_path(path)
+function Inspect_source_path(path)
     ---@type SourceValidationResult
     local result = {
         valid = false,
@@ -950,18 +919,10 @@ function inspect_source_path(path)
     return result
 end
 
---- Validates and resolves a source path.
----@param path string
----@return boolean ok, string usrdir_path, string folder_to_copy, SourceValidationResult details
-function validate_source_path(path)
-    local details = inspect_source_path(path)
-    return details.valid, details.resolved, details.copy_root, details
-end
-
 --- Prints a formatted summary of the detected game version, SFO metadata, support status, and optional warnings.
 ---@param result SourceValidationResult
 ---@return nil
-function print_version_report(result)
+function Print_version_report(result)
     if not result or not result.version_info then
         return
     end
@@ -971,6 +932,11 @@ function print_version_report(result)
     colour_print({ colour = Colours.WHITE, message = "  Resolved Data Path : " .. result.resolved })
     if result.copy_root ~= result.resolved then
         colour_print({ colour = Colours.WHITE, message = "  Container Root     : " .. result.copy_root })
+    end
+
+    if info == nil then
+        error("Version info is missing from the result.")
+        return
     end
 
     local region_label = info.region or "Unknown (will prompt)"

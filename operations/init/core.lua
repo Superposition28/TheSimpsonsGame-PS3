@@ -64,7 +64,7 @@ local function ValidateInputPath(path)
 
     local cleaned = trim(path)
     local absolute_path = normalize(is_absolute(cleaned) and cleaned or join(sdk.currentdir(), cleaned))
-    local validation = inspect_source_path(absolute_path)
+    local validation = Inspect_source_path(absolute_path)
     if not validation.valid then
         return nil, validation
     end
@@ -88,7 +88,7 @@ local function ResolveSourcePath(configured_path, supplied_path, message, title)
     if supplied_path ~= nil then
         local supplied, validation = ValidateInputPath(supplied_path)
         if supplied and validation then
-            print_version_report(validation)
+            Print_version_report(validation)
             return supplied
         end
 
@@ -103,7 +103,7 @@ local function ResolveSourcePath(configured_path, supplied_path, message, title)
     if type(configured_path) == "string" and trim(configured_path) ~= "" then
         local configured, configured_validation = ValidateInputPath(configured_path)
         if configured and configured_validation then
-            print_version_report(configured_validation)
+            Print_version_report(configured_validation)
             return configured
         end
         if configured_validation and configured_validation.error_message then
@@ -122,7 +122,7 @@ local function ResolveSourcePath(configured_path, supplied_path, message, title)
 
         local prompted, validation = ValidateInputPath(input)
         if prompted and validation then
-            print_version_report(validation)
+            Print_version_report(validation)
             return prompted
         end
 
@@ -177,13 +177,13 @@ local function ValidateFinalSource(path, expected_type)
     end
 
     if expected_type == "Demo" then
-        local found_demo = check_dirs_exist_verbose(path_to_validate, USRDIR_DIRS_DEMO, "USRDIR_DIRS_DEMO")
+        local found_demo = Check_dirs_exist_verbose(path_to_validate, USRDIR_DIRS_DEMO, "USRDIR_DIRS_DEMO")
         return found_demo and path_to_validate or nil
     end
 
-    local found_original = check_dirs_exist_verbose(path_to_validate, USRDIR_DIRS_ORIGINAL, "USRDIR_DIRS_ORIGINAL")
-    local found_usrdir = not found_original and check_dirs_exist_verbose(path_to_validate, USRDIR_DIRS, "USRDIR_DIRS")
-    local found_demo = not found_original and not found_usrdir and check_dirs_exist_verbose(path_to_validate, USRDIR_DIRS_DEMO, "USRDIR_DIRS_DEMO")
+    local found_original = Check_dirs_exist_verbose(path_to_validate, USRDIR_DIRS_ORIGINAL, "USRDIR_DIRS_ORIGINAL")
+    local found_usrdir = not found_original and Check_dirs_exist_verbose(path_to_validate, USRDIR_DIRS, "USRDIR_DIRS")
+    local found_demo = not found_original and not found_usrdir and Check_dirs_exist_verbose(path_to_validate, USRDIR_DIRS_DEMO, "USRDIR_DIRS_DEMO")
     return (found_original or found_usrdir or found_demo) and path_to_validate or nil
 end
 
@@ -274,7 +274,7 @@ function Core.main(cli_arguments)
     end
 
     ---@type InitPlaceholders
-    local placeholders = read_placeholders(config_path)
+    local placeholders = Read_placeholders(config_path)
     local defaults = { Platform = "", Region = "", isRenamed = "notRenamed", num = "1", audio_state = "audio_none", Type = "Full" }
     for key, value in pairs(defaults) do
         if placeholders[key] == nil then
@@ -288,7 +288,7 @@ function Core.main(cli_arguments)
         return false
     end
 
-    local cli_region = normalize_region(cli_arguments.region)
+    local cli_region = Normalize_region(cli_arguments.region)
     if cli_arguments.region ~= nil and cli_region == nil then
         colour_print({ colour = Colours.RED, message = "Invalid command-line region: '" .. tostring(cli_arguments.region) .. "'." })
         return false
@@ -355,13 +355,13 @@ function Core.main(cli_arguments)
         end
         region = detected_info.region
     else
-        region = cli_region or normalize_region(placeholders.Region)
+        region = cli_region or Normalize_region(placeholders.Region)
         while not region do
             local input = prompt("Enter the game region (US, EU, DEMO, or Both):", "Game Region")
             if not input or trim(input) == "" then
                 return false
             end
-            region = normalize_region(input)
+            region = Normalize_region(input)
             if not region then
                 colour_print({ colour = Colours.RED, message = "Invalid region. Please enter US, EU, DEMO, or Both." })
             end
