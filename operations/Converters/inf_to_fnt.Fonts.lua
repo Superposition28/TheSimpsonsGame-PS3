@@ -11,7 +11,7 @@ raw character IDs and optional Unicode aliases match the Python implementation.
 ]]
 
 ---@class InfGlyph
----@field CharCode integer
+---@field CharCode integer|table<integer, integer>
 ---@field Width integer
 ---@field Height integer
 ---@field XAdvance integer
@@ -24,8 +24,8 @@ raw character IDs and optional Unicode aliases match the Python implementation.
 ---@field Index integer Original order, for stable sorting of duplicate IDs.
 
 ---@class InfKerning
----@field FirstChar integer
----@field SecondChar integer
+---@field FirstChar integer|table<integer, integer>
+---@field SecondChar integer|table<integer, integer>
 ---@field Amount integer
 
 ---@class InfFont
@@ -46,7 +46,7 @@ raw character IDs and optional Unicode aliases match the Python implementation.
 ---@field Help boolean
 
 ---@class InfCharEntry
----@field Id integer
+---@field Id integer|table<integer, integer>
 ---@field Glyph InfGlyph
 ---@field Index integer Original order, for stable sorting of duplicate IDs.
 
@@ -446,6 +446,8 @@ end
 local function ConvertAllFonts(Options)
     assert(sdk.path_exists(Options.InputDir), "Input directory does not exist: " .. Options.InputDir)
     local InfFiles, PngFiles = {}, {}
+    ---@cast InfFiles table<string>
+
     FindFiles(Options.InputDir, InfFiles, PngFiles)
     table.sort(InfFiles, PathLess)
     table.sort(PngFiles, PathLess)
@@ -454,7 +456,10 @@ local function ConvertAllFonts(Options)
         return 0
     end
     print(string.format("Found %d .inf font file(s) and %d .png texture(s) under %s\n", #InfFiles, #PngFiles, Options.InputDir))
+
     for _, InfPath in ipairs(InfFiles) do
+        ---@cast InfPath string
+
         local Font = ParseInfFile(InfPath)
         local PngPath = MatchPngForInf(InfPath, PngFiles, Options.InputDir)
         local ScaleW, ScaleH = ReadPngDimensions(PngPath)
