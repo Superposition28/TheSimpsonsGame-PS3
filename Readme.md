@@ -17,15 +17,15 @@ Godot provides the runtime (rendering, physics and scripting). This module conce
 ## Current Status & Known Issues
 The module is in active development (Beta). Highlights and known problems:
 
-- **Textures & Models:** Texture extraction completes reliably, and most models extract correctly. Texture-to-submesh mapping has improved, but it remains imperfect and cannot yet reproduce the exact correct output for complex, high-LOD meshes, Low-LOD meshes are almost all accurate.
-- **Audio:** Operation 4 stages English banks under `EN`, sorts streams using AudioMap V2, leaves unresolved files for review, removes empty source folders and displays live progress. See the [audio consumer contract](reversing/docs/integrations/remake-engine/index.html#audio-map).
-- **Music (.MUS):** The 17 music `.mus` archives can now be unpacked into paired `.snr` and `.sns` files with `operations/mus.bms`, and the resulting `.snr` files decode correctly in vgmstream as EA-XAS music streams.
-- **Video:** VP6 and other video formats convert successfully with the toolchain.
-- **Collision (`Godot/GodotGame/collisionTest`):** Successfully created a collision Test Godot project that directly reads PS3 Havok 4.1 packfiles (`.hkt.PS3`, `.hko.PS3`) and character/weapon auxiliary collision files (`.acs.PS3` paired with `.bbn.PS3` and `.preinstanced`), builds editor-visible previews and native Godot 3D static collision shapes (`ConcavePolygonShape3D`, `BoxShape3D`, `SphereShape3D`, `ConvexPolygonShape3D`), pairs them with exported `.glb` visual models, and bakes standalone `.tscn` scenes.
-
-godot project generation is nolonger in dev, opting for a hopfully better option, hardcoded godot project and scene files
-currently the godot project can lauch and render multiple in game maps with basic level geometry and incorrect textures
-there is a player charactor so technically the game is 'playable' in a sense, the original collision is not yet implemented in the main game project so godot generated collision was previously used (which requires manually applying collision to all meshes); however, we have now successfully created a collision Test Godot project (`Godot/GodotGame/collisionTest`) that parses and integrates the original PS3 collision formats directly into Godot.
+- **Textures & Models (`Operations 5 & 7`):** Texture extraction (`.txd` -> `.png`) completes reliably, and `.preinstanced` models import into `.blend` and export to `.glb`/`.fbx`. Texture-to-submesh mapping has improved, but it remains imperfect and cannot yet reproduce the exact correct output for complex, high-LOD meshes; low-LOD meshes are almost all accurate.
+- **Audio & Music (`Operations 4, 11, 12 & 13`):** Operation `4` (`operations/Audio/SetupAudioDir.lua`) stages English banks under `EN` and global banks under `Global`, sorts streams using `AudioMap.yaml` V2, leaves unresolved files in place, removes empty source folders, and displays live progress. See the [audio consumer contract](reversing/docs/integrations/remake-engine/index.html#audio-map). `.sbk` sound banks (`Operation 11`) and `.snu` streams (`Operation 12`) convert to Godot-compatible `.wav` files, and the 17 `.mus` archives (`Operation 13`, `operations/Audio/SetupMusicFiles.lua` + `operations/mus.bms`) unpack into paired `.snr`/`.sns` streams and decode to `.wav`.
+- **Dialogue, Fonts & FMV Subtitles (`Operations 8, 9 & 10`):** `.lh2` localization tables export to `.csv` (`Operation 8`), EA FONT v6 `.inf` descriptors convert to Godot-compatible AngelCode `.fnt` bitmap fonts (`Operation 9`), and `.tox.PS3` timing tables resolve against `.lh2` tables to generate localized `.srt`, `.vtt`, and multilingual `.csv` subtitles (`Operation 10`). Standalone `.alb`/`.smb`/`.lh2` audio-subtitle joins are also mapped via `reversing/audio_subtitles.py`.
+- **Video (`Operation 14`):** `.vp6` video files transcode to `.ogv` via FFmpeg for Godot compatibility.
+- **Godot Project, Scene Refresh & Native Collision (`Operations 17, 16, 18 & 15`):** Procedural project generation (`godot-init-V0.5.2.lua`) has been superseded by an authored baseline Godot 4 project in `Godot/GodotGame/PreBuilt/`.
+  - **Operation `17`** (`operations/godot/CopyGameFilesAssetsToGodot.lua`) populates `PreBuilt/assets/` with converted exports, normalization maps, and source logos.
+  - **Operation `16`** (`operations/godot/RefreshGodotTSCNPaths.lua`) refreshes `res://assets/` paths across `.tscn` scenes by matching persistent 6-character asset UIDs from `normalized_map.json`.
+  - **Operation `18`** (`operations/godot/BuildLocalVariant.lua`) builds an isolated, disposable Godot project (`Godot/GodotGame/LocalVariant/`) from `PreBuilt`, using `operations/godot/variant_runtime/tsg_havok_reader.gd` and `tsg_character_reader.gd` to directly read PS3 Havok 4.1 packfiles (`.hkt.PS3`, `.hko.PS3`) and character/prop collision files (`.acs.PS3`, `.bbn.PS3`) into native Godot 3D static collision shapes (`ConcavePolygonShape3D`, `BoxShape3D`, `SphereShape3D`, `ConvexPolygonShape3D`).
+- **Reversing & Connection Graph (`reversing/`):** `reversing/file_connections.py` (`reversing/connection_explorer/`) builds an SQLite index and serves a local web UI displaying cross-file relationships across source and extracted trees (`.STR`, `.ALB`, `.SMB`, `.LH2`, `.SNU`, `.TXD`, `.dat.simgroup`, `.dat.uie`, etc.).
 
 
 Screenshots showing earlier extraction results (high-LOD texture issues and low-LOD examples) appear further below in this document; they illustrate the remaining material-mapping problem, not guaranteed current behavior for every asset.
@@ -235,71 +235,80 @@ After initialization, the operations menu looks like this:
   Download Required Tools
   Extract Archives (.STR)
   Copy Source Audio/Video Files
-  Extract Textures (.txd -> .png)
   Rename base folders
   Reorganize Audio Files
+  Extract Textures (.txd -> .png)
   Normalize folder structure
   Convert Models (.preinstanced -> .blend)
   Extract Dialogue/Subtitles (.lh2 -> .csv)
   Convert Fonts (.inf -> .fnt)
   Convert FMV Subtitles (.tox.PS3 -> .srt/.vtt/.csv)
+  Convert Audio (.sbk -> .wav)
   Convert Audio (.snu -> .wav)
+  Convert Music (.mus -> .snr/.sns -> .wav)
   Convert Videos (.vp6 -> .ogv)
-  generate Godot Game (EXPERIMENTAL)
+  Copy GameFiles Assets to Godot
+  Refresh Godot Scene Asset Paths (.tscn)
+  Build Isolated Local Godot Variant
+  generate game.toml
+  RESET GAME MODULE, This will delete all generated files and reset the game module to its original state, or move them to .backup/<dateTime> folder
   ---------------
   Change Game
   Exit
 ```
 
-For a full pipeline run, select `Run All`. If you are debugging a specific step, you can execute the operations individually from this menu, most will require all previous steps to have been completed first.
+For a full pipeline run, select `Run All`. If you are debugging a specific step, you can execute the operations individually from this menu; most will require their prerequisite steps to have been completed first.
 
 ### 5. What the pipeline produces
 
-- Extracted and normalized game data under `GameFiles/`
-- Converted textures, audio, video, and model outputs
-- Blender `.blend` files for `.preinstanced` assets
+- Extracted and normalized game data under `GameFiles/` with persistent 6-character asset UIDs (`normalized_map.json`)
+- Converted textures (`.png`), audio/music (`.wav`), and video (`.ogv`) outputs
+- Blender `.blend` files and exported `.glb`/`.fbx` models for `.preinstanced` assets
 - CSV exports for `.lh2` dialogue/subtitle files
 - Localized SRT/WebVTT subtitles and multilingual timing CSV files for `.tox.PS3` FMV tables
 - Godot-compatible AngelCode `.fnt` descriptors for `.inf` bitmap fonts, referencing the extracted PNG atlases
-- An experimental generated Godot project via `generate Godot Game (EXPERIMENTAL)`
+- Populated and path-refreshed Godot scenes in `Godot/GodotGame/PreBuilt/`, plus an optional isolated variant project (`Godot/GodotGame/LocalVariant/`) with imported Havok/ACS collision via Operation `18`
 
 
 ## File Breakdown
 
 - `config/`
-  - `config/RenameMap.db` - Maps original folder names to human-readable names used by the module.
+  - `config/RenameMap.db` - SQLite database mapping original folder names (`PS3`, `XBOX360`, `DEMO`) to canonical human-readable names.
 
 - `GameFiles/` - Generated extraction, normalization, and conversion outputs created by the pipeline.
 
 - `Godot/`
-  - `Core/` - Reusable Godot project template kept in source control.
-    - `addons/` - Third-party and custom Godot addons.
-    - `Scripts/` - Scene builder and shared Godot scripts.
-      - `import-V*.gd` - Main scene builder script.
-    - `Json/**/*.json` - Asset locations and node/script mapping.
-    - `project.godot` - Persistent Godot project settings template.
-  - `GodotGame/` - Generated and standalone Godot projects, including `Godot/GodotGame/SimpsonsGamePS3/`, `Godot/GodotGame/fonttest/`, and the collision Test Godot project at `Godot/GodotGame/collisionTest/`.
-  - `godot-init-V*.lua` - Godot project bootstrap script.
+  - `GodotGame/PreBuilt/` - Canonical authored Godot 4 project containing level, hub, character, and UI `.tscn` scenes, GDScript controllers, and the `tsg_graph_importer` addon.
+  - `GodotGame/LocalVariant/` - Disposable local Godot project generated by Operation `18` (`BuildLocalVariant.lua`) with adapted scenes and baked PS3 collision.
 
-- `operations/` - Core operation scripts (Lua, BMS, Blender, etc.).
-  - `Blender/` - Blender conversion scripts and handlers.
-  - `DirectoryNormalizer/` - Folder normalization logic and helpers.
-  - `init/` - Initialization helpers used during config/bootstrap.
-- `reversing/` - Reverse engineering utilities and the docs submodule.
-  - `docs/` - Reverse engineering documentation repo submodule and generated docs site files.
-  - `data/`, `fileviewer/`, `TSGFileViewer/` - Supporting reverse-engineering utilities and data.
+- `operations/` - Core operation scripts (Lua, BMS, Python/Blender, GDScript):
+  - `Audio/` - `SetupAudioDir.lua` (`AudioMap.yaml` V2 organizer) and `SetupMusicFiles.lua` (`.mus` extractor/converter).
+  - `Blender/` - Headless Blender conversion driver (`run.lua`, `BlenderCore.lua`), SQLite symlink batching, and `.preinstanced` importer addon.
+  - `Converters/` - `lh2_to_csv.lua` (Operation `8`), `inf_to_fnt.Fonts.lua` (Operation `9`), and `tox_to_srt.Subtitles.lua` (Operation `10`).
+  - `DirectoryNormalizer/` - Folder flattening and persistent 6-character UID generation (`run.lua`, `logic.lua`, `tests.lua`).
+  - `godot/` - Godot asset copy (`CopyGameFilesAssetsToGodot.lua`), scene path refresher (`RefreshGodotTSCNPaths.lua`), isolated variant builder (`BuildLocalVariant.lua`, `local_variant/`), and GDScript Havok/ACS collision readers (`variant_runtime/`).
+  - `init/` - Initialization, CLI argument parsing, and `PARAM.SFO` validation (`main.lua`, `core.lua`, `cli.lua`, `util.lua`).
+  - `simpsons_str.bms` & `mus.bms` - QuickBMS extraction scripts for `.str` and `.mus` archives.
+  - `generate-game-toml.lua` & `resetThisBih.lua` - Launch manifest generator (Operation `15`) and module reset/backup utility (Operation `6677`).
+
+- `reversing/` - Reverse-engineering utilities and submodules:
+  - `docs/` - Reverse-engineering documentation repository submodule ([TheSimpsonsGame-PS3-Docs](https://github.com/Superposition28/TheSimpsonsGame-PS3-Docs)) and `PS3_GAME/USRDIR/A1_Audio/AudioMap.yaml`.
+  - `connection_explorer/` & `file_connections.py` - Stdlib Python SQLite indexer and local web UI for exploring links across source and extracted game files.
+  - `audio_subtitles.py`, `str_audit.py`, `test_str_extraction.py`, `validate_txd_exports.py`, `sfo.toml.py`, `preinstanced_viewer.py` - Standalone verification and analysis scripts.
+  - `fileviewer/`, `TSGFileViewer/`, `TheSimpsonsGameFileExtractor-main/` - Supporting reference viewers and extractors.
 
 - `Source/` - Local copy of user-provided game files (if copied/moved).
 - `.gitignore` - Ignore rules for assets and outputs.
 - `blank.blend` - Blank Blender file for model conversion.
-- `config.toml` - Module-local configuration (stores `SourcePath`).
+- `config.toml` - Module-local configuration (stores `SourcePath` and active placeholders).
 - `operations.toml` - Defines the sequence of asset-processing operations.
 - `Readme.md` - This file.
+- `TODO.md` - Tracked module cleanup and architectural tasks.
 - `Tools.toml` - Configuration for external tools managed by RemakeEngine.
 
 ### Path Placeholders
 
-RemakeEngine operations use built-in placeholders for paths and configuration. These are provided by the engine, initialized by `operations/init.lua`, and updated by follow-up config steps defined in `operations.toml`.
+RemakeEngine operations use built-in placeholders for paths and configuration. These are provided by the engine, initialized by `operations/init/main.lua`, and updated by follow-up config steps defined in `operations.toml`.
 
 **Built-in placeholders for `operations.toml`:**
 
@@ -308,109 +317,116 @@ RemakeEngine operations use built-in placeholders for paths and configuration. T
 
 **Key custom placeholders defined in `config.toml`:**
 
-* `{{SourcePath}}` — Path to your original game dump root (set by `operations/init.lua` and stored in `config.toml`).
-* `{{PostSourcePath}}` — Subpath appended under `{{SourcePath}}` when the pipeline targets the game data root (currently `PS3_GAME/USRDIR`).
-* `{{Platform}}` — Game platform, e.g. `PS3` or `XBOX 360`.
-* `{{Region}}` — Game region, e.g. `US` or `EU`.
-* `{{Type}}` — Extraction/structure type for validation. Set to `FullFlattened` after normalization.
-* `{{audio_state}}` — Audio layout state; set to `audio_reorg` after running the audio setup step.
-* `{{isRenamed}}` — Flag indicating base folder rename status; set to `isRenamed` after the rename step.
-* `{{STROUT}}` — Output root for extracted STR content; updated to `STROUT_Normalized` after normalization.
+* `{{SourcePath}}` — Path to your local or external game source root (set by `operations/init/main.lua` and stored in `config.toml`).
+* `{{MainSourcePath}}` — Validated `USRDIR` path used during initialization and logo discovery.
+* `{{PostSourcePath}}` — Subpath appended under `{{SourcePath}}/{{Region}}` when targeting the game data root (e.g. `1/PS3_GAME/USRDIR`).
+* `{{Platform}}` — Game platform, e.g. `PS3` or `XBOX360`.
+* `{{Region}}` — Game region, e.g. `EU`, `US`, or `DEMO`.
+* `{{Type}}` — Extraction/structure type (`Full` initially; updated to `FullFlattened` after normalization).
+* `{{audio_state}}` — Audio layout state (`audio_none` -> `audio_og` -> `audio_reorg`).
+* `{{isRenamed}}` — Base folder rename state (`notRenamed` -> `isRenamed`).
 
 **Usage:**
 - Placeholders are referenced in TOML and scripts as `{{PlaceholderName}}`.
 - They are resolved by the engine before running each operation.
-- Example: `args = ["{{SourcePath}}", "--map-db-file", "{{Game_Root}}/config/RenameMap.db"]`
-- The current pipeline uses these placeholders to build the active `GameFiles/`, tool, and generated Godot project paths.
+- Example: `args = ["{{Game_Root}}/GameFiles/{{Platform}}-{{Region}}-{{Type}}-{{audio_state}}-{{isRenamed}}", "--map-db-file", "{{Game_Root}}/config/RenameMap.db"]`
+- The current pipeline uses these placeholders to build the active `GameFiles/`, symlink, and Godot asset paths.
 
 **Note:** The placeholder format is always double curly braces, e.g. `{{SourcePath}}`.
 
 This module is fully automated and designed to be executed by [The Remake Engine](https://github.com/yggdrasil-au/RemakeEngine). All direct dependencies (Godot, Blender, QuickBMS, FFmpeg, vgmstream, etc.) are defined by `Tools.toml` and handled by RemakeEngine. **This module is in beta.**
 
 ### Operations Overview
-- Init and config: `operations/init.lua` creates or updates `config.toml` and ensures the required placeholders exist.
-- Download required tools: engine `download-tools` reads `Tools.toml`.
-- Extract archives: `operations/simpsons_str.bms` extracts `.str` archives into `GameFiles/`.
-- Copy source audio/video: `operations/CopySourceAudioVideo.lua` copies source media into the working `GameFiles/` tree.
-- Extract textures: engine `format-extract` converts `.txd` textures into `.png` outputs.
-- Rename base folders: engine `rename-folders` uses `config/RenameMap.db` and sets `isRenamed`.
-- Reorganize audio (operation `4`): `operations/Audio/SetupAudioDir.lua` first stages loose English banks under `EN` and mapped global banks under `Global`, then sorts by speaker/type/location. It uses same-volume moves, preserves filenames, leaves unmatched files and collisions in place, removes only empty directories, and displays progress for each phase. Success hooks set `audio_state=audio_reorg`. See the [audio consumer contract](reversing/docs/integrations/remake-engine/index.html#audio-map).
-- Normalize folder structure: `operations/DirectoryNormalizer/run.lua` runs after TXD extraction, normalizes the extracted tree and sets `Type=FullFlattened`. It loads `config/RenameMap.db` by default and generates UIDs from renamed base folder names even when inputs use original names. Each TXD export folder shares its partner TXD's UID, while exported textures receive their own UIDs (for example, `txd/global_3c6811/Arcs_fbbd37.png`).
-- Convert models: `operations/Blender/run.lua` converts `.preinstanced` assets into `.blend` files, with optional `glb` and `fbx` export.
-- Extract dialogue/subtitles: `operations/lh2_to_csv.lua` converts `.lh2` files to `.csv`.
-- Convert fonts (operation `9`): `operations/inf_to_fnt.Fonts.lua` converts EA FONT v6 `.inf` descriptors to Godot-compatible `.fnt` files. It runs after normalized assets and PNG atlases are available (dependency `6`), appears after LH2 extraction, and is excluded from Run All.
-- Convert FMV subtitles (operation `10`): `operations/tox_to_srt.Subtitles.lua` resolves `.tox.PS3` timing IDs against original `.LH2` localization tables and writes `.srt`, `.vtt` and multilingual `.csv` files. It follows font conversion in the operations list, depends on normalized assets (operation `6`), and is excluded from Run All.
-- Convert audio/video: engine `format-convert` converts `.snu` to `.wav` and `.vp6` to `.ogv`.
-- Generate Godot project: `Godot/godot-init-V0.5.2.lua` builds the generated Godot project (experimental).
-
-Asset UIDs are persistent: future normalizer changes must preserve the established
-UIDs even when output paths or extraction rules change. See the
-[UID compatibility contract](operations/DirectoryNormalizer/README.md).
-
-After copying assets with `operations/copyassets.ps1`, run
-`python Godot/GodotGame/refreshTSCNpaths.py --dry-run` to preview scene path updates,
-then omit `--dry-run` to apply them. The refresher reads `normalized_map.json`
-(or `map_*.json` if the full map is absent) from the selected Godot project's
-`assets` directory, so it uses that project's platform and region. Use
-`--project <path>` for another project. Missing or malformed maps stop the run;
-missing target assets and ambiguous UIDs are reported and left unchanged. Changed
-external resource declarations have stale Godot UID hints removed so Godot loads
-the corrected path. Historical backup maps are not used by the normal refresher.
+- **Init (`0`):** `operations/init/main.lua` creates or updates `config.toml`, validates `PARAM.SFO`, and ensures required placeholders exist.
+- **Download required tools (`-1`):** Engine `download-tools` reads `Tools.toml`.
+- **Extract archives (`1`):** `operations/simpsons_str.bms` extracts `.str` archives into `GameFiles/`, tagging identified `.dat.simgroup` and `.dat.uie` payloads.
+- **Copy source audio/video (`2`):** `operations/CopySourceAudioVideo.lua` copies `audiostreams` and `movies` into the working `GameFiles/` tree and sets `audio_state=audio_og`.
+- **Rename base folders (`3`):** Engine `rename-folders` uses `config/RenameMap.db` and sets `isRenamed=isRenamed`.
+- **Reorganize audio (`4`):** `operations/Audio/SetupAudioDir.lua` stages loose English banks under `EN` and mapped global banks under `Global`, then sorts by speaker/type/location using `AudioMap.yaml` V2 and sets `audio_state=audio_reorg`. See the [audio consumer contract](reversing/docs/integrations/remake-engine/index.html#audio-map).
+- **Extract textures (`5`):** Engine `format-extract` converts `.txd` texture dictionaries into `.png` outputs.
+- **Normalize folder structure (`6`):** `operations/DirectoryNormalizer/run.lua` flattens redundant folder nesting, assigns deterministic 6-character UIDs from canonical renamed paths, emits `normalized_map.json` / `map_*.json`, and sets `Type=FullFlattened`. See the [UID compatibility contract](operations/DirectoryNormalizer/README.md).
+- **Convert models (`7`):** `operations/Blender/run.lua` imports `.preinstanced` assets into `.blend` files and exports `.glb`/`.fbx` models.
+- **Extract dialogue/subtitles (`8`):** `operations/Converters/lh2_to_csv.lua` converts `.lh2` localization files to `.csv`.
+- **Convert fonts (`9`):** `operations/Converters/inf_to_fnt.Fonts.lua` converts EA FONT v6 `.inf` descriptors to Godot-compatible AngelCode `.fnt` files beside each `.inf`.
+- **Convert FMV subtitles (`10`):** `operations/Converters/tox_to_srt.Subtitles.lua` resolves `.tox.PS3` timing IDs against `.lh2` tables and writes `.srt`, `.vtt`, and multilingual `.csv` files (plus movie companions under `A1_Video/<language>/`).
+- **Convert audio & music (`11`, `12`, `13`):** Engine `format-convert` converts `.sbk` (`11`) and `.snu` (`12`) streams to `.wav`; `operations/Audio/SetupMusicFiles.lua` (`13`) unpacks `.mus` archives with `operations/mus.bms` and converts `.snr`/`.sns` streams to `.wav`.
+- **Convert videos (`14`):** Engine `format-convert` transcodes `.vp6` movies to `.ogv`.
+- **Copy GameFiles assets to Godot (`17`):** `operations/godot/CopyGameFilesAssetsToGodot.lua` copies `.png`, `.glb`, `.ogv`, `.graph`, `.fnt`, and `.json` maps into `Godot/GodotGame/PreBuilt/assets/`, plus missing source logos.
+- **Refresh Godot scene asset paths (`16`):** `operations/godot/RefreshGodotTSCNPaths.lua` updates `res://assets/` paths in `Godot/GodotGame/PreBuilt/**/*.tscn` using `normalized_map.json` (or `map_*.json`) by asset UID and strips stale Godot UID hints when paths change.
+- **Build isolated local Godot variant (`18`, optional):** `operations/godot/BuildLocalVariant.lua` builds `Godot/GodotGame/LocalVariant/` from `PreBuilt`, importing original PS3 Havok (`.hkt.PS3`, `.hko.PS3`) and character/prop (`.acs.PS3`, `.bbn.PS3`) collision.
+- **Generate launch manifest (`15`):** `operations/generate-game-toml.lua` writes `game.toml`.
+- **Reset game module (`6677`, manual):** `operations/resetThisBih.lua` backs up (to `.backup/<timestamp>`) or deletes generated files to restore a clean state.
 
 ---
 
-### Font conversion
+### Font conversion (Operation `9`)
 
 From the engine repository root, run the font operation for the configured platform and region:
 
 ```pwsh
-dotnet run -c Debug --project EngineNet --framework net10.0 -- --game_module TheSimpsonsGame-PS3 --run_op 15
+dotnet run -c Debug --project .\EngineNet\ -- --game_module TheSimpsonsGame-PS3 --run_op 9
 ```
 
-The Lua converter writes each `.fnt` beside its `.inf`. It strips extraction hash suffixes when matching PNG atlases, prefers textures from the same archive, and writes relative PNG references with forward slashes. Raw glyph IDs, signed bearings, surviving kerning pairs, extended Unicode aliases and button-icon aliases (U+E000..U+E020) match `operations/inf_to_fnt.Fonts.py`.
+`operations/Converters/inf_to_fnt.Fonts.lua` writes each `.fnt` beside its `.inf`. It strips extraction hash suffixes when matching PNG atlases, prefers textures from the same archive, and writes relative PNG references with forward slashes. Raw glyph IDs, signed bearings, surviving kerning pairs, extended Unicode aliases, and button-icon aliases (`U+E000..U+E020`) are preserved.
 
 To choose another input or output directory, override the operation arguments:
 
 ```pwsh
-dotnet run -c Debug --project EngineNet --framework net10.0 -- --game_module TheSimpsonsGame-PS3 --run_op 15 --args '["--input-dir", "{{Game_Root}}/GameFiles/PS3-EU-FullFlattened-audio_reorg-isRenamed", "--output-dir", "{{Game_Root}}/TMP/fonts", "--copy-png"]'
+dotnet run -c Debug --project .\EngineNet\ -- --game_module TheSimpsonsGame-PS3 --run_op 9 --args '["--input-dir", "{{Game_Root}}/GameFiles/PS3-EU-FullFlattened-audio_reorg-isRenamed", "--output-dir", "{{Game_Root}}/TMP/fonts", "--copy-png"]'
 ```
 
-`--input-dir`/`-i` selects the asset root; `--output-dir`/`-o` gathers descriptors into one directory. `--copy-png` copies matching atlases beside the descriptors. `--no-unicode-aliases` emits only original byte IDs. Without an input argument, the script uses `GameFiles/PS3-EU-FullFlattened-audio_reorg-isRenamed` under the module root; the manifest supplies the configured asset root explicitly. Invalid font data, missing atlases and invalid PNG headers fail the operation.
+`--input-dir`/`-i` selects the asset root; `--output-dir`/`-o` gathers descriptors into one directory. `--copy-png` copies matching atlases beside the descriptors. `--no-unicode-aliases` emits only original byte IDs. Invalid font data, missing atlases, and invalid PNG headers fail the operation.
 
-### FMV subtitle conversion
+### FMV subtitle conversion (Operation `10`)
 
 From the engine repository root, run the subtitle operation for the configured asset directory:
 
 ```pwsh
-dotnet run -c Debug --project EngineNet --framework net10.0 -- --game_module TheSimpsonsGame-PS3 --run_op 16
+dotnet run -c Debug --project .\EngineNet\ -- --game_module TheSimpsonsGame-PS3 --run_op 10
 ```
 
-`operations/tox_to_srt.Subtitles.lua` reads EA `1BOT` timing tables and resolves their string IDs through the first non-empty, sorted `simpsons_global.{en,es,fr,it,ss}.LH2` tables. It decodes Windows-1252 text and writes English, Spanish, French and Italian subtitles beside each timing file. The CSV retains all timing records; SRT/VTT omit blank translations. Empty timing files produce a CSV header only. Matching `.ogv` and `.vp6` files under `A1_Video/<language>/` also receive subtitle companions, with the first sorted matching timing file winning when multiple archives refer to the same movie.
+`operations/Converters/tox_to_srt.Subtitles.lua` reads EA `1BOT` timing tables and resolves their string IDs through the first non-empty, sorted `simpsons_global.{en,es,fr,it,ss}.LH2` tables. It decodes Windows-1252 text and writes English, Spanish, French, and Italian subtitles beside each timing file. The CSV retains all timing records; SRT/VTT omit blank translations. Matching `.ogv` and `.vp6` files under `A1_Video/<language>/` also receive subtitle companions.
 
-Override operation arguments with `--args` to use `--input-dir`/`-i`, gather output with `--output-dir`/`-o`, disable video companions with `--no-video-pairing`, or add speaker codes with `--include-speaker`. Selecting an output directory also suppresses video companions. Without an input argument, the script uses `GameFiles/PS3-EU-FullFlattened-audio_reorg-isRenamed` under the module root; the manifest supplies the configured asset directory. SRT/VTT use LF separators and CSV uses CRLF rows, matching the Python converter, including its missing Bart scream fallback. Invalid timing headers, sizes, record counts or localization tables fail the operation.
+Override operation arguments with `--args` to use `--input-dir`/`-i`, gather output with `--output-dir`/`-o`, disable video companions with `--no-video-pairing`, or add speaker codes with `--include-speaker`.
 
-### Collision Test Godot Project (`Godot/GodotGame/collisionTest`)
+### Godot Scene Refresh & Isolated Local Variant (Operations `17`, `16` & `18`)
 
-A standalone Godot 4 project under `Godot/GodotGame/collisionTest` demonstrates direct GDScript parsing, editor previewing, physics integration, and `.tscn` scene baking for the original PS3 collision files:
-
-- **Havok 4.1 Packfile Reader (`scripts/tsg_havok_reader.gd`):** Reads big-endian `Hkx`-wrapped `Havok-4.1.0-r1` `.hkt.PS3` and `.hko.PS3` files, resolving `__classnames__` and `__data__` local/global/virtual fixups to decode `EAStorageMeshShape`, `hkBoxShape`, `hkSphereShape`, `hkConvexVerticesShape`, `hkMoppBvTreeShape` child references, and `hkRigidBody` world transforms.
-- **Character & Prop ACS/BBN Reader (`scripts/tsg_character_reader.gd`):** Reads `.acs.PS3` record tables (kinds `1`, `2`, and `3`), resolves SDBM hash bindings via `.bbn.PS3` rig/alias tables, and inspects RenderWare `.preinstanced` `FrameList` + `HAnim` hierarchies.
-- **Editor & Runtime Node (`scripts/collision_asset_3d.gd` & `CollisionLab.tscn`):** `@tool` `CollisionAsset3D` node that generates `StaticBody3D` + `CollisionShape3D` nodes (`ConcavePolygonShape3D`, `BoxShape3D`, `SphereShape3D`, `ConvexPolygonShape3D`), wireframe/solid preview meshes, paired `.glb` visual models, interactive physics probe drops, and baked `.tscn` scenes under `res://generated/`.
-
-To stage sample assets from `GameFiles/PS3-EU-FullFlattened-audio_reorg-isRenamed` and run the headless integration test suite:
+After asset conversion completes, copy the assets into `Godot/GodotGame/PreBuilt/assets` and refresh `.tscn` scene references:
 
 ```pwsh
-python -B Godot/GodotGame/collisionTest/tools/prepare_samples.py
-python -B Godot/GodotGame/collisionTest/tools/run_godot.py -- --headless --editor --import --quit
-python -B Godot/GodotGame/collisionTest/tools/run_godot.py -- --headless --script res://tests/run_tests.gd
+dotnet run -c Debug --project .\EngineNet\ -- --game_module TheSimpsonsGame-PS3 --run_op 17
+dotnet run -c Debug --project .\EngineNet\ -- --game_module TheSimpsonsGame-PS3 --run_op 16
 ```
+
+To build an isolated local variant project (`Godot/GodotGame/LocalVariant/`) with PS3 collision imported into the level scenes:
+
+```pwsh
+dotnet run -c Debug --project .\EngineNet\ -- --game_module TheSimpsonsGame-PS3 --run_op 18
+```
+
+Operation `18` (`operations/godot/BuildLocalVariant.lua`) stages an isolated project copy and uses the GDScript readers under `operations/godot/variant_runtime/`:
+- **Havok 4.1 Packfile Reader (`tsg_havok_reader.gd`):** Reads big-endian `Hkx`-wrapped `Havok-4.1.0-r1` `.hkt.PS3` and `.hko.PS3` files, resolving `__classnames__` and `__data__` fixups to decode `EAStorageMeshShape`, `hkBoxShape`, `hkSphereShape`, `hkConvexVerticesShape`, `hkMoppBvTreeShape` child references, and `hkRigidBody` world transforms into native Godot `StaticBody3D` + `CollisionShape3D` nodes.
+- **Character & Prop ACS/BBN Reader (`tsg_character_reader.gd`):** Reads `.acs.PS3` record tables, resolves SDBM hash bindings via `.bbn.PS3` rig/alias tables, and inspects RenderWare `.preinstanced` `FrameList` + `HAnim` hierarchies.
+
+### Reversing & File Connection Explorer (`reversing/`)
+
+To build the cross-file connection SQLite index (`GameFiles/file-connections/index.sqlite`) and open the local web explorer UI:
+
+```pwsh
+python -B reversing/file_connections.py --open
+```
+
+Additional standalone analysis and verification scripts:
+- `python -B reversing/audio_subtitles.py` — Audits and links `.alb`, `.smb`, `.lh2`, and `.snu` dialogue/subtitle records (see `reversing/audio_subtitles.md`).
+- `python -B reversing/str_audit.py` & `python -B reversing/test_str_extraction.py` — Audits `.str` archive sections and extraction bounds.
+- `python -B reversing/sfo.toml.py` — Exports `PARAM.SFO` metadata to documented TOML.
 
 ## Reverse Engineering & Format Documentation
 
-For technical details and reverse-engineering notes on the file formats used in The Simpsons Game (PS3), see:
+For technical details and reverse-engineering notes on the file formats used in *The Simpsons Game* (PS3), see the documentation submodule checked out at `reversing/docs`:
 
-- [TheSimpsonsGame-PS3-Docs README](https://github.com/Superposition28/TheSimpsonsGame-PS3-Docs/blob/main/readme.md) -- Overview of the documentation repository layout.
-- [Format Analysis](https://github.com/Superposition28/TheSimpsonsGame-PS3-Docs/blob/main/FormatAnalysis/index.html) -- Landing page for format-specific analyses, including audio, RenderWare assets, and miscellaneous formats.
+- [TheSimpsonsGame-PS3-Docs README](https://github.com/Superposition28/TheSimpsonsGame-PS3-Docs/blob/main/readme.md) -- Overview of the documentation repository layout and maintenance checks.
+- [Format Analysis](https://github.com/Superposition28/TheSimpsonsGame-PS3-Docs/blob/main/PS3_GAME/FormatAnalysis/index.html) -- Landing page for format-specific analyses, including audio, RenderWare assets, Havok collision, and embedded `.STR` formats.
 - [PS3 Game Layout](https://github.com/Superposition28/TheSimpsonsGame-PS3-Docs/blob/main/PS3_GAME/index.html) -- Disc layout documentation and links into `USRDIR` content.
 
 These resources provide:
