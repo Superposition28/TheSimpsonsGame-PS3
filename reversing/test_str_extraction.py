@@ -79,7 +79,7 @@ def main():
     sim = bytes(8) + b"SimG" + word(1) + bytes(32)
     middle = asset("middle.bin", b"mid")
     data = record(0x2207, sim) + middle + record(0x2207, sim)
-    expected = {"simgroup_s000_o00000000.dat": sim, "middle.bin": b"mid", f"simgroup_s000_o{len(record(0x2207, sim) + middle):08x}.dat": sim}
+    expected = {"simgroup_s000_o00000000.dat.simgroup": sim, "middle.bin": b"mid", f"simgroup_s000_o{len(record(0x2207, sim) + middle):08x}.dat.simgroup": sim}
     run(args.quickbms, script, scratch, "multiple-raw", data, expected)
     run(args.quickbms, script, scratch, "multiple-refpack", data, expected, compressed=True)
     unknown = word(0x12345678) + b"unknown"
@@ -87,13 +87,22 @@ def main():
     data = record(0x2307, unknown) + record(0x1607, no_header) + record(0x2207, b"not-simg")
     run(args.quickbms, script, scratch, "unknown-records", data, {"chunk_2307_s000_o00000000.dat": unknown, f"chunk_1607_s000_o{12 + len(unknown):08x}.dat": no_header, f"chunk_2207_s000_o{24 + len(unknown) + len(no_header):08x}.dat": b"not-simg"})
     uie = asset("", bytes(range(20)), "UIE")
-    run(args.quickbms, script, scratch, "unnamed-assets", uie + asset("", b"other"), {"uie_s000_o00000000.dat": bytes(range(20)), f"unnamed_asset_s000_o{len(uie):08x}.dat": b"other"})
+    run(args.quickbms, script, scratch, "unnamed-assets", uie + asset("", b"other"), {"uie_s000_o00000000.dat.uie": bytes(range(20)), f"unnamed_asset_s000_o{len(uie):08x}.dat": b"other"})
+    named_uie = asset("ui.dat", bytes(range(20)), "UIE")
+    named_data = named_uie + asset("UI.DAT", b"second", "UIE") + asset("unknown.dat", b"opaque") + asset("ui.uie", b"typed", "UIE") + asset("ready.dat.uie", b"categorized", "UIE")
+    run(args.quickbms, script, scratch, "named-dat-categories", named_data, {
+        "ui.dat.uie": bytes(range(20)),
+        f"__str_duplicates__/s000_o{len(named_uie):08x}/UI.DAT.uie": b"second",
+        "unknown.dat": b"opaque", "ui.uie": b"typed", "ready.dat.uie": b"categorized",
+    })
+    # SimG-like bytes in an undocumented outer type do not identify SimGroup.
+    run(args.quickbms, script, scratch, "unknown-simg-signature", record(0x2307, sim), {"chunk_2307_s000_o00000000.dat": sim})
     first = asset("StreamSetConfig", b"first")
     run(args.quickbms, script, scratch, "repeated-path", first + asset("StreamSetConfig", b"second"), {"StreamSetConfig": b"first", f"__str_duplicates__/s000_o{len(first):08x}/StreamSetConfig": b"second"})
     oversized = record(0x2207, sim)[:4] + struct.pack("<I", 0x7FFFFFFF) + bytes(4)
     run(args.quickbms, script, scratch, "bad-record-size", oversized, {}, error="ERROR: STR record exceeds section")
     run(args.quickbms, script, scratch, "short-envelope", b"abc", {}, error="ERROR: truncated STR record envelope")
-    print(f"Passed 7 STR extraction cases, including reruns. Fixtures/logs: {scratch}")
+    print(f"Passed 9 STR extraction cases, including reruns. Fixtures/logs: {scratch}")
 
 
 if __name__ == "__main__":

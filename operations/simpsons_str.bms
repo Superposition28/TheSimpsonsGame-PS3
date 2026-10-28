@@ -16,7 +16,12 @@
 # they are stable within an archive, NOT recovered game filenames.
 # Use separate output directories per archive and -o to overwrite on reruns.
 # QuickBMS -K / rename-on-collision can still create extra files.
-# Named assets retain their embedded paths and exact payload bytes.
+# 2026-10-28: documented DAT families receive category suffixes:
+# .dat.simgroup for 0x2207 + SimG at body+8; .dat.uie for UIE assets.
+# Bare .dat is reserved for unidentified payload families. A category names
+# the identified format, not complete decoding or recovered game filenames.
+# Named assets retain their embedded paths except UIE .dat -> .dat.uie.
+# All payload bytes remain unchanged.
 # Repeated asset paths keep the first output in place; later records go to
 # __str_duplicates__/sNNN_oXXXXXXXX/<path> (drive colons replaced by '_').
 # Layouts/evidence: reversing/docs/PS3_GAME/FormatAnalysis/STR/index.html
@@ -69,11 +74,14 @@ for i = 0 < FILES
         endian big
         get CHUNK_VERSION long MEMORY_FILE
         savepos BODY_OFF MEMORY_FILE
-        xmath RECORD_END "BODY_OFF + BODY_SIZE"
-        if RECORD_END > MEM_SIZE
+        # Check against remaining bytes before adding: a malformed size can
+        # overflow the 32-bit QuickBMS build's record-end arithmetic.
+        xmath BODY_AVAILABLE "MEM_SIZE - BODY_OFF"
+        if BODY_SIZE <= 0 || BODY_SIZE > BODY_AVAILABLE
             print "ERROR: STR record exceeds section %i% at %OFFSET|x%"
             cleanexit
         endif
+        xmath RECORD_END "BODY_OFF + BODY_SIZE"
 
         set HEADER_SIZE long 0
         if CHUNK_TYPE == 0x1607 && BODY_SIZE >= 4
@@ -128,11 +136,22 @@ for i = 0 < FILES
             endif
             if NAME == ""
                 if RESOURCE_TYPE == "UIE"
-                    string NAME p "uie_s%03d_o%08x.dat" i OFFSET
+                    string NAME p "uie_s%03d_o%08x.dat.uie" i OFFSET
                 else
                     string NAME p "unnamed_asset_s%03d_o%08x.dat" i OFFSET
                 endif
                 print "STR unnamed asset: %NAME% type=%RESOURCE_TYPE% object=%OBJECT_NAME%"
+            endif
+            # UIE is a documented DAT family, including an explicit .dat path.
+            # Apply its category before duplicate-path handling so collisions
+            # are checked using the final output filename.
+            if RESOURCE_TYPE == "UIE"
+                set NAME_EXTENSION string NAME
+                string NAME_EXTENSION $ "."
+                string NAME_EXTENSION l NAME_EXTENSION
+                if NAME_EXTENSION == ".dat"
+                    string NAME + ".uie"
+                endif
             endif
             set NAME_KEY string NAME
             string NAME_KEY l NAME_KEY
@@ -155,7 +174,7 @@ for i = 0 < FILES
                 get SIMG long MEMORY_FILE
             endif
             if CHUNK_TYPE == 0x2207 && SIMG == 0x53696d47
-                string NAME p "simgroup_s%03d_o%08x.dat" i OFFSET
+                string NAME p "simgroup_s%03d_o%08x.dat.simgroup" i OFFSET
             else
                 string NAME p "chunk_%04x_s%03d_o%08x.dat" CHUNK_TYPE i OFFSET
                 print "STR unparsed record body: %NAME%"
