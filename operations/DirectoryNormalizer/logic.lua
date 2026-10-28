@@ -562,7 +562,7 @@ function apply_file_rules(original_rel, process_rel, uid_generator_func, rename_
                         end
                     end
                     if part and part ~= "" then
-                        if export_uid then
+                        if txd_exports and export_uid then
                             part = part .. "_" .. export_uid
                             txd_exports.protected_names[part] = true
                         end
