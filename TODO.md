@@ -18,3 +18,11 @@
 - [ ] **Scene Entity & Placement Reconstruction (`.dat.simgroup`, `.dat.uie`, `.meta.xml`):** Use the newly tagged `.dat.simgroup` / `.dat.uie` payloads and `reversing/file_connections.py` index to decode world placement and entity links for automated Godot scene population.
 - [ ] **In-Game Dialogue & Subtitle Playback (`.alb` + `.smb` + `.lh2` + `.snu`):** Integrate the validated dialogue link tables from `reversing/audio_subtitles.py` into the Godot runtime so character voice streams play with synchronized localized subtitles.
 - [ ] **Character Animation & Rigging (`.bnk.PS3`, `.rcb.PS3`, `.cec.ps3`):** Decode `.bnk.PS3` animation clip compression and `.rcb.PS3` bindings to export skeletal animations alongside `.preinstanced` rigs.
+
+
+# ideas
+
+##https://github.com/XboxDev/extract-xiso
+# could be used to extract Xbox ISO's directly if xbox version support is added, so users dont need to exact them manually
+# if adding xbox support, either use xextools to get id data from the default.xex, similar to current ps3 param.sfo data extraction for init validations, or create a custom parser for the default.xex if realistic.
+# consider finding a similar tool for the Main PS3 ISO extraction as well?

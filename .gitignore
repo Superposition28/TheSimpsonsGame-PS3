@@ -69,3 +69,4 @@ operation_execution.log
 # Disposable local Godot projects, imported assets, and collision payloads.
 /Godot/GodotGame/LocalVariant/
 /Godot/GodotGame/.local_variant_work/
+reversing/fileviewer/str_reader_state.toml*

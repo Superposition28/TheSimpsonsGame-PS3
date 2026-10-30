@@ -1,6 +1,16 @@
+
+# dependency Documentation submodule for The Simpsons Game PS3 main project
 [submodule "TheSimpsonsGame-PS3-Docs"]
     path = reversing/docs
     url = https://github.com/Superposition28/TheSimpsonsGame-PS3-Docs.git
+
+# independent Simpsons Game File format Parser, for viewing and analyzing all game files Based on documentations
 [submodule "TheSimpsonsGame-PS3-FileViewer"]
     path = reversing/fileviewer
     url = https://github.com/Superposition28/TheSimpsonsGame-PS3-FileViewer.git
+
+# archived files, docs, scripts etc
+[submodule "TheSimpsonsGame-PS3-Archive"]
+    path = reversing/yggdrasil-Archive
+    url = https://github.com/YggdrasilAu/TheSimpsonsGame-PS3-Archive.git
+
