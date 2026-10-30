@@ -25,7 +25,7 @@ The module is in active development (Beta). Highlights and known problems:
   - **Operation `17`** (`operations/godot/CopyGameFilesAssetsToGodot.lua`) populates `PreBuilt/assets/` with converted exports, normalization maps, and source logos.
   - **Operation `16`** (`operations/godot/RefreshGodotTSCNPaths.lua`) refreshes `res://assets/` paths across `.tscn` scenes by matching persistent 6-character asset UIDs from `normalized_map.json`.
   - **Operation `18`** (`operations/godot/BuildLocalVariant.lua`) builds an isolated, disposable Godot project (`Godot/GodotGame/LocalVariant/`) from `PreBuilt`, using `operations/godot/variant_runtime/tsg_havok_reader.gd` and `tsg_character_reader.gd` to directly read PS3 Havok 4.1 packfiles (`.hkt.PS3`, `.hko.PS3`) and character/prop collision files (`.acs.PS3`, `.bbn.PS3`) into native Godot 3D static collision shapes (`ConcavePolygonShape3D`, `BoxShape3D`, `SphereShape3D`, `ConvexPolygonShape3D`).
-- **Reversing & Connection Graph (`reversing/`):** `reversing/file_connections.py` (`reversing/connection_explorer/`) builds an SQLite index and serves a local web UI displaying cross-file relationships across source and extracted trees (`.STR`, `.ALB`, `.SMB`, `.LH2`, `.SNU`, `.TXD`, `.dat.simgroup`, `.dat.uie`, etc.).
+- **Reversing & Connection Graph (`reversing/`):** `reversing/fileviewer/file_connections.py` (`reversing/fileviewer/connection_explorer/`; the original command remains a compatibility entry point) builds an SQLite index and serves a local web UI displaying cross-file relationships across source and extracted trees (`.STR`, `.ALB`, `.SMB`, `.LH2`, `.SNU`, `.TXD`, `.dat.simgroup`, `.dat.uie`, etc.).
 
 
 Screenshots showing earlier extraction results (high-LOD texture issues and low-LOD examples) appear further below in this document; they illustrate the remaining material-mapping problem, not guaranteed current behavior for every asset.
@@ -293,7 +293,7 @@ For a full pipeline run, select `Run All`. If you are debugging a specific step,
 
 - `reversing/` - Reverse-engineering utilities and submodules:
   - `docs/` - Reverse-engineering documentation repository submodule ([TheSimpsonsGame-PS3-Docs](https://github.com/Superposition28/TheSimpsonsGame-PS3-Docs)) and `PS3_GAME/USRDIR/A1_Audio/AudioMap.yaml`.
-  - `connection_explorer/` & `file_connections.py` - Stdlib Python SQLite indexer and local web UI for exploring links across source and extracted game files.
+  - `fileviewer/connection_explorer/` & `fileviewer/file_connections.py` - Integrated SQLite indexer and local web UI for exploring source/extracted file links; start/stop controls are available in the desktop viewer. `file_connections.py` preserves the original CLI entry point.
   - `audio_subtitles.py`, `str_audit.py`, `test_str_extraction.py`, `validate_txd_exports.py`, `sfo.toml.py`, `preinstanced_viewer.py` - Standalone verification and analysis scripts.
   - `fileviewer/`, `TSGFileViewer/`, `TheSimpsonsGameFileExtractor-main/` - Supporting reference viewers and extractors.
 
