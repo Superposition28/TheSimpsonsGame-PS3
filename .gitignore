@@ -2,6 +2,7 @@
 # vs code history extension directory
 /.history/
 **/.history/**
+.history/**
 
 .VSCodeCounter/
 
