@@ -20,6 +20,16 @@ cd A:\RemakeEngine\Main; dotnet run -c Debug --project .\EngineNet\ -- --game_mo
 ```
 this will execute the operation with ID 12 in this modules [operations.toml](operations.toml) for the list of operations and their IDs.
 
+### To directly execute a Lua script (without operations.toml):
+```pwsh
+cd A:\RemakeEngine\Main; dotnet run -c Debug --project .\EngineNet\ -- --game_module TheSimpsonsGame-PS3 --script "{{Game_Root}}/operations/SetupAudioDir.lua" --script_type lua
+```
+(Supports arguments via `--arg <val>` or `--args "<csv>"`, and `--auto_prompt ID=RESP`. See [cli.md](cli.md) for full reference).
+
+## Local CLI Tools & Commands Reference (`cli.md`)
+
+For local CLI tools, discovery and inspection utilities (`Get-Commands`, `environment-manager`, etc.), and guidelines for dynamic or versioned tool paths under `A:\RemakeEngine\Main\EngineApps\Tools\`, see [cli.md](cli.md).
+
 ## Engine Source & API Definitions (`EngineFiles/`)
 
 The [EngineFiles](EngineFiles/) directory provides local read access to the parent Remake Engine source tree and API definitions within this workspace:

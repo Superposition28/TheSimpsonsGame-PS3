@@ -1,0 +1,40 @@
+Based on our current reverse engineering ground truth, verification logs, and active tool capabilities across the ELF, file viewer, bootloader, and docs, here is a breakdown of the **current gaps** and the **recommended next steps**:
+
+---
+
+### Current Gaps Matrix
+
+| Area | Current Gap | Ground Truth / What We Know | Impact |
+| :--- | :--- | :--- | :--- |
+| **1. 3D Model Materials & Textures** | Submesh texture misassignment in Blender/Godot (`operations/Blender/run.lua`) | `EARS_MESH` (`0xEA33`) has a submesh `MaterialId` that maps **1-to-1** directly to the `rwID_MATLIST` index in `rwID_CLUMP`, which gives the exact diffuse/mask string in `rwID_TEXTURE`. Current scripts use heuristics or random fallback textures. | High: Solving this completely fixes the visual texture-scrambling issue documented in `README.md`. |
+| **2. Dynamic Render Queue Producers** | Unknown caller path that feeds draw calls into the 21 render stage queues (`0x003F6E40`) | We have mapped the 21-stage queue consumer/sorter/executor contract and the RSX FIFO packet dispatchers (`0x00438E3C` / `0x0043A2EC`), but not the world-traversal routines that enqueue them. | Medium-High: Connects scene graph simulation to the RSX drawing pipe. |
+| **3. Remaining Actor/Entity Classes** | Unresolved entity behavior IDs in SimGroups (e.g. `0xEE0EB534`, `0x0CC92646`) | 149 named actor classes are mapped. 94 additional registrations in `EBOOT.elf` returned 16-bit handles and were not in the named table. Also, secondary registration passes (level-specific scripts) exist. | Medium: Brings entity resolution rate from ~41% up towards ~90%+. |
+| **4. Embedded SPU Images Analysis** | The 3 embedded SPU ELF images (Note 004) are identified and byte-identical across retail/demo, but their specific jobs are not decompiled | SPU images run asynchronously alongside the PPU. They likely handle either skinning/vertex morphing or audio/vgmstream streaming. | Medium: Explains parallel pipeline and geometry transforms before RSX submission. |
+| **5. Cross-Architecture Function Ledger** | 598 functions are cross-correlated to Xbox names; ~40,700 remain generic | We have 1,077 functions mapped in `functions_patch.toml` from the Xbox recomp project, plus full `.rdata` string cross-correlation tools (`correlate_xex_eboot.py`). | High (for ELF coverage): Can bulk-promote another 400+ functions into `FUNCTION_LEDGER.tsv`. |
+| **6. File Viewer UI Integration for `.msb`** | `.msb` is parsed in `game_formats/resources.py` and `msb_parser.py`, but missing an explicit UI tab/converter entry in `app.py` | While `is_documented_chunk` handles it generically, having an explicit `.msb` converter in `RESOURCE_PARSERS` gives a dedicated tab/tree view when opening `.msb` files in the viewer. | Low-Medium: Tooling usability. |
+
+---
+
+### Recommended Next Steps (Prioritized)
+
+#### Option 1: Fix Model Texture Assignment in the Blender / Model Pipeline (Highest Impact)
+- **What**: Update `operations/Blender/BlenderCore.lua` and the preinstanced extraction logic to link each submesh's `MaterialId` directly to `rwID_MATLIST[MaterialId] -> rwID_TEXTURE -> rwID_STRING`.
+- **Why**: This addresses the prominent known issue highlighted in the repository's `README.md` (where textures are randomly or incorrectly assigned across LOD levels).
+- **Effort**: Low–Medium.
+
+#### Option 2: Expand Cross-Architecture Symbol Bridge to Remaining Recomp Functions
+- **What**: Extend `Source/PS3/REA/TMP/correlate_xex_eboot.py` to ingest the remaining entries from `Source/XBOX360/GamePCport/SourceCode/TheSimpsons/functions_patch.toml` and correlate them with PS3 functions via callee/caller graph patterns and data cross-references.
+- **Why**: Directly advances the user's primary goal of reverse engineering the whole `EBOOT.elf` by borrowing proven symbols from the Xbox decompilation project.
+- **Effort**: Low.
+
+#### Option 3: Trace Scene Contexts & Dynamic Render Job Enqueueing
+- **What**: Disassemble and export the callers of the 21-stage queue insertion functions (`0x003F6C74`, `0x003F75E4`) and trace how scene contexts (`0x102DF5C4` / `0x102DF5C0`) populate atomic draw calls into stages 0–20.
+- **Why**: Maps the complete bridge between the game simulation loop and the RSX graphics command buffer.
+- **Effort**: Medium.
+
+#### Option 4: Analyze Embedded SPU Payloads
+- **What**: Inspect the three embedded SPU images extracted in Note 004 using a read-only SPU disassembler or Ghidra headless pass to determine their exact role (e.g. SPU vertex matrix skinning vs. audio streaming).
+- **Why**: Resolves open question U003 from `UNKNOWNS.md`.
+- **Effort**: Medium.
+
+---

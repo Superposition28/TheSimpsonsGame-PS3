@@ -17,4 +17,10 @@
 # experimental native game boot loader
 [submodule "TheSimpsonsGame-PS3-Boot"]
     path = reversing/boot
-    url = https://github.com/Superposition28/TheSimpsonsGame-PS3-Boot.git
+    #url = https://github.com/Superposition28/TheSimpsonsGame-PS3-Boot.git
+
+# reverse engineering and analysis (REA) submodule for Agents
+[submodule "TheSimpsonsGame-PS3-REA"]
+    path = Source/PS3/REA
+    #url = https://github.com/Superposition28/TheSimpsonsGame-PS3-REA.git
+
