@@ -14,3 +14,7 @@
     path = reversing/yggdrasil-Archive
     url = https://github.com/YggdrasilAu/TheSimpsonsGame-PS3-Archive.git
 
+# experimental native game boot loader
+[submodule "TheSimpsonsGame-PS3-Boot"]
+    path = reversing/boot
+    url = https://github.com/Superposition28/TheSimpsonsGame-PS3-Boot.git

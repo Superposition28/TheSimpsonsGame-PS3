@@ -1,0 +1,32 @@
+############################
+# Original Game Files (do not commit for licensing/copyright)
+############################
+
+# PS3 files
+**/PARAM.SFO
+**/*EBOOT*.elf
+**/*EBOOT*.BIN
+**/PS3LOGO.DAT
+
+**/*.png
+**/*.PNG
+
+# game files
+**/*.str
+**/*.snu
+**/*.mus
+**/*.lua
+**/*.vp6
+**/localetable.txt
+
+
+# Xbox 360 files
+**/$systemupdate/*
+**/*.xex
+
+# other
+**/bin/**
+**/obj/**
+**/*.exe
+**/REA/**
+
