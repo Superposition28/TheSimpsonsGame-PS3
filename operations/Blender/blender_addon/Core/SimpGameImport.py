@@ -4,15 +4,16 @@ Main Blender Operator for importing The Simpsons Game files with texture↔mesh 
 # SPDX-License-Identifier: MIT
 
 import io
+import os
 import struct
 import math
 from pathlib import Path
 
 # blender imports
-import bpy # type: ignore
-from bpy.props import StringProperty, CollectionProperty # type: ignore
-from bpy_extras.io_utils import ImportHelper # type: ignore
-import bmesh # type: ignore
+import bpy
+from bpy.props import StringProperty, CollectionProperty
+from bpy_extras.io_utils import ImportHelper
+import bmesh
 
 from ..utils.logger import bPrinter
 from ..utils.mesh_helpers import strip2face, sanitize_uvs
@@ -43,9 +44,9 @@ class SimpGameImport(bpy.types.Operator, ImportHelper):
     filter_glob: StringProperty(
         default="*.preinstanced",
         options={'HIDDEN'},
-    ) # type: ignore
-    filepath: StringProperty(subtype='FILE_PATH',) # type: ignore
-    files: CollectionProperty(type=bpy.types.PropertyGroup) # type: ignore
+    )
+    filepath: StringProperty(subtype='FILE_PATH',)
+    files: CollectionProperty(type=bpy.types.PropertyGroup)
 
     def draw(self, _context: bpy.types.Context) -> None:
         """
@@ -60,11 +61,10 @@ class SimpGameImport(bpy.types.Operator, ImportHelper):
         # Clear global caches to ensure a fresh state
         clear_material_cache()
 
-        # --- NEW: Clear old log text blocks ---
+        # Clear old log text blocks
         for log_name in ["SimpGame_Import_Log", "SimpGame_Importer_Log"]:
             if log_name in bpy.data.texts:
                 bpy.data.texts.remove(bpy.data.texts[log_name])
-        # --------------------------------------
 
         manifest = get_manifest_data()
         version = get_version_tuple(manifest.get("version", "1.5.8"))
@@ -80,15 +80,28 @@ class SimpGameImport(bpy.types.Operator, ImportHelper):
         if new_p:
             bPrinter(f"New mapping: {new_p}", console_colour="green", to_blender_editor=True)
 
-        file_path = Path(self.filepath)
-        bPrinter(f"File size: {file_path.stat().st_size} bytes", to_blender_editor=True, log_as_metadata=False)
-        bPrinter(f"File name: {file_path.name}", to_blender_editor=True, log_as_metadata=False)
-        bPrinter(f"Output file: {file_path.stem}.blend", to_blender_editor=True, log_as_metadata=False)
-        filename = file_path.stem
+        norm_filepath = str(self.filepath)
+        if os.name == 'nt' and len(os.path.abspath(norm_filepath)) >= 240 and not norm_filepath.startswith('\\\\?\\'):
+            norm_filepath = '\\\\?\\' + os.path.abspath(norm_filepath)
+
+        file_path = Path(norm_filepath)
+        file_size = 0
+        try:
+            file_size = file_path.stat().st_size
+        except Exception:
+            try:
+                file_size = os.path.getsize(norm_filepath)
+            except Exception:
+                pass
+
+        bPrinter(f"File size: {file_size} bytes", to_blender_editor=True, log_as_metadata=False)
+        bPrinter(f"File name: {Path(self.filepath).name}", to_blender_editor=True, log_as_metadata=False)
+        bPrinter(f"Output file: {Path(self.filepath).stem}.blend", to_blender_editor=True, log_as_metadata=False)
+        filename = Path(self.filepath).stem
         bPrinter(f"{filename}", log_as_metadata=True, metadata_key="LOD")
 
         try:
-            with open(self.filepath, "rb") as cur_file:
+            with open(norm_filepath, "rb") as cur_file:
                 tmpRead = cur_file.read()
         except FileNotFoundError:
             bPrinter(f"[Error] File not found: {self.filepath})", console_colour="red")
@@ -97,8 +110,8 @@ class SimpGameImport(bpy.types.Operator, ImportHelper):
             bPrinter(f"[Error] Failed to read file {self.filepath}: {e}", console_colour="red")
             return {'CANCELLED'}
 
-        # --- Dedicated texture pass ---
-        texture_links_by_mesh_offset, texture_paths_by_name, all_found_tex_names = build_texture_mesh_links(tmpRead, str(self.filepath))
+        # --- Dedicated texture & material pass ---
+        texture_links_by_mesh_offset, texture_paths_by_name, all_found_tex_names, mesh_materials_by_offset = build_texture_mesh_links(tmpRead, str(self.filepath))
         bPrinter(f"\n--- Texture String Pass ({len(all_found_tex_names)} unique textures) ---", to_blender_editor=True)
         # Create materials up-front for all discovered textures
         _create_materials_for_all_textures(all_found_tex_names, texture_paths_by_name)
@@ -112,10 +125,9 @@ class SimpGameImport(bpy.types.Operator, ImportHelper):
             for name in sorted_names:
                 key = _normalize_tex_name(name)
                 final_path = texture_paths_by_name.get(key, "NOT_FOUND")
-                bPrinter(f"{name} -- {final_path}", to_blender_editor=True, print_to_console=False) # too many to print to console, so only log to Blender text block
+                bPrinter(f"{name} -- {final_path}", to_blender_editor=True, print_to_console=False)
         else:
             bPrinter("No texture strings were found in the file.", to_blender_editor=True)
-
 
         # --- Perform original fixed signature detection (kept for extra visibility) ---
         bPrinter("\n--- Found Embedded Strings (Fixed Signature Scan) ---", to_blender_editor=True)
@@ -152,7 +164,8 @@ class SimpGameImport(bpy.types.Operator, ImportHelper):
         temp_io = io.BytesIO(tmpRead)
         for x in mesh_chunks:
             try:
-                temp_io.seek(x.end() + 4 + 8 + 0x14 + 4)
+                # Buffer 1 base is at x.start() + 24; SubmeshCount is at Buffer 1 base + 0x18
+                temp_io.seek(x.start() + 24 + 0x18)
                 total_submeshes += int.from_bytes(temp_io.read(4), byteorder='big')
             except Exception:
                 pass
@@ -169,11 +182,9 @@ class SimpGameImport(bpy.types.Operator, ImportHelper):
             for obj in list(old_collection.objects):
                 mesh_data = obj.data if obj.type == 'MESH' else None
                 bpy.data.objects.remove(obj, do_unlink=True)
-                # Clean up the orphaned mesh data if nothing else is using it
                 if mesh_data and mesh_data.users == 0:
                     bpy.data.meshes.remove(mesh_data, do_unlink=True)
 
-            # Remove the old collection itself
             bpy.data.collections.remove(old_collection)
 
         # --- Create fresh collection ---
@@ -184,68 +195,66 @@ class SimpGameImport(bpy.types.Operator, ImportHelper):
 
         for mesh_iter, x in enumerate(mesh_chunks):
             mesh_chunk_off = x.start()
+            MeshChunkSize = int.from_bytes(tmpRead[mesh_chunk_off + 4:mesh_chunk_off + 8], byteorder='little')
 
-            data_io.seek(x.end() + 4)
+            data_io.seek(x.end())
             try:
-                FaceDataOff = int.from_bytes(data_io.read(4), byteorder='little')
-                MeshDataSize = int.from_bytes(data_io.read(4), byteorder='little')
-                MeshChunkStart = data_io.tell()
-                data_io.seek(0x14, 1)
+                FormatVersion = int.from_bytes(data_io.read(4), byteorder='little')
+                HeaderDataSize = int.from_bytes(data_io.read(4), byteorder='little')
+                GpuDataSize = int.from_bytes(data_io.read(4), byteorder='little')
+
+                Buffer1_Base = data_io.tell()
+                Buffer2_Base = Buffer1_Base + HeaderDataSize
+
+                is_valid_inv = (12 + HeaderDataSize + GpuDataSize == MeshChunkSize)
+                bPrinter(
+                    f"[Mesh {mesh_iter}] Offset: {mesh_chunk_off:08X} | ChunkSize: {MeshChunkSize} | Buffer1 (HeaderData): {HeaderDataSize}B | Buffer2 (GPUData): {GpuDataSize}B | Invariant: {is_valid_inv}",
+                    to_blender_editor=True
+                )
+
+                # Read RelocCount at Buffer1 + 0x14 and SubmeshCount at Buffer1 + 0x18
+                data_io.seek(Buffer1_Base + 0x14)
                 mDataTableCount = int.from_bytes(data_io.read(4), byteorder='big')
                 mDataSubCount = int.from_bytes(data_io.read(4), byteorder='big')
 
-                current_pos = data_io.tell()
                 data_table_bytes = data_io.read(mDataTableCount * 8)
                 bPrinter(
-                    f"  [DataTable] Count: {mDataTableCount} | Bytes: {data_table_bytes.hex(' ').upper()}",
+                    f"  [DataTable] RelocCount: {mDataTableCount} | SubmeshCount: {mDataSubCount} | RelocBytes: {data_table_bytes.hex(' ').upper()}",
                     to_blender_editor=True
                 )
-                data_io.seek(current_pos)
 
-                bPrinter(f"[Mesh {mesh_iter}] Chunk Offset: {x.start():08X} | Submeshes: {mDataSubCount}", to_blender_editor=True)
+                # Submesh table starts at Buffer1_Base + 0x1C + RelocCount * 8
+                mDataSubStart = Buffer1_Base + 0x1C + mDataTableCount * 8
 
-                # --- Log linked textures with their full paths ---
-                linked_tex_names = texture_links_by_mesh_offset.get(mesh_chunk_off, [])
-
-                if linked_tex_names:
-                    log_entries = []
-                    for name in linked_tex_names:
-                        key = _normalize_tex_name(name)
-                        final_path = texture_paths_by_name.get(key, "NOT_FOUND")
-                        log_entries.append(f"{name}")
-                    bPrinter(f"  Likely associated textures: {', '.join(log_entries)}", to_blender_editor=True)
+                mat_list = mesh_materials_by_offset.get(mesh_chunk_off, [])
+                if mat_list:
+                    formatted_mats = [f"[{idx}]: {name if name else '(untextured)'}" for idx, name in enumerate(mat_list)]
+                    bPrinter(f"  Geometry Materials: {', '.join(formatted_mats)}", to_blender_editor=True)
                 else:
-                    bPrinter("  Likely associated textures: (none)", to_blender_editor=True)
-                # --- END ---
+                    bPrinter("  Geometry Materials: (none)", to_blender_editor=True)
 
             except Exception as e:
-                bPrinter(f"[Error] Failed to read mesh chunk header data at {x.start():08X}: {e}")
+                bPrinter(f"[Error] Failed to read mesh chunk header data at {mesh_chunk_off:08X}: {e}")
                 continue
-
-            for i in range(mDataTableCount):
-                data_io.seek(4, 1)
-                data_io.read(4)
-
-            mDataSubStart = data_io.tell()
 
             for i in range(mDataSubCount):
                 try:
                     data_io.seek(mDataSubStart + i * 0xC + 8)
-                    offset = int.from_bytes(data_io.read(4), byteorder='big')
+                    submesh_rel_offset = int.from_bytes(data_io.read(4), byteorder='big')
 
-                    data_io.seek(offset + MeshChunkStart)
-                    submesh_header = data_io.read(12)
+                    submesh_hdr_off = Buffer1_Base + submesh_rel_offset
+                    data_io.seek(submesh_hdr_off)
+                    submesh_header = data_io.read(16)
                     material_id = int.from_bytes(submesh_header[8:12], byteorder='big')
+                    vert_info_rel_offset = int.from_bytes(submesh_header[12:16], byteorder='big')
+
                     bPrinter(
-                        f"    [Submesh {i}] Header 12 Bytes: {submesh_header.hex(' ').upper()} | Material ID: {material_id}",
+                        f"    [Submesh {i}] Material ID: {material_id} | Header: {submesh_header.hex(' ').upper()}",
                         to_blender_editor=True
                     )
 
-                    data_io.seek(offset + MeshChunkStart + 0xC)
-                    VertCountDataOff = int.from_bytes(data_io.read(4), byteorder='big') + MeshChunkStart
-
-
-                    data_io.seek(VertCountDataOff)
+                    vert_info_off = Buffer1_Base + vert_info_rel_offset
+                    data_io.seek(vert_info_off)
                     VertChunkTotalSize = int.from_bytes(data_io.read(4), byteorder='big')
                     VertChunkSize = int.from_bytes(data_io.read(4), byteorder='big')
                     if VertChunkSize <= 0:
@@ -254,19 +263,23 @@ class SimpGameImport(bpy.types.Operator, ImportHelper):
                     if VertChunkSize < 12:
                         bPrinter(f"[Mesh {mesh_iter}_{i}] Warning: VertChunkSize is too small for a position ({VertChunkSize}). Skipping mesh part.")
                         continue
-                    VertCount = int(VertChunkTotalSize / VertChunkSize)
-                    data_io.seek(8, 1)
-                    VertexStart = int.from_bytes(data_io.read(4), byteorder='big') + FaceDataOff + MeshChunkStart
-                    data_io.seek(0x14, 1)
-                    face_count_bytes_offset = data_io.tell()
-                    if face_count_bytes_offset + 4 > len(tmpRead):
-                        bPrinter(f"[Mesh {mesh_iter}_{i}] Error: Insufficient data to read FaceCount at offset {face_count_bytes_offset:08X}. Skipping mesh part.")
-                        continue
-                    FaceCount = int(int.from_bytes(data_io.read(4), byteorder='big') / 2)
-                    data_io.seek(4, 1)
-                    FaceStart = int.from_bytes(data_io.read(4), byteorder='big') + FaceDataOff + MeshChunkStart
+                    VertCount = VertChunkTotalSize // VertChunkSize
 
-                    bPrinter(f"[MeshPart {mesh_iter}_{i}] Reading data. VertCount: {VertCount}, FaceCount: {FaceCount}, VertexStart: {VertexStart:08X}, FaceStart: {FaceStart:08X}")
+                    data_io.seek(vert_info_off + 0x10)
+                    VertexStartRel = int.from_bytes(data_io.read(4), byteorder='big')
+                    VertexStart = Buffer2_Base + VertexStartRel
+
+                    data_io.seek(vert_info_off + 0x28)
+                    FaceIndexByteCount = int.from_bytes(data_io.read(4), byteorder='big')
+                    FaceCount = FaceIndexByteCount // 2
+
+                    data_io.seek(vert_info_off + 0x30)
+                    FaceStartRel = int.from_bytes(data_io.read(4), byteorder='big')
+                    FaceStart = Buffer2_Base + FaceStartRel
+
+                    bPrinter(
+                        f"[MeshPart {mesh_iter}_{i}] Reading data. VertCount: {VertCount} (Stride: {VertChunkSize}), FaceCount: {FaceCount}, VertexStart: {VertexStart:08X}, FaceStart: {FaceStart:08X}"
+                    )
 
                 except Exception as e:
                     bPrinter(f"[Error] Failed to read sub-mesh header data for part {mesh_iter}_{i}: {e}")
@@ -330,37 +343,35 @@ class SimpGameImport(bpy.types.Operator, ImportHelper):
                         TempVert = struct.unpack('>fff', data_io.read(4 * 3))
                         VertTable.append(TempVert)
 
-                        # Fixed layout discovered by analyzer
-                        FIXED_U_OFFSET = 0x14  # 20 bytes (U)
-                        FIXED_V_OFFSET = 0x18  # 24 bytes (V)
-                        FIXED_CM_OFFSET = 0x1C # 28 bytes (CM U,V)
-
-                        # Main UV (read U and V separately for robustness)
-                        u_off = vert_data_start + FIXED_U_OFFSET
-                        v_off = vert_data_start + FIXED_V_OFFSET
+                        # Dynamic stride UV layout:
+                        # Primary UV is at stride - 8 (U) and stride - 4 (V)
+                        # Secondary CM UV is at stride - 16 (U) and stride - 12 (V) when available
                         TempU = 0.0
                         TempV = 0.0
-                        if FIXED_U_OFFSET + 4 <= VertChunkSize and u_off + 4 <= len(tmpRead):
-                            data_io.seek(u_off)
-                            TempU = struct.unpack('>f', data_io.read(4))[0]
-                        else:
-                            bPrinter(f"[MeshPart {mesh_iter}_{i}] Warning: U at {u_off:08X} is outside the vertex stride or file for vertex {v}.", require_debug_mode=True)
-                        if FIXED_V_OFFSET + 4 <= VertChunkSize and v_off + 4 <= len(tmpRead):
-                            data_io.seek(v_off)
-                            TempV = struct.unpack('>f', data_io.read(4))[0]
-                        else:
-                            bPrinter(f"[MeshPart {mesh_iter}_{i}] Warning: V at {v_off:08X} is outside the vertex stride or file for vertex {v}.", require_debug_mode=True)
-                        # Flip V per findings
+                        cm_u = 0.0
+                        cm_v = 0.0
+
+                        if VertChunkSize >= 20:
+                            u_off = vert_data_start + VertChunkSize - 8
+                            v_off = vert_data_start + VertChunkSize - 4
+                            if u_off + 4 <= len(tmpRead) and v_off + 4 <= len(tmpRead):
+                                data_io.seek(u_off)
+                                TempU = struct.unpack('>f', data_io.read(4))[0]
+                                data_io.seek(v_off)
+                                TempV = struct.unpack('>f', data_io.read(4))[0]
+
+                        # Flip V per RenderWare / Blender convention
                         UVTable.append((TempU, 1.0 - TempV))
 
-                        # Secondary (CM) UV
-                        cm_off = vert_data_start + FIXED_CM_OFFSET
-                        if FIXED_CM_OFFSET + 8 <= VertChunkSize and cm_off + 8 <= len(tmpRead):
-                            data_io.seek(cm_off)
-                            cm_u, cm_v = struct.unpack('>ff', data_io.read(8))
-                        else:
-                            bPrinter(f"[MeshPart {mesh_iter}_{i}] Warning: CM UV at {cm_off:08X} is outside the vertex stride or file for vertex {v}.", require_debug_mode=True)
-                            cm_u, cm_v = (0.0, 0.0)
+                        if VertChunkSize >= 36:
+                            cmu_off = vert_data_start + VertChunkSize - 16
+                            cmv_off = vert_data_start + VertChunkSize - 12
+                            if cmu_off + 4 <= len(tmpRead) and cmv_off + 4 <= len(tmpRead):
+                                data_io.seek(cmu_off)
+                                cm_u = struct.unpack('>f', data_io.read(4))[0]
+                                data_io.seek(cmv_off)
+                                cm_v = struct.unpack('>f', data_io.read(4))[0]
+
                         CMTable.append((cm_u, 1.0 - cm_v))
 
                     # Diagnostics: stride and UV uniqueness
@@ -379,7 +390,6 @@ class SimpGameImport(bpy.types.Operator, ImportHelper):
                     continue
 
                 mesh1 = bpy.data.meshes.new(f"Mesh_{mesh_iter}_{i}")
-                # check if mesh1 has .use_auto_smooth attribute before setting it
                 if hasattr(mesh1, 'use_auto_smooth'):
                     mesh1.use_auto_smooth = True
                 else:
@@ -423,7 +433,6 @@ class SimpGameImport(bpy.types.Operator, ImportHelper):
                         continue
 
                 bPrinter(f"[MeshPart {mesh_iter}_{i}] Attempted to create {len(FaceTable)} faces, successfully created {faces_created_count}.")
-                # Ensure element indices are valid before using l.vert.index
                 bm.verts.ensure_lookup_table()
                 bm.faces.ensure_lookup_table()
                 bm.verts.index_update()
@@ -433,28 +442,22 @@ class SimpGameImport(bpy.types.Operator, ImportHelper):
                 if not bm.faces:
                     bPrinter(f"[BMeshWarning] No faces created for mesh {mesh_iter}_{i}. Skipping UV assignment and further processing for this mesh part.")
                     bm.free()
-                    if mesh1:
-                        if mesh1.users == 1:
-                            bpy.data.meshes.remove(mesh1)
-                            bPrinter(f"[BMeshWarning] Removed unused mesh data block '{mesh1.name}'.")
-                    if obj:
-                        if obj.users == 1:
-                            for col in bpy.data.collections:
-                                if obj.name in col.objects:
-                                    col.objects.unlink(obj)
-                            bpy.data.objects.remove(obj)
-                            bPrinter(f"[BMeshWarning] Removed unused object '{obj.name}'.")
+                    if mesh1 and mesh1.users == 1:
+                        bpy.data.meshes.remove(mesh1)
+                    if obj and obj.users == 1:
+                        for col in bpy.data.collections:
+                            if obj.name in col.objects:
+                                col.objects.unlink(obj)
+                        bpy.data.objects.remove(obj)
                     continue
 
                 uv_layer = bm.loops.layers.uv.get("uvmap")
                 if uv_layer is None:
                     uv_layer = bm.loops.layers.uv.new("uvmap")
-                    bPrinter("[Info] Created new 'uvmap' layer.")
 
                 cm_layer = bm.loops.layers.uv.get("CM_uv")
                 if cm_layer is None:
                     cm_layer = bm.loops.layers.uv.new("CM_uv")
-                    bPrinter("[Info] Created new 'CM_uv' layer.")
 
                 uv_layer_name = uv_layer.name
                 cm_layer_name = cm_layer.name
@@ -481,7 +484,6 @@ class SimpGameImport(bpy.types.Operator, ImportHelper):
                                 uv_assigned_count += 1
                                 unique_loop_uvs.add((round(uv_coords[0],5), round(uv_coords[1],5)))
                             else:
-                                bPrinter(f"[Inline-Sanitize] Non-finite main UV for vertex {vert_index} in loop of mesh part {mesh_iter}_{i}. Assigning (0.0, 0.0).", require_debug_mode=True)
                                 l[uv_layer].uv = (0.0, 0.0)
                                 uv_assigned_count += 1
                             cm_coords = CMTable[vert_index]
@@ -490,7 +492,6 @@ class SimpGameImport(bpy.types.Operator, ImportHelper):
                                 cm_assigned_count += 1
                                 unique_loop_cmuvs.add((round(cm_coords[0],5), round(cm_coords[1],5)))
                             else:
-                                bPrinter(f"[Inline-Sanitize] Non-finite CM UV for vertex {vert_index} in loop of mesh part {mesh_iter}_{i}. Assigning (0.0, 0.0).", require_debug_mode=True)
                                 l[cm_layer].uv = (0.0, 0.0)
                                 cm_assigned_count += 1
                         except Exception as e:
@@ -510,7 +511,6 @@ class SimpGameImport(bpy.types.Operator, ImportHelper):
                 # Ensure the intended UV layer is active for viewport/export
                 try:
                     if uv_layer_name in mesh_data.uv_layers:
-                        # Set active and active_render to main UV layer
                         main_idx = None
                         for idx, layer in enumerate(mesh_data.uv_layers):
                             if layer.name == uv_layer_name:
@@ -526,105 +526,80 @@ class SimpGameImport(bpy.types.Operator, ImportHelper):
                                 if layer.name == cm_layer_name:
                                     layer.active_render = False
                                     break
-                        bPrinter(f"[MeshPart {mesh_iter}_{i}] Set active UV layer to '{uv_layer_name}'.")
                 except Exception as e:
                     bPrinter(f"[UV-Active] Failed to set active UV layer: {e}")
 
                 if uv_layer_name in mesh_data.uv_layers:
                     sanitize_uvs(mesh_data.uv_layers[uv_layer_name])
-                else:
-                    bPrinter(f"[Sanitize] Warning: Main UV layer '{uv_layer_name}' not found on mesh data block after to_mesh for mesh {mesh_iter}_{i}.")
-
                 if cm_layer_name in mesh_data.uv_layers:
                     sanitize_uvs(mesh_data.uv_layers[cm_layer_name])
-                else:
-                    bPrinter(f"[Sanitize] Warning: CM UV layer '{cm_layer_name}' not found on mesh data block after to_mesh for mesh {mesh_iter}_{i}.")
 
-                # Apply the first linked texture's material to this object by default
+                # --- Material Assignment using 1-to-1 Geometry Material Mapping ---
                 try:
-                    # Use the original variable that just has names for material linking
-                    linked_tex_for_mat = texture_links_by_mesh_offset.get(mesh_chunk_off, [])
+                    mat_list = mesh_materials_by_offset.get(mesh_chunk_off, [])
+                    target_tex_name = None
 
-                    if linked_tex_for_mat:
-                        # Deduplicate while preserving order
-                        unique_tex_names = []
-                        for tex_name in linked_tex_for_mat:
-                            if tex_name not in unique_tex_names:
-                                unique_tex_names.append(tex_name)
+                    if 0 <= material_id < len(mat_list):
+                        target_tex_name = mat_list[material_id]
+                    elif mat_list:
+                        bPrinter(
+                            f"    [Warning] Material ID {material_id} out of bounds for geometry material list (len {len(mat_list)}). Falling back to first material.",
+                            console_colour="yellow",
+                            to_blender_editor=True
+                        )
+                        target_tex_name = mat_list[0]
+                    else:
+                        # Legacy fallback if geometry material list was empty
+                        linked_tex_for_mat = texture_links_by_mesh_offset.get(mesh_chunk_off, [])
+                        if linked_tex_for_mat:
+                            target_tex_name = linked_tex_for_mat[min(material_id, len(linked_tex_for_mat) - 1)]
 
-                        # Append all unique materials to the object
-                        for tex_name in unique_tex_names:
-                            mat = _ensure_material_for_texture(tex_name, texture_paths_by_name)
-                            if mat:
+                    if target_tex_name:
+                        mat = _ensure_material_for_texture(target_tex_name, texture_paths_by_name)
+                        if mat:
+                            if mat.name not in obj.data.materials:
                                 obj.data.materials.append(mat)
-
-                        # The submesh field points at a material ordinal, while the string list is laid out as 2 strings per material.
-                        base_string_index = material_id * 2
-
-                        if base_string_index < len(linked_tex_for_mat):
-                            target_tex_name = linked_tex_for_mat[base_string_index]
-
-                            # If the primary slot is the generic palette entry, prefer the paired texture when present.
-                            if "simpsons_palette" in target_tex_name.lower() and (base_string_index + 1) < len(linked_tex_for_mat):
-                                secondary_tex = linked_tex_for_mat[base_string_index + 1]
-                                if "simpsons_palette" not in secondary_tex.lower():
-                                    target_tex_name = secondary_tex
-                        else:
-                            bPrinter(
-                                f"    [Warning] Material ID {material_id} (String {base_string_index}) is out of bounds (Max: {len(linked_tex_for_mat) - 1}). Falling back to 0.",
-                                console_colour="yellow",
-                                to_blender_editor=True
-                            )
-                            target_tex_name = linked_tex_for_mat[0] if linked_tex_for_mat else None
-
-                        if target_tex_name is None:
-                            bPrinter(f"    [Warning] No linked texture available for submesh {i}; skipping material assignment.", console_colour="yellow", to_blender_editor=True)
-                            continue
-
-                        # Find the index of the target material
-                        target_mat_index = unique_tex_names.index(target_tex_name) if target_tex_name in unique_tex_names else 0
-
-                        # Assign the material index to all polygons
+                            mat_idx = list(obj.data.materials).index(mat)
+                            for poly in obj.data.polygons:
+                                poly.material_index = mat_idx
+                            obj.active_material_index = mat_idx
+                            bPrinter(f"    Submesh {i}: Assigned material '{mat.name}' (Material ID: {material_id}, Texture: {target_tex_name})", to_blender_editor=True)
+                    else:
+                        untextured_name = f"MAT_Untextured_{material_id}"
+                        mat = bpy.data.materials.get(untextured_name)
+                        if mat is None:
+                            mat = bpy.data.materials.new(name=untextured_name)
+                            mat.use_nodes = True
+                        if mat.name not in obj.data.materials:
+                            obj.data.materials.append(mat)
+                        mat_idx = list(obj.data.materials).index(mat)
                         for poly in obj.data.polygons:
-                            poly.material_index = target_mat_index
+                            poly.material_index = mat_idx
+                        obj.active_material_index = mat_idx
+                        bPrinter(f"    Submesh {i}: Assigned untextured material '{untextured_name}' (Material ID: {material_id})", to_blender_editor=True)
 
-                        obj.active_material_index = target_mat_index
-
-                        bPrinter(f"    Submesh {i}: Assigned material 'TEX_{_normalize_tex_name(target_tex_name)}'", to_blender_editor=True)
                 except Exception as e:
                     bPrinter(f"[Material] Failed to assign material on mesh part {mesh_iter}_{i}: {e}", console_colour="yellow", to_blender_editor=True)
 
                 obj.rotation_euler = (1.5707963705062866, 0, 0)
                 bPrinter(f"[MeshPart {mesh_iter}_{i}] Object created '{obj.name}' and rotated.")
 
-                # --- NEW: Weld surfaces and separate by loose parts ---
+                # Weld surfaces and separate by loose parts
                 try:
-                    # Distance threshold (in meters).
-                    # 0.005 is usually perfect for sewing game engine cuts back together.
-                    # If things are still splitting, try increasing this slightly (e.g., 0.05)
                     MERGE_DISTANCE = 0.005
 
                     bpy.ops.object.select_all(action='DESELECT')
                     bpy.context.view_layer.objects.active = obj
                     obj.select_set(True)
 
-                    # 1. Switch to Edit Mode
                     bpy.ops.object.mode_set(mode='EDIT')
                     bpy.ops.mesh.select_all(action='SELECT')
-
-                    # 2. Weld vertices that are extremely close to each other
-                    # This sews the broken surfaces back into a single continuous piece
                     bpy.ops.mesh.remove_doubles(threshold=MERGE_DISTANCE)
-
-                    # 3. Now separate the truly loose parts (like the sign and fence)
                     bpy.ops.mesh.separate(type='LOOSE')
-
-                    # 4. Switch back to Object Mode
                     bpy.ops.object.mode_set(mode='OBJECT')
 
                     bPrinter(f"    Welded seams and separated '{obj.name}' into independent parts.", to_blender_editor=True)
                 except Exception as e:
-                    # Failsafe to ensure we don't get stuck in Edit mode if an error occurs
                     if bpy.context.object and bpy.context.object.mode == 'EDIT':
                         bpy.ops.object.mode_set(mode='OBJECT')
                     bPrinter(f"    [Warning] Failed to separate parts for {obj.name}: {e}", console_colour="yellow")

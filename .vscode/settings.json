@@ -133,6 +133,30 @@
         "logs",
         "tmp",
         "reversing/**Archive/**"
+    ],
+    "python.analysis.diagnosticsSource": "Pylance",
+    "python.analysis.inlayHints.callArgumentNames": "all",
+    "python.analysis.inlayHints.functionReturnTypes": true,
+    "python.analysis.extraPaths": [
+        //"../../../EngineApps/api_definitions",
+        "A:\\RemakeEngine\\Main\\EngineApps\\Tools\\Blender-4.5.4-win-x64\\4.5\\scripts\\modules"
+    ],
+    //"python.analysis.stubPath": "./EngineApps/api_definitions",
+    "python-envs.defaultEnvManager": "ms-python.python:system",
+    "python.languageServer": "Default",
+    "python.analysis.diagnosticSeverityOverrides": {
+        "reportMissingModuleSource": "none",
+        "reportShadowedImports": "none",
+        "reportMissingImports": "none",
+        "reportInvalidTypeForm": "none"
+    },
+    "python.analysis.languageServerMode": "full",
+    "pylint.interpreter": [
+        "A:\\RemakeEngine\\Main\\EngineApps\\Tools\\Blender-4.5.4-win-x64\\4.5\\python\\bin\\python.exe"
+    ],
+    "pylint.args": [
+        "--init-hook=import sys; sys.path.append(r'A:\\RemakeEngine\\Main\\EngineApps\\Tools\\Blender-4.5.4-win-x64\\4.5\\scripts\\modules')",
+        "--ignored-modules=bpy,bmesh,mathutils,_bpy,gpu"
     ]
 
 }

@@ -1,10 +1,12 @@
 # SPDX-License-Identifier: MIT
 """
 Parser module for The Simpsons Game binary files.
-Contains logic for signature scanning, string extraction, and mesh-texture linking.
+Contains logic for RenderWare chunk parsing, material extraction, signature scanning,
+and mesh-texture linking.
 """
 import re
 import string
+import struct
 from typing import Any, Generator
 from .utils.logger import bPrinter
 from .materials import _maybe_cache_texture_path
@@ -153,77 +155,138 @@ def _iter_texture_names(data: bytes) -> Generator[tuple[int, str], None, None]:
         yield string_chunk_offset - 4, name
 
 
-def build_texture_mesh_links(data: bytes, preinstanced_filepath: str | None = None) -> tuple[dict[int, list[str]], dict[str, str], set[str]]:
+def extract_rw_mesh_materials(data: bytes) -> tuple[dict[int, list[str | None]], set[str]]:
     """
-    Scans binary data for texture names and established links between meshes and textures.
-    Returns a mapping of mesh offsets to texture names, resolved paths, and a set of all textures found.
+    Parses RenderWare clump geometry and material lists to map each EA_MESH (0x0000EA33) chunk offset
+    to its exact list of material diffuse texture names (or None if untextured).
     """
-    links: dict[int, list[str]] = {}
-    resolved_paths: dict[str, str] = {}
-    all_texture_names_found: set[str] = set()
-    events = []
+    mesh_materials: dict[int, list[str | None]] = {}
+    all_textures: set[str] = set()
 
+    def parse_container(offset: int, end: int) -> None:
+        curr = offset
+        while curr + 12 <= end:
+            cid, csize, _ = struct.unpack('<III', data[curr:curr+12])
+            payload_start = curr + 12
+            payload_end = payload_start + csize
+            if payload_end > len(data):
+                break
+
+            if cid == 0x0F:  # rwID_GEOMETRY
+                geom_mats: list[str | None] = []
+                g_curr = payload_start
+                while g_curr + 12 <= payload_end:
+                    g_cid, g_csize, _ = struct.unpack('<III', data[g_curr:g_curr+12])
+                    g_pstart = g_curr + 12
+                    g_pend = g_pstart + g_csize
+                    if g_pend > payload_end:
+                        break
+
+                    if g_cid == 0x08:  # rwID_MATLIST
+                        m_curr = g_pstart
+                        while m_curr + 12 <= g_pend:
+                            m_cid, m_csize, _ = struct.unpack('<III', data[m_curr:m_curr+12])
+                            m_pstart = m_curr + 12
+                            m_pend = m_pstart + m_csize
+                            if m_pend > g_pend:
+                                break
+                            if m_cid == 0x07:  # rwID_MATERIAL
+                                tex_diffuse = None
+                                t_curr = m_pstart
+                                while t_curr + 12 <= m_pend:
+                                    t_cid, t_csize, _ = struct.unpack('<III', data[t_curr:t_curr+12])
+                                    t_pstart = t_curr + 12
+                                    t_pend = t_pstart + t_csize
+                                    if t_pend > m_pend:
+                                        break
+                                    if t_cid == 0x06:  # rwID_TEXTURE
+                                        s_curr = t_pstart
+                                        while s_curr + 12 <= t_pend:
+                                            s_cid, s_csize, _ = struct.unpack('<III', data[s_curr:s_curr+12])
+                                            s_pstart = s_curr + 12
+                                            s_pend = s_pstart + s_csize
+                                            if s_pend > t_pend:
+                                                break
+                                            if s_cid == 0x02:  # rwID_STRING (diffuse texture name)
+                                                s_bytes = data[s_pstart:s_pend].split(b'\x00', 1)[0].rstrip(b'\xbf')
+                                                try:
+                                                    name = s_bytes.decode('ascii')
+                                                    if name:
+                                                        tex_diffuse = name
+                                                except UnicodeDecodeError:
+                                                    tex_diffuse = None
+                                                break
+                                            s_curr += 12 + s_csize
+                                    t_curr += 12 + t_csize
+                                geom_mats.append(tex_diffuse)
+                                if tex_diffuse:
+                                    all_textures.add(tex_diffuse)
+                            m_curr += 12 + m_csize
+                    elif g_cid == 0x03:  # rwID_EXTENSION
+                        e_curr = g_pstart
+                        while e_curr + 12 <= g_pend:
+                            e_cid, e_csize, _ = struct.unpack('<III', data[e_curr:e_curr+12])
+                            if e_cid == 0xEA33:  # EA_EARS_MESH
+                                mesh_materials[e_curr] = list(geom_mats)
+                            e_curr += 12 + e_csize
+                    g_curr += 12 + g_csize
+            elif cid in (0x10, 0x1A, 0x14, 0x03):  # Clump, GeoList, Atomic, Extension
+                parse_container(payload_start, payload_end)
+            curr += 12 + csize
+
+    parse_container(0, len(data))
+    return mesh_materials, all_textures
+
+
+def build_texture_mesh_links(
+    data: bytes, preinstanced_filepath: str | None = None
+) -> tuple[dict[int, list[str]], dict[str, str], set[str], dict[int, list[str | None]]]:
+    """
+    Parses RenderWare chunk hierarchy for material lists and maps each mesh chunk
+    to its exact list of material textures (1-to-1 submesh material mapping).
+    Returns (links, resolved_paths, all_texture_names_found, mesh_materials_by_offset).
+    """
+    resolved_paths: dict[str, str] = {}
     _check_required_headers(data)
 
-    tex_hits = 0
-    for off, name in _iter_texture_names(data):
-        tex_hits += 1
-        events.append((off, "tex_name", name))
-        all_texture_names_found.add(name)
+    mesh_materials_by_offset, all_texture_names_found = extract_rw_mesh_materials(data)
+
+    # Fallback to scanning if chunk tree mapping produced no meshes
+    if not mesh_materials_by_offset:
+        for off, name in _iter_texture_names(data):
+            all_texture_names_found.add(name)
+
+    # Cache texture paths for discovered textures
+    for name in all_texture_names_found:
         _maybe_cache_texture_path(name, resolved_paths, preinstanced_filepath)
 
-    if tex_hits == 0:
-        bPrinter("[TexScan] No texture strings found via header variants.", console_colour="yellow")
-    else:
-        bPrinter(f"[TexScan] Collected {tex_hits} texture name(s).", console_colour="green")
+    # Build legacy links mapping (non-None strings per mesh)
+    links: dict[int, list[str]] = {
+        moff: [m for m in mlist if m is not None]
+        for moff, mlist in mesh_materials_by_offset.items()
+    }
 
-    tlfd_hits = 0
-    for off in _iter_all_occurrences(data, _TLFD_MARKER):
-        tlfd_hits += 1
-        events.append((off, "tlfd", None))
+    # Diagnostics
+    tlfd_hits = sum(1 for _ in _iter_all_occurrences(data, _TLFD_MARKER))
     bPrinter(f"[TLFD] Found {tlfd_hits} TLFD marker(s).", console_colour="green" if tlfd_hits > 0 else "yellow")
 
-    mesh_hits = 0
-    for m in MESH_REGEX.finditer(data):
-        events.append((m.start(), "mesh", None))
-        mesh_hits += 1
-    bPrinter(f"[MeshScan] Found {mesh_hits} mesh chunk header(s).", console_colour="green" if mesh_hits > 0 else "yellow")
+    mesh_hits = len(mesh_materials_by_offset)
+    bPrinter(f"[MeshScan] Mapped {mesh_hits} mesh chunk(s) to material lists.", console_colour="green" if mesh_hits > 0 else "yellow")
 
     eof_off = data.find(_EOF_MARKER)
     if eof_off != -1:
-        events.append((eof_off, "eof", None))
-        bPrinter(f"[EOF] EOF marker detected at {eof_off:08X}.", console_colour="green")
-    else:
-        bPrinter("[EOF] EOF marker not detected; file may still be valid.", console_colour="yellow")
-
-    events.sort(key=lambda x: x[0])
-
-    # --- FIXED ASSOCIATION LOGIC ---
-    active_textures: list[str] = []
-    has_seen_tex_since_mesh = False
-
-    for off, etype, payload in events:
-        if etype == "tex_name":
-            if not has_seen_tex_since_mesh:
-                active_textures.clear()
-                has_seen_tex_since_mesh = True
-            active_textures.append(payload)
-        elif etype == "mesh":
-            has_seen_tex_since_mesh = False
-            if active_textures:
-                links[off] = active_textures.copy()
-        elif etype == "eof":
-            break
+        bPrinter(f"[EOF] Clump extension plugin (0xEA16) detected at {eof_off:08X}.", console_colour="green")
 
     bPrinter("\n--- Texture ↔ Mesh Links ---", to_blender_editor=True)
-    if links:
-        for moff, names in links.items():
-            line = f"[Link] MeshChunk@{moff:08X} -> {', '.join(names) if names else '(no textures)'}"
+    if mesh_materials_by_offset:
+        for moff, mlist in mesh_materials_by_offset.items():
+            formatted = [f"[{i}]: {name if name else '(untextured)'}" for i, name in enumerate(mlist)]
+            line = f"[Link] MeshChunk@{moff:08X} -> {', '.join(formatted) if formatted else '(no materials)'}"
             bPrinter(line, to_blender_editor=True)
     else:
-        bPrinter("[Link] No mesh↔texture associations could be established.", to_blender_editor=True)
-    return links, resolved_paths, all_texture_names_found
+        bPrinter("[Link] No mesh↔material associations could be established.", to_blender_editor=True)
 
+    return links, resolved_paths, all_texture_names_found, mesh_materials_by_offset
 
 
 def _check_required_headers(data: bytes) -> bool:
@@ -280,4 +343,3 @@ def _extract_ascii_from(data: bytes, start_off: int, max_len: int) -> str | None
         except Exception:
             return None
     return None
-
