@@ -14,6 +14,14 @@ Rather than distributing copyrighted assets, the `RemakeEngine` automates the pr
 
 Godot provides the runtime (rendering, physics and scripting). This module concentrates on the hard work: parsing proprietary formats, converting game assets (models, textures, audio, video), and rebuilding scene data and mappings so a playable project can be generated automatically.
 
+## Related Projects
+These projects are related to the reverse-engineering and rebuilding of *The Simpsons Game* assets for the PS3 edition.
+
+- [The Simpsons Game PS3 FileViewer](https://github.com/Superposition28/TheSimpsonsGame-PS3-FileViewer): A tool for exploring the Simpsons game files, parses all understood file formats, provides data interpretations, conversions, additionally has a connection explorer for visualizing cross-file relationships.
+- [The Simpsons Game PS3 Docs](https://github.com/Superposition28/TheSimpsonsGame-PS3-Docs): Documentation and reverse-engineering notes for the PS3/Xbox360 editions of *The Simpsons Game*.
+- [RemakeEngine](https://github.com/yggdrasil-au/RemakeEngine): RemakeEngine is an independent game agnostic tool for automating the extraction, conversion, and rebuilding of game assets into playable projects.
+
+
 ## Current Status & Known Issues
 The module is in active development (Beta). Highlights and known problems:
 
