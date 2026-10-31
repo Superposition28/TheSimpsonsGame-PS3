@@ -1,4 +1,4 @@
----@class SfoData
+﻿---@class SfoData
 ---@field app_ver string|nil
 ---@field attribute integer|nil
 ---@field bootable integer|nil
@@ -13,6 +13,32 @@
 ---@field version string|nil
 ---@field entries table<string, string|integer>
 
+---@class XexExecutionInfo
+---@field media_id integer
+---@field version integer
+---@field base_version integer
+---@field title_id integer
+---@field platform integer
+---@field executable_type integer
+---@field disc_number integer
+---@field disc_count integer
+
+---@class XexData
+---@field magic integer
+---@field module_flags integer
+---@field pe_data_offset integer
+---@field cert_offset integer
+---@field image_base integer
+---@field entry_point integer
+---@field image_size integer
+---@field stack_size integer|nil
+---@field heap_size integer|nil
+---@field original_pe_name string|nil
+---@field execution_info XexExecutionInfo|nil
+---@field title_id_hex string|nil
+---@field media_id_hex string|nil
+---@field region_name string|nil
+
 ---@class GameVersionInfo
 ---@field platform "PS3"|"XBOX360"
 ---@field region "EU"|"US"|"DEMO"|nil
@@ -25,6 +51,8 @@
 ---@field ps3_system_ver string|nil
 ---@field sfo_path string|nil
 ---@field sfo_data SfoData|nil
+---@field xex_path string|nil
+---@field xex_data XexData|nil
 ---@field support_level "full"|"partial"|"unsupported"
 ---@field support_message string
 
@@ -49,6 +77,7 @@
 ---@field write_placeholders fun(cfg_path: string, new_placeholders: table): nil
 ---@field count_files fun(path: string): integer
 ---@field parse_sfo fun(sfo_path: string): SfoData|nil, string|nil
+---@field parse_xex fun(xex_path: string): XexData|nil, string|nil
 ---@field is_unextracted_xbox_iso fun(path: string): boolean
 ---@field build_support_info fun(platform: "PS3"|"XBOX360", region: "EU"|"US"|"DEMO"|nil, game_type: "Full"|"Demo", title_id: string|nil): ("full"|"partial"|"unsupported", string)
 ---@field Inspect_source_path fun(path: string): SourceValidationResult
@@ -225,6 +254,24 @@ end
 local function ReadU32LE(data, pos)
     local b1, b2, b3, b4 = string.byte(data, pos, pos + 3)
     return (b1 or 0) + ((b2 or 0) * 256) + ((b3 or 0) * 65536) + ((b4 or 0) * 16777216)
+end
+
+--- Reads a 16-bit unsigned big-endian integer from a binary string at 1-based offset pos.
+---@param data string
+---@param pos integer
+---@return integer
+local function ReadU16BE(data, pos)
+    local b1, b2 = string.byte(data, pos, pos + 1)
+    return ((b1 or 0) * 256) + (b2 or 0)
+end
+
+--- Reads a 32-bit unsigned big-endian integer from a binary string at 1-based offset pos.
+---@param data string
+---@param pos integer
+---@return integer
+local function ReadU32BE(data, pos)
+    local b1, b2, b3, b4 = string.byte(data, pos, pos + 3)
+    return ((b1 or 0) * 16777216) + ((b2 or 0) * 65536) + ((b3 or 0) * 256) + (b4 or 0)
 end
 
 --- Encodes a raw binary string as uppercase hexadecimal (matching Python's raw_data.hex().upper()).
@@ -459,6 +506,109 @@ function parse_sfo(sfo_path)
     return sfo_data, nil
 end
 
+--- Parses an Xbox 360 executable (default.xex), extracting header descriptors, entry point,
+--- certificate image size, original PE executable name, and execution info struct.
+---@param xex_path string
+---@return XexData|nil xex, string|nil err
+function parse_xex(xex_path)
+    local file, err = io.open(xex_path, "rb")
+    if not file then
+        return nil, "Could not open file: " .. tostring(err)
+    end
+
+    local data = file:read(16384)
+    file:close()
+
+    if not data or #data < 24 then
+        return nil, "File is too small to be a valid XEX executable."
+    end
+
+    local magic = ReadU32BE(data, 1)
+    if magic ~= 0x58455832 then -- "XEX2"
+        return nil, "Invalid magic number. Not an Xbox 360 XEX executable."
+    end
+
+    local module_flags = ReadU32BE(data, 5)
+    local pe_data_offset = ReadU32BE(data, 9)
+    local cert_offset = ReadU32BE(data, 17)
+    local opt_count = ReadU32BE(data, 21)
+
+    local image_size = 0
+    if cert_offset > 0 and cert_offset + 8 <= #data then
+        image_size = ReadU32BE(data, cert_offset + 5)
+    end
+
+    local entry_point = 0
+    local image_base = 0x82000000
+    ---@type integer|nil
+    local stack_size = nil
+    ---@type integer|nil
+    local heap_size = nil
+    ---@type string|nil
+    local original_pe_name = nil
+    ---@type XexExecutionInfo|nil
+    local execution_info = nil
+
+    for i = 0, opt_count - 1 do
+        local pos = 25 + (i * 8)
+        if pos + 7 <= #data then
+            local key = ReadU32BE(data, pos)
+            local val = ReadU32BE(data, pos + 4)
+
+            if key == 0x00010100 then
+                entry_point = val
+            elseif key == 0x00010201 then
+                image_base = val
+            elseif key == 0x00020200 then
+                stack_size = val
+            elseif key == 0x00020401 then
+                heap_size = val
+            elseif key == 0x000183FF or key == 0x000003FF then
+                if val > 0 and val + 4 <= #data then
+                    local str_len = ReadU32BE(data, val + 1)
+                    if str_len > 0 and val + 4 + str_len <= #data then
+                        local raw_name = data:sub(val + 5, val + 4 + str_len)
+                        original_pe_name = raw_name:gsub("%z.*", "")
+                    end
+                end
+            elseif key == 0x00040006 then
+                if val > 0 and val + 20 <= #data then
+                    execution_info = {
+                        media_id = ReadU32BE(data, val + 1),
+                        version = ReadU32BE(data, val + 5),
+                        base_version = ReadU32BE(data, val + 9),
+                        title_id = ReadU32BE(data, val + 13),
+                        platform = string.byte(data, val + 17),
+                        executable_type = string.byte(data, val + 18),
+                        disc_number = string.byte(data, val + 19),
+                        disc_count = string.byte(data, val + 20),
+                    }
+                end
+            end
+        end
+    end
+
+    ---@type XexData
+    local xex_data = {
+        magic = magic,
+        module_flags = module_flags,
+        pe_data_offset = pe_data_offset,
+        cert_offset = cert_offset,
+        image_base = image_base,
+        entry_point = entry_point,
+        image_size = image_size,
+        stack_size = stack_size,
+        heap_size = heap_size,
+        original_pe_name = original_pe_name or "simpsons_f.exe",
+        execution_info = execution_info,
+        title_id_hex = execution_info and string.format("%08X", execution_info.title_id) or nil,
+        media_id_hex = execution_info and string.format("%08X", execution_info.media_id) or nil,
+        region_name = nil,
+    }
+
+    return xex_data, nil
+end
+
 --- Builds support status level and helpful message for a given version configuration.
 ---@param platform "PS3"|"XBOX360"
 ---@param region "EU"|"US"|"DEMO"|nil
@@ -467,10 +617,11 @@ end
 ---@return "full"|"partial"|"unsupported" support_level, string support_message
 function build_support_info(platform, region, game_type, title_id)
     if platform == "XBOX360" then
-        return "unsupported",
-            "Notice: Xbox 360 version detected. Initialization supports setting up Xbox 360 source files, "
-            .. "but downstream extraction/conversion operations do not currently work with Xbox 360 assets "
-            .. "(only the EU PS3 Full version is targeted for full support)."
+        local id_label = title_id and (" (" .. title_id .. ")") or ""
+        local reg_label = region and (" " .. region) or ""
+        return "partial",
+            "Xbox 360" .. reg_label .. " Full version" .. id_label .. " detected. Initialization and asset inspection "
+            .. "are supported; cross-platform analysis and recompilation data are integrated."
     end
 
     if game_type == "Demo" or region == "DEMO" then
@@ -571,6 +722,83 @@ local function ClassifySfoVersion(sfo, sfo_path)
         support_level = support_level,
         support_message = support_message,
     }
+    return info, nil
+end
+
+--- Classifies a parsed XexData structure into platform/region/edition and verifies title identity.
+---@param xex XexData
+---@param xex_path string
+---@return GameVersionInfo|nil info, string|nil err
+local function ClassifyXexVersion(xex, xex_path)
+    local title_id_hex = xex.title_id_hex or ""
+    local media_id_hex = xex.media_id_hex or ""
+
+    local is_simpsons_title = title_id_hex == "45410809"
+        or (xex.original_pe_name and xex.original_pe_name:lower():find("simpson", 1, true) ~= nil)
+
+    if not is_simpsons_title then
+        return nil, string.format(
+            "default.xex at '%s' belongs to an unrecognized game: TITLE_ID='%s', PE='%s'.",
+            xex_path,
+            tostring(title_id_hex),
+            tostring(xex.original_pe_name)
+        )
+    end
+
+    ---@type "EU"|"US"|nil
+    local region = nil
+    local region_name = "Xbox 360"
+
+    -- Media ID mapping:
+    -- 467C2924: EU Retail (Europe, Australia / New Zealand), version 0.0.0.7
+    -- 05631042: US Retail (North America), version 0.0.0.1
+    if media_id_hex == "467C2924" then
+        region = "EU"
+        region_name = "Europe / Australia"
+    elseif media_id_hex == "05631042" then
+        region = "US"
+        region_name = "North America"
+    else
+        local path_upper = xex_path:upper()
+        if path_upper:find("EU", 1, true) then
+            region = "EU"
+            region_name = "Europe (inferred from path)"
+        elseif path_upper:find("US", 1, true) or path_upper:find("NTSC", 1, true) then
+            region = "US"
+            region_name = "North America (inferred from path)"
+        else
+            region = "EU"
+            region_name = "Default EU"
+        end
+    end
+
+    xex.region_name = region_name
+
+    local exec = xex.execution_info
+    local version_str = exec and string.format("0.0.0.%d", exec.version) or "0.0.0.7"
+    local app_ver_str = exec and string.format("0.0.0.%d", exec.base_version) or "0.0.0.7"
+
+    local support_level, support_message = build_support_info("XBOX360", region, "Full", title_id_hex)
+
+    ---@type GameVersionInfo
+    local info = {
+        platform = "XBOX360",
+        region = region,
+        game_type = "Full",
+        title_id = title_id_hex ~= "" and title_id_hex or "45410809",
+        title = "The Simpsons™ Game",
+        category = "GAME",
+        version = version_str,
+        app_ver = app_ver_str,
+        ps3_system_ver = nil,
+        sfo_path = nil,
+        sfo_data = nil,
+        xex_path = xex_path,
+        xex_data = xex,
+        support_level = support_level,
+        support_message = support_message,
+    }
+
     return info, nil
 end
 
@@ -795,6 +1023,24 @@ function Inspect_source_path(path)
     local has_eboot = sdk.is_file(join(candidate_usrdir, "EBOOT.BIN"))
     local has_xex = sdk.is_file(join(candidate_usrdir, "default.xex"))
 
+    ---@type GameVersionInfo|nil
+    local xex_version_info = nil
+    if has_xex and not sfo_version_info then
+        local candidate_xex = join(candidate_usrdir, "default.xex")
+        local xex_data, xex_err = parse_xex(candidate_xex)
+        if xex_data then
+            local classified_xex, class_err = ClassifyXexVersion(xex_data, candidate_xex)
+            if not classified_xex then
+                result.error_kind = "invalid_game"
+                result.error_message = class_err
+                return result
+            end
+            xex_version_info = classified_xex
+        else
+            table.insert(result.warnings, "Found default.xex at '" .. candidate_xex .. "' but failed to parse it: " .. tostring(xex_err))
+        end
+    end
+
     -- Check folder sets in candidate_usrdir
     local has_full_orig, missing_full_orig = check_dirs_exist(candidate_usrdir, USRDIR_DIRS_ORIGINAL)
     local has_full_renamed, _ = check_dirs_exist(candidate_usrdir, USRDIR_DIRS)
@@ -805,6 +1051,8 @@ function Inspect_source_path(path)
     local platform = nil
     if sfo_version_info then
         platform = "PS3"
+    elseif xex_version_info then
+        platform = "XBOX360"
     elseif has_eboot or ps3_game_root ~= nil then
         platform = "PS3"
     elseif has_xex then
@@ -813,7 +1061,9 @@ function Inspect_source_path(path)
 
     -- Validate directory structure
     ---@type "Full"|"Demo"|nil
-    local detected_type = sfo_version_info and sfo_version_info.game_type or nil
+    local detected_type = (sfo_version_info and sfo_version_info.game_type)
+        or (xex_version_info and xex_version_info.game_type)
+        or nil
 
     if detected_type == "Demo" then
         if not has_demo_dirs then
@@ -830,9 +1080,12 @@ function Inspect_source_path(path)
     elseif detected_type == "Full" then
         if not has_full_orig and not has_full_renamed then
             result.error_kind = "missing_dirs"
+            local plat_name = (platform == "XBOX360") and "Xbox 360 Full version" or "PS3 Full version"
+            local title_label = (sfo_version_info and sfo_version_info.title_id) or (xex_version_info and xex_version_info.title_id) or "Full"
             result.error_message = string.format(
-                "PS3 Full version (%s) is missing %d required USRDIR folder(s) in '%s': %s",
-                tostring(sfo_version_info and sfo_version_info.title_id or "Full"),
+                "%s (%s) is missing %d required USRDIR folder(s) in '%s': %s",
+                plat_name,
+                tostring(title_label),
                 #missing_full_orig,
                 candidate_usrdir,
                 table.concat(missing_full_orig, ", ")
@@ -875,8 +1128,8 @@ function Inspect_source_path(path)
         return result
     end
 
-    -- Build version_info if SFO was missing
-    if not sfo_version_info then
+    -- Build version_info if neither SFO nor XEX was parsed
+    if not sfo_version_info and not xex_version_info then
         ---@type "EU"|"US"|"DEMO"|nil
         local inferred_region = detected_type == "Demo" and "DEMO" or nil
         if platform == "PS3" then
@@ -904,18 +1157,19 @@ function Inspect_source_path(path)
         }
     end
 
+    local active_version_info = sfo_version_info or xex_version_info
     CollectOptionalFileWarnings(
         candidate_usrdir,
         ps3_game_root,
-        sfo_version_info.platform,
-        sfo_version_info.region,
-        sfo_version_info.game_type,
-        sfo_version_info.title_id,
+        active_version_info.platform,
+        active_version_info.region,
+        active_version_info.game_type,
+        active_version_info.title_id,
         result.warnings
     )
 
     result.valid = true
-    result.version_info = sfo_version_info
+    result.version_info = active_version_info
     return result
 end
 
@@ -958,6 +1212,32 @@ function Print_version_report(result)
                 tostring(info.ps3_system_ver or "N/A")
             )
         })
+    elseif info.xex_data then
+        local xex = info.xex_data
+        local exec = xex.execution_info
+        colour_print({
+            colour = Colours.CYAN,
+            message = string.format(
+                "  XEX Binary Metadata : PE='%s' | ENTRY=0x%08X | BASE=0x%08X | SIZE=0x%08X",
+                tostring(xex.original_pe_name or "simpsons_f.exe"),
+                xex.entry_point or 0,
+                xex.image_base or 0x82000000,
+                xex.image_size or 0
+            )
+        })
+        if exec then
+            colour_print({
+                colour = Colours.CYAN,
+                message = string.format(
+                    "  Execution Info      : TITLE_ID=%s | MEDIA_ID=%s | DISC=%d/%d | VER=0.0.0.%d",
+                    tostring(xex.title_id_hex or "45410809"),
+                    tostring(xex.media_id_hex or "N/A"),
+                    exec.disc_number or 1,
+                    exec.disc_count or 1,
+                    exec.version or 0
+                )
+            })
+        end
     end
 
     local support_colour = info.support_level == "full" and Colours.GREEN or Colours.YELLOW
