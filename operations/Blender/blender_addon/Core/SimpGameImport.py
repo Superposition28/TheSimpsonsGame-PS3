@@ -245,11 +245,23 @@ class SimpGameImport(bpy.types.Operator, ImportHelper):
                     submesh_hdr_off = Buffer1_Base + submesh_rel_offset
                     data_io.seek(submesh_hdr_off)
                     submesh_header = data_io.read(16)
-                    material_id = int.from_bytes(submesh_header[8:12], byteorder='big')
+                    raw_material_id = int.from_bytes(submesh_header[8:12], byteorder='big')
                     vert_info_rel_offset = int.from_bytes(submesh_header[12:16], byteorder='big')
 
+                    # In RenderWare EARS_MESH, submeshes correspond 1-to-1 with rwID_MATLIST entries.
+                    # Each submesh index i directly addresses material index i in the geometry's material list.
+                    # Fall back to raw_material_id if valid or clamp to available materials.
+                    if 0 <= i < len(mat_list):
+                        material_id = i
+                    elif 0 <= raw_material_id < len(mat_list):
+                        material_id = raw_material_id
+                    elif mat_list:
+                        material_id = len(mat_list) - 1
+                    else:
+                        material_id = 0
+
                     bPrinter(
-                        f"    [Submesh {i}] Material ID: {material_id} | Header: {submesh_header.hex(' ').upper()}",
+                        f"    [Submesh {i}] Material ID: {material_id} (raw={raw_material_id}) | Header: {submesh_header.hex(' ').upper()}",
                         to_blender_editor=True
                     )
 
