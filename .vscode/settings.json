@@ -157,6 +157,10 @@
     "pylint.args": [
         "--init-hook=import sys; sys.path.append(r'A:\\RemakeEngine\\Main\\EngineApps\\Tools\\Blender-4.5.4-win-x64\\4.5\\scripts\\modules')",
         "--ignored-modules=bpy,bmesh,mathutils,_bpy,gpu"
+    ],
+    "dotrush.roslyn.projectOrSolutionFiles": [
+        "a:\\RemakeEngine\\Main\\EngineApps\\Games\\TheSimpsonsGame-PS3\\reversing\\boot\\boot.csproj",
+        "a:\\RemakeEngine\\Main\\EngineApps\\Games\\TheSimpsonsGame-PS3\\reversing\\fileviewer\\fileviewer.csproj"
     ]
 
 }
