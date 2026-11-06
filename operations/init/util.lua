@@ -1,4 +1,4 @@
-﻿---@class SfoData
+---@class SfoData
 ---@field app_ver string|nil
 ---@field attribute integer|nil
 ---@field bootable integer|nil
@@ -58,6 +58,7 @@
 
 ---@class SourceValidationResult
 ---@field valid boolean
+---@field is_iso boolean|nil
 ---@field error_kind "unextracted_xbox_iso"|"missing_dirs"|"missing_binary"|"invalid_game"|"not_found"|nil
 ---@field error_message string|nil
 ---@field resolved string
@@ -76,7 +77,9 @@
 ---@field Read_placeholders fun(cfg_path: string): table
 ---@field write_placeholders fun(cfg_path: string, new_placeholders: table): nil
 ---@field count_files fun(path: string): integer
+---@field parse_sfo_bytes fun(data: string): SfoData|nil, string|nil
 ---@field parse_sfo fun(sfo_path: string): SfoData|nil, string|nil
+---@field parse_xex_bytes fun(data: string): XexData|nil, string|nil
 ---@field parse_xex fun(xex_path: string): XexData|nil, string|nil
 ---@field is_unextracted_xbox_iso fun(path: string): boolean
 ---@field build_support_info fun(platform: "PS3"|"XBOX360", region: "EU"|"US"|"DEMO"|nil, game_type: "Full"|"Demo", title_id: string|nil): ("full"|"partial"|"unsupported", string)
@@ -406,23 +409,11 @@ local function ReadNullTerminatedUtf8(data, start_pos)
     return decoded or raw
 end
 
---- Parses a PS3 PARAM.SFO binary file and extracts all key-value entries,
+--- Parses raw PS3 PARAM.SFO binary bytes and extracts all key-value entries,
 --- matching the reference implementation in reversing/sfo.csv.py.
----@param sfo_path string
+---@param data string
 ---@return SfoData|nil sfo_data, string|nil err
-function parse_sfo(sfo_path)
-    if type(sfo_path) ~= "string" or not sdk.is_file(sfo_path) then
-        return nil, "PARAM.SFO file does not exist: " .. tostring(sfo_path)
-    end
-
-    local handle, open_err = io.open(sfo_path, "rb")
-    if not handle then
-        return nil, "Unable to open PARAM.SFO: " .. tostring(open_err)
-    end
-    ---@cast handle FileHandle
-    local data = handle:read("*a")
-    handle:close()
-
+function parse_sfo_bytes(data)
     if type(data) ~= "string" or #data < 20 then
         return nil, "File is too small to be a valid SFO."
     end
@@ -506,19 +497,30 @@ function parse_sfo(sfo_path)
     return sfo_data, nil
 end
 
---- Parses an Xbox 360 executable (default.xex), extracting header descriptors, entry point,
---- certificate image size, original PE executable name, and execution info struct.
----@param xex_path string
----@return XexData|nil xex, string|nil err
-function parse_xex(xex_path)
-    local file, err = io.open(xex_path, "rb")
-    if not file then
-        return nil, "Could not open file: " .. tostring(err)
+--- Parses a PS3 PARAM.SFO binary file on disk and extracts all key-value entries.
+---@param sfo_path string
+---@return SfoData|nil sfo_data, string|nil err
+function parse_sfo(sfo_path)
+    if type(sfo_path) ~= "string" or not sdk.is_file(sfo_path) then
+        return nil, "PARAM.SFO file does not exist: " .. tostring(sfo_path)
     end
 
-    local data = file:read(16384)
-    file:close()
+    local handle, open_err = io.open(sfo_path, "rb")
+    if not handle then
+        return nil, "Unable to open PARAM.SFO: " .. tostring(open_err)
+    end
+    ---@cast handle FileHandle
+    local data = handle:read("*a")
+    handle:close()
 
+    return parse_sfo_bytes(data)
+end
+
+--- Parses raw Xbox 360 executable (default.xex) header bytes, extracting header descriptors,
+--- entry point, certificate image size, original PE executable name, and execution info struct.
+---@param data string
+---@return XexData|nil xex, string|nil err
+function parse_xex_bytes(data)
     if not data or #data < 24 then
         return nil, "File is too small to be a valid XEX executable."
     end
@@ -607,6 +609,21 @@ function parse_xex(xex_path)
     }
 
     return xex_data, nil
+end
+
+--- Parses an Xbox 360 executable (default.xex) on disk.
+---@param xex_path string
+---@return XexData|nil xex, string|nil err
+function parse_xex(xex_path)
+    local file, err = io.open(xex_path, "rb")
+    if not file then
+        return nil, "Could not open file: " .. tostring(err)
+    end
+
+    local data = file:read(16384)
+    file:close()
+
+    return parse_xex_bytes(data)
 end
 
 --- Builds support status level and helpful message for a given version configuration.
@@ -885,7 +902,176 @@ local function CollectOptionalFileWarnings(usrdir, ps3_game_root, platform, regi
     end
 end
 
---- Inspects a candidate source path, resolving ISO root / PS3_GAME / USRDIR / Xbox 360 root,
+--- Checks whether all required subdirectories exist inside an open IsoReader handle.
+---@param reader IsoReader
+---@param base_prefix string
+---@param required_dirs table<integer, string>
+---@return boolean ok, table<integer, string> missing
+local function check_iso_dirs_exist(reader, base_prefix, required_dirs)
+    ---@type table<integer, string>
+    local missing = {}
+    for _, dir_name in ipairs(required_dirs) do
+        local rel = base_prefix ~= "" and (base_prefix .. "/" .. dir_name) or dir_name
+        if not reader:exists(rel) then
+            table.insert(missing, dir_name)
+        end
+    end
+    return #missing == 0, missing
+end
+
+--- Inspects a direct .iso disc image file in-memory without extracting it to disk.
+---@param path string
+---@param result SourceValidationResult
+---@return SourceValidationResult
+local function InspectIsoFile(path, result)
+    local reader, open_err = iso.open(path)
+    if not reader then
+        result.error_kind = "invalid_game"
+        result.error_message = "Failed to open disc image '" .. tostring(path) .. "': " .. tostring(open_err)
+        return result
+    end
+
+    local fmt = reader:format()
+    local is_xbox = fmt:find("XBOX", 1, true) ~= nil or fmt:find("XGD", 1, true) ~= nil or reader:exists("default.xex")
+
+    if is_xbox then
+        if not reader:exists("default.xex") then
+            reader:close()
+            result.error_kind = "missing_binary"
+            result.error_message = "Xbox disc image '" .. tostring(path) .. "' is missing 'default.xex'."
+            return result
+        end
+
+        local raw_xex = reader:read_file("default.xex", 16384)
+        local xex_data, xex_err = parse_xex_bytes(raw_xex or "")
+        if not xex_data then
+            reader:close()
+            result.error_kind = "invalid_game"
+            result.error_message = "Failed to parse default.xex inside '" .. tostring(path) .. "': " .. tostring(xex_err)
+            return result
+        end
+
+        local classified_xex, class_err = ClassifyXexVersion(xex_data, path .. "#default.xex")
+        if not classified_xex then
+            reader:close()
+            result.error_kind = "invalid_game"
+            result.error_message = class_err
+            return result
+        end
+
+        local has_orig, missing_orig = check_iso_dirs_exist(reader, "", USRDIR_DIRS_ORIGINAL)
+        local has_renamed, _ = check_iso_dirs_exist(reader, "", USRDIR_DIRS)
+        reader:close()
+
+        if not has_orig and not has_renamed then
+            result.error_kind = "missing_dirs"
+            result.error_message = string.format(
+                "Xbox 360 ISO (%s) is missing %d required folder(s): %s",
+                tostring(classified_xex.title_id or "Full"),
+                #missing_orig,
+                table.concat(missing_orig, ", ")
+            )
+            return result
+        end
+
+        result.valid = true
+        result.is_iso = true
+        result.resolved = normalize(path)
+        result.copy_root = normalize(path)
+        result.version_info = classified_xex
+        return result
+    end
+
+    -- PS3 disc image inspection
+    local sfo_rel = reader:exists("PS3_GAME/PARAM.SFO") and "PS3_GAME/PARAM.SFO"
+        or (reader:exists("PARAM.SFO") and "PARAM.SFO" or nil)
+    local usrdir_prefix = reader:exists("PS3_GAME/USRDIR") and "PS3_GAME/USRDIR"
+        or (reader:exists("USRDIR") and "USRDIR" or "")
+    local eboot_rel = usrdir_prefix ~= "" and (usrdir_prefix .. "/EBOOT.BIN") or "EBOOT.BIN"
+
+    if not reader:exists(eboot_rel) then
+        reader:close()
+        result.error_kind = "missing_binary"
+        result.error_message = "PS3 disc image '" .. tostring(path) .. "' is missing '" .. eboot_rel .. "'."
+        return result
+    end
+
+    ---@type GameVersionInfo|nil
+    local sfo_version_info = nil
+    if sfo_rel then
+        local raw_sfo = reader:read_file(sfo_rel)
+        local sfo_data, sfo_err = parse_sfo_bytes(raw_sfo or "")
+        if not sfo_data then
+            table.insert(result.warnings, "Found PARAM.SFO inside ISO at '" .. sfo_rel .. "' but failed to parse it: " .. tostring(sfo_err))
+        else
+            local classified, classify_err = ClassifySfoVersion(sfo_data, path .. "#" .. sfo_rel)
+            if not classified then
+                reader:close()
+                result.error_kind = "invalid_game"
+                result.error_message = classify_err
+                return result
+            end
+            sfo_version_info = classified
+        end
+    end
+
+    local has_orig, missing_orig = check_iso_dirs_exist(reader, usrdir_prefix, USRDIR_DIRS_ORIGINAL)
+    local has_renamed, _ = check_iso_dirs_exist(reader, usrdir_prefix, USRDIR_DIRS)
+    local has_demo, missing_demo = check_iso_dirs_exist(reader, usrdir_prefix, USRDIR_DIRS_DEMO)
+    reader:close()
+
+    local detected_type = (sfo_version_info and sfo_version_info.game_type)
+        or ((has_orig or has_renamed) and "Full")
+        or (has_demo and "Demo")
+        or nil
+
+    if detected_type == "Demo" and not has_demo then
+        result.error_kind = "missing_dirs"
+        result.error_message = string.format(
+            "PS3 Demo ISO is missing %d required USRDIR folder(s): %s",
+            #missing_demo,
+            table.concat(missing_demo, ", ")
+        )
+        return result
+    elseif detected_type ~= "Demo" and not has_orig and not has_renamed then
+        result.error_kind = "missing_dirs"
+        result.error_message = string.format(
+            "PS3 ISO is missing %d required USRDIR folder(s): %s",
+            #missing_orig,
+            table.concat(missing_orig, ", ")
+        )
+        return result
+    end
+
+    if not sfo_version_info then
+        local inferred_region = detected_type == "Demo" and "DEMO" or nil
+        local sup_level, sup_msg = build_support_info("PS3", inferred_region, detected_type or "Full", nil)
+        sfo_version_info = {
+            platform = "PS3",
+            region = inferred_region,
+            game_type = detected_type or "Full",
+            title_id = nil,
+            title = nil,
+            category = nil,
+            version = nil,
+            app_ver = nil,
+            ps3_system_ver = nil,
+            sfo_path = nil,
+            sfo_data = nil,
+            support_level = sup_level,
+            support_message = sup_msg,
+        }
+    end
+
+    result.valid = true
+    result.is_iso = true
+    result.resolved = normalize(path)
+    result.copy_root = normalize(path)
+    result.version_info = sfo_version_info
+    return result
+end
+
+--- Inspects a candidate source path, resolving .iso disc images / ISO root / PS3_GAME / USRDIR / Xbox 360 root,
 --- parsing PARAM.SFO when available, and validating required folders and executables.
 ---@param path string
 ---@return SourceValidationResult
@@ -893,6 +1079,7 @@ function Inspect_source_path(path)
     ---@type SourceValidationResult
     local result = {
         valid = false,
+        is_iso = false,
         error_kind = nil,
         error_message = nil,
         resolved = path or "",
@@ -907,6 +1094,10 @@ function Inspect_source_path(path)
         return result
     end
 
+    if sdk.is_file(path) and path:lower():match("%.iso$") then
+        return InspectIsoFile(path, result)
+    end
+
     -- When the user provides USRDIR directly, check its parent directory first so RemakeEngine's
     -- security prompt approves the parent root (covering both PARAM.SFO and USRDIR in one prompt).
     if ends_with_usrdir(path) then
@@ -918,16 +1109,16 @@ function Inspect_source_path(path)
 
     if not sdk.is_dir(path) then
         result.error_kind = "not_found"
-        result.error_message = "The provided path is not an existing directory: '" .. tostring(path) .. "'."
+        result.error_message = "The provided path is not an existing directory or .iso file: '" .. tostring(path) .. "'."
         return result
     end
 
     -- Check for unextracted Xbox 360 ISO opened directly in Windows (AUDIO_TS / VIDEO_TS fake DVD partition)
     if is_unextracted_xbox_iso(path) then
         result.error_kind = "unextracted_xbox_iso"
-        result.error_message = "Detected an unextracted Xbox 360 ISO (AUDIO_TS/VIDEO_TS DVD partition). "
+        result.error_message = "Detected an unextracted Xbox 360 ISO mounted in Windows (AUDIO_TS/VIDEO_TS DVD partition). "
             .. "Windows only shows the fake DVD video partition when mounting an Xbox 360 ISO directly. "
-            .. "Please extract the ISO manually first and provide the extracted file path instead."
+            .. "Please provide the path to the '.iso' file directly (e.g. D:\\TSG.iso) so RemakeEngine can read the Xbox game partition."
         return result
     end
 

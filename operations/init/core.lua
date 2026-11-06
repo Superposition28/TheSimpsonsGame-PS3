@@ -12,6 +12,7 @@
 ---@class InitSourceLocation
 ---@field resolved string
 ---@field copy_root string
+---@field is_iso boolean|nil
 ---@field version_info GameVersionInfo|nil
 ---@field validation SourceValidationResult|nil
 
@@ -73,6 +74,7 @@ local function ValidateInputPath(path)
     local location = {
         resolved = normalize(validation.resolved),
         copy_root = normalize(validation.copy_root),
+        is_iso = validation.is_iso == true,
         version_info = validation.version_info,
         validation = validation,
     }
@@ -144,6 +146,11 @@ end
 ---@param local_data_path string
 ---@return string
 local function ResolveExistingLocalPath(local_data_path)
+    local direct_ps3_usrdir = join(join(local_data_path, "PS3_GAME"), "USRDIR")
+    if sdk.is_dir(direct_ps3_usrdir) then
+        return direct_ps3_usrdir
+    end
+
     local direct_usrdir = join(local_data_path, "USRDIR")
     if sdk.is_dir(direct_usrdir) then
         return direct_usrdir
@@ -152,6 +159,10 @@ local function ResolveExistingLocalPath(local_data_path)
     local subdirectories = list_subdirs(local_data_path)
     if #subdirectories == 1 then
         local only_directory = join(local_data_path, subdirectories[1])
+        local nested_ps3_usrdir = join(join(only_directory, "PS3_GAME"), "USRDIR")
+        if sdk.is_dir(nested_ps3_usrdir) then
+            return nested_ps3_usrdir
+        end
         local nested_usrdir = join(only_directory, "USRDIR")
         return sdk.is_dir(nested_usrdir) and nested_usrdir or only_directory
     end
@@ -212,6 +223,28 @@ local function PlaceSource(source, local_data_path, supplied_action, label)
         if ValidateFinalSource(existing_local, expected_type) then
             return existing_local
         end
+    end
+
+    -- Direct .iso disc image extraction
+    if source.is_iso or (sdk.is_file(source.copy_root) and source.copy_root:lower():match("%.iso$")) then
+        local iso_stem = (basename(source.copy_root) or "disc"):gsub("%.[iI][sS][oO]$", "")
+        local destination = join(local_data_path, iso_stem)
+        sdk.ensure_dir(destination)
+        colour_print({
+            colour = Colours.CYAN,
+            message = "Extracting " .. label .. " disc image '" .. source.copy_root .. "' to '" .. destination .. "'..."
+        })
+        local ok = sdk.extract_iso(source.copy_root, destination, { overwrite = true })
+        if not ok then
+            colour_print({ colour = Colours.RED, message = "Failed to extract " .. label .. " ISO disc image." })
+            return nil
+        end
+        local ps3_usrdir = join(join(destination, "PS3_GAME"), "USRDIR")
+        if sdk.is_dir(ps3_usrdir) then
+            return ps3_usrdir
+        end
+        local copied_usrdir = join(destination, "USRDIR")
+        return sdk.is_dir(copied_usrdir) and copied_usrdir or destination
     end
 
     local source_is_writable = sdk.is_writable(source.copy_root)
@@ -295,8 +328,8 @@ function Core.main(cli_arguments)
     end
 
     local prompt_msg = cli_region == "BOTH"
-        and "Enter the path to your EU game root (ISO root, PS3_GAME, USRDIR, or extracted Xbox 360 folder):"
-        or "Enter the path to your game root (ISO root, PS3_GAME, USRDIR, or extracted Xbox 360 folder):"
+        and "Enter the path to your EU game root (.iso file, ISO root, PS3_GAME, USRDIR, or extracted Xbox 360 folder):"
+        or "Enter the path to your game root (.iso file, ISO root, PS3_GAME, USRDIR, or extracted Xbox 360 folder):"
     local prompt_title = cli_region == "BOTH" and "EU File Path" or "Game Root Path"
 
     local primary_source = ResolveSourcePath(placeholders.MainSourcePath, cli_arguments.path, prompt_msg, prompt_title)
@@ -401,7 +434,7 @@ function Core.main(cli_arguments)
         local us_source = ResolveSourcePath(
             nil,
             cli_arguments.us_path,
-            "Enter the path to your US game root (ISO root, PS3_GAME, USRDIR, or extracted Xbox 360 folder):",
+            "Enter the path to your US game root (.iso file, ISO root, PS3_GAME, USRDIR, or extracted Xbox 360 folder):",
             "US File Path"
         )
         if not us_source then
